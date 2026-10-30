@@ -37,6 +37,35 @@ static final light = AppTheme.build(Brightness.light, brand: minhaMarca);
 - Fica no app o que depende de API, Riverpod ou plugin: `async_body`, `dialogs`,
   `share_file` e `theme_mode_provider`.
 
+## Acesso (o repo é privado)
+
+Uma chave SSH **só de leitura e só deste repo** (deploy key "CI dos produtos"),
+em `minha-infra/vault/ssh/componentes-ui-deploy`. Os produtos continuam usando o
+endereço HTTPS acima; quem tem a chave troca por SSH com variáveis do git.
+
+- **CI dos apps:** secret `COMPONENTES_UI_DEPLOY_KEY` em cada repo e o passo
+  "Acesso ao componentes-ui" antes do `checkout` de cada job que roda `pub get`
+  (já está nos `ci.yml` e `deploy-play.yml` dos 7 apps).
+- **Local (container):**
+
+```bash
+K=~/projects/minha-infra/vault/ssh/componentes-ui-deploy
+docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w /app \
+  -e GIT_CONFIG_COUNT=2 \
+  -e GIT_CONFIG_KEY_0=url.git@github.com:minhasuite/componentes-ui.insteadOf \
+  -e GIT_CONFIG_VALUE_0=https://github.com/minhasuite/componentes-ui \
+  -e GIT_CONFIG_KEY_1=core.sshCommand \
+  -e "GIT_CONFIG_VALUE_1=ssh -i /k -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
+  ghcr.io/cirruslabs/flutter:stable bash -lc 'flutter pub get'
+```
+
+  Depois do 1º `pub get` o pacote fica no volume `flutter_pub`, e o `--offline` dos
+  comandos de cada app volta a funcionar sem a chave.
+- **Webs Rails (quando migrarem):** o secret já está no `minhas-vendas` e no
+  `meu-gestor`. Falta, na migração, o mesmo passo no `ci-cd.yml` (montando a chave
+  no `docker run` da qualidade) e `RUN --mount=type=ssh bundle install` no
+  `Dockerfile.prod` com `docker build --ssh`.
+
 ## Rails (Tailwind 4, tailwindcss-rails ≥ 4.2)
 
 ```ruby
