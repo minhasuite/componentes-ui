@@ -1,0 +1,79 @@
+<!doctype html>
+<!-- Catálogo das classes .ss-*: o que a skill `componentes` exporta em SVG.
+     Classe nova na gem = <section> nova aqui. data-acao no estado (hover,
+     focus) é aplicado pelo Playwright no 1º [data-alvo] antes da captura. -->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="catalogo.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>[data-estado] { width: 480px; padding: 24px; }</style>
+</head>
+<body>
+<svg style="display:none"><symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></symbol></svg>
+
+<section data-comp="ss-btn" data-nome=".ss-btn" data-descricao="Botão: altura 40 (32 no .ss-btn-sm), raio 12, ícone opcional à esquerda."
+  data-comportamentos='["Primário: gradiente da marca com um brilho que atravessa no hover.","Encolhe para 97% ao clicar.","Desabilitado: opacidade 50% e cursor bloqueado.","Ghost com aria-pressed=true fica marcado na cor da marca.","Formulário enviando (aria-busy) apaga o botão de enviar."]'>
+  <div data-estado="primario" data-titulo="ss-btn-primary"><button class="ss-btn ss-btn-primary"><svg><use href="#check"/></svg>Salvar</button></div>
+  <div data-estado="primario-hover" data-titulo="ss-btn-primary (hover)" data-acao="hover"><button data-alvo class="ss-btn ss-btn-primary"><svg><use href="#check"/></svg>Salvar</button></div>
+  <div data-estado="ghost" data-titulo="ss-btn-ghost · outline · danger"><button class="ss-btn ss-btn-ghost">Ghost</button> <button class="ss-btn ss-btn-outline">Outline</button> <button class="ss-btn ss-btn-danger">Excluir</button></div>
+  <div data-estado="pressed" data-titulo="ss-btn-ghost[aria-pressed=true]"><button class="ss-btn ss-btn-ghost" aria-pressed="true">Este mês</button> <button class="ss-btn ss-btn-ghost" aria-pressed="false">Ano</button></div>
+  <div data-estado="sm-disabled" data-titulo="ss-btn-sm · disabled"><button class="ss-btn ss-btn-primary ss-btn-sm">Pequeno</button> <button class="ss-btn ss-btn-primary" disabled>Desabilitado</button></div>
+</section>
+
+<section data-comp="ss-card" data-nome=".ss-card" data-descricao="Superfície padrão: raio 20, sombra em duas camadas no claro, borda e brilho no escuro."
+  data-comportamentos='["a.ss-card (ou .ss-card-link) sobe 2 px e ganha o glow da marca no hover.",".ss-card-grad: borda em gradiente para o que pede decisão."]'>
+  <div data-estado="normal" data-titulo="ss-card ss-card-pad"><div class="ss-card ss-card-pad"><p class="ss-kicker">Pedido 1042</p><p class="ss-stat num">R$ 1.250,00</p></div></div>
+  <div data-estado="hover" data-titulo="a.ss-card (hover)" data-acao="hover"><a data-alvo href="#" class="ss-card ss-card-pad" style="display:block"><p class="ss-kicker">Pedido 1042</p><p class="ss-stat num">R$ 1.250,00</p></a></div>
+  <div data-estado="grad" data-titulo="ss-card-grad"><div class="ss-card ss-card-grad ss-card-pad">3 compras esperando aprovação</div></div>
+</section>
+
+<section data-comp="ss-badge" data-nome=".ss-badge" data-descricao="Selo em pílula. Sem variante, é neutro com contorno."
+  data-comportamentos='["Cor só semântica: accent, success, danger, warn."]'>
+  <div data-estado="variantes" data-titulo="neutro · accent · success · danger · warn"><span class="ss-badge">Rascunho</span> <span class="ss-badge ss-badge-accent">Enviado</span> <span class="ss-badge ss-badge-success">Pago</span> <span class="ss-badge ss-badge-danger">Vencido</span> <span class="ss-badge ss-badge-warn">Pendente</span></div>
+</section>
+
+<section data-comp="ss-input" data-nome=".ss-input · .ss-label · .ss-check" data-descricao="Campos de formulário: altura 42, raio 12, select com seta própria."
+  data-comportamentos='["Hover tinge a borda com a cor da marca.","Foco: borda na cor da marca e anel de 4 px (--ring).","Arquivo: botão de escolher em pílula suave."]'>
+  <div data-estado="normal" data-titulo="normal"><label class="ss-label">Cliente</label><input class="ss-input" placeholder="Nome ou CPF"></div>
+  <div data-estado="foco" data-titulo="focus" data-acao="focus"><label class="ss-label">Cliente</label><input data-alvo class="ss-input" value="Mercado Bom Preço"></div>
+  <div data-estado="select-check" data-titulo="select · ss-check"><select class="ss-input"><option>À vista</option></select><p style="height:12px"></p><label class="ss-check"><input type="checkbox" checked> Enviar por WhatsApp</label></div>
+</section>
+
+<section data-comp="ss-table" data-nome=".ss-table" data-descricao="Tabela: cabeçalho em caixa alta, linhas com divisória, coluna .r alinhada à direita e números tabulares."
+  data-comportamentos='["Linha tinge no hover e, se tem link, a linha toda clica.",".ss-sort no cabeçalho ordena (seta no lado do alinhamento)."]'>
+  <div data-estado="padrao" data-titulo="dentro de .ss-card"><div class="ss-card"><table class="ss-table"><thead><tr><th>Cliente</th><th class="r">Total</th></tr></thead><tbody><tr><td>Mercado Bom Preço</td><td class="r num">R$ 1.250,00</td></tr><tr><td>Padaria Central</td><td class="r num">R$ 318,40</td></tr></tbody></table></div></div>
+</section>
+
+<section data-comp="ss-hero" data-nome=".ss-hero" data-descricao="Herói com o gradiente da marca, para o número principal da tela."
+  data-comportamentos='["Dois brilhos difusos flutuam devagar (14 s e 18 s).",".ss-progress dentro do herói fica branca.","Tudo para com prefers-reduced-motion."]'>
+  <div data-estado="padrao" data-titulo="com progresso"><div class="ss-hero" style="padding:20px"><p class="ss-kicker">Vendido no mês</p><p class="ss-stat num">R$ 48.320,00</p><p style="height:10px"></p><div class="ss-progress"><div class="ss-progress-bar" style="width:64%"></div></div></div></div>
+</section>
+
+<section data-comp="ss-progress" data-nome=".ss-progress" data-descricao="Trilho + .ss-progress-bar com a largura inline; .ss-progress-mark marca a meta."
+  data-comportamentos='["A largura anima em 0,6 s.","Cor pelo filho: bg-success (meta batida) ou bg-danger (limite estourado)."]'>
+  <div data-estado="padrao" data-titulo="64% com meta em 80%"><div class="ss-progress"><div class="ss-progress-bar" style="width:64%"></div><div class="ss-progress-mark" style="left:80%"></div></div></div>
+  <div data-estado="estouro" data-titulo="estouro (bg-danger)"><div class="ss-progress"><div class="ss-progress-bar bg-danger" style="width:100%"></div></div></div>
+</section>
+
+<section data-comp="ss-flash" data-nome=".ss-flash" data-descricao="Aviso em toast: ícone, texto e barra de tempo embaixo."
+  data-comportamentos='["Entra subindo (0,35 s).","A barra encolhe em 5 s; o flash_controller do produto fecha no fim."]'>
+  <div data-estado="sucesso" data-titulo="sucesso"><div class="ss-flash" style="color:var(--success);background:var(--success-soft)"><svg><use href="#check"/></svg>Pedido salvo.<span class="ss-flash-bar"></span></div></div>
+</section>
+
+<section data-comp="ss-chip" data-nome=".ss-chip" data-descricao="Filtro rápido em pílula."
+  data-comportamentos='["Hover: borda e texto na cor da marca.","aria-current=true: preenchido na cor da marca."]'>
+  <div data-estado="padrao" data-titulo="normal · atual"><a href="#" class="ss-chip">Todos</a> <a href="#" class="ss-chip" aria-current="true">Em aberto</a> <a href="#" class="ss-chip">Pagos</a></div>
+</section>
+
+<section data-comp="ss-empty" data-nome=".ss-empty" data-descricao="Vazio ilustrado: o desenho sai do próprio CSS, sem imagem."
+  data-comportamentos='[".ss-empty-plain tira a ilustração."]'>
+  <div data-estado="padrao" data-titulo="padrão"><div class="ss-card ss-empty">Nenhum pedido no período.</div></div>
+</section>
+
+<section data-comp="ss-nav" data-nome=".ss-side · .ss-nav" data-descricao="Menu lateral escuro (nos dois temas), com grupos em details."
+  data-comportamentos='["Item atual (aria-current=page): pílula em gradiente e barra à esquerda.","Grupos recolhem; a seta gira 90°.",".ss-collapsed no html deixa só os ícones (desktop)."]'>
+  <div data-estado="padrao" data-titulo="item atual e hover" data-acao="hover"><nav class="ss-side ss-nav" style="padding:12px;border-radius:16px;width:260px"><a href="#" aria-current="page"><svg><use href="#check"/></svg>Painel</a><a data-alvo href="#"><svg><use href="#check"/></svg>Pedidos</a><a href="#"><svg><use href="#check"/></svg>Clientes</a></nav></div>
+</section>
+</body>
+</html>
