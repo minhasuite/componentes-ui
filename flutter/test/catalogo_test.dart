@@ -53,12 +53,17 @@ void main() {
               theme: tema == 'claro' ? AppTheme.light : AppTheme.dark,
               home: RepaintBoundary(
                 key: const Key('shot'),
-                child: Scaffold(body: Builder(builder: e.build)),
+                // Chave por estado: senão o Flutter reaproveita o State do anterior.
+                child: Scaffold(
+                  key: ValueKey('${c.slug}/${e.slug}/$tema'),
+                  body: Builder(builder: e.build),
+                ),
               ),
             ),
           );
           // pump fixo: skeleton e ilustração animam para sempre (pumpAndSettle não volta).
-          await tester.pump(const Duration(milliseconds: 400));
+          await tester.pump(); // quadro seguinte: callbacks pós-quadro (ex.: troca de aba)
+          await tester.pump(Duration(milliseconds: e.aguarde));
           await tester.runAsync(GoogleFonts.pendingFonts);
           if (saida == null) continue;
           final b = tester.renderObject<RenderRepaintBoundary>(find.byKey(const Key('shot')));

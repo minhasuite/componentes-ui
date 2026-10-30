@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 class Estado {
-  const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96)});
+  const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
   final String slug;
   final String titulo;
   final WidgetBuilder build;
+
+  /// ms entre montar e capturar (menor = pega uma animação no meio).
+  final int aguarde;
 
   /// Área da captura, em pixels lógicos.
   final Size tamanho;
@@ -30,7 +33,74 @@ Widget _pad(Widget w) => Padding(
 );
 const _tela = Size(360, 780);
 
+const _abas = [
+  SsNavItem(Icons.people_alt_outlined, 'Carteira', activeIcon: Icons.people_alt_rounded),
+  SsNavItem(Icons.receipt_long_outlined, 'Pedidos', activeIcon: Icons.receipt_long_rounded),
+  SsNavItem(Icons.route_outlined, 'Agenda', activeIcon: Icons.route_rounded),
+  SsNavItem(Icons.menu_outlined, 'Mais', activeIcon: Icons.menu_rounded),
+];
+
+/// Tela com conteúdo colorido atrás da barra (o recorte mostra a tela).
+/// Com [para], troca de aba logo depois do 1º quadro.
+class _NavDemo extends StatefulWidget {
+  const _NavDemo(this.inicio, {this.para});
+  final int inicio;
+  final int? para;
+
+  @override
+  State<_NavDemo> createState() => _NavDemoState();
+}
+
+class _NavDemoState extends State<_NavDemo> {
+  late int i = widget.inicio;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.para != null) WidgetsBinding.instance.addPostFrameCallback((_) => setState(() => i = widget.para!));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Scaffold(
+      extendBody: true,
+      body: SizedBox.expand(
+        child: DecoratedBox(
+          decoration: BoxDecoration(gradient: LinearGradient(colors: [c.brandFrom, c.brandTo])),
+        ),
+      ),
+      bottomNavigationBar: SsNavBar(items: _abas, currentIndex: i, onTap: (v) => setState(() => i = v)),
+    );
+  }
+}
+
 final catalogo = <Componente>[
+  Componente(
+    'ss-nav-bar',
+    'SsNavBar',
+    'Barra de abas: o item atual fica num círculo encaixado num recorte curvo da barra. Para o bottomNavigationBar, com Scaffold(extendBody: true).',
+    comportamentos: [
+      'Ao trocar de aba, o recorte e o círculo deslizam até o item novo (420 ms, easeInOutCubic).',
+      'O ícone novo aparece crescendo na segunda metade do deslize; o lugar do item atual na barra fica vazio.',
+      'Troca no meio da animação continua de onde o círculo está, sem pular.',
+      'Toque com haptic leve (selectionClick); tocar na aba atual chama onTap de novo (voltar ao topo).',
+      'Sem animação quando o sistema pede menos movimento.',
+      'Leitor de tela: "Pedidos, aba 2 de 4", com o estado selecionado.',
+      'Escuro: borda de 1 px no lugar da sombra.',
+    ],
+    estados: [
+      Estado('primeira', 'aba 1', (_) => const _NavDemo(0), tamanho: const Size(360, 200)),
+      Estado('terceira', 'aba 3', (_) => const _NavDemo(2), tamanho: const Size(360, 200)),
+      Estado(
+        'trocando',
+        'trocando da 1 para a 3 (meio do deslize)',
+        (_) => const _NavDemo(0, para: 2),
+        tamanho: const Size(360, 200),
+        aguarde: 210,
+      ),
+    ],
+  ),
   Componente(
     'ss-button',
     'SsButton',

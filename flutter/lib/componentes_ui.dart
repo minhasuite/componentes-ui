@@ -17,5 +17,6 @@ export 'src/ss_empty_state.dart';
 export 'src/ss_error_view.dart';
 export 'src/ss_hero.dart';
 export 'src/ss_menu_layout.dart';
+export 'src/ss_nav_bar.dart';
 export 'src/ss_plans_layout.dart';
 export 'src/ss_progress.dart';

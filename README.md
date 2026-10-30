@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.1.0
+      ref: v0.2.0
 ```
 
 ```dart
@@ -41,7 +41,7 @@ static final light = AppTheme.build(Brightness.light, brand: minhaMarca);
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.1.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.2.0"
 ```
 
 ```css
@@ -75,3 +75,4 @@ Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
 - `v0.1.0` (30/10/2026): primeira versão (base: minhas-vendas e meu-gestor).
+- `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
