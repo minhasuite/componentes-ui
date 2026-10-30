@@ -61,10 +61,12 @@ docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w 
 
   Depois do 1º `pub get` o pacote fica no volume `flutter_pub`, e o `--offline` dos
   comandos de cada app volta a funcionar sem a chave.
-- **Webs Rails (quando migrarem):** o secret já está no `minhas-vendas` e no
-  `meu-gestor`. Falta, na migração, o mesmo passo no `ci-cd.yml` (montando a chave
-  no `docker run` da qualidade) e `RUN --mount=type=ssh bundle install` no
-  `Dockerfile.prod` com `docker build --ssh`.
+- **Webs Rails:** secret `COMPONENTES_UI_DEPLOY_KEY` no repo, o mesmo passo no
+  `ci-cd.yml` (a qualidade monta o `$RUNNER_TEMP` e repassa os `GIT_CONFIG_*` ao
+  `docker run`) e, no `Dockerfile.prod`, `git openssh-client` e
+  `RUN --mount=type=secret,id=componentes_ui --mount=type=secret,id=github_known_hosts ... bundle install`
+  com `docker build --secret ...`. Modelo pronto: `minhas-vendas` (o secret também
+  já está no `meu-gestor`). O devcontainer precisa de `openssh-client`.
 
 ## Rails (Tailwind 4, tailwindcss-rails ≥ 4.2)
 
