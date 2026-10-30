@@ -207,6 +207,8 @@
   .ss-empty::before { content: ""; display: block; width: 6.5rem; height: 6.5rem; margin: 0 auto 1rem;
                       background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 112 112'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235A45E8' stop-opacity='.18'/%3E%3Cstop offset='1' stop-color='%233B82F6' stop-opacity='.10'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='56' cy='56' r='40' fill='url(%23g)'/%3E%3Ccircle cx='56' cy='56' r='52' fill='none' stroke='%237B5CFF' stroke-opacity='.25' stroke-dasharray='3 7'/%3E%3Ccircle cx='14' cy='40' r='4' fill='%237B5CFF' fill-opacity='.55'/%3E%3Ccircle cx='100' cy='74' r='3' fill='%233B82F6' fill-opacity='.55'/%3E%3Ccircle cx='86' cy='16' r='2.5' fill='%2334D399' fill-opacity='.7'/%3E%3Crect x='36' y='36' width='40' height='40' rx='12' fill='white'/%3E%3Cpath d='M47 57h18M47 51h18M47 63h10' stroke='%235A45E8' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 12px 24px rgba(90, 69, 232, .18)); }
   .ss-empty.ss-empty-plain::before { display: none; }
+  /* Quadro em colunas (pedidos, OS, fases). Colunas fixas: auto-cols-[18rem] items-start. */
+  .ss-kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 1rem; overflow-x: auto; }
   .ss-grad { background: var(--grad); color: #fff; }
   .ss-grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .ss-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 999px; font-size: .82rem;

@@ -21,8 +21,9 @@ class SsNavItem {
 /// Barra de abas com o item atual num círculo encaixado num recorte da barra.
 /// Ao trocar de aba, o recorte e o círculo deslizam até o item novo.
 ///
-/// Use no `bottomNavigationBar` com `Scaffold(extendBody: true)`: o recorte
-/// mostra o conteúdo da tela por trás (sem isso aparece o fundo do Scaffold).
+/// Use no `bottomNavigationBar`. Sem `extendBody` o recorte mostra o fundo da
+/// tela (o comum); com `Scaffold(extendBody: true)` o conteúdo passa por trás,
+/// mas as listas das abas precisam reservar a altura da barra.
 class SsNavBar extends StatefulWidget {
   const SsNavBar({super.key, required this.items, required this.currentIndex, required this.onTap})
     : assert(items.length >= 2);
