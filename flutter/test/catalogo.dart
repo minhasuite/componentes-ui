@@ -4,6 +4,12 @@
 import 'package:flutter/material.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
+import 'catalogo_onda1.dart';
+import 'catalogo_onda2.dart';
+import 'catalogo_onda3.dart';
+import 'catalogo_onda4.dart';
+import 'catalogo_extras.dart';
+
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
   final String slug;
@@ -749,6 +755,11 @@ final catalogo = <Componente>[
       ),
     ],
   ),
+  ...catalogoOnda1,
+  ...catalogoOnda2,
+  ...catalogoOnda3,
+  ...catalogoOnda4,
+  ...catalogoExtras,
 ];
 
 const _verde = SsBrand(

@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   # Manrope + DM Mono, empacotadas aqui (assets/google_fonts): o app não precisa de cópia.
   google_fonts: ^6.2.1
+  # AsyncValue do SsAsyncBody (todos os apps da suíte usam Riverpod 2).
+  flutter_riverpod: ^2.5.1
 
 dev_dependencies:
   flutter_test:
