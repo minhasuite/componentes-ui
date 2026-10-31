@@ -258,12 +258,20 @@ class _LinePainter extends CustomPainter {
   final Color guide, ink, surface;
   final TextStyle axis;
 
-  void _text(Canvas canvas, String s, Offset at, {TextStyle? style, double alignX = 0}) {
+  void _text(Canvas canvas, String s, Offset at, {TextStyle? style, double alignX = 0, bool chip = false}) {
     final tp = TextPainter(
       text: TextSpan(text: s, style: style ?? axis),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, at - Offset(tp.width * alignX, 0));
+    final o = at - Offset(tp.width * alignX, 0);
+    // Rótulo sobre as linhas: pílula da cor da superfície para não se misturar com elas.
+    if (chip) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius((o & tp.size).inflate(3), const Radius.circular(6)),
+        Paint()..color = surface.withValues(alpha: .88),
+      );
+    }
+    tp.paint(canvas, o);
   }
 
   @override
@@ -280,7 +288,6 @@ class _LinePainter extends CustomPainter {
       ..strokeWidth = 1;
     for (final v in [lo, (lo + hi) / 2, hi]) {
       canvas.drawLine(Offset(0, y(v)), Offset(size.width, y(v)), fina);
-      _text(canvas, format(v), Offset(_side, y(v) - 13));
     }
     // Eixo X: até 4 rótulos espaçados (primeiro e último sempre).
     if (n > 0) {
@@ -299,13 +306,6 @@ class _LinePainter extends CustomPainter {
       for (var dx = 0.0; dx < size.width; dx += 8) {
         canvas.drawLine(Offset(dx, ty), Offset(math.min(dx + 4, size.width), ty), tr);
       }
-      _text(
-        canvas,
-        '$targetLabel ${format(target!)}',
-        Offset(size.width - _side, ty - 13),
-        style: axis.copyWith(color: ink),
-        alignX: 1,
-      );
     }
     // Linhas, reveladas da esquerda para a direita.
     canvas.save();
@@ -340,6 +340,20 @@ class _LinePainter extends CustomPainter {
       );
     }
     canvas.restore();
+    // Rótulos por cima das linhas (valor de cada guia e o alvo).
+    for (final v in [lo, (lo + hi) / 2, hi]) {
+      _text(canvas, format(v), Offset(_side, y(v) - 13), chip: true);
+    }
+    if (target != null) {
+      _text(
+        canvas,
+        '$targetLabel ${format(target!)}',
+        Offset(size.width - _side, y(target!) - 15),
+        style: axis.copyWith(color: ink),
+        alignX: 1,
+        chip: true,
+      );
+    }
     // Scrub: linha vertical e um ponto em cada série.
     final s = sel;
     if (s != null) {
