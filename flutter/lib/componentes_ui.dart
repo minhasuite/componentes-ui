@@ -24,5 +24,6 @@ export 'src/ss_menu_layout.dart';
 export 'src/ss_nav_bar.dart';
 export 'src/ss_plans_layout.dart';
 export 'src/ss_progress.dart';
+export 'src/ss_sheet.dart';
 export 'src/ss_stat.dart';
 export 'src/ss_toast.dart';

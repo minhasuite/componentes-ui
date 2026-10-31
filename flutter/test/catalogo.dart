@@ -7,6 +7,7 @@ import 'package:componentes_ui/componentes_ui.dart';
 import 'catalogo_onda1.dart';
 import 'catalogo_onda2.dart';
 import 'catalogo_onda3.dart';
+import 'catalogo_onda3b.dart';
 import 'catalogo_onda4.dart';
 import 'catalogo_extras.dart';
 
@@ -758,6 +759,7 @@ final catalogo = <Componente>[
   ...catalogoOnda1,
   ...catalogoOnda2,
   ...catalogoOnda3,
+  ...catalogoOnda3b,
   ...catalogoOnda4,
   ...catalogoExtras,
 ];
