@@ -181,16 +181,6 @@ final catalogo = <Componente>[
     ],
   ),
   Componente(
-    'ss-progress',
-    'SsProgress',
-    'Barra de progresso em pílula, de 0 a 1.',
-    comportamentos: ['Em 100% vira verde (sucesso). Para limite estourado, passe color: danger.'],
-    estados: [
-      Estado('meio', '50%', (_) => _pad(const SsProgress(.5)), tamanho: const Size(360, 48)),
-      Estado('cheio', '100%', (_) => _pad(const SsProgress(1)), tamanho: const Size(360, 48)),
-    ],
-  ),
-  Componente(
     'ss-hero',
     'SsHeroCard',
     'Herói com o gradiente da marca: rótulo, número grande em DM Mono, legenda e selos.',
