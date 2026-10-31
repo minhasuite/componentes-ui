@@ -50,6 +50,8 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               debugShowCheckedModeBanner: false,
+              // Sem transição de tema: senão o 1º quadro do escuro sai com cores do claro.
+              themeAnimationDuration: Duration.zero,
               theme: tema == 'claro' ? AppTheme.light : AppTheme.dark,
               home: RepaintBoundary(
                 key: const Key('shot'),

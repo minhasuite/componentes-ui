@@ -79,11 +79,13 @@ final catalogo = <Componente>[
   Componente(
     'ss-nav-bar',
     'SsNavBar',
-    'Barra de abas: o item atual fica num círculo encaixado num recorte curvo da barra. Para o bottomNavigationBar, com Scaffold(extendBody: true).',
+    'Barra de abas: o item atual fica num círculo encaixado num recorte curvo da barra. Vai no bottomNavigationBar (extendBody opcional).',
     comportamentos: [
-      'Ao trocar de aba, o recorte e o círculo deslizam até o item novo (420 ms, easeInOutCubic).',
-      'O ícone novo aparece crescendo na segunda metade do deslize; o lugar do item atual na barra fica vazio.',
-      'Troca no meio da animação continua de onde o círculo está, sem pular.',
+      'Ao trocar de aba, o círculo pula em arco até o item novo (640 ms): achata antes de sair, estica na subida e na descida e achata de novo ao pousar.',
+      'Quanto mais longe a aba, mais alto o pulo (20 a 40 px).',
+      'O recorte fica raso enquanto o círculo está no ar, acompanha o voo e afunda um pouco no pouso.',
+      'O ícone novo aparece crescendo (com leve passada) a partir do meio do voo; o lugar do item atual na barra fica vazio.',
+      'Troca no meio do pulo continua de onde o círculo está, sem teleportar.',
       'Toque com haptic leve (selectionClick); tocar na aba atual chama onTap de novo (voltar ao topo).',
       'Sem animação quando o sistema pede menos movimento.',
       'Leitor de tela: "Pedidos, aba 2 de 4", com o estado selecionado.',
@@ -93,11 +95,18 @@ final catalogo = <Componente>[
       Estado('primeira', 'aba 1', (_) => const _NavDemo(0), tamanho: const Size(360, 200)),
       Estado('terceira', 'aba 3', (_) => const _NavDemo(2), tamanho: const Size(360, 200)),
       Estado(
-        'trocando',
-        'trocando da 1 para a 3 (meio do deslize)',
+        'pulando',
+        'da 1 para a 3: no alto do pulo',
         (_) => const _NavDemo(0, para: 2),
         tamanho: const Size(360, 200),
-        aguarde: 210,
+        aguarde: 290,
+      ),
+      Estado(
+        'pousando',
+        'da 1 para a 3: achatando no pouso',
+        (_) => const _NavDemo(0, para: 2),
+        tamanho: const Size(360, 200),
+        aguarde: 540,
       ),
     ],
   ),
@@ -347,4 +356,556 @@ final catalogo = <Componente>[
       ),
     ],
   ),
+  Componente(
+    'vitrine',
+    'Tela de exemplo',
+    'Os componentes novos juntos: fundo com aurora fraca, um só cartão de luz, indicadores em bento, filtros e lista. É a referência de composição.',
+    comportamentos: [
+      'Um único momento de luz por tela (o SsAuroraCard); o resto é superfície calma.',
+      'Números em DM Mono, centavos menores; cor só no que tem sentido (variação, destaque de hoje).',
+      'Movimento curto e de mola; nada contínuo além da deriva da aurora.',
+    ],
+    estados: [Estado('padrao', 'carteira do vendedor', (_) => const _Vitrine(), tamanho: _tela, aguarde: 1100)],
+  ),
+  Componente(
+    'ss-aurora-card',
+    'SsAuroraCard',
+    'O momento de luz da tela: base escura da marca, manchas de aurora num canto e grão fino. Texto sempre claro. Um por tela.',
+    comportamentos: [
+      'As cores saem da marca (SsBrand): clara, principal e uma vizinha fria; cada produto tem a sua aurora.',
+      'As manchas derivam devagar (14 s, ida e volta); param com menos movimento ou animate: false.',
+      'Encolhe para 0,97 ao toque quando tem onTap.',
+      'Grão de 7% numa camada própria: a deriva não repinta o texto.',
+    ],
+    estados: [
+      Estado('padrao', 'saldo do mês', (_) => _pad(const _AuroraDemo()), tamanho: const Size(360, 230)),
+      Estado(
+        'verde',
+        'outra marca (SsBrand do cultivo)',
+        (ctx) => Theme(
+          data: AppTheme.build(Theme.of(ctx).brightness, brand: _verde),
+          child: _pad(const _AuroraDemo()),
+        ),
+        tamanho: const Size(360, 230),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-aurora-background',
+    'SsAuroraBackground',
+    'Fundo de tela com a aurora bem fraca (10% no claro, 16% no escuro) só no topo, sumindo para baixo. Vai num Stack atrás do conteúdo.',
+    comportamentos: ['Parado (sem animação).', 'Não recebe toque (IgnorePointer).'],
+    estados: [
+      Estado(
+        'padrao',
+        'topo de uma tela',
+        (ctx) => Stack(
+          fit: StackFit.expand,
+          children: [
+            const SsAuroraBackground(height: 300),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+              child: Text('Bom dia, Ana', style: Theme.of(ctx).textTheme.headlineSmall),
+            ),
+          ],
+        ),
+        tamanho: const Size(360, 260),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-stat-card',
+    'SsStatCard',
+    'Indicador: rótulo, número grande em DM Mono (centavos menores), variação e minigráfico encostado na base.',
+    comportamentos: [
+      'A variação é colorida pelo sentido (bom/ruim), não pelo sinal.',
+      'O minigráfico se desenha da esquerda para a direita (700 ms).',
+      'Encolhe para 0,97 ao toque quando tem onTap.',
+      'No escuro, borda de 1 px.',
+    ],
+    estados: [
+      Estado(
+        'completo',
+        'com variação e minigráfico',
+        (_) => _pad(
+          SizedBox(
+            width: 200,
+            child: SsStatCard(
+              label: 'Vendido na semana',
+              icon: Icons.trending_up_rounded,
+              value: r'R$ 18.420,50',
+              delta: const SsDelta('12%', up: true),
+              spark: const [8, 9, 7, 11, 10, 13, 12, 15, 14, 18],
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 230),
+        aguarde: 900,
+      ),
+      Estado(
+        'despesa',
+        'despesa que caiu (bom)',
+        (_) => _pad(
+          const SizedBox(
+            width: 200,
+            child: SsStatCard(
+              label: 'Gastos do mês',
+              value: r'R$ 2.310,00',
+              delta: SsDelta('8%', up: false, good: true),
+              caption: 'vs. setembro',
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 160),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-amount',
+    'SsAmount · SsDelta',
+    'Valor em DM Mono com os centavos menores e apagados; variação numa pílula colorida pelo sentido.',
+    comportamentos: [
+      'Sem ",dd" no fim, mostra o texto inteiro.',
+      'SsDelta: good verde, ruim vermelho, null neutro; onDark para usar sobre a aurora.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'valor e as três variações',
+        (_) => _pad(
+          const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SsAmount(r'R$ 12.480,90'),
+              SizedBox(height: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SsDelta('12%', up: true),
+                  SizedBox(width: 8),
+                  SsDelta('4%', up: true, good: false),
+                  SizedBox(width: 8),
+                  SsDelta('0%', up: true, good: null),
+                ],
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 130),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-sparkline',
+    'SsSparkline',
+    'Linha sem eixo, curva suave, preenchimento que some para baixo e um ponto no último valor.',
+    comportamentos: ['Desenha-se da esquerda para a direita ao aparecer (700 ms).', 'Cor: a da marca, ou color.'],
+    estados: [
+      Estado(
+        'padrao',
+        'padrão',
+        (_) => _pad(const SsSparkline([3, 4, 3.5, 5, 4.6, 6, 5.4, 7, 6.8, 8.5], height: 60)),
+        tamanho: const Size(360, 100),
+        aguarde: 900,
+      ),
+    ],
+  ),
+  Componente(
+    'ss-rings',
+    'SsRings',
+    'Anéis concêntricos (até 3) com ponta arredondada sobre a trilha da mesma cor a 14%; o número vai no centro.',
+    comportamentos: [
+      'Preenchem em cascata ao aparecer: 700 ms cada, 80 ms entre eles.',
+      'Sem cor, usam as cores da aurora da marca.',
+      'Valor acima de 1 = anel cheio.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'meta, visitas e positivação',
+        (ctx) => _pad(
+          SsRings(
+            const [SsRing(.72), SsRing(.5), SsRing(.88)],
+            size: 150,
+            center: Text('72%', style: AppTheme.number(ctx, size: 22)),
+          ),
+        ),
+        tamanho: const Size(360, 190),
+        aguarde: 1000,
+      ),
+    ],
+  ),
+  Componente(
+    'ss-pill-bars',
+    'SsPillBars',
+    'Barras em pílula (7 a 12 colunas): a de hoje na cor da marca, as outras a 22%.',
+    comportamentos: [
+      'Crescem de baixo ao aparecer, com uma leve passada (easeOutBack).',
+      'Tocar numa barra mostra o valor em cima dela (format); sem toque, mostra o de hoje.',
+      'Leitor de tela lê rótulo e valor de cada barra.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'vendas da semana',
+        (_) => _pad(
+          SsPillBars(
+            values: const [8.2, 12.5, 9.1, 15.8, 11.2, 6.4, 13.9],
+            labels: const ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'],
+            format: (v) => '${v.toStringAsFixed(1).replaceAll('.', ',')} mil',
+          ),
+        ),
+        tamanho: const Size(360, 170),
+        aguarde: 900,
+      ),
+    ],
+  ),
+  Componente(
+    'ss-segmented',
+    'SsSegmented',
+    'Seletor de 2 a 4 opções: trilha afundada e uma pílula que desliza com mola até a escolhida.',
+    comportamentos: [
+      'Deslize de 340 ms com leve passada (easeOutBack); haptic selectionClick.',
+      'Texto da escolhida na cor da marca, em 800.',
+      'No escuro a pílula é mais clara que a trilha.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'período',
+        (_) => _pad(SsSegmented(segments: const [(0, 'Dia'), (1, 'Semana'), (2, 'Mês')], value: 1, onChanged: (_) {})),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-filter-chip',
+    'SsFilterChip · SsChipBar',
+    'Filtros em pílula numa faixa que rola na horizontal; marcado ganha ✓ e o tom da marca.',
+    comportamentos: [
+      'O ✓ entra crescendo (220 ms, easeOutBack) e empurra o texto.',
+      'Encolhe para 0,97 ao toque, com haptic leve.',
+      'Contador opcional em DM Mono.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'um marcado',
+        (_) => Center(
+          child: SsChipBar(
+            children: [
+              SsFilterChip('Todos', selected: false, onTap: _nada, count: 48),
+              SsFilterChip('Com vencido', selected: true, onTap: _nada, count: 6),
+              SsFilterChip('Sem compra', selected: false, onTap: _nada),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-search-field',
+    'SsSearchField',
+    'Busca afundada, sem borda; no foco ganha anel e halo na cor da marca e o fundo vira superfície.',
+    comportamentos: ['Botão de limpar quando há texto.', 'Teclado com a tecla "buscar".'],
+    estados: [
+      Estado('padrao', 'em repouso', (_) => _pad(const SsSearchField(hint: 'Nome, cidade ou CNPJ'))),
+      Estado(
+        'foco',
+        'com foco e texto',
+        (_) => _pad(
+          SsSearchField(
+            hint: 'Buscar',
+            autofocus: true,
+            controller: TextEditingController(text: 'mercado'),
+          ),
+        ),
+        aguarde: 300,
+      ),
+    ],
+  ),
+  Componente(
+    'ss-list-item',
+    'SsListItem · SsGroupHeader',
+    'Item de lista com ícone num quadrado tonal, título, subtítulo e valor em DM Mono à direita; cabeçalho de grupo com total.',
+    comportamentos: [
+      'tone pinta o quadrado (14%) e o ícone; sem ele, a cor da marca.',
+      'leading troca o ícone por outro widget (ex.: SsAvatar).',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'grupo "hoje"',
+        (ctx) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SsGroupHeader('Hoje', trailing: r'R$ 3.412,40'),
+              SsListItem(
+                icon: Icons.receipt_long_rounded,
+                title: 'Pedido 1042',
+                subtitle: 'Mercado Bom Preço',
+                value: r'R$ 1.250,00',
+                valueCaption: '10:42',
+                onTap: _nada,
+              ),
+              SsListItem(
+                leading: const SsAvatar('Padaria Central', status: AppColors.success),
+                title: 'Padaria Central',
+                subtitle: 'Visita feita · com pedido',
+                value: r'R$ 318,40',
+                valueColor: SsColors.of(ctx).successText,
+                onTap: _nada,
+              ),
+              SsListItem(
+                icon: Icons.warning_amber_rounded,
+                tone: AppColors.danger,
+                title: 'Título vencido',
+                subtitle: 'Carlos Souza · 3 dias',
+                value: r'R$ 68,48',
+                valueColor: SsColors.of(ctx).dangerText,
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 260),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-avatar',
+    'SsAvatar · SsAvatarStack',
+    'Iniciais sobre um gradiente que sai do nome (sempre a mesma cor para o mesmo nome, na família da marca), com ponto de status.',
+    comportamentos: [
+      'Cinco vizinhos de matiz da marca; a cor não muda entre execuções.',
+      'Anel da cor da página para empilhar (−8) com "+N" em DM Mono.',
+      'Leitor de tela lê o nome, não as iniciais.',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'avatares e pilha',
+        (_) => _pad(
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SsAvatar('Ana Souza', size: 48, status: AppColors.success),
+              SizedBox(width: 10),
+              SsAvatar('Bruno Lima', size: 48),
+              SizedBox(width: 10),
+              SsAvatar('Carla', size: 48, status: AppColors.danger),
+              SizedBox(width: 24),
+              SsAvatarStack(['Ana Souza', 'Bruno Lima', 'Carla Dias', 'Davi Melo', 'Eva Rocha']),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-toast',
+    'SsToast · showSsToast',
+    'Aviso em pílula escura (igual nos dois temas) com ícone, texto curto e "Desfazer" na cor da marca.',
+    comportamentos: [
+      'Sobe de baixo com mola (420 ms) acima da barra de abas e some sozinho em 4 s.',
+      'Um novo substitui o anterior; tocar na ação fecha.',
+      'Leitor de tela anuncia o texto (liveRegion).',
+    ],
+    estados: [
+      Estado(
+        'padrao',
+        'com ação',
+        (_) => _pad(
+          SsToast(
+            'Pedido salvo na fila',
+            icon: Icons.check_circle_rounded,
+            tone: AppColors.success,
+            actionLabel: 'Desfazer',
+            onAction: _nada,
+          ),
+        ),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-seal',
+    'SsSeal',
+    'Selo de destaque pontual: contorno firme e sombra deslocada sem desfoque. No máximo um por tela.',
+    comportamentos: ['Texto em caixa alta, 800.', 'Para "Novo", "Meta batida", "Top 1".'],
+    estados: [
+      Estado(
+        'padrao',
+        'padrão',
+        (_) => _pad(
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SsSeal('Novo'),
+              SizedBox(width: 12),
+              SsSeal('Meta batida', icon: Icons.bolt_rounded),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
 ];
+
+const _verde = SsBrand(
+  accentLight: Color(0xFF1F9D6B),
+  accentHoverLight: Color(0xFF17845A),
+  accentSoftLight: Color(0xFFE3F5EC),
+  accentDark: Color(0xFF4FD19A),
+  accentSoftDark: Color(0xFF15372A),
+  brandFrom: Color(0xFF3CC48A),
+  brandTo: Color(0xFF1F9D6B),
+  brandDeep: Color(0xFF0F5C3E),
+);
+
+class _AuroraDemo extends StatelessWidget {
+  const _AuroraDemo();
+
+  @override
+  Widget build(BuildContext context) => SsAuroraCard(
+    animate: false,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'Vendido em outubro',
+              style: TextStyle(fontSize: AppType.sub, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            SsDelta('18%', up: true, onDark: true),
+          ],
+        ),
+        const SizedBox(height: 10),
+        const SsAmount(r'R$ 108.543,85', size: 32, color: AppColors.onDark),
+        const SizedBox(height: 6),
+        Text(
+          'Meta de R\$ 120 mil · faltam 9 dias',
+          style: TextStyle(fontSize: AppType.meta, color: AppColors.onDark.withValues(alpha: .75)),
+        ),
+        const SizedBox(height: 14),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          child: LinearProgressIndicator(
+            value: .9,
+            minHeight: 6,
+            backgroundColor: AppColors.onDark.withValues(alpha: .18),
+            color: AppColors.onDark,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Vitrine extends StatefulWidget {
+  const _Vitrine();
+
+  @override
+  State<_Vitrine> createState() => _VitrineState();
+}
+
+class _VitrineState extends State<_Vitrine> {
+  int periodo = 1;
+  int filtro = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Stack(
+      children: [
+        const SsAuroraBackground(),
+        ListView(
+          padding: const EdgeInsets.fromLTRB(16, 28, 16, 24),
+          children: [
+            Row(
+              children: [
+                const SsAvatar('Ana Souza', size: 44, status: AppColors.success),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sexta, 31 de outubro',
+                        style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                      ),
+                      Text(
+                        'Bom dia, Ana',
+                        style: TextStyle(color: c.ink, fontSize: AppType.headerTitle, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+                const SsSeal('Top 3'),
+              ],
+            ),
+            const SizedBox(height: 18),
+            const _AuroraDemo(),
+            const SizedBox(height: 14),
+            SsSegmented(
+              segments: const [(0, 'Hoje'), (1, 'Semana'), (2, 'Mês')],
+              value: periodo,
+              onChanged: (v) => setState(() => periodo = v),
+            ),
+            const SizedBox(height: 14),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: SsStatCard(
+                    label: 'Pedidos',
+                    icon: Icons.receipt_long_rounded,
+                    value: '38',
+                    delta: SsDelta('9%', up: true),
+                    spark: [3, 5, 4, 6, 5, 7, 8],
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: SsStatCard(
+                    label: 'Ticket médio',
+                    icon: Icons.sell_rounded,
+                    value: r'R$ 484,70',
+                    delta: SsDelta('3%', up: false),
+                    spark: [6, 5.5, 6.2, 5.8, 5.1, 5.3, 4.9],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            SsChipBar(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              children: [
+                for (final (i, nome, n) in const [(0, 'Todos', 48), (1, 'Com vencido', 6), (2, 'Sem compra', 11)])
+                  SsFilterChip(nome, selected: filtro == i, count: n, onTap: () => setState(() => filtro = i)),
+              ],
+            ),
+            const SsGroupHeader('Visitas de hoje', trailing: '3 de 5'),
+            SsListItem(
+              leading: const SsAvatar('Mercado Bom Preço', status: AppColors.success),
+              title: 'Mercado Bom Preço',
+              subtitle: 'Asa Sul · com pedido',
+              value: r'R$ 1.250,00',
+              valueCaption: '09:10',
+              onTap: _nada,
+            ),
+            SsListItem(
+              leading: const SsAvatar('Padaria Central'),
+              title: 'Padaria Central',
+              subtitle: 'Taguatinga · 14:00',
+              value: 'agendada',
+              valueColor: c.muted,
+              onTap: _nada,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

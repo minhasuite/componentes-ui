@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Aba "Mais" padrão da suíte (o modelo é o menu do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
@@ -271,7 +272,7 @@ class _SsMenuViewState extends State<SsMenuView> {
               backgroundColor: s.error,
               foregroundColor: s.onError,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
         ),
@@ -286,7 +287,7 @@ class _SsMenuViewState extends State<SsMenuView> {
               foregroundColor: s.onSurface,
               side: BorderSide(color: s.outlineVariant),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
         ),

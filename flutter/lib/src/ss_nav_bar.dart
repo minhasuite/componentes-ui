@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ class SsNavItem {
 }
 
 /// Barra de abas com o item atual num círculo encaixado num recorte da barra.
-/// Ao trocar de aba, o recorte e o círculo deslizam até o item novo.
+/// Ao trocar de aba, o círculo pula em arco até o item novo: achata antes de
+/// sair, estica no ar e achata de novo ao pousar; o recorte fica raso enquanto
+/// ele está no ar e afunda quando ele pousa.
 ///
 /// Use no `bottomNavigationBar`. Sem `extendBody` o recorte mostra o fundo da
 /// tela (o comum); com `Scaffold(extendBody: true)` o conteúdo passa por trás,
@@ -45,16 +48,26 @@ class SsNavBar extends StatefulWidget {
   State<SsNavBar> createState() => _SsNavBarState();
 }
 
+/// Onde o círculo está num instante do pulo.
+typedef _Pose = ({double x, double lift, double squash, double notch});
+
 class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 420), value: 1);
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 640), value: 1);
   late double _from = widget.currentIndex.toDouble();
+  double _fromLift = 0;
+
+  // Fases do pulo, em fração da duração.
+  static const _takeoff = .16; // fim da preparação (achatar)
+  static const _land = .74; // pouso
 
   @override
   void didUpdateWidget(SsNavBar old) {
     super.didUpdateWidget(old);
     if (old.currentIndex == widget.currentIndex) return;
-    // Começa de onde o círculo está agora (troca no meio da animação não pula).
-    _from = _pos(old.currentIndex);
+    // Começa de onde o círculo está (troca no meio do pulo não teleporta).
+    final p = _pose(old.currentIndex);
+    _from = p.x;
+    _fromLift = p.lift;
     if (reduceMotion(context)) {
       _c.value = 1;
     } else {
@@ -68,7 +81,25 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  double _pos(int target) => lerpDouble(_from, target.toDouble(), Curves.easeInOutCubic.transform(_c.value))!;
+  _Pose _pose(int target) {
+    final t = _c.value;
+    final dist = (target - _from).abs();
+    if (dist == 0 && _fromLift == 0) return (x: _from, lift: 0, squash: 0, notch: 1);
+    // Mais longe, pulo mais alto (até 40 px).
+    final height = math.min(20 + 7 * dist, 40.0);
+    final f = ((t - _takeoff) / (_land - _takeoff)).clamp(0.0, 1.0);
+    final l = ((t - _land) / (1 - _land)).clamp(0.0, 1.0);
+    final x = lerpDouble(_from, target.toDouble(), Curves.easeInOutSine.transform(f))!;
+    final arc = math.sin(math.pi * f);
+    final lift = height * arc + _fromLift * (1 - Curves.easeOut.transform(f)) - 3 * math.sin(math.pi * l);
+    // squash < 0 achata, > 0 estica. Preparação, estica na subida/descida, pouso.
+    final prep = t < _takeoff ? -.14 * math.sin(math.pi * t / _takeoff) : 0.0;
+    final air = .16 * arc * math.cos(math.pi * f).abs();
+    final landing = -.16 * math.sin(math.pi * l) * (1 - .5 * l);
+    // O recorte fecha até 60% com o círculo no ar e afunda um pouco no pouso.
+    final notch = 1 - .6 * arc + .08 * math.sin(math.pi * l);
+    return (x: x, lift: lift, squash: prep + air + landing, notch: notch);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,16 +114,17 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
           return AnimatedBuilder(
             animation: _c,
             builder: (context, _) {
-              final cx = slot * (_pos(widget.currentIndex) + .5);
-              // O ícone novo aparece na segunda metade do deslize.
-              final iconIn = Curves.easeOut.transform(((_c.value - .4) / .6).clamp(0.0, 1.0));
+              final p = _pose(widget.currentIndex);
+              final cx = slot * (p.x + .5);
+              // O ícone novo aparece crescendo a partir do meio do voo.
+              final iconIn = Curves.easeOutBack.transform(((_c.value - .4) / .45).clamp(0.0, 1.0));
               final current = widget.items[widget.currentIndex];
               return Stack(
                 clipBehavior: Clip.none,
                 children: [
                   Positioned.fill(
                     child: CustomPaint(
-                      painter: _BarPainter(color: c.surface, line: c.line, cx: cx, dark: c.isDark),
+                      painter: _BarPainter(color: c.surface, line: c.line, cx: cx, dark: c.isDark, depth: p.notch),
                     ),
                   ),
                   Positioned(
@@ -120,17 +152,25 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                   ),
                   Positioned(
                     left: cx - SsNavBar._circle / 2,
-                    top: SsNavBar.rise + _BarPainter.dip - SsNavBar._circle / 2,
+                    top: SsNavBar.rise + _BarPainter.dip - SsNavBar._circle / 2 - p.lift,
                     child: IgnorePointer(
-                      child: Container(
-                        width: SsNavBar._circle,
-                        height: SsNavBar._circle,
-                        decoration: BoxDecoration(color: c.surface, shape: BoxShape.circle, boxShadow: c.primaryShadow),
-                        child: Opacity(
-                          opacity: iconIn,
-                          child: Transform.scale(
-                            scale: .6 + .4 * iconIn,
-                            child: Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
+                      child: Transform(
+                        alignment: Alignment.bottomCenter,
+                        transform: Matrix4.diagonal3Values(1 - p.squash * .8, 1 + p.squash, 1),
+                        child: Container(
+                          width: SsNavBar._circle,
+                          height: SsNavBar._circle,
+                          decoration: BoxDecoration(
+                            color: c.surface,
+                            shape: BoxShape.circle,
+                            boxShadow: c.primaryShadow,
+                          ),
+                          child: Opacity(
+                            opacity: iconIn.clamp(0.0, 1.0),
+                            child: Transform.scale(
+                              scale: .5 + .5 * iconIn,
+                              child: Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
+                            ),
                           ),
                         ),
                       ),
@@ -197,12 +237,15 @@ class _Tab extends StatelessWidget {
 
 /// A barra com o recorte em U centrado em [cx].
 class _BarPainter extends CustomPainter {
-  _BarPainter({required this.color, required this.line, required this.cx, required this.dark});
+  _BarPainter({required this.color, required this.line, required this.cx, required this.dark, this.depth = 1});
 
   final Color color;
   final Color line;
   final double cx;
   final bool dark;
+
+  /// 1 = recorte inteiro; menor = mais raso (círculo no ar).
+  final double depth;
 
   /// O centro do círculo fica esta distância abaixo da borda da barra.
   static const dip = 4.0;
@@ -217,7 +260,7 @@ class _BarPainter extends CustomPainter {
       ..moveTo(0, top)
       ..lineTo(cx - r - s, top)
       ..cubicTo(cx - r - s * .25, top, cx - r, top + dip * .2, cx - r, cy)
-      ..arcToPoint(Offset(cx + r, cy), radius: const Radius.circular(r), clockwise: false)
+      ..arcToPoint(Offset(cx + r, cy), radius: Radius.elliptical(r, r * depth), clockwise: false)
       ..cubicTo(cx + r, top + dip * .2, cx + r + s * .25, top, cx + r + s, top)
       ..lineTo(size.width, top);
     final bar = Path.from(edge)
@@ -239,5 +282,5 @@ class _BarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BarPainter old) => old.cx != cx || old.color != color || old.dark != dark;
+  bool shouldRepaint(_BarPainter old) => old.cx != cx || old.depth != depth || old.color != color || old.dark != dark;
 }

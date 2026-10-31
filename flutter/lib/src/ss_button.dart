@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion.dart';
 
 enum SsButtonVariant { primary, ghost, success, danger }
 
@@ -75,21 +76,36 @@ class SsButton extends StatelessWidget {
       );
     }
 
-    return Opacity(
-      opacity: enabled ? 1 : 0.5,
-      child: Container(
-        height: height,
-        width: expand ? double.infinity : null,
-        decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
-        child: Material(
-          color: bg,
-          borderRadius: radius,
-          child: InkWell(
-            onTap: enabled ? onPressed : null,
+    return SsPressable(
+      enabled: enabled,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          height: height,
+          width: expand ? double.infinity : null,
+          decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
+          // Brilho de 1 px no topo dos botões sólidos (volume sem gradiente).
+          foregroundDecoration: variant == SsButtonVariant.ghost
+              ? null
+              : BoxDecoration(
+                  borderRadius: radius,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.white.withValues(alpha: .22), Colors.white.withValues(alpha: 0)],
+                    stops: const [0, .08],
+                  ),
+                ),
+          child: Material(
+            color: bg,
             borderRadius: radius,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: small ? 12 : 18),
-              child: Center(child: content),
+            child: InkWell(
+              onTap: enabled ? onPressed : null,
+              borderRadius: radius,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: small ? 12 : 18),
+                child: Center(child: content),
+              ),
             ),
           ),
         ),

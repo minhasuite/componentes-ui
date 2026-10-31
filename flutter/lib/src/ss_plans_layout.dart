@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Tela de planos padrão da suíte. Arquivo idêntico em todos os apps: só usa o
 // ColorScheme, então não depende dos tokens de cada um. Ao mudar aqui, copie
@@ -341,7 +342,7 @@ class SsPlanCard extends StatelessWidget {
                   backgroundColor: color,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  textStyle: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
                 child: o.busy
                     ? const SizedBox(

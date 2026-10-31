@@ -312,7 +312,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
 
 /* Esconder valores: borra dinheiro e gráficos ([data-privacy="on"] no <html>). */
 .money { white-space: nowrap; }
-[data-privacy="on"] .money, [data-privacy="on"] [data-controller~="count-up"], [data-privacy="on"] .ss-chart {
+[data-privacy="on"] .money, [data-privacy="on"] [data-controller~="count-up"], [data-privacy="on"] .ss-chart,
+[data-privacy="on"] .ss-amount, [data-privacy="on"] .ss-spark, [data-privacy="on"] .ss-bars b {
   filter: blur(7px); user-select: none;
 }
 .ss-eye-off, [data-privacy="on"] .ss-eye-on { display: none; }
@@ -324,6 +325,163 @@ th.r .ss-sort { flex-direction: row-reverse; }
 @keyframes ss-float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6%, 8%); } }
 @keyframes ss-shrink { from { width: 100%; } to { width: 0; } }
 @keyframes ss-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── v0.4: componentes "únicos" (pares dos Ss* do Flutter) ───────────────── */
+:root {
+  /* Aurora: saem do --accent (o produto que troca o --accent ganha a sua). */
+  --aurora-1: oklch(from var(--accent) calc(l + .1) c h);
+  --aurora-2: var(--accent);
+  --aurora-3: oklch(from var(--accent) .68 c calc(h - 32));
+  --aurora-base: color-mix(in oklab, var(--accent) 22%, #0b0a14);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@layer components {
+  /* Cartão de luz: base escura, aurora num canto, grão. Um por tela. Texto claro. */
+  .ss-aurora { position: relative; isolation: isolate; overflow: hidden; border-radius: 22px; padding: 1.25rem; color: #fff;
+               background: var(--aurora-base); box-shadow: 0 18px 36px -18px color-mix(in oklab, var(--accent) 60%, #000); }
+  .ss-aurora::before { content: ""; position: absolute; inset: -10%; z-index: -2;
+    background: radial-gradient(60% 90% at 88% 8%, var(--aurora-2), transparent 72%),
+                radial-gradient(48% 80% at 102% 98%, var(--aurora-3), transparent 70%),
+                radial-gradient(36% 60% at 52% -12%, var(--aurora-1), transparent 70%);
+    animation: ss-aurora 14s ease-in-out infinite alternate; }
+  .ss-aurora::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain); opacity: .18; mix-blend-mode: overlay; pointer-events: none; }
+  .ss-aurora .ss-muted-on-dark { color: rgba(255, 255, 255, .75); }
+  /* Fundo de tela: aurora fraca só no topo (num elemento vazio no começo do <main>). */
+  .ss-aurora-bg { position: absolute; inset: 0 0 auto 0; height: 360px; z-index: -1; pointer-events: none;
+    background: radial-gradient(50% 70% at 86% 0%, color-mix(in oklab, var(--aurora-2) 10%, transparent), transparent 70%),
+                radial-gradient(40% 60% at 100% 60%, color-mix(in oklab, var(--aurora-3) 10%, transparent), transparent 70%),
+                radial-gradient(35% 50% at 50% -10%, color-mix(in oklab, var(--aurora-1) 10%, transparent), transparent 70%); }
+  [data-theme="dark"] .ss-aurora-bg { opacity: 1.6; }
+
+  /* Valor com centavos menores: <span class="ss-amount">R$ 1.234<small>,56</small></span>. */
+  .ss-amount { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: 2.1rem; line-height: 1; letter-spacing: -.03em; white-space: nowrap; }
+  .ss-amount small { font-size: .58em; opacity: .55; letter-spacing: 0; }
+  /* Variação colorida pelo sentido: .is-good / .is-bad (sem = neutra). */
+  .ss-delta { display: inline-flex; align-items: center; gap: .15rem; padding: .2rem .5rem .2rem .35rem; border-radius: 999px;
+              font-family: var(--font-mono); font-size: .75rem; background: var(--field); color: var(--muted); }
+  .ss-delta svg { width: .85rem; height: .85rem; }
+  .ss-delta.is-good { background: var(--success-soft); color: var(--success); }
+  .ss-delta.is-bad { background: var(--danger-soft); color: var(--danger); }
+  .ss-aurora .ss-delta { background: rgba(255, 255, 255, .16); color: #fff; }
+
+  /* Indicador: rótulo, número, variação e minigráfico na base (.ss-spark encostada). */
+  .ss-stat { display: flex; flex-direction: column; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow-card); overflow: hidden; }
+  .ss-stat-body { padding: .9rem 1rem .25rem; }
+  .ss-stat-body:last-child { padding-bottom: 1rem; }
+  .ss-stat-label { display: flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .82rem; font-weight: 600; margin-bottom: .6rem; }
+  .ss-stat-label svg { width: 1.6rem; height: 1.6rem; padding: .35rem; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
+  .ss-stat .ss-amount { font-size: 1.75rem; }
+  .ss-stat-foot { display: flex; align-items: center; gap: .4rem; margin-top: .5rem; color: var(--muted); font-size: .75rem; }
+
+  /* Minigráfico (helper ss_sparkline): linha que se desenha e área que some. */
+  .ss-spark { display: block; width: 100%; height: 44px; color: var(--accent); overflow: visible;
+              animation: ss-reveal .7s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .ss-spark .line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ss-spark .area { fill: currentColor; opacity: .14; }
+
+  /* Anéis (helper ss_rings): pathLength=100 e --v de 0 a 100; preenchem em cascata. */
+  .ss-rings { position: relative; display: inline-grid; place-items: center; }
+  .ss-rings svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ss-rings circle { fill: none; stroke-width: 11; stroke-linecap: round; }
+  .ss-rings .track { opacity: .14; }
+  .ss-rings .fill { stroke-dasharray: calc(var(--v) * 1px) 100px; animation: ss-ring .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+  .ss-rings > :not(svg) { position: absolute; font-family: var(--font-mono); font-size: 1.35rem; }
+
+  /* Barras em pílula: <div class="ss-bars"><div class="ss-bar is-today" style="--v:.8"><b>13,9 mil</b><i></i><span>dom</span></div>… */
+  .ss-bars { display: flex; align-items: flex-end; gap: .25rem; height: 132px; }
+  .ss-bar { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .35rem; cursor: default; }
+  .ss-bar i { width: 14px; min-height: 6px; height: calc(var(--v) * (100% - 2.6rem)); border-radius: 999px; background: color-mix(in oklab, var(--accent) 22%, transparent);
+              transform-origin: bottom; animation: ss-grow .65s cubic-bezier(.34, 1.56, .64, 1) backwards; transition: background .2s; }
+  .ss-bar b { font: 500 .62rem var(--font-mono); color: var(--ink); opacity: 0; transition: opacity .15s; white-space: nowrap; }
+  .ss-bar span { font-size: .62rem; font-weight: 600; color: var(--muted); }
+  .ss-bar.is-today i, .ss-bar:hover i { background: var(--accent); }
+  .ss-bar.is-today span { color: var(--ink); font-weight: 800; }
+  .ss-bars:not(:hover) .ss-bar.is-today b, .ss-bar:hover b { opacity: 1; }
+
+  /* Seletor com pílula que desliza: filhos com aria-pressed/aria-current="true" (até 4). */
+  .ss-seg { --n: 2; --i: 0; position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 4px; height: 42px;
+            border-radius: 999px; background: var(--field); }
+  .ss-seg:has(> :nth-child(3)) { --n: 3; } .ss-seg:has(> :nth-child(4)) { --n: 4; }
+  .ss-seg:has(> :nth-child(2)[aria-pressed="true"], > :nth-child(2)[aria-current="true"]) { --i: 1; }
+  .ss-seg:has(> :nth-child(3)[aria-pressed="true"], > :nth-child(3)[aria-current="true"]) { --i: 2; }
+  .ss-seg:has(> :nth-child(4)[aria-pressed="true"], > :nth-child(4)[aria-current="true"]) { --i: 3; }
+  .ss-seg::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 999px;
+                    background: var(--surface); box-shadow: 0 1px 3px rgba(20, 22, 40, .12); transform: translateX(calc(var(--i) * 100%));
+                    transition: transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+  [data-theme="dark"] .ss-seg::before { background: color-mix(in oklab, var(--field) 88%, #fff); }
+  .ss-seg > * { position: relative; display: grid; place-items: center; border: 0; background: none; cursor: pointer; text-decoration: none;
+                font-size: .82rem; font-weight: 600; color: var(--muted); transition: color .2s; }
+  .ss-seg > [aria-pressed="true"], .ss-seg > [aria-current="true"] { color: var(--accent); font-weight: 800; }
+
+  /* Filtro em pílula: aria-pressed="true" marca (✓ entra crescendo); <small> = contador. */
+  .ss-fchip { display: inline-flex; align-items: center; height: 34px; padding: 0 .8rem; border-radius: 999px; border: 1px solid var(--line);
+              background: var(--surface); color: var(--ink-2); font-size: .82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+              text-decoration: none; transition: background .2s, border-color .2s, transform .12s; }
+  .ss-fchip:active { transform: scale(.97); }
+  .ss-fchip::before { content: ""; width: 0; height: 1rem; margin-right: 0; background: currentColor; transition: width .22s cubic-bezier(.34, 1.56, .64, 1), margin .22s;
+                      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .ss-fchip[aria-pressed="true"] { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 35%, transparent); color: var(--accent); }
+  .ss-fchip[aria-pressed="true"]::before { width: 1rem; margin-right: .3rem; }
+  .ss-fchip small { margin-left: .4rem; font: 500 .75rem var(--font-mono); color: var(--muted); }
+  .ss-fchip[aria-pressed="true"] small { color: inherit; }
+  .ss-chipbar { display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: none; padding-block: .25rem; }
+
+  /* Busca afundada: <label class="ss-search"><svg/><input type="search"></label>. */
+  .ss-search { display: flex; align-items: center; gap: .5rem; height: 48px; padding: 0 .9rem; border-radius: 14px; background: var(--field);
+               border: 2px solid transparent; color: var(--muted); transition: background .18s, border-color .18s, box-shadow .18s; }
+  .ss-search svg { width: 1.3rem; height: 1.3rem; flex: none; }
+  .ss-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font-weight: 600; font-size: .95rem; }
+  .ss-search:focus-within { background: var(--surface); border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+                            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 12%, transparent); color: var(--accent); }
+
+  /* Item de lista: selo tonal (--tone), título/sub e valor em mono. */
+  .ss-item { --tone: var(--accent); display: flex; align-items: center; gap: .75rem; padding: .6rem .25rem; border-radius: 14px; color: inherit; text-decoration: none; }
+  a.ss-item:hover { background: var(--field); }
+  .ss-item-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: var(--tone);
+                  background: color-mix(in oklab, var(--tone) 14%, transparent); }
+  .ss-item-icon svg { width: 1.3rem; height: 1.3rem; }
+  .ss-item-main { flex: 1; min-width: 0; }
+  .ss-item-main > :first-child { display: block; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-item-main > :nth-child(2) { display: block; font-size: .82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-item-value { text-align: right; font: 500 .95rem var(--font-mono); color: var(--ink); white-space: nowrap; }
+  .ss-item-value small { display: block; margin-top: .2rem; font: .75rem var(--font-sans); color: var(--muted); }
+  .ss-group { display: flex; justify-content: space-between; padding: 1.1rem .25rem .35rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em;
+              text-transform: uppercase; color: var(--muted); }
+  .ss-group > :last-child { font: 500 .75rem var(--font-mono); letter-spacing: 0; text-transform: none; }
+
+  /* Avatar (helper ss_avatar): iniciais sobre gradiente com matiz --h; data-status = ponto. */
+  .ss-avatar { --h: 250; --s: 42px; position: relative; flex: none; display: inline-grid; place-items: center; width: var(--s); height: var(--s);
+               border-radius: 50%; border: 2px solid var(--page); color: #fff; font-weight: 800; font-size: calc(var(--s) * .36); line-height: 1;
+               background: linear-gradient(135deg, hsl(var(--h) 62% 56%), hsl(calc(var(--h) + 20) 58% 40%)); }
+  .ss-avatar[data-status]::after { content: ""; position: absolute; right: -3px; bottom: -3px; width: 30%; height: 30%; border-radius: 50%;
+                                   border: 2px solid var(--page); background: var(--success); }
+  .ss-avatar[data-status="danger"]::after { background: var(--danger); }
+  .ss-avatar[data-status="warn"]::after { background: var(--warn); }
+  .ss-avatars { display: inline-flex; }
+  .ss-avatars > * + * { margin-left: -8px; }
+  .ss-avatars > .more { background: var(--field); color: var(--ink-2); font: 500 calc(var(--s) * .32) var(--font-mono); }
+
+  /* Aviso em pílula escura (igual nos dois temas), sobe com mola. */
+  .ss-toast { display: inline-flex; align-items: center; gap: .65rem; min-height: 52px; padding: .35rem .5rem .35rem 1rem; border-radius: 999px;
+              background: #1a1826; color: #fff; border: 1px solid rgba(255, 255, 255, .08); font-size: .9rem; font-weight: 600;
+              box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .25); animation: ss-toast .42s cubic-bezier(.34, 1.56, .64, 1); }
+  .ss-toast svg { width: 1.25rem; height: 1.25rem; color: oklch(from var(--accent) .75 c h); }
+  .ss-toast.is-good svg { color: #22c483; } .ss-toast.is-bad svg { color: #f2899a; }
+  .ss-toast button, .ss-toast a { padding: .45rem .8rem; border: 0; border-radius: 999px; background: none; cursor: pointer; text-decoration: none;
+                                  font-weight: 800; color: oklch(from var(--accent) .75 c h); }
+  .ss-toast button:hover, .ss-toast a:hover { background: rgba(255, 255, 255, .08); }
+
+  /* Selo de destaque: contorno firme e sombra deslocada. Um por tela. */
+  .ss-seal { display: inline-flex; align-items: center; gap: .25rem; padding: .2rem .6rem; border-radius: 8px; border: 1.5px solid var(--accent);
+             background: var(--surface); color: var(--accent); box-shadow: 3px 3px 0 color-mix(in oklab, var(--accent) 35%, transparent);
+             font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .ss-seal svg { width: .9rem; height: .9rem; }
+}
+@keyframes ss-aurora { from { transform: translate(0, 0); } to { transform: translate(-4%, 6%); } }
+@keyframes ss-reveal { from { clip-path: inset(0 100% 0 0); } }
+@keyframes ss-ring { from { stroke-dasharray: 0 100px; } }
+@keyframes ss-grow { from { transform: scaleY(0); } }
+@keyframes ss-toast { from { opacity: 0; transform: translateY(40px) scale(.92); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }

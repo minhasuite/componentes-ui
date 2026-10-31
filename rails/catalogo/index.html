@@ -7,10 +7,12 @@
   <meta charset="utf-8">
   <link rel="stylesheet" href="catalogo.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>[data-estado] { width: 480px; padding: 24px; }</style>
+  <style>[data-estado] { width: 480px; padding: 24px; margin-bottom: 40px; }
+    /* Captura: animações de entrada já no estado final (o hover/foco continua com transição). */
+    *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0s !important; }</style>
 </head>
 <body>
-<svg style="display:none"><symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></symbol></svg>
+<svg style="display:none"><symbol id="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m-6 6 6-6 6 6"/></symbol><symbol id="down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-6-6 6 6 6-6"/></symbol><symbol id="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></symbol><symbol id="doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linejoin="round" d="M6 3h9l3 3v15H6z"/><path stroke-linecap="round" d="M9 10h6M9 14h6M9 18h4"/></symbol><symbol id="alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linejoin="round" d="M12 3 2 20h20z"/><path stroke-linecap="round" d="M12 10v4m0 3v.01"/></symbol><symbol id="bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></symbol></svg>
 
 <section data-comp="ss-btn" data-nome=".ss-btn" data-descricao="Botão: altura 40 (32 no .ss-btn-sm), raio 12, ícone opcional à esquerda."
   data-comportamentos='["Primário: gradiente da marca com um brilho que atravessa no hover.","Encolhe para 97% ao clicar.","Desabilitado: opacidade 50% e cursor bloqueado.","Ghost com aria-pressed=true fica marcado na cor da marca.","Formulário enviando (aria-busy) apaga o botão de enviar."]'>
@@ -82,6 +84,69 @@
     <div><p class="ss-label" style="margin-bottom:8px">Separando (1)</p><div class="ss-card" style="padding:12px">Pedido 1039</div></div>
     <div><p class="ss-label" style="margin-bottom:8px">Entregue (0)</p><div class="ss-card ss-empty ss-empty-plain">Nada aqui.</div></div>
   </div></div>
+</section>
+
+<section data-comp="ss-aurora" data-nome=".ss-aurora · .ss-aurora-bg" data-descricao="O momento de luz da tela: base escura da marca, manchas de aurora num canto e grão. Texto claro. Um por tela."
+  data-comportamentos='["As cores saem do --accent (oklch relativo): o produto que troca o --accent ganha a sua aurora.","As manchas derivam devagar (14 s, ida e volta); param com prefers-reduced-motion.",".ss-aurora-bg: a mesma aurora a 10% só no topo da página, num elemento vazio no começo do main."]'>
+  <div data-estado="padrao" data-titulo="saldo do mês"><div class="ss-aurora"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:.82rem;font-weight:600">Vendido em outubro</span><span class="ss-delta"><svg><use href="#up"/></svg>18%</span></div>
+    <div style="margin:.6rem 0 .35rem"><span class="ss-amount">R$ 108.543<small>,85</small></span></div><div class="ss-muted-on-dark" style="font-size:.75rem">Meta de R$ 120 mil · faltam 9 dias</div>
+    <div style="margin-top:.9rem;height:6px;border-radius:999px;background:rgba(255,255,255,.18)"><div style="width:90%;height:100%;border-radius:inherit;background:#fff"></div></div></div></div>
+  <div data-estado="verde" data-titulo="outra marca (--accent do cultivo)" style="--accent:#1f9d6b"><div class="ss-aurora"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:.82rem;font-weight:600">Vendido em outubro</span><span class="ss-delta"><svg><use href="#up"/></svg>18%</span></div>
+    <div style="margin:.6rem 0 .35rem"><span class="ss-amount">R$ 108.543<small>,85</small></span></div><div class="ss-muted-on-dark" style="font-size:.75rem">Meta de R$ 120 mil · faltam 9 dias</div>
+    <div style="margin-top:.9rem;height:6px;border-radius:999px;background:rgba(255,255,255,.18)"><div style="width:90%;height:100%;border-radius:inherit;background:#fff"></div></div></div></div>
+</section>
+
+<section data-comp="ss-stat" data-nome=".ss-stat · .ss-amount · .ss-delta" data-descricao="Indicador: rótulo, número em DM Mono com centavos menores (helper ss_amount), variação colorida pelo sentido e minigráfico na base (helper ss_sparkline)."
+  data-comportamentos='[".ss-delta.is-good verde, .is-bad vermelho, sem classe neutra: o sentido, não o sinal.","O minigráfico se desenha da esquerda para a direita (0,7 s).","Esconder valores borra .ss-amount e .ss-spark."]'>
+  <div data-estado="completo" data-titulo="com variação e minigráfico"><div class="ss-stat" style="width:240px"><div class="ss-stat-body"><div class="ss-stat-label"><svg><use href="#up"/></svg>Vendido na semana</div><span class="ss-amount">R$ 18.420<small>,50</small></span><div class="ss-stat-foot"><span class="ss-delta is-good"><svg><use href="#up"/></svg>12%</span></div></div><svg class="ss-spark" viewBox="0 0 100 44" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="M0.0,38.73 C1.85,38.18 7.41,34.91 11.11,35.45 C14.81,36.0 18.52,43.09 22.22,42.0 C25.93,40.91 29.63,30.55 33.33,28.91 C37.04,27.27 40.74,33.27 44.44,32.18 C48.15,31.09 51.85,23.45 55.56,22.36 C59.26,21.27 62.96,26.73 66.67,25.64 C70.37,24.55 74.07,16.91 77.78,15.82 C81.48,14.73 85.19,20.73 88.89,19.09 C92.59,17.45 98.15,8.18 100.0,6.0 L100.0,44 L0,44 Z"/><path class="line" d="M0.0,38.73 C1.85,38.18 7.41,34.91 11.11,35.45 C14.81,36.0 18.52,43.09 22.22,42.0 C25.93,40.91 29.63,30.55 33.33,28.91 C37.04,27.27 40.74,33.27 44.44,32.18 C48.15,31.09 51.85,23.45 55.56,22.36 C59.26,21.27 62.96,26.73 66.67,25.64 C70.37,24.55 74.07,16.91 77.78,15.82 C81.48,14.73 85.19,20.73 88.89,19.09 C92.59,17.45 98.15,8.18 100.0,6.0"/></svg></div></div>
+  <div data-estado="despesa" data-titulo="despesa que caiu (bom)"><div class="ss-stat" style="width:240px"><div class="ss-stat-body"><div class="ss-stat-label">Gastos do mês</div><span class="ss-amount">R$ 2.310<small>,00</small></span><div class="ss-stat-foot"><span class="ss-delta is-good"><svg><use href="#down"/></svg>8%</span>vs. setembro</div></div></div></div>
+  <div data-estado="variacoes" data-titulo="valor e as três variações"><span class="ss-amount">R$ 12.480<small>,90</small></span><div style="display:flex;gap:8px;margin-top:12px"><span class="ss-delta is-good"><svg><use href="#up"/></svg>12%</span><span class="ss-delta is-bad"><svg><use href="#up"/></svg>4%</span><span class="ss-delta"><svg><use href="#up"/></svg>0%</span></div></div>
+</section>
+
+<section data-comp="ss-charts" data-nome=".ss-spark · .ss-rings · .ss-bars" data-descricao="Gráficos pequenos: linha sem eixo (ss_sparkline), anéis concêntricos (ss_rings) e barras em pílula."
+  data-comportamentos='["Anéis preenchem em cascata (0,7 s cada, 80 ms entre eles), nas cores da aurora.","Barras crescem de baixo com leve passada; a de hoje (.is-today) na cor da marca, o valor dela aparece, e o hover mostra o de qualquer barra.","Tudo para com prefers-reduced-motion."]'>
+  <div data-estado="sparkline" data-titulo="linha"><svg class="ss-spark" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="M0.0,58.0 C1.85,56.42 7.41,49.33 11.11,48.55 C14.81,47.76 18.52,54.85 22.22,53.27 C25.93,51.7 29.63,40.82 33.33,39.09 C37.04,37.36 40.74,44.45 44.44,42.87 C48.15,41.3 51.85,30.9 55.56,29.64 C59.26,28.38 62.96,36.88 66.67,35.31 C70.37,33.73 74.07,22.39 77.78,20.18 C81.48,17.98 85.19,24.44 88.89,22.07 C92.59,19.71 98.15,8.68 100.0,6.0 L100.0,60 L0,60 Z"/><path class="line" d="M0.0,58.0 C1.85,56.42 7.41,49.33 11.11,48.55 C14.81,47.76 18.52,54.85 22.22,53.27 C25.93,51.7 29.63,40.82 33.33,39.09 C37.04,37.36 40.74,44.45 44.44,42.87 C48.15,41.3 51.85,30.9 55.56,29.64 C59.26,28.38 62.96,36.88 66.67,35.31 C70.37,33.73 74.07,22.39 77.78,20.18 C81.48,17.98 85.19,24.44 88.89,22.07 C92.59,19.71 98.15,8.68 100.0,6.0"/></svg></div>
+  <div data-estado="aneis" data-titulo="anéis" style="display:grid;place-items:center"><div class="ss-rings" style="width:150px;height:150px"><svg viewBox="0 0 150 150" aria-hidden="true"><circle class="track" cx="75.0" cy="75.0" r="69.5" pathLength="100" style="stroke:var(--aurora-2)"/><circle class="fill" cx="75.0" cy="75.0" r="69.5" pathLength="100" style="stroke:var(--aurora-2);--v:72.0;--i:0"/><circle class="track" cx="75.0" cy="75.0" r="54.5" pathLength="100" style="stroke:var(--aurora-3)"/><circle class="fill" cx="75.0" cy="75.0" r="54.5" pathLength="100" style="stroke:var(--aurora-3);--v:50.0;--i:1"/><circle class="track" cx="75.0" cy="75.0" r="39.5" pathLength="100" style="stroke:var(--aurora-1)"/><circle class="fill" cx="75.0" cy="75.0" r="39.5" pathLength="100" style="stroke:var(--aurora-1);--v:88.0;--i:2"/></svg><span>72%</span></div></div>
+  <div data-estado="barras" data-titulo="barras da semana"><div class="ss-bars"><div class="ss-bar" style="--v:0.52"><b>8,2 mil</b><i></i><span>seg</span></div><div class="ss-bar" style="--v:0.79"><b>12,5 mil</b><i></i><span>ter</span></div><div class="ss-bar" style="--v:0.58"><b>9,1 mil</b><i></i><span>qua</span></div><div class="ss-bar" style="--v:1.00"><b>15,8 mil</b><i></i><span>qui</span></div><div class="ss-bar" style="--v:0.71"><b>11,2 mil</b><i></i><span>sex</span></div><div class="ss-bar" style="--v:0.41"><b>6,4 mil</b><i></i><span>sáb</span></div><div class="ss-bar is-today" style="--v:0.88"><b>13,9 mil</b><i></i><span>dom</span></div></div></div>
+</section>
+
+<section data-comp="ss-seg" data-nome=".ss-seg" data-descricao="Seletor de 2 a 4 opções: trilha afundada e pílula que desliza com mola até o filho com aria-pressed ou aria-current=true."
+  data-comportamentos='["Só CSS (:has): a pílula anda 0,34 s com leve passada.","Texto da escolhida na cor da marca, em 800."]'>
+  <div data-estado="padrao" data-titulo="período"><div class="ss-seg"><button>Dia</button><button aria-pressed="true">Semana</button><button>Mês</button></div></div>
+</section>
+
+<section data-comp="ss-fchip" data-nome=".ss-fchip · .ss-chipbar" data-descricao="Filtros em pílula numa faixa que rola na horizontal; aria-pressed=true ganha ✓ e o tom da marca."
+  data-comportamentos='["O ✓ entra crescendo (0,22 s) e empurra o texto.","Encolhe para 0,97 ao clicar.","small = contador em DM Mono."]'>
+  <div data-estado="padrao" data-titulo="um marcado"><div class="ss-chipbar"><a href="#" class="ss-fchip">Todos<small>48</small></a><a href="#" class="ss-fchip" aria-pressed="true">Com vencido<small>6</small></a><a href="#" class="ss-fchip">Sem compra</a></div></div>
+</section>
+
+<section data-comp="ss-search" data-nome=".ss-search" data-descricao="Busca afundada, sem borda; no foco ganha anel e halo na cor da marca e o fundo vira superfície."
+  data-comportamentos='["Foco pelo :focus-within do label.","O ícone fica na cor da marca no foco."]'>
+  <div data-estado="padrao" data-titulo="em repouso"><label class="ss-search"><svg><use href="#search"/></svg><input type="search" placeholder="Nome, cidade ou CNPJ"></label></div>
+  <div data-estado="foco" data-titulo="com foco" data-acao="focus"><label class="ss-search"><svg><use href="#search"/></svg><input data-alvo type="search" value="mercado"></label></div>
+</section>
+
+<section data-comp="ss-item" data-nome=".ss-item · .ss-group" data-descricao="Item de lista com ícone num quadrado tonal (--tone), título, subtítulo e valor em DM Mono; cabeçalho de grupo com total."
+  data-comportamentos='["--tone pinta o quadrado (14%) e o ícone; sem ele, a cor da marca.","a.ss-item ganha fundo no hover."]'>
+  <div data-estado="padrao" data-titulo="grupo hoje"><div class="ss-group"><span>Hoje</span><span>R$ 3.412,40</span></div>
+    <a href="#" class="ss-item"><span class="ss-item-icon"><svg><use href="#doc"/></svg></span><span class="ss-item-main"><b>Pedido 1042</b><span>Mercado Bom Preço</span></span><span class="ss-item-value">R$ 1.250,00<small>10:42</small></span></a>
+    <a href="#" class="ss-item"><span class="ss-avatar" style="--h:202;--s:42px" title="Mercado Bom Preço" aria-label="Mercado Bom Preço" data-status="ok">MP</span><span class="ss-item-main"><b>Mercado Bom Preço</b><span>Visita feita · com pedido</span></span><span class="ss-item-value" style="color:var(--success)">R$ 318,40</span></a>
+    <div class="ss-item" style="--tone:var(--danger)"><span class="ss-item-icon"><svg><use href="#alert"/></svg></span><span class="ss-item-main"><b>Título vencido</b><span>Carlos Souza · 3 dias</span></span><span class="ss-item-value" style="color:var(--danger)">R$ 68,48</span></div></div>
+</section>
+
+<section data-comp="ss-avatar" data-nome=".ss-avatar · .ss-avatars" data-descricao="Iniciais sobre gradiente com matiz tirado do nome (helper ss_avatar, mesma conta do Flutter), com ponto de status."
+  data-comportamentos='["Mesmo nome, mesma cor, no web e no app.","data-status ok/danger/warn = ponto no canto.",".ss-avatars empilha (−8) com .more no fim."]'>
+  <div data-estado="padrao" data-titulo="avatares e pilha"><div style="display:flex;align-items:center;gap:10px"><span class="ss-avatar" style="--h:298;--s:48px" title="Ana Souza" aria-label="Ana Souza" data-status="ok">AS</span><span class="ss-avatar" style="--h:298;--s:48px" title="Bruno Lima" aria-label="Bruno Lima">BL</span><span class="ss-avatar" style="--h:250;--s:48px" title="Carla" aria-label="Carla" data-status="danger">C</span><span class="ss-avatars" style="margin-left:14px"><span class="ss-avatar" style="--h:202;--s:34px" title="Mercado Bom Preço" aria-label="Mercado Bom Preço" data-status="ok">MP</span><span class="ss-avatar" style="--h:298;--s:34px" title="Padaria Central" aria-label="Padaria Central">PC</span><span class="ss-avatar more" style="--s:34px">+3</span></span></div></div>
+</section>
+
+<section data-comp="ss-toast" data-nome=".ss-toast" data-descricao="Aviso em pílula escura (igual nos dois temas) com ícone, texto curto e ação na cor da marca."
+  data-comportamentos='["Sobe com mola (0,42 s); quem fecha é o controller de flash do produto.",".is-good / .is-bad pintam o ícone."]'>
+  <div data-estado="padrao" data-titulo="com ação"><div class="ss-toast is-good"><svg><use href="#check"/></svg>Pedido salvo na fila<button>Desfazer</button></div></div>
+</section>
+
+<section data-comp="ss-seal" data-nome=".ss-seal" data-descricao="Selo de destaque pontual: contorno firme e sombra deslocada sem desfoque. No máximo um por tela."
+  data-comportamentos='["Caixa alta, 800.","Para Novo, Meta batida, Top 3."]'>
+  <div data-estado="padrao" data-titulo="padrão"><span class="ss-seal">Novo</span> &nbsp; <span class="ss-seal"><svg><use href="#bolt"/></svg>Meta batida</span></div>
 </section>
 </body>
 </html>

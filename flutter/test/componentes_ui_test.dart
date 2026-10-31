@@ -51,4 +51,47 @@ void main() {
       expect(Theme.of(tester.element(find.byType(SsCard))).colorScheme.primary, cor);
     }
   });
+
+  test('SsAmount separa os centavos só quando há ",dd" no fim', () {
+    expect(SsAmount.split(r'R$ 1.234,56'), (r'R$ 1.234', ',56'));
+    expect(SsAmount.split('38'), ('38', ''));
+    expect(SsAmount.split('1,5 mil'), ('1,5 mil', ''));
+  });
+
+  test('SsAvatar: iniciais e cor estável pelo nome', () {
+    expect(SsAvatar.initials('ana maria souza'), 'AS');
+    expect(SsAvatar.initials('  Carla '), 'C');
+    expect(SsAvatar.initials(''), '?');
+    expect(SsAvatar.seed('Ana Souza'), SsAvatar.seed(' ana souza'));
+    expect(SsAvatar.seed('Ana Souza'), isNot(SsAvatar.seed('Bruno Lima')));
+  });
+
+  testWidgets('showSsToast aparece, a ação fecha e some sozinho', (t) async {
+    var desfez = false;
+    await t.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (ctx) => TextButton(
+            onPressed: () => showSsToast(ctx, 'Salvo', actionLabel: 'Desfazer', onAction: () => desfez = true),
+            child: const Text('abrir'),
+          ),
+        ),
+      ),
+    );
+    await t.tap(find.text('abrir'));
+    await t.pumpAndSettle();
+    expect(find.text('Salvo'), findsOneWidget);
+    await t.tap(find.text('Desfazer'));
+    await t.pump();
+    expect(desfez, isTrue);
+    expect(find.text('Salvo'), findsNothing);
+
+    await t.tap(find.text('abrir'));
+    await t.pump(); // monta o aviso (o prazo de 4 s começa aqui)
+    expect(find.text('Salvo'), findsOneWidget);
+    await t.pump(const Duration(seconds: 5));
+    await t.pumpAndSettle();
+    expect(find.text('Salvo'), findsNothing);
+  });
 }

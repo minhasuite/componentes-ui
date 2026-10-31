@@ -20,25 +20,27 @@ Widget _app(int i, ValueChanged<int> onTap, {bool semAnimacao = false}) => Mater
 );
 
 /// Centro do círculo (o único Container circular da barra).
-double _circuloX(WidgetTester t) => t
-    .getCenter(
-      find.byWidgetPredicate((w) => w is Container && (w.decoration as BoxDecoration?)?.shape == BoxShape.circle),
-    )
-    .dx;
+Offset _circulo(WidgetTester t) => t.getCenter(
+  find.byWidgetPredicate((w) => w is Container && (w.decoration as BoxDecoration?)?.shape == BoxShape.circle),
+);
+double _circuloX(WidgetTester t) => _circulo(t).dx;
 
 void main() {
-  testWidgets('toque avisa a aba e o círculo desliza até ela', (t) async {
+  testWidgets('toque avisa a aba e o círculo pula até ela', (t) async {
     final toques = <int>[];
     await t.pumpWidget(_app(0, toques.add));
     final x0 = _circuloX(t);
+    final y0 = _circulo(t).dy;
     await t.tap(find.text('Mais'));
     expect(toques, [2]);
 
     await t.pumpWidget(_app(2, toques.add));
-    await t.pump(const Duration(milliseconds: 200));
+    await t.pump(const Duration(milliseconds: 290));
     final meio = _circuloX(t);
     expect(meio, greaterThan(x0)); // a caminho, ainda não chegou
+    expect(_circulo(t).dy, lessThan(y0 - 20)); // no ar
     await t.pumpAndSettle();
+    expect(_circulo(t).dy, closeTo(y0, .5)); // pousou
     final fim = _circuloX(t);
     expect(fim, greaterThan(meio));
     expect(fim, closeTo(t.getSize(find.byType(SsNavBar)).width * 5 / 6, 1));

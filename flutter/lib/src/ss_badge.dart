@@ -58,3 +58,41 @@ class SsBadge extends StatelessWidget {
     );
   }
 }
+
+/// Selo de destaque pontual ("Novo", "Meta batida"): contorno firme e sombra
+/// deslocada sem desfoque. Personalidade em doses: no máximo um por tela.
+class SsSeal extends StatelessWidget {
+  const SsSeal(this.text, {super.key, this.icon});
+
+  final String text;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(9, 4, 10, 4),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: c.accentText, width: 1.5),
+        boxShadow: [BoxShadow(color: c.accent.withValues(alpha: .35), offset: const Offset(3, 3))],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 14, color: c.accentText), const SizedBox(width: 4)],
+          Text(
+            text.toUpperCase(),
+            style: TextStyle(
+              color: c.accentText,
+              fontSize: AppType.label,
+              fontWeight: FontWeight.w800,
+              letterSpacing: .8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

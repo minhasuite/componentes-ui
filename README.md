@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.3.0
+      ref: v0.4.0
 ```
 
 ```dart
@@ -72,7 +72,7 @@ docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w 
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.3.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.4.0"
 ```
 
 ```css
@@ -86,6 +86,32 @@ gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", t
 
 O `tailwindcss:build` gera `app/assets/builds/tailwind/componentes_ui.css` sozinho
 (suporte a engines do tailwindcss-rails).
+
+Helpers de view (entram sozinhos em todas as views), com a mesma conta do Flutter:
+
+```erb
+<%= ss_amount(money(total)) %>                       <%# R$ 1.234<small>,56</small> %>
+<%= ss_sparkline(@vendas_por_dia) %>                  <%# base de um .ss-stat %>
+<%= ss_rings([0.72, 0.5], center: "72%") %>
+<%= ss_avatar(cliente.nome, status: "ok", brand_hue: 250) %>
+```
+
+O markup de cada classe nova (`.ss-aurora`, `.ss-stat`, `.ss-bars`, `.ss-seg`,
+`.ss-fchip`, `.ss-search`, `.ss-item`, `.ss-toast`, `.ss-seal`) está em
+`rails/catalogo/index.html`. Teste dos helpers: `ruby -Ilib test/helpers_test.rb`
+(em `rails/`, num container com Rails).
+
+## Direção visual (v0.4)
+
+- **Um momento de luz por tela:** o `SsAuroraCard`/`.ss-aurora` para o número que
+  importa; o resto são superfícies calmas.
+- **Números são os protagonistas:** DM Mono, centavos menores, variação colorida
+  pelo sentido (bom/ruim), não pelo sinal.
+- **Movimento curto e de mola** (pílula que desliza, anel que preenche, aviso que
+  sobe, bolinha da barra que pula); nada contínuo além da deriva da aurora; tudo
+  desliga com menos movimento.
+- **Evitar:** vidro (blur) em card e lista, texto ou botão em gradiente, aurora
+  atrás de dado denso, mais de um `SsSeal` por tela.
 
 ## Verificar
 
@@ -108,3 +134,4 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.1.0` (30/10/2026): primeira versão (base: minhas-vendas e meu-gestor).
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
+- `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
