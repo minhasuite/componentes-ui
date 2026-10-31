@@ -96,3 +96,78 @@ class SsSeal extends StatelessWidget {
     );
   }
 }
+
+/// Tom semântico de um estado: pinta [SsStatusBadge] e `SsDealBadge`.
+/// `info` é o azul de informação; `accent` é a cor da marca.
+enum SsTone {
+  neutral,
+  info,
+  success,
+  warning,
+  danger,
+  accent;
+
+  /// Cores do tom no tema atual: `text` (AA sobre `soft`), `soft` (fundo) e
+  /// `solid` (ponto, ícone, preenchimento).
+  ({Color text, Color soft, Color solid}) colors(BuildContext context) {
+    final c = SsColors.of(context);
+    return switch (this) {
+      neutral => (text: c.muted, soft: AppColors.ghostSoft, solid: c.muted),
+      info => (
+        text: c.isDark ? const Color(0xFF8AB4FF) : const Color(0xFF1D5FC4),
+        soft: const Color(0x243B82F6),
+        solid: const Color(0xFF3B82F6),
+      ),
+      success => (text: c.successText, soft: AppColors.successSoft, solid: AppColors.success),
+      warning => (text: c.aquecText, soft: c.aquecSoft, solid: AppColors.aquecFg),
+      danger => (text: c.dangerText, soft: AppColors.dangerSoft, solid: AppColors.danger),
+      accent => (text: c.accentText, soft: c.accentSoft, solid: c.accent),
+    };
+  }
+}
+
+/// Situação de um registro (pedido, título, lote) como pílula com ponto +
+/// texto: a cor nunca vai sozinha. O app passa o mapa status → tom; status
+/// fora do mapa sai neutro. [label] troca o texto (padrão: o próprio status).
+///
+/// `SsStatusBadge(p.status, map: {'pago': SsTone.success, 'vencido': SsTone.danger}, label: rotulos[p.status])`
+class SsStatusBadge extends StatelessWidget {
+  const SsStatusBadge(this.status, {super.key, this.map = const {}, this.label});
+
+  final String status;
+  final Map<String, SsTone> map;
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = (map[status] ?? SsTone.neutral).colors(context);
+    final text = label ?? status;
+    return Semantics(
+      label: text,
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(8, 4, 10, 4),
+        decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(AppRadius.pill)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: t.solid, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: t.text, fontSize: AppType.label, fontWeight: FontWeight.w700, height: 1.1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
