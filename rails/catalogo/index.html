@@ -148,5 +148,203 @@
   data-comportamentos='["Caixa alta, 800.","Para Novo, Meta batida, Top 3."]'>
   <div data-estado="padrao" data-titulo="padrão"><span class="ss-seal">Novo</span> &nbsp; <span class="ss-seal"><svg><use href="#bolt"/></svg>Meta batida</span></div>
 </section>
+<!-- v0.5 -->
+<style>/* Captura de estados no meio de uma animação (barra indeterminada, anel do toast). */
+  .cat-still, .cat-still::before { animation: none !important; }
+  .cat-still.ss-toast-timer::before { --ss-t: var(--t); }
+  .cat-still.ss-loading-bar::before { translate: 70% 0; }
+  /* Cabeçalho: a captura rola a página; o estado aberto é o de rolagem 0. */
+  .cat-still h1 { animation: none !important; }</style>
+<svg style="display:none"><symbol id="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol><symbol id="wifi-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 12.5a10 10 0 0 1 4-2.3M19 12.5a10 10 0 0 0-3-2M12 20h.01"/></symbol><symbol id="trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol><symbol id="bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol><symbol id="cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/></symbol></svg>
+
+<section data-comp="ss-estados" data-nome=".ss-loading-bar · .ss-load-more · .ss-offline" data-descricao="Estados de carregamento: barra fina de revalidação no topo, botão Carregar mais e a faixa de sem conexão."
+  data-comportamentos='[".ss-loading-bar: um trecho do gradiente corre da esquerda para a direita; com menos movimento fica parado e cheio.",".ss-load-more[aria-busy=true]: gira e fica cinza, sem clique.",".ss-offline desce do topo (0,3 s) e some com [hidden]."]'>
+  <div data-estado="revalidando" data-titulo="ss-loading-bar sobre um card"><div class="ss-card ss-card-pad" style="position:relative;overflow:hidden"><span class="ss-loading-bar cat-still"></span><p class="ss-kicker">Pedidos de hoje</p><p class="ss-stat num">18</p></div></div>
+  <div data-estado="carregar-mais" data-titulo="ss-load-more · normal e carregando"><button class="ss-load-more">Carregar mais</button><button class="ss-load-more" aria-busy="true">Carregando…</button></div>
+  <div data-estado="offline" data-titulo="ss-offline"><div class="ss-offline"><svg><use href="#wifi-off"/></svg>Sem conexão · o que fizer fica na fila</div></div>
+</section>
+
+<section data-comp="ss-dialog" data-nome=".ss-dialog (confirmação)" data-descricao="Diálogo nativo (dialog.showModal()) com ícone, título, texto e botões empilhados; .is-danger para o que não volta."
+  data-comportamentos='["Abre com pop curto (0,18 s) e fundo escurecido (::backdrop).","Esc fecha (nativo do dialog); form method=dialog nos botões.","Botões ocupam a largura, o principal em cima.",".is-danger: ícone e botão principal em vermelho."]'>
+  <div data-estado="padrao" data-titulo="confirmação"><dialog open class="ss-dialog" style="position:static"><div class="ss-dialog-body"><div class="ss-dialog-icon"><svg><use href="#check"/></svg></div><h2>Enviar o pedido?</h2><p>O cliente recebe o PDF por WhatsApp.</p></div><form method="dialog" class="ss-dialog-actions"><button class="ss-btn ss-btn-primary">Enviar</button><button class="ss-btn ss-btn-ghost">Agora não</button></form></dialog></div>
+  <div data-estado="perigo" data-titulo="is-danger"><dialog open class="ss-dialog is-danger" style="position:static"><div class="ss-dialog-body"><div class="ss-dialog-icon"><svg><use href="#trash"/></svg></div><h2>Excluir o pedido 1042?</h2><p>Isso não pode ser desfeito.</p></div><form method="dialog" class="ss-dialog-actions"><button class="ss-btn ss-btn-primary">Excluir</button><button class="ss-btn ss-btn-ghost">Cancelar</button></form></dialog></div>
+</section>
+
+<section data-comp="ss-sheet" data-nome=".ss-sheet · .ss-sheet-header" data-descricao="Folha num dialog nativo: sobe de baixo, com alça, no celular (até 639 px) e vira diálogo central no desktop. Cabeçalho com ícone, título e ajuda."
+  data-comportamentos='["Celular: largura toda, cantos de cima arredondados, alça e entrada de baixo (0,32 s).","Desktop: diálogo central de até 32rem com pop.","Rola por dentro até 88% da altura."]'>
+  <div data-estado="desktop" data-titulo="desktop (central)"><dialog open class="ss-sheet" style="position:static;width:100%"><div class="ss-sheet-header"><svg><use href="#cal"/></svg><h2>Agendar visita</h2><p>O cliente recebe um lembrete na véspera.</p></div><div class="ss-field"><label>Quando</label><input class="ss-input" value="Amanhã, 10:00"></div><p style="height:16px"></p><div class="ss-dialog-actions"><button class="ss-btn ss-btn-primary">Agendar</button></div></dialog></div>
+  <div data-estado="celular" data-titulo="celular (de baixo, com alça)" style="width:380px;background:var(--page);padding-bottom:0"><dialog open class="ss-sheet" style="position:static;width:100%;margin:0;border-radius:24px 24px 0 0;border-bottom:0"><span style="display:block;width:2.5rem;height:4px;margin:.6rem auto 0;border-radius:999px;background:var(--line);padding:0"></span><div class="ss-sheet-header"><svg><use href="#cal"/></svg><h2>Agendar visita</h2><p>O cliente recebe um lembrete na véspera.</p></div><div class="ss-dialog-actions"><button class="ss-btn ss-btn-primary">Agendar</button></div></dialog></div>
+</section>
+
+<section data-comp="ss-toast-timer" data-nome=".ss-toast · .ss-toast-timer" data-descricao="Toast com contagem: anel que se esvazia em 5 s ao redor do número e o botão Desfazer."
+  data-comportamentos='["O anel se esvazia em 5 s (animação CSS de --ss-t); o controller do produto troca o número e fecha no fim.","Com menos movimento o anel fica cheio."]'>
+  <div data-estado="contando" data-titulo="no meio da contagem"><div class="ss-toast"><svg><use href="#trash"/></svg>Pedido excluído<span class="ss-toast-timer cat-still" style="--t:220deg">3</span><button>Desfazer</button></div></div>
+</section>
+
+<section data-comp="ss-field" data-nome=".ss-field · .ss-money" data-descricao="Campo com rótulo, ajuda e erro com ícone; .ss-money deixa o valor em DM Mono à direita."
+  data-comportamentos='["Foco: borda da marca e halo de 4 px.",".is-invalid (do servidor) ou :user-invalid (depois que a pessoa mexeu) pinta de vermelho e troca a ajuda pela mensagem de erro.","No erro, o halo do foco também fica vermelho."]'>
+  <div data-estado="normal" data-titulo="com ajuda"><div class="ss-field"><label for="c1">E-mail</label><input id="c1" class="ss-input" placeholder="voce@empresa.com"><small class="ss-field-help">Para mandar o recibo.</small><small class="ss-field-error">E-mail inválido</small></div></div>
+  <div data-estado="foco" data-titulo="foco" data-acao="focus"><div class="ss-field"><label for="c2">E-mail</label><input data-alvo id="c2" class="ss-input" value="ana@mercado.com"></div></div>
+  <div data-estado="invalido" data-titulo="is-invalid"><div class="ss-field is-invalid"><label for="c3">E-mail</label><input id="c3" class="ss-input" value="ana@"><small class="ss-field-help">Para mandar o recibo.</small><small class="ss-field-error">E-mail inválido</small></div></div>
+  <div data-estado="dinheiro" data-titulo="ss-money"><div class="ss-field"><label for="c4">Valor</label><input id="c4" class="ss-input ss-money" inputmode="decimal" value="R$ 1.250,00"></div></div>
+</section>
+
+<section data-comp="ss-date-chips" data-nome=".ss-date-chips" data-descricao="Atalhos de data (Hoje, Amanhã, Sex) e Outra… com o input date nativo."
+  data-comportamentos='["aria-pressed=true marca o atalho escolhido.","Outra…: o label fica marcado quando o input date (required) tem data.","Encolhe para 0,97 ao clicar."]'>
+  <div data-estado="hoje" data-titulo="Hoje marcado"><div class="ss-date-chips"><button aria-pressed="true">Hoje</button><button>Amanhã</button><button>Sex</button><label>Outra…<input type="date" required></label></div></div>
+  <div data-estado="outra" data-titulo="outra data"><div class="ss-date-chips"><button>Hoje</button><button>Amanhã</button><button>Sex</button><label>Outra…<input type="date" required value="2026-11-12"></label></div></div>
+</section>
+
+<section data-comp="ss-choice" data-nome=".ss-choice" data-descricao="Escolha em tile: rótulo pequeno em cima, o valor escolhido em negrito e a seta; por dentro, um select nativo."
+  data-comportamentos='["Hover tinge a borda; foco dá borda da marca e halo.","Lista de opções é a nativa do sistema (no celular, a roda/folha do próprio aparelho)."]'>
+  <div data-estado="padrao" data-titulo="padrão"><label class="ss-choice"><span>Forma de pagamento</span><select><option>Pix</option><option>Boleto 28 dias</option></select></label></div>
+  <div data-estado="foco" data-titulo="foco" data-acao="focus"><label class="ss-choice"><span>Forma de pagamento</span><select data-alvo><option>Boleto 28 dias</option></select></label></div>
+</section>
+
+<section data-comp="ss-switch-row" data-nome=".ss-switch-row" data-descricao="Linha com texto, ajuda e chave (checkbox role=switch estilizado); a linha toda clica."
+  data-comportamentos='["A bolinha desliza com mola (0,28 s); ligado = cor da marca.","Foco visível no teclado.","Desabilitado: 50% e cursor bloqueado."]'>
+  <div data-estado="estados" data-titulo="ligado · desligado · desabilitado"><label class="ss-switch-row"><span>Avisar por WhatsApp<small>Quando o pedido sair para entrega.</small></span><input type="checkbox" role="switch" checked></label><label class="ss-switch-row"><span>Resumo diário</span><input type="checkbox" role="switch"></label><label class="ss-switch-row"><span>Backup na nuvem<small>Só no plano Pro.</small></span><input type="checkbox" role="switch" disabled></label></div>
+</section>
+
+<section data-comp="ss-stepper" data-nome=".ss-stepper" data-descricao="Quantidade: − valor +, botões de 44 px, valor em DM Mono (output ou input number)."
+  data-comportamentos='["Botão encolhe a 0,9 ao tocar.","No limite, o botão fica disabled (cinza)."]'>
+  <div data-estado="padrao" data-titulo="no mínimo e no meio"><div class="ss-stepper"><button aria-label="Menos" disabled>−</button><output>1</output><button aria-label="Mais">+</button></div> &nbsp; <div class="ss-stepper"><button aria-label="Menos">−</button><output>12</output><button aria-label="Mais">+</button></div></div>
+</section>
+
+<section data-comp="ss-timeline" data-nome=".ss-timeline" data-descricao="Linha do tempo vertical: nós ligados por uma linha; .is-done preenchido com ✓, .is-current com anel e halo."
+  data-comportamentos='["A linha fica na cor da marca até o último passo feito.","Texto dos passos futuros em cinza."]'>
+  <div data-estado="padrao" data-titulo="pedido em andamento"><ol class="ss-timeline"><li class="is-done"><b>Pedido feito</b><small>31/10 · 10:42</small></li><li class="is-done"><b>Aprovado</b><small>31/10 · 11:05</small></li><li class="is-current"><b>Separando</b><small>Previsto para hoje</small></li><li><b>Entregue</b></li></ol></div>
+</section>
+
+<section data-comp="ss-gauge" data-nome=".ss-gauge" data-descricao="Meia-lua com conic-gradient e agulha, valor de 0 a 1 em --v (helper ss_gauge)."
+  data-comportamentos='["A agulha entra girando com mola (0,7 s) até o valor.","Valor em DM Mono no centro, rótulo embaixo.","role=img com rótulo para leitor de tela."]'>
+  <div data-estado="padrao" data-titulo="72% da meta" style="display:flex;gap:32px"><div class="ss-gauge" style="--v:0.72" role="img" aria-label="da meta: 72%"><b>72%</b><small>da meta</small></div><div class="ss-gauge" style="--v:0.18" role="img" aria-label="do limite: 18%"><b>18%</b><small>do limite</small></div></div>
+</section>
+
+<section data-comp="ss-countdown" data-nome=".ss-countdown" data-descricao="Anel em gomos (um por unidade, até 60) com o que falta no meio (helper ss_countdown)."
+  data-comportamentos='["Gomos acesos na cor da marca = o que falta; apagados = o que passou.","Mais de 60 unidades: 60 gomos proporcionais."]'>
+  <div data-estado="padrao" data-titulo="7 de 10 · 3 de 30" style="display:flex;gap:32px"><div class="ss-countdown" style="--n:10;--left:7" role="img" aria-label="7 dias de 10"><b>7</b><small>dias</small></div><div class="ss-countdown" style="--n:30;--left:3" role="img" aria-label="3 dias de 30"><b>3</b><small>dias</small></div></div>
+</section>
+
+<section data-comp="ss-month" data-nome=".ss-month" data-descricao="Mês em grade de 7 colunas: hoje com contorno, selecionado preenchido, dias de fora apagados e até 3 marcadores."
+  data-comportamentos='["Dia é button ou link (alvo de 40 px).","Marcadores: i com --c (cor semântica).","Hover tinge o dia."]'>
+  <div data-estado="padrao" data-titulo="outubro de 2026"><div class="ss-month"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+    <button class="is-out">27</button><button class="is-out">28</button><button class="is-out">29</button><button class="is-out">30</button><button>1</button><button>2<i></i></button><button>3</button>
+    <button>4</button><button>5</button><button>6<i></i><i style="--c:var(--danger)"></i></button><button>7</button><button>8</button><button>9</button><button>10</button>
+    <button>11</button><button>12</button><button>13</button><button>14<i style="--c:var(--success)"></i></button><button>15</button><button>16</button><button>17</button>
+    <button>18</button><button>19</button><button>20</button><button>21</button><button class="is-selected">22<i></i></button><button>23</button><button>24</button>
+    <button>25</button><button>26</button><button>27</button><button>28</button><button>29</button><button>30<i style="--c:var(--warn)"></i></button><button class="is-today">31</button></div></div>
+</section>
+
+<section data-comp="ss-heat" data-nome=".ss-heat" data-descricao="Grade de constância: uma coluna por semana (dom a sáb), nível 0–4 por quartil do valor (helper ss_heat)."
+  data-comportamentos='["Nível 0 é o fundo afundado; 1 a 4 sobem na cor da marca (25/50/75/100%).","O maior valor é sempre 4.","title de cada dia com data e valor."]'>
+  <div data-estado="padrao" data-titulo="12 semanas"><div class="ss-heat" role="img" aria-label="Constância"><i data-level="0" title="09/08: 0"></i><i data-level="0" title="10/08: 0"></i><i data-level="0" title="11/08: 0"></i><i data-level="4" title="12/08: 9"></i><i data-level="2" title="13/08: 5"></i><i data-level="1" title="14/08: 3"></i><i data-level="0" title="15/08: 0"></i><i data-level="1" title="16/08: 2"></i><i data-level="0" title="17/08: 0"></i><i data-level="0" title="18/08: 0"></i><i data-level="3" title="19/08: 6"></i><i data-level="0" title="20/08: 0"></i><i data-level="1" title="21/08: 1"></i><i data-level="1" title="22/08: 1"></i><i data-level="2" title="23/08: 5"></i><i data-level="1" title="24/08: 2"></i><i data-level="3" title="25/08: 6"></i><i data-level="0" title="26/08: 0"></i><i data-level="1" title="27/08: 1"></i><i data-level="1" title="28/08: 3"></i><i data-level="3" title="29/08: 7"></i><i data-level="2" title="30/08: 5"></i><i data-level="0" title="31/08: 0"></i><i data-level="4" title="01/09: 9"></i><i data-level="3" title="02/09: 6"></i><i data-level="3" title="03/09: 7"></i><i data-level="3" title="04/09: 6"></i><i data-level="3" title="05/09: 6"></i><i data-level="4" title="06/09: 9"></i><i data-level="0" title="07/09: 0"></i><i data-level="0" title="08/09: 0"></i><i data-level="3" title="09/09: 7"></i><i data-level="2" title="10/09: 5"></i><i data-level="3" title="11/09: 7"></i><i data-level="3" title="12/09: 7"></i><i data-level="1" title="13/09: 1"></i><i data-level="0" title="14/09: 0"></i><i data-level="0" title="15/09: 0"></i><i data-level="0" title="16/09: 0"></i><i data-level="0" title="17/09: 0"></i><i data-level="0" title="18/09: 0"></i><i data-level="3" title="19/09: 6"></i><i data-level="0" title="20/09: 0"></i><i data-level="4" title="21/09: 9"></i><i data-level="4" title="22/09: 8"></i><i data-level="4" title="23/09: 8"></i><i data-level="3" title="24/09: 7"></i><i data-level="4" title="25/09: 9"></i><i data-level="2" title="26/09: 4"></i><i data-level="2" title="27/09: 5"></i><i data-level="2" title="28/09: 4"></i><i data-level="0" title="29/09: 0"></i><i data-level="2" title="30/09: 4"></i><i data-level="1" title="01/10: 3"></i><i data-level="1" title="02/10: 3"></i><i data-level="1" title="03/10: 2"></i><i data-level="3" title="04/10: 6"></i><i data-level="2" title="05/10: 5"></i><i data-level="1" title="06/10: 2"></i><i data-level="0" title="07/10: 0"></i><i data-level="3" title="08/10: 6"></i><i data-level="0" title="09/10: 0"></i><i data-level="4" title="10/10: 8"></i><i data-level="0" title="11/10: 0"></i><i data-level="0" title="12/10: 0"></i><i data-level="4" title="13/10: 8"></i><i data-level="3" title="14/10: 7"></i><i data-level="1" title="15/10: 2"></i><i data-level="4" title="16/10: 9"></i><i data-level="4" title="17/10: 8"></i><i data-level="3" title="18/10: 7"></i><i data-level="1" title="19/10: 1"></i><i data-level="0" title="20/10: 0"></i><i data-level="4" title="21/10: 8"></i><i data-level="3" title="22/10: 6"></i><i data-level="0" title="23/10: 0"></i><i data-level="4" title="24/10: 8"></i><i data-level="4" title="25/10: 8"></i><i data-level="2" title="26/10: 5"></i><i data-level="4" title="27/10: 9"></i><i data-level="4" title="28/10: 8"></i><i data-level="4" title="29/10: 8"></i><i data-level="2" title="30/10: 4"></i><i data-level="0" title="31/10: 0"></i></div></div>
+</section>
+
+<section data-comp="ss-progress-v05" data-nome=".ss-progress (--marker, .is-over)" data-descricao="O mesmo trilho do .ss-progress, agora com a meta por --marker e .is-over para o que passou do limite."
+  data-comportamentos='["--marker: risco da meta sem elemento extra.",".is-over pinta a barra de vermelho."]'>
+  <div data-estado="meta" data-titulo="64% com meta em 80%"><div class="ss-progress" style="--marker:80%"><div class="ss-progress-bar" style="width:64%"></div></div></div>
+  <div data-estado="estouro" data-titulo="is-over"><div class="ss-progress is-over" style="--marker:100%"><div class="ss-progress-bar" style="width:100%"></div></div></div>
+</section>
+
+<section data-comp="ss-proportion" data-nome=".ss-proportion" data-descricao="Barra de proporção em partes (--w, --c) com legenda e porcentagem em DM Mono."
+  data-comportamentos='["Partes separadas por 2 px, pontas arredondadas.","A largura anima em 0,6 s quando muda."]'>
+  <div data-estado="padrao" data-titulo="formas de pagamento"><div class="ss-proportion"><div><i style="--w:46%;--c:var(--accent)"></i><i style="--w:30%;--c:var(--aurora-3)"></i><i style="--w:16%;--c:var(--success)"></i><i style="--w:8%;--c:var(--warn)"></i></div><ul><li style="--c:var(--accent)">Pix <b>46%</b></li><li style="--c:var(--aurora-3)">Boleto <b>30%</b></li><li style="--c:var(--success)">Dinheiro <b>16%</b></li><li style="--c:var(--warn)">Fiado <b>8%</b></li></ul></div></div>
+</section>
+
+<section data-comp="ss-status" data-nome=".ss-status" data-descricao="Situação com pontinho e texto (helper ss_status com o mapa situação → texto e tom)."
+  data-comportamentos='["Tons: neutral, info, success, warning, danger, accent.","A cor fica só no ponto; o texto diz a situação."]'>
+  <div data-estado="tons" data-titulo="os seis tons"><span class="ss-status" data-tone="neutral">Rascunho</span> &nbsp; <span class="ss-status" data-tone="info">Enviado</span> &nbsp; <span class="ss-status" data-tone="success">Pago</span> &nbsp; <span class="ss-status" data-tone="warning">Pendente</span> &nbsp; <span class="ss-status" data-tone="danger">Vencido</span> &nbsp; <span class="ss-status" data-tone="accent">Novo</span></div>
+</section>
+
+<section data-comp="ss-value-row" data-nome=".ss-value-row · .ss-dashed" data-descricao="Linhas rótulo ⟷ valor em DM Mono, com total realçado; .ss-dashed vazio é divisória tracejada e, com conteúdo, a caixa de adicionar."
+  data-comportamentos='[".is-total: borda em cima, negrito e valor maior.","a/button.ss-dashed ganha a cor da marca no hover."]'>
+  <div data-estado="resumo" data-titulo="resumo do pedido"><div class="ss-value-row"><span>Subtotal</span><b>R$ 1.320,00</b></div><div class="ss-value-row"><span>Desconto</span><b>− R$ 70,00</b></div><hr class="ss-dashed"><div class="ss-value-row is-total"><span>Total</span><b>R$ 1.250,00</b></div></div>
+  <div data-estado="adicionar" data-titulo="ss-dashed com conteúdo (hover)" data-acao="hover"><button data-alvo class="ss-dashed">+ Adicionar item</button></div>
+</section>
+
+<section data-comp="ss-offer" data-nome=".ss-offer · .ss-deal · .ss-source" data-descricao="Card de oferta (a melhor ganha borda e fita), preço em promoção com o antigo riscado e a fonte do dado."
+  data-comportamentos='[".is-best mostra a fita .ss-offer-tag e a borda da marca.","Desconto em verde, sem depender só da cor (o −% vem escrito)."]'>
+  <div data-estado="padrao" data-titulo="duas ofertas" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:32px"><div class="ss-offer is-best"><span class="ss-offer-tag">Melhor preço</span><span class="ss-source">mercadobom.com.br<small>há 2 h</small></span><span class="ss-offer-price">R$ 7,90</span><span class="ss-deal"><s>R$ 10,00</s><em>−21%</em></span></div><div class="ss-offer"><span class="ss-offer-tag">Melhor preço</span><span class="ss-source">padariacentral.com<small>ontem</small></span><span class="ss-offer-price">R$ 8,49</span></div></div>
+  <div data-estado="deal" data-titulo="ss-deal"><span class="ss-deal"><s>R$ 10,00</s><b>R$ 7,90</b><em>−21%</em></span></div>
+</section>
+
+<section data-comp="ss-img" data-nome=".ss-img · .ss-highlight" data-descricao="Imagem com listrado enquanto carrega e fade de entrada (--ratio); .ss-highlight acende o que acabou de salvar por 600 ms."
+  data-comportamentos='["A img entra com fade (0,4 s) sobre o listrado.",".ss-highlight: fundo na cor da marca a 22% que apaga em 600 ms (o turbo stream põe a classe)."]'>
+  <div data-estado="carregando" data-titulo="carregando · carregada" style="display:flex;gap:12px"><span class="ss-img" style="width:120px"></span><span class="ss-img" style="width:120px"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23f2c14e'/%3E%3Ccircle cx='60' cy='60' r='34' fill='%23e07a2f'/%3E%3C/svg%3E"></span></div>
+  <div data-estado="realce" data-titulo="ss-highlight (no começo)"><div class="ss-item cat-still" style="background-color:color-mix(in srgb, var(--accent) 22%, transparent)"><span class="ss-item-icon"><svg><use href="#doc"/></svg></span><span class="ss-item-main"><b>Pedido 1042</b><span>Salvo agora</span></span><span class="ss-item-value">R$ 1.250,00</span></div></div>
+</section>
+
+<section data-comp="ss-screen-header" data-nome=".ss-screen-header" data-descricao="Cabeçalho da tela que gruda no topo e encolhe com a rolagem (animation-timeline: scroll(); sem suporte, fica estático)."
+  data-comportamentos='["Nos primeiros 80 px de rolagem o título vai de 1,65 a 1,1 rem e ganha a linha embaixo.",".is-compact força o estado encolhido.","Com menos movimento fica no estado aberto."]'>
+  <div data-estado="aberto" data-titulo="topo da página"><header class="ss-screen-header cat-still"><h1>Pedidos</h1><button class="ss-btn ss-btn-primary ss-btn-sm">Novo</button></header></div>
+  <div data-estado="compacto" data-titulo="is-compact (rolado)"><header class="ss-screen-header is-compact"><h1>Pedidos</h1><button class="ss-btn ss-btn-primary ss-btn-sm">Novo</button></header></div>
+</section>
+
+<section data-comp="ss-onboarding" data-nome=".ss-onboarding · .ss-dots" data-descricao="Passo das boas-vindas: ilustração, título, texto, pontos de página e ações."
+  data-comportamentos='["O ponto atual (aria-current) estica numa pílula da marca com mola.","Pontos dentro do .ss-onboarding não piscam (o .ss-dots solto continua sendo o pensando antigo)."]'>
+  <div data-estado="passo-2" data-titulo="passo 2 de 3"><div class="ss-onboarding"><div class="ss-empty ss-card" style="width:100%;padding:1.5rem 1rem .5rem"></div><h2>Venda na rua, mesmo sem sinal</h2><p>O pedido fica na fila e sobe quando a conexão voltar.</p><div class="ss-dots"><span></span><span aria-current="step"></span><span></span></div><button class="ss-btn ss-btn-primary" style="width:100%">Continuar</button></div></div>
+</section>
+
+<section data-comp="ss-checklist" data-nome=".ss-checklist · .ss-tip" data-descricao="Primeiros passos com marcação e a dica dispensável."
+  data-comportamentos='[".is-done: círculo verde com ✓ e texto riscado.","A dica entra subindo; o × (aria-label Dispensar) esconde com [hidden] e o produto lembra."]'>
+  <div data-estado="checklist" data-titulo="2 de 4 feitos"><ol class="ss-checklist"><li class="is-done">Cadastrar a empresa</li><li class="is-done">Importar os clientes</li><li><a href="#">Fazer o primeiro pedido</a></li><li>Convidar a equipe</li></ol></div>
+  <div data-estado="dica" data-titulo="ss-tip"><aside class="ss-tip"><svg><use href="#bulb"/></svg><p>Arraste o pedido para a coluna seguinte para mudar a situação.</p><button aria-label="Dispensar">×</button></aside></div>
+</section>
+
+<section data-comp="ss-plan-locked" data-nome=".ss-plan-locked · .ss-quota" data-descricao="Função fora do plano (conteúdo esmaecido e o aviso por cima) e a cota de uso com barra."
+  data-comportamentos='["O conteúdo de baixo não recebe clique nem seleção.",".ss-quota: --v de 0 a 1; .is-low em aviso e .is-out em perigo (o número também muda de cor)."]'>
+  <div data-estado="bloqueado" data-titulo="relatório bloqueado"><div class="ss-plan-locked"><div class="ss-card ss-card-pad"><p class="ss-kicker">Curva ABC</p><div class="ss-bars" style="height:90px"><div class="ss-bar" style="--v:1"><i></i></div><div class="ss-bar" style="--v:.7"><i></i></div><div class="ss-bar" style="--v:.45"><i></i></div><div class="ss-bar" style="--v:.2"><i></i></div></div></div><div class="ss-plan-locked-cta"><svg><use href="#lock"/></svg><b>No plano Pro</b>Veja os produtos que mais vendem.<a class="ss-btn ss-btn-primary ss-btn-sm" href="#">Ver planos</a></div></div></div>
+  <div data-estado="cota" data-titulo="normal · perto · acabou"><div class="ss-quota" style="--v:.3"><span>Leituras de IA</span><b>3 de 10</b><i></i></div><p style="height:14px"></p><div class="ss-quota is-low" style="--v:.9"><span>Leituras de IA</span><b>9 de 10</b><i></i></div><p style="height:14px"></p><div class="ss-quota is-out" style="--v:1"><span>Leituras de IA</span><b>10 de 10</b><i></i></div></div>
+</section>
+
+<section data-comp="ss-chat" data-nome=".ss-chat · .ss-bubble · .ss-thinking" data-descricao="Conversa com a IA: balão da IA à esquerda, o meu (.is-me) à direita na cor da marca e os três pontos de pensando."
+  data-comportamentos='["Balão entra subindo (0,3 s).","Pensando: três pontos que respiram em sequência (o único movimento contínuo, como um carregando)."]'>
+  <div data-estado="conversa" data-titulo="pergunta, resposta e pensando"><div class="ss-chat"><div class="ss-bubble is-me">Quanto vendi esta semana?<small>10:42</small></div><div class="ss-bubble">R$ 18.420,50, 12% a mais que a semana passada.</div><div class="ss-bubble is-me">E por vendedor?</div><span class="ss-thinking" aria-label="Pensando"><i></i><i></i><i></i></span></div></div>
+</section>
+
+<section data-comp="ss-sync" data-nome=".ss-sync" data-descricao="Situação da sincronização: ponto (ou giro) e texto por data-state."
+  data-comportamentos='["synced verde, pending âmbar, sending gira na cor da marca, failed vermelho, offline contorno cinza.","A cor nunca vai sozinha: o texto diz o estado."]'>
+  <div data-estado="estados" data-titulo="os cinco estados" style="display:grid;gap:10px"><span class="ss-sync" data-state="synced">Tudo sincronizado</span><span class="ss-sync" data-state="pending">2 pedidos na fila</span><span class="ss-sync cat-still" data-state="sending">Enviando…</span><span class="ss-sync" data-state="failed">Falhou · tocar para tentar</span><span class="ss-sync" data-state="offline">Sem conexão</span></div>
+</section>
+
+<section data-comp="ss-menu" data-nome=".ss-menu" data-descricao="Menu ⋮ com details/summary: lista flutuante de links ou botões, com divisória e item de perigo."
+  data-comportamentos='["Abre com pop (0,16 s), alinhado à direita.","Esc e clique fora: o produto fecha (removeAttribute open).",".is-danger em vermelho."]'>
+  <div data-estado="aberto" data-titulo="aberto" style="height:230px;display:flex;justify-content:flex-end"><details class="ss-menu" open><summary aria-label="Mais ações">⋮</summary><div><a href="#"><svg><use href="#doc"/></svg>Duplicar</a><button><svg><use href="#up"/></svg>Compartilhar</button><hr><button class="is-danger"><svg><use href="#trash"/></svg>Excluir</button></div></details></div>
+</section>
+
+<section data-comp="ss-odometer" data-nome=".ss-odometer" data-descricao="Número com dígitos que rolam (helper ss_odometer): cada dígito é uma coluna 0–9 deslocada por --d."
+  data-comportamentos='["Quando o valor muda (morph do Turbo), cada dígito rola até o novo com mola (0,6 s).","Leitor de tela lê o texto inteiro (.ss-sr); as colunas ficam aria-hidden."]'>
+  <div data-estado="padrao" data-titulo="valor" style="font-size:2rem"><span class="ss-odometer"><span class="ss-sr">R$ 1.204,50</span><span aria-hidden="true" style="display:contents"><span>R$ </span><span class="ss-odo-digit" style="--d:1"><span>0123456789</span></span><span>.</span><span class="ss-odo-digit" style="--d:2"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:0"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:4"><span>0123456789</span></span><span>,</span><span class="ss-odo-digit" style="--d:5"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:0"><span>0123456789</span></span></span></span></div>
+  <div data-estado="outro" data-titulo="depois de mudar" style="font-size:2rem"><span class="ss-odometer"><span class="ss-sr">R$ 1.287,90</span><span aria-hidden="true" style="display:contents"><span>R$ </span><span class="ss-odo-digit" style="--d:1"><span>0123456789</span></span><span>.</span><span class="ss-odo-digit" style="--d:2"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:8"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:7"><span>0123456789</span></span><span>,</span><span class="ss-odo-digit" style="--d:9"><span>0123456789</span></span><span class="ss-odo-digit" style="--d:0"><span>0123456789</span></span></span></span></div>
+</section>
+
+<section data-comp="ss-command" data-nome=".ss-command" data-descricao="Paleta de comandos num dialog: busca grande, resultados com o trecho achado em mark e atalho/categoria à direita."
+  data-comportamentos='["Item com aria-selected=true (setas do teclado) fica na cor da marca.","mark: negrito sublinhado na cor da marca, sem fundo amarelo."]'>
+  <div data-estado="busca" data-titulo="buscando “ped”"><dialog open class="ss-dialog ss-command" style="position:static;margin:0;width:100%"><input value="ped" aria-label="Buscar"><div class="ss-command-list"><a href="#" class="ss-command-item" aria-selected="true"><svg><use href="#doc"/></svg><span>Novo <mark>ped</mark>ido</span><small>Ação</small></a><a href="#" class="ss-command-item"><svg><use href="#doc"/></svg><span><mark>Ped</mark>idos em aberto</span><small>Tela</small></a><a href="#" class="ss-command-item"><svg><use href="#search"/></svg><span><mark>Ped</mark>ro Almeida</span><small>Cliente</small></a></div></dialog></div>
+</section>
+
+<section data-comp="ss-selection-bar" data-nome=".ss-selection-bar" data-descricao="Barra de seleção em massa: pílula escura no rodapé com a contagem e as ações."
+  data-comportamentos='["Sobe com mola quando aparece; some com [hidden].","Igual nos dois temas; ação de perigo em vermelho claro."]'>
+  <div data-estado="padrao" data-titulo="3 selecionados" style="height:80px;position:relative;transform:translateZ(0)"><div class="ss-selection-bar"><b>3</b> selecionados<button>Arquivar</button><button class="is-danger">Excluir</button><button aria-label="Limpar seleção">×</button></div></div>
+</section>
+
+<section data-comp="ss-compare" data-nome=".ss-compare" data-descricao="Antes e depois: duas imagens sobrepostas, a de cima cortada em --pos, e um input range nativo com alça de 44 px."
+  data-comportamentos='["O range move o corte (oninput liga o valor ao --pos).","Teclado: setas pelo próprio range; foco desenha o anel em volta."]'>
+  <div data-estado="meio" data-titulo="no meio"><div class="ss-compare" style="--pos:50%;height:180px"><div style="background:repeating-linear-gradient(90deg,var(--field) 0 20px,var(--line) 20px 22px);display:grid;place-items:center start;padding-left:24px;font-weight:800;color:var(--muted)">Antes</div><div style="background:var(--grad-soft),var(--accent-soft);display:grid;place-items:center end;padding-right:24px;font-weight:800;color:var(--accent)">Depois</div><input type="range" value="50" aria-label="Comparar antes e depois"></div></div>
+</section>
+
+<section data-comp="ss-kanban-drag" data-nome=".ss-kanban (arrasto)" data-descricao="Estados de arrasto do quadro: cartão levantado, coluna de destino realçada e o lugar onde vai cair."
+  data-comportamentos='[".is-dragging: inclina 2° e cresce 2% com a sombra de hover.",".is-over na coluna: fundo e contorno tracejado da marca.",".ss-drop-slot: o espaço tracejado onde o cartão vai entrar."]'>
+  <div data-estado="arrastando" data-titulo="arrastando para Separando" style="width:640px"><div class="ss-kanban">
+    <div><p class="ss-label" style="margin-bottom:8px">Em aberto (2)</p><div class="ss-card is-dragging" style="padding:12px;margin-bottom:8px">Pedido 1042</div><div class="ss-card" style="padding:12px">Pedido 1043</div></div>
+    <div class="is-over"><p class="ss-label" style="margin-bottom:8px">Separando (1)</p><div class="ss-drop-slot"></div><div class="ss-card" style="padding:12px">Pedido 1039</div></div>
+  </div></div>
+</section>
+
+<section data-comp="ss-action-btn" data-nome=".ss-action-btn" data-descricao="Botão de ação com estado: carregando (gira no lugar do texto, mesma largura) e feito (✓ verde)."
+  data-comportamentos='[".is-loading: texto some (a largura fica), gira no centro, sem clique.",".is-done: fundo verde e ✓ que entra com mola.","O produto volta ao normal depois de 1–2 s."]'>
+  <div data-estado="estados" data-titulo="normal · carregando · feito"><button class="ss-btn ss-btn-primary ss-action-btn">Enviar pedido</button> <button class="ss-btn ss-btn-primary ss-action-btn is-loading cat-still" aria-busy="true">Enviar pedido</button> <button class="ss-btn ss-btn-primary ss-action-btn is-done">Enviado</button></div>
+</section>
 </body>
 </html>

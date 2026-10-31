@@ -1,4 +1,5 @@
 require "erb"
+require "date"
 
 module ComponentesUi
   # Helpers de view para as peças que precisam de conta (pontos, matiz).
@@ -68,8 +69,65 @@ module ComponentesUi
       name.to_s.strip.downcase.encode("UTF-16LE").unpack("v*").reduce(7) { |h, u| (h * 31 + u) & 0x7fffffff }
     end
 
+    # v0.5 ─────────────────────────────────────────────────────────────
+
+    # Odômetro: cada dígito vira uma coluna 0–9 que rola até ele (o resto fica
+    # como texto). Trocar o valor (morph do Turbo) faz os dígitos rolarem.
+    def ss_odometer(text, css: nil)
+      digits = text.to_s.scan(/\d|\D+/).map do |part|
+        part.match?(/\d/) ? %(<span class="ss-odo-digit" style="--d:#{part}"><span>0123456789</span></span>) : "<span>#{ERB::Util.h(part)}</span>"
+      end.join
+      %(<span class="#{["ss-odometer", css].compact.join(" ")}"><span class="ss-sr">#{ERB::Util.h(text)}</span><span aria-hidden="true" style="display:contents">#{digits}</span></span>).html_safe
+    end
+
+    # Meia-lua com agulha: value de 0 a 1; text = número do meio (padrão: a porcentagem).
+    def ss_gauge(value, label:, text: nil)
+      v = value.to_f.clamp(0.0, 1.0)
+      text ||= "#{(v * 100).round}%"
+      %(<div class="ss-gauge" style="--v:#{v.round(3)}" role="img" aria-label="#{ERB::Util.h("#{label}: #{text}")}"><b>#{ERB::Util.h(text)}</b><small>#{ERB::Util.h(label)}</small></div>).html_safe
+    end
+
+    # Anel em gomos: um gomo por unidade (até 60; acima disso, proporcional).
+    def ss_countdown(total:, left:, label: nil)
+      total = [total.to_i, 1].max
+      left = left.to_i.clamp(0, total)
+      n = [total, 60].min
+      lit = total == n ? left : (left * n.to_f / total).round
+      small = label ? %(<small>#{ERB::Util.h(label)}</small>) : ""
+      aria = ERB::Util.h([left, label].compact.join(" ") + " de #{total}")
+      %(<div class="ss-countdown" style="--n:#{n};--left:#{lit}" role="img" aria-label="#{aria}"><b>#{left}</b>#{small}</div>).html_safe
+    end
+
+    # Grade de constância: values_by_date = { Date|"aaaa-mm-dd" => número }.
+    # Colunas = semanas (dom..sáb), a última termina hoje. Nível 0–4 pelo quartil
+    # do valor entre os dias com valor (0 = nada; o maior = 4).
+    def ss_heat(values_by_date, weeks: 12, today: Date.today, label: "Constância")
+      vals = values_by_date.to_h.each_with_object({}) { |(k, v), h| h[k.is_a?(Date) ? k : Date.parse(k.to_s)] = v.to_f }
+      start = today - today.wday - (weeks - 1) * 7
+      cells = (start..today).map do |d|
+        v = vals[d].to_f
+        %(<i data-level="#{ss_heat_level(v, vals.values)}" title="#{d.strftime("%d/%m")}: #{v % 1 == 0 ? v.to_i : v}"></i>)
+      end.join
+      %(<div class="ss-heat" role="img" aria-label="#{ERB::Util.h(label)}">#{cells}</div>).html_safe
+    end
+
+    # Situação com pontinho: map = { "pago" => ["Pago", :success], … }.
+    # Tons: neutral, info, success, warning, danger, accent. Fora do mapa: neutro.
+    def ss_status(status, map)
+      text, tone = map[status] || map[status.to_s] || map[status.to_s.to_sym] || [status.to_s, :neutral]
+      %(<span class="ss-status" data-tone="#{ERB::Util.h(tone)}">#{ERB::Util.h(text)}</span>).html_safe
+    end
+
     private
 
     def fmt(p) = "#{p[0].round(2)},#{p[1].round(2)}"
+
+    def ss_heat_level(v, values)
+      return 0 if v <= 0
+
+      # Posição do valor entre os dias com valor (quartil): o maior é sempre 4.
+      pos = values.select(&:positive?)
+      (pos.count { |x| x <= v } * 4.0 / pos.size).ceil.clamp(1, 4)
+    end
   end
 end

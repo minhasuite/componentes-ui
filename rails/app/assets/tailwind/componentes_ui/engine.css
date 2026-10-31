@@ -486,3 +486,427 @@ th.r .ss-sort { flex-direction: row-reverse; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ── v0.5: estados, diálogos, formulários, dados, telas e extras (pares dos Ss* do Flutter) ── */
+:root {
+  --ss-i-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ss-i-check-w: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ss-i-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1.2 5h2.4v7h-2.4zm0 9h2.4v2.4h-2.4z'/%3E%3C/svg%3E");
+  --ss-i-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ss-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --ss-info: #3b82f6;
+}
+@property --ss-t { syntax: "<angle>"; inherits: false; initial-value: 360deg; }
+
+/* Diálogo, folha e paleta estendem o .ss-dialog (fora das camadas, como ele). */
+.ss-dialog:has(> .ss-dialog-body) { width: min(25rem, calc(100vw - 2rem)); }
+.ss-dialog-body { padding: 1.5rem 1.25rem 1rem; text-align: center; }
+.ss-dialog-body h2 { font-size: 1.15rem; margin-bottom: .35rem; }
+.ss-dialog-body p { color: var(--muted); font-size: .9rem; }
+.ss-dialog-icon { display: grid; place-items: center; width: 3rem; height: 3rem; margin: 0 auto .9rem; border-radius: 16px;
+                  background: var(--accent-soft); color: var(--accent); }
+.ss-dialog-icon svg { width: 1.5rem; height: 1.5rem; }
+/* Botões empilhados: o principal em cima, ocupando a largura. */
+.ss-dialog-actions { display: grid; gap: .5rem; padding: 0 1.25rem 1.25rem; }
+.ss-dialog-actions > * { width: 100%; min-height: 2.75rem; }
+.ss-dialog.is-danger .ss-dialog-icon { background: var(--danger-soft); color: var(--danger); }
+.ss-dialog.is-danger .ss-btn-primary { background: var(--danger); color: var(--surface); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--danger) 70%, transparent); }
+
+/* Folha: <dialog class="ss-sheet"> — de baixo no celular, centro no desktop. */
+.ss-sheet { width: min(32rem, calc(100vw - 2rem)); max-height: 88dvh; margin: auto; padding: 0 0 1.25rem; overflow: auto; border: 1px solid var(--line);
+            border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(20, 22, 40, .45); }
+.ss-sheet[open] { animation: ss-pop .22s cubic-bezier(.2, .8, .2, 1); }
+.ss-sheet::backdrop { background: rgba(14, 13, 22, .45); }
+.ss-sheet > :not(.ss-sheet-header) { padding-inline: 1.25rem; }
+/* Cabeçalho: ícone (svg ou span) + h2 + p de ajuda. */
+.ss-sheet .ss-dialog-actions { padding: 0 1.25rem; }
+.ss-sheet-header { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: .75rem; padding: 1.25rem 1.25rem .9rem; }
+.ss-sheet-header > :is(svg, span):first-child { grid-row: span 2; box-sizing: border-box; display: grid; place-items: center; width: 2.75rem; height: 2.75rem;
+                                                 padding: .65rem; border-radius: 14px; background: var(--accent-soft); color: var(--accent); }
+.ss-sheet-header h2 { font-size: 1.05rem; font-weight: 800; }
+.ss-sheet-header p { grid-column: 2; font-size: .82rem; color: var(--muted); }
+@media (max-width: 639px) {
+  .ss-sheet { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 24px 24px 0 0; border-bottom: 0; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
+  .ss-sheet[open] { animation: ss-sheet-up .32s cubic-bezier(.2, .8, .2, 1); }
+  .ss-sheet::before { content: ""; display: block; width: 2.5rem; height: 4px; margin: .6rem auto 0; border-radius: 999px; background: var(--line); }
+}
+
+/* Paleta de comandos: <dialog class="ss-dialog ss-command">; item = <a class="ss-command-item"><svg/><span>Novo <mark>ped</mark>ido</span><small>Ação</small></a>. */
+.ss-command { width: min(36rem, calc(100vw - 2rem)); margin-top: 12vh; }
+.ss-command input { width: 100%; height: 3.25rem; padding: 0 1.1rem; border: 0; border-bottom: 1px solid var(--line); outline: 0;
+                    background: none; color: var(--ink); font: 600 1rem var(--font-sans); }
+.ss-command-list { max-height: 60vh; overflow: auto; padding: .4rem; }
+.ss-command-item { display: flex; align-items: center; gap: .75rem; padding: .65rem .85rem; border-radius: 12px; color: var(--ink); text-decoration: none; font-weight: 600; }
+.ss-command-item svg { width: 1.1rem; height: 1.1rem; color: var(--muted); flex: none; }
+.ss-command-item small { margin-left: auto; font-size: .75rem; color: var(--muted); font-weight: 500; }
+.ss-command-item:hover, .ss-command-item[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
+.ss-command-item mark { background: none; color: var(--accent); font-weight: 800; text-decoration: underline 2px color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 3px; }
+.ss-command-empty { padding: 1.5rem; text-align: center; color: var(--muted); font-size: .9rem; }
+
+@layer components {
+  /* ── Estados ── */
+  /* Barra fina de revalidação: no topo de um container relative (ou da página). */
+  .ss-loading-bar { position: absolute; inset: 0 0 auto; height: 3px; overflow: hidden; z-index: 30; pointer-events: none; }
+  .ss-loading-bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; border-radius: 999px; background: var(--grad);
+                            animation: ss-indet 1.1s cubic-bezier(.4, 0, .2, 1) infinite; }
+  .ss-load-more { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 2.75rem; border: 0; border-radius: var(--r-field);
+                  background: none; color: var(--accent); font: 700 .88rem var(--font-sans); cursor: pointer; text-decoration: none; }
+  .ss-load-more:hover { background: var(--accent-soft); }
+  .ss-load-more[aria-busy="true"] { color: var(--muted); pointer-events: none; }
+  /* Girando: o indicador de carregamento (pode ser contínuo). */
+  .ss-load-more[aria-busy="true"]::before, .ss-action-btn.is-loading::after, .ss-sync[data-state="sending"]::before {
+    content: ""; box-sizing: border-box; width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-top-color: currentColor; animation: ss-spin .7s linear infinite; }
+  /* Faixa offline que desce: some com [hidden]. */
+  .ss-offline { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .5rem 1rem; background: var(--warn-soft); color: var(--warn);
+                font-size: .82rem; font-weight: 700; animation: ss-drop .3s cubic-bezier(.2, .8, .2, 1); }
+  .ss-offline svg { width: 1rem; height: 1rem; }
+  .ss-offline[hidden] { display: none; }
+
+  /* Toast com contagem: <span class="ss-toast-timer">5</span> + <button>Desfazer</button>; o anel se esvazia em 5 s. */
+  .ss-toast-timer { position: relative; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; flex: none;
+                    font: 500 .75rem var(--font-mono); color: oklch(from var(--accent) .75 c h); }
+  .ss-toast-timer::before { content: ""; position: absolute; inset: 0; border-radius: 50%;
+                            background: conic-gradient(currentColor var(--ss-t), rgba(255, 255, 255, .14) 0);
+                            mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); animation: ss-timer 5s linear forwards; }
+
+  /* ── Formulários ── */
+  /* <div class="ss-field"><label>…</label><input class="ss-input"><small class="ss-field-help">…</small><small class="ss-field-error">…</small></div> */
+  .ss-field { display: grid; gap: .35rem; }
+  .ss-field > label { font-size: .78rem; font-weight: 700; color: var(--ink-2); }
+  .ss-field-help { font-size: .75rem; color: var(--muted); }
+  .ss-field-error { display: none; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 600; color: var(--danger); }
+  .ss-field-error::before { content: ""; width: .95rem; height: .95rem; flex: none; background: currentColor; mask: var(--ss-i-alert) center / contain no-repeat; }
+  .ss-field.is-invalid .ss-field-error, .ss-field:has(:user-invalid) .ss-field-error { display: flex; }
+  .ss-field.is-invalid .ss-field-help, .ss-field:has(:user-invalid) .ss-field-help { display: none; }
+  .ss-field.is-invalid > label, .ss-field:has(:user-invalid) > label { color: var(--danger); }
+  .ss-field.is-invalid .ss-input, .ss-field .ss-input:user-invalid { border-color: var(--danger); }
+  .ss-field.is-invalid .ss-input:focus, .ss-field .ss-input:user-invalid:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 16%, transparent); }
+  /* Valor em dinheiro: DM Mono, à direita. Use junto com .ss-input. */
+  .ss-money { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; font-size: 1.05rem; letter-spacing: -.01em; }
+
+  /* Atalhos de data: botões com aria-pressed + <label>Outra…<input type="date" required></label>. */
+  .ss-date-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .ss-date-chips > * { display: inline-flex; align-items: center; gap: .35rem; height: 36px; padding: 0 .85rem; border-radius: 999px; border: 1px solid var(--line);
+                       background: var(--surface); color: var(--ink-2); font: 700 .82rem var(--font-sans); cursor: pointer; transition: background .2s, border-color .2s, transform .12s; }
+  .ss-date-chips > :active { transform: scale(.97); }
+  .ss-date-chips > [aria-pressed="true"], .ss-date-chips > label:has(input:valid) {
+    background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 40%, transparent); color: var(--accent); }
+  .ss-date-chips input[type="date"] { border: 0; outline: 0; background: none; color: inherit; font: 500 .8rem var(--font-mono); }
+  .ss-date-chips > label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Escolha em tile: <label class="ss-choice"><span>Rótulo</span><select>…</select></label>. */
+  .ss-choice { position: relative; display: grid; gap: .1rem; padding: .55rem 2.6rem .6rem .9rem; border-radius: 14px; background: var(--surface);
+               border: 1px solid var(--line); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .ss-choice::after { content: ""; position: absolute; right: .9rem; top: 50%; width: 1rem; height: 1rem; translate: 0 -50%; background: var(--muted);
+                      mask: var(--ss-i-chev) center / contain no-repeat; pointer-events: none; }
+  .ss-choice > span { font-size: .72rem; font-weight: 700; color: var(--muted); }
+  .ss-choice select { appearance: none; width: 100%; padding: 0; border: 0; outline: 0; background: none; color: var(--ink); font: 700 .95rem var(--font-sans); cursor: pointer; }
+  .ss-choice:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+  .ss-choice:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+
+  /* Linha com chave: <label class="ss-switch-row"><span>Texto<small>ajuda</small></span><input type="checkbox" role="switch"></label>. */
+  .ss-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.25rem; padding: .5rem .25rem; cursor: pointer; }
+  .ss-switch-row > span { font-weight: 600; font-size: .92rem; }
+  .ss-switch-row small { display: block; font-size: .78rem; font-weight: 500; color: var(--muted); }
+  .ss-switch-row input { appearance: none; position: relative; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; cursor: pointer;
+                         background: color-mix(in srgb, var(--muted) 35%, var(--field)); transition: background .2s; }
+  .ss-switch-row input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+                                 box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transition: translate .28s var(--ss-spring); }
+  .ss-switch-row input:checked { background: var(--accent); }
+  .ss-switch-row input:checked::before { translate: 18px 0; }
+  .ss-switch-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-switch-row:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+
+  /* − valor +: <div class="ss-stepper"><button aria-label="Menos">−</button><output>3</output><button aria-label="Mais">+</button></div>. */
+  .ss-stepper { display: inline-flex; align-items: center; gap: .25rem; padding: 3px; border-radius: 999px; background: var(--field); box-shadow: inset 0 0 0 1px var(--line); }
+  .ss-stepper button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: var(--surface); color: var(--accent);
+                       font: 700 1.15rem var(--font-sans); cursor: pointer; box-shadow: 0 1px 2px rgba(20, 22, 40, .08); transition: transform .12s; }
+  .ss-stepper button:active:not(:disabled) { transform: scale(.9); }
+  .ss-stepper button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
+  .ss-stepper :is(output, input) { min-width: 2.75rem; border: 0; background: none; text-align: center; font: 500 1.05rem var(--font-mono); color: var(--ink); }
+  .ss-stepper input { width: 3rem; outline: 0; -moz-appearance: textfield; }
+  .ss-stepper input::-webkit-inner-spin-button { display: none; }
+
+  /* ── Dados ── */
+  /* <ol class="ss-timeline"><li class="is-done"><b>…</b><small>…</small></li>… */
+  .ss-timeline { list-style: none; margin: 0; padding: 0; }
+  .ss-timeline li { position: relative; padding: 0 0 1.1rem 2rem; }
+  .ss-timeline li:last-child { padding-bottom: 0; }
+  .ss-timeline li::before { content: ""; position: absolute; left: 0; top: .1rem; z-index: 1; box-sizing: border-box; width: 1.15rem; height: 1.15rem; border-radius: 50%;
+                            background: var(--surface); border: 2px solid var(--line); }
+  .ss-timeline li:not(:last-child)::after { content: ""; position: absolute; left: calc(.575rem - 1px); top: 1.25rem; bottom: .1rem; width: 2px; background: var(--line); }
+  .ss-timeline b { display: block; font-weight: 700; font-size: .9rem; color: var(--muted); }
+  .ss-timeline small { display: block; font-size: .78rem; color: var(--muted); }
+  .ss-timeline .is-done::before { border-color: var(--accent); background: var(--accent) var(--ss-i-check-w) center / 70% no-repeat; }
+  .ss-timeline .is-done:not(:last-child)::after { background: var(--accent); }
+  .ss-timeline :is(.is-done, .is-current) b { color: var(--ink); }
+  .ss-timeline .is-current::before { border: 4px solid var(--accent); box-shadow: 0 0 0 5px var(--ring); }
+
+  /* Meia-lua: <div class="ss-gauge" style="--v:.72"><b>72%</b><small>da meta</small></div> (helper ss_gauge). A agulha entra girando. */
+  .ss-gauge { --v: 0; --s: 180px; position: relative; display: grid; justify-items: center; width: var(--s); padding-top: calc(var(--s) / 2 + .35rem); }
+  .ss-gauge::before { content: ""; position: absolute; top: 0; left: 0; width: var(--s); height: var(--s); border-radius: 50%; clip-path: inset(0 0 50% 0);
+                      background: conic-gradient(from -90deg, var(--accent) calc(var(--v) * 180deg), var(--line) 0 180deg, transparent 0);
+                      mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px)); }
+  .ss-gauge::after { content: ""; position: absolute; left: calc(var(--s) / 2 - 1.5px); top: calc(var(--s) * .14); width: 3px; height: calc(var(--s) * .36); border-radius: 999px; background: var(--ink);
+                     transform-origin: 50% 100%; rotate: calc(-90deg + var(--v) * 180deg); animation: ss-needle .7s var(--ss-spring) backwards; }
+  .ss-gauge b { font: 500 1.35rem/1 var(--font-mono); color: var(--ink); }
+  .ss-gauge small { margin-top: .2rem; font-size: .72rem; font-weight: 600; color: var(--muted); }
+
+  /* Anel em gomos: <div class="ss-countdown" style="--n:10;--left:7"><b>7</b><small>dias</small></div> (helper ss_countdown). */
+  .ss-countdown { --n: 10; --left: 0; position: relative; display: inline-grid; place-content: center; text-align: center; width: 112px; aspect-ratio: 1; }
+  .ss-countdown::before { content: ""; position: absolute; inset: 0; border-radius: 50%;
+                          background: conic-gradient(var(--accent) calc(var(--left) / var(--n) * 360deg), var(--line) 0);
+                          mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px)),
+                                repeating-conic-gradient(#000 0 calc(360deg / var(--n) - 4deg), transparent 0 calc(360deg / var(--n)));
+                          mask-composite: intersect; }
+  .ss-countdown b { font: 500 1.6rem/1 var(--font-mono); color: var(--ink); }
+  .ss-countdown small { font-size: .72rem; font-weight: 600; color: var(--muted); }
+
+  /* Mês: <div class="ss-month"><span>D</span>…(7 cabeçalhos)<button>1<i></i></button>…; .is-out = outro mês. */
+  .ss-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; text-align: center; }
+  .ss-month > span { padding: .3rem 0; font-size: .68rem; font-weight: 800; text-transform: uppercase; color: var(--muted); }
+  .ss-month > :is(button, a, div) { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 2.5rem; border: 0; border-radius: 12px;
+                                    background: none; color: var(--ink); font: 500 .85rem var(--font-mono); cursor: pointer; text-decoration: none; transition: background .15s; }
+  .ss-month > :is(button, a):hover { background: var(--field); }
+  .ss-month > .is-out { color: color-mix(in srgb, var(--muted) 55%, transparent); }
+  .ss-month > .is-today { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); font-weight: 700; }
+  .ss-month > .is-selected, .ss-month > .is-selected:hover { background: var(--accent); color: #fff; box-shadow: none; }
+  /* Marcadores: até 3 <i> (cor por --c) embaixo do número. */
+  .ss-month i { position: absolute; bottom: 5px; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--c, var(--accent)); translate: -50% 0; }
+  .ss-month i:nth-of-type(2) { translate: calc(-50% - 7px) 0; }
+  .ss-month i:nth-of-type(3) { translate: calc(-50% + 7px) 0; }
+  .ss-month .is-selected i { background: #fff; }
+
+  /* Constância: <div class="ss-heat"><i data-level="0..4"></i>… (helper ss_heat: colunas = semanas, linhas = dom..sáb). */
+  .ss-heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); grid-auto-columns: 12px; gap: 3px; overflow-x: auto; }
+  .ss-heat i { border-radius: 3px; background: color-mix(in srgb, var(--line) 70%, var(--field)); }
+  .ss-heat i[data-level="1"] { background: color-mix(in oklab, var(--accent) 25%, var(--surface)); }
+  .ss-heat i[data-level="2"] { background: color-mix(in oklab, var(--accent) 50%, var(--surface)); }
+  .ss-heat i[data-level="3"] { background: color-mix(in oklab, var(--accent) 75%, var(--surface)); }
+  .ss-heat i[data-level="4"] { background: var(--accent); }
+  
+  /* Progresso (v0.5): style="--marker:80%" marca a meta; .is-over pinta de perigo (passou do limite). */
+  .ss-progress::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--marker, -10px); width: 2px; margin-left: -1px;
+                        background: color-mix(in srgb, var(--ink) 55%, transparent); }
+  .ss-progress.is-over .ss-progress-bar { background: var(--danger); }
+
+  /* Proporção: <div class="ss-proportion"><div><i style="--w:40%;--c:…"></i>…</div><ul><li style="--c:…">Pix <b>40%</b></li></ul></div>. */
+  .ss-proportion > div { display: flex; gap: 2px; height: .65rem; border-radius: 999px; overflow: hidden; background: var(--field); }
+  .ss-proportion > div i { width: var(--w); background: var(--c, var(--accent)); transition: width .6s cubic-bezier(.2, .8, .2, 1); }
+  .ss-proportion ul { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: .65rem 0 0; padding: 0; list-style: none; font-size: .8rem; color: var(--ink-2); }
+  .ss-proportion li { display: inline-flex; align-items: center; gap: .4rem; }
+  .ss-proportion li::before { content: ""; width: .6rem; height: .6rem; border-radius: 3px; background: var(--c, var(--accent)); }
+  .ss-proportion li b { font: 500 .78rem var(--font-mono); color: var(--muted); }
+
+  /* Situação: pontinho + texto (helper ss_status). */
+  .ss-status { --c: var(--muted); display: inline-flex; align-items: center; gap: .45rem; font-size: .82rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+  .ss-status::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .ss-status[data-tone="info"] { --c: var(--ss-info); }
+  .ss-status[data-tone="success"] { --c: var(--success); }
+  .ss-status[data-tone="warning"] { --c: var(--warn); }
+  .ss-status[data-tone="danger"] { --c: var(--danger); }
+  .ss-status[data-tone="accent"] { --c: var(--accent); }
+
+  /* Rótulo ⟷ valor: <div class="ss-value-row"><span>Subtotal</span><b>R$ 10,00</b></div>; .is-total realça. */
+  .ss-value-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .45rem 0; font-size: .88rem; color: var(--muted); }
+  .ss-value-row > :last-child { font: 500 .92rem var(--font-mono); color: var(--ink); white-space: nowrap; }
+  .ss-value-row.is-total { margin-top: .25rem; padding-top: .7rem; border-top: 1px solid var(--line); font-weight: 700; color: var(--ink); }
+  .ss-value-row.is-total > :last-child { font-size: 1.1rem; }
+  .ss-dashed:empty + .ss-value-row.is-total { margin-top: 0; padding-top: .45rem; border-top: 0; }
+  /* Tracejado: vazio = divisória; com conteúdo = caixa de "adicionar". */
+  .ss-dashed { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 3.25rem; padding: .75rem; border: 1.5px dashed var(--line);
+               border-radius: 14px; background: none; color: var(--muted); font: 600 .88rem var(--font-sans); text-decoration: none; }
+  a.ss-dashed:hover, button.ss-dashed:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); cursor: pointer; }
+  .ss-dashed:empty { min-height: 0; padding: 0; margin: .75rem 0; border: 0; border-top: 1.5px dashed var(--line); border-radius: 0; }
+
+  /* Oferta: card com preço; .is-best ganha borda da marca e a fita (.ss-offer-tag). */
+  .ss-offer { position: relative; display: grid; gap: .25rem; padding: 1rem; border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card);
+              border: 1.5px solid color-mix(in srgb, var(--line) 70%, transparent); }
+  .ss-offer.is-best { border-color: var(--accent); }
+  .ss-offer-tag { position: absolute; top: -.65rem; right: 1rem; padding: .15rem .6rem; border-radius: 999px; background: var(--accent); color: #fff;
+                  font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .ss-offer:not(.is-best) .ss-offer-tag { display: none; }
+  .ss-offer-price { font: 500 1.4rem/1.1 var(--font-mono); color: var(--ink); letter-spacing: -.02em; }
+  /* Promoção: <span class="ss-deal"><s>R$ 10,00</s><b>R$ 7,90</b><em>−21%</em></span>. */
+  .ss-deal { display: inline-flex; align-items: baseline; gap: .45rem; font-family: var(--font-mono); white-space: nowrap; }
+  .ss-deal s { font-size: .8rem; color: var(--muted); }
+  .ss-deal b { font-weight: 500; font-size: 1rem; color: var(--success); }
+  .ss-deal em { font-style: normal; font-size: .72rem; padding: .1rem .4rem; border-radius: 6px; background: var(--success-soft); color: var(--success); }
+  /* Fonte do dado: <a class="ss-source"><img>loja.com.br<small>há 2 h</small></a>. */
+  .ss-source { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem; font-weight: 600; color: var(--muted); text-decoration: none; }
+  .ss-source :is(img, svg) { width: 1rem; height: 1rem; border-radius: 4px; }
+  .ss-source small { font-weight: 500; }
+  .ss-source small::before { content: "· "; }
+  a.ss-source:hover { color: var(--accent); }
+  /* Imagem: listrado enquanto carrega; a <img> entra com fade. --ratio (padrão 1). */
+  .ss-img { display: block; overflow: hidden; aspect-ratio: var(--ratio, 1); border-radius: 14px;
+            background: repeating-linear-gradient(-45deg, var(--field) 0 8px, color-mix(in srgb, var(--line) 70%, var(--field)) 8px 16px); }
+  .ss-img img { display: block; width: 100%; height: 100%; object-fit: cover; animation: ss-fade .4s ease both; }
+  /* Realce ao salvar (600 ms): o que mudou acende e apaga (o turbo stream põe a classe). */
+  .ss-highlight { animation: ss-highlight .6s ease-out; }
+
+  /* ── Telas ── */
+  /* Cabeçalho que gruda e encolhe com a rolagem da página (scroll-driven; sem suporte, fica estático; .is-compact força). */
+  .ss-screen-header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: .75rem; padding: 1rem 0 .75rem;
+                      background: color-mix(in srgb, var(--page) 94%, transparent); }
+  .ss-screen-header h1 { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-screen-header.is-compact { padding-block: .5rem; box-shadow: 0 1px 0 var(--line); }
+  .ss-screen-header.is-compact h1 { font-size: 1.1rem; }
+  @supports (animation-timeline: scroll()) {
+    .ss-screen-header:not(.is-compact) { animation: ss-head linear both; animation-timeline: scroll(); animation-range: 0 80px; }
+    .ss-screen-header:not(.is-compact) h1 { animation: ss-head-title linear both; animation-timeline: scroll(); animation-range: 0 80px; }
+  }
+
+  /* Boas-vindas: ilustração, título, texto, pontos (.ss-dots com aria-current) e ações. */
+  .ss-onboarding { display: grid; justify-items: center; gap: .75rem; max-width: 26rem; margin: 0 auto; padding: 2rem 1.25rem; text-align: center; }
+  .ss-onboarding h2 { font-size: 1.4rem; letter-spacing: -.02em; }
+  .ss-onboarding p { color: var(--muted); }
+  .ss-onboarding .ss-dots { display: flex; gap: .35rem; margin: .5rem 0; }
+  .ss-onboarding .ss-dots > * { width: .5rem; height: .5rem; margin: 0; border-radius: 999px; background: var(--line); animation: none;
+                                transition: width .3s var(--ss-spring), background .3s; }
+  .ss-onboarding .ss-dots > :is([aria-current="true"], [aria-current="step"]) { width: 1.5rem; background: var(--accent); }
+
+  /* Primeiros passos: <ol class="ss-checklist"><li class="is-done">…</li>… */
+  .ss-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: .25rem; }
+  .ss-checklist li { display: flex; align-items: center; gap: .75rem; padding: .6rem .25rem; font-weight: 600; font-size: .9rem; }
+  .ss-checklist li::before { content: ""; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid var(--line); }
+  .ss-checklist .is-done { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); }
+  .ss-checklist .is-done::before { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 65% no-repeat; }
+  .ss-checklist a { color: var(--accent); }
+
+  /* Dica dispensável: <aside class="ss-tip"><svg/><p>…</p><button aria-label="Dispensar">×</button></aside>. */
+  .ss-tip { display: flex; align-items: flex-start; gap: .65rem; padding: .85rem .6rem .85rem 1rem; border-radius: 16px; background: var(--accent-soft);
+            color: var(--ink-2); font-size: .86rem; animation: ss-rise .35s ease both; }
+  .ss-tip > svg { width: 1.2rem; height: 1.2rem; flex: none; margin-top: .05rem; color: var(--accent); }
+  .ss-tip > p { flex: 1; margin: 0; }
+  .ss-tip > button { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; margin: -.3rem 0; border: 0; border-radius: 50%; background: none;
+                     color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .ss-tip > button:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+  .ss-tip[hidden] { display: none; }
+
+  /* Bloqueado pelo plano: o 1º filho esmaece e o .ss-plan-locked-cta fica por cima. */
+  .ss-plan-locked { position: relative; display: grid; border-radius: var(--r-card); overflow: hidden; }
+  .ss-plan-locked > * { grid-area: 1 / 1; }
+  .ss-plan-locked > :first-child { opacity: .3; pointer-events: none; user-select: none; }
+  .ss-plan-locked-cta { z-index: 1; align-self: center; justify-self: center; display: grid; justify-items: center; gap: .4rem; max-width: 18rem; padding: 1rem 1.25rem;
+                        text-align: center; border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card); font-size: .86rem; color: var(--muted); }
+  .ss-plan-locked-cta svg { width: 1.6rem; height: 1.6rem; color: var(--accent); }
+  .ss-plan-locked-cta b { color: var(--ink); font-size: .95rem; }
+
+  /* Cota: <div class="ss-quota" style="--v:.3"><span>Leituras de IA</span><b>3 de 10</b><i></i></div>; .is-low (aviso) / .is-out (acabou). */
+  .ss-quota { --v: 0; --c: var(--accent); display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: .4rem .75rem; font-size: .82rem; color: var(--ink-2); }
+  .ss-quota b { font: 500 .8rem var(--font-mono); color: var(--muted); }
+  .ss-quota i { grid-column: 1 / -1; height: 6px; border-radius: 999px; background: linear-gradient(var(--c), var(--c)) 0 / calc(var(--v) * 100%) 100% no-repeat, var(--field); }
+  .ss-quota.is-low { --c: var(--warn); }
+  .ss-quota.is-out { --c: var(--danger); }
+  .ss-quota:is(.is-low, .is-out) b { color: var(--c); }
+
+  /* Chat: <div class="ss-chat"><div class="ss-bubble">…</div><div class="ss-bubble is-me">…</div><span class="ss-thinking"><i></i><i></i><i></i></span></div>. */
+  .ss-chat { display: flex; flex-direction: column; gap: .6rem; }
+  .ss-bubble { align-self: flex-start; max-width: 85%; padding: .7rem 1rem; border-radius: 4px 18px 18px 18px; background: var(--surface); color: var(--ink);
+               box-shadow: var(--shadow-card); font-size: .9rem; white-space: pre-line; animation: ss-rise .3s cubic-bezier(.2, .8, .2, 1) both; }
+  .ss-bubble.is-me { align-self: flex-end; border-radius: 18px 18px 4px 18px; background: var(--accent); color: #fff; box-shadow: none; }
+  .ss-bubble small { display: block; margin-top: .25rem; font: .68rem var(--font-mono); opacity: .6; text-align: right; }
+  /* Pensando: três pontos que respiram (contínuo, como um carregando). */
+  .ss-thinking { align-self: flex-start; display: inline-flex; align-items: center; gap: .3rem; padding: .9rem 1rem; border-radius: 4px 18px 18px 18px;
+                 background: var(--surface); box-shadow: var(--shadow-card); }
+  .ss-thinking > * { width: .45rem; height: .45rem; border-radius: 50%; background: var(--accent); animation: ss-dot 1.2s infinite ease-in-out; }
+  .ss-thinking > :nth-child(2) { animation-delay: .15s; }
+  .ss-thinking > :nth-child(3) { animation-delay: .3s; }
+
+  /* Sincronização: <span class="ss-sync" data-state="synced|pending|sending|failed|offline">texto</span>. */
+  .ss-sync { --c: var(--success); display: inline-flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 700; color: var(--ink-2); }
+  .ss-sync::before { content: ""; box-sizing: border-box; width: .55rem; height: .55rem; border-radius: 50%; background: var(--c); }
+  .ss-sync[data-state="pending"] { --c: var(--warn); }
+  .ss-sync[data-state="sending"] { color: var(--accent); }
+  .ss-sync[data-state="sending"]::before { width: .8rem; height: .8rem; background: none; }
+  .ss-sync[data-state="failed"] { --c: var(--danger); color: var(--danger); }
+  .ss-sync[data-state="offline"] { --c: var(--muted); color: var(--muted); }
+  .ss-sync[data-state="offline"]::before { background: none; box-shadow: inset 0 0 0 2px var(--c); }
+
+  /* Menu ⋮: <details class="ss-menu"><summary aria-label="Mais ações">⋮</summary><div>…links/botões, hr…</div></details>. */
+  .ss-menu { position: relative; display: inline-block; }
+  .ss-menu > summary { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 12px; list-style: none; cursor: pointer;
+                       color: var(--muted); font-size: 1.25rem; font-weight: 800; line-height: 1; }
+  .ss-menu > summary::-webkit-details-marker { display: none; }
+  .ss-menu > summary:hover, .ss-menu[open] > summary { background: var(--field); color: var(--ink); }
+  .ss-menu > :not(summary) { position: absolute; right: 0; margin-top: .25rem; z-index: 40; min-width: 12rem; padding: .35rem; border-radius: 14px;
+                             background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 40px -16px rgba(20, 22, 40, .35);
+                             transform-origin: top right; animation: ss-pop .16s cubic-bezier(.2, .8, .2, 1); }
+  .ss-menu > :not(summary) > :is(a, button) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .55rem .7rem; border: 0; border-radius: 10px;
+                                               background: none; color: var(--ink); font: 600 .88rem var(--font-sans); text-align: left; text-decoration: none; cursor: pointer; }
+  .ss-menu > :not(summary) svg { width: 1.05rem; height: 1.05rem; color: var(--muted); }
+  .ss-menu > :not(summary) > :is(a, button):is(:hover, :focus-visible) { background: var(--field); }
+  .ss-menu > :not(summary) > .is-danger, .ss-menu > :not(summary) > .is-danger svg { color: var(--danger); }
+  .ss-menu > :not(summary) > hr { margin: .3rem 0; border: 0; border-top: 1px solid var(--line); }
+
+  /* ── Extras ── */
+  /* Odômetro (helper ss_odometer): cada dígito é uma coluna 0–9 que rola até --d quando o valor muda. */
+  .ss-odometer { display: inline-flex; font-family: var(--font-mono); font-variant-numeric: tabular-nums; line-height: 1; white-space: pre; }
+  .ss-odo-digit { display: inline-block; height: 1em; overflow: hidden; }
+  .ss-odo-digit > span { display: block; width: 1ch; word-break: break-all; white-space: normal; line-height: 1em; translate: 0 calc(var(--d, 0) * -1em);
+                         transition: translate .6s var(--ss-spring); }
+  .ss-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* Barra de seleção em massa: pílula escura no rodapé (igual nos dois temas): <div class="ss-selection-bar"><b>3</b> selecionados <button>…</button></div>. */
+  .ss-selection-bar { position: fixed; left: 50%; bottom: 1.25rem; z-index: 40; translate: -50% 0; display: flex; align-items: center; gap: .35rem;
+                      padding: .4rem .4rem .4rem 1rem; border-radius: 999px; background: #1a1826; color: #fff; border: 1px solid rgba(255, 255, 255, .08);
+                      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .35); font-size: .88rem; font-weight: 700; white-space: nowrap; animation: ss-toast .42s var(--ss-spring); }
+  .ss-selection-bar b { font-family: var(--font-mono); font-weight: 500; }
+  .ss-selection-bar :is(button, a) { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.5rem; padding: 0 .85rem; border: 0; border-radius: 999px;
+                                     background: none; color: #fff; font: 700 .85rem var(--font-sans); text-decoration: none; cursor: pointer; }
+  .ss-selection-bar :is(button, a):first-of-type { margin-left: .5rem; }
+  .ss-selection-bar :is(button, a):hover { background: rgba(255, 255, 255, .1); }
+  .ss-selection-bar .is-danger { color: #f2899a; }
+  .ss-selection-bar[hidden] { display: none; }
+
+  /* Antes/depois: <div class="ss-compare" style="--pos:50%"><img antes><img depois><input type="range" aria-label="Comparar"></div>;
+     o produto liga o range ao --pos (oninput="parentNode.style.setProperty('--pos', value + '%')"). */
+  .ss-compare { --pos: 50%; position: relative; display: grid; overflow: hidden; border-radius: 18px; user-select: none; }
+  .ss-compare > :not(input) { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: cover; }
+  .ss-compare > :nth-child(2) { clip-path: inset(0 0 0 var(--pos)); }
+  .ss-compare::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--pos); width: 3px; margin-left: -1.5px; background: #fff;
+                       box-shadow: 0 0 0 1px rgba(0, 0, 0, .15); pointer-events: none; }
+  .ss-compare input { position: absolute; left: 0; top: 50%; width: 100%; height: 44px; margin: 0; translate: 0 -50%; appearance: none; background: none; cursor: ew-resize; }
+  .ss-compare input::-webkit-slider-thumb { appearance: none; width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 3px solid var(--accent);
+                                            box-shadow: 0 4px 12px rgba(0, 0, 0, .25); }
+  .ss-compare input::-moz-range-thumb { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 3px solid var(--accent); }
+  .ss-compare input:focus-visible { outline: 0; }
+  .ss-compare:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* Quadro: estados de arrasto (.is-dragging no cartão, .is-over na coluna, .ss-drop-slot onde vai cair). */
+  .ss-kanban .is-dragging { rotate: 2deg; scale: 1.02; box-shadow: var(--shadow-hover); cursor: grabbing; }
+  .ss-kanban .is-over { border-radius: 16px; background: color-mix(in srgb, var(--accent) 6%, transparent);
+                        outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 4px; }
+  .ss-drop-slot { min-height: 3.25rem; margin-bottom: .5rem; border-radius: 14px; border: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+                  background: var(--accent-soft); animation: ss-fade .2s ease both; }
+
+  /* Botão de ação com estado: .ss-btn.ss-action-btn + .is-loading (girando) / .is-done (✓ verde). */
+  .ss-action-btn { vertical-align: middle; transition: background-color .25s, color .25s, box-shadow .25s, transform .15s; }
+  .ss-action-btn.is-loading { pointer-events: none; }
+  .ss-action-btn.is-loading > * { visibility: hidden; }
+  .ss-action-btn.is-loading { color: transparent; }
+  .ss-action-btn.is-loading::after { position: absolute; inset: 0; margin: auto; translate: none; transform: none; background: none; color: #fff; }
+  .ss-action-btn.is-loading:not(.ss-btn-primary)::after { color: var(--accent); }
+  .ss-action-btn.is-done { background: var(--success); color: var(--surface); box-shadow: none; pointer-events: none; }
+  .ss-action-btn.is-done::before { content: ""; width: 1.05rem; height: 1.05rem; flex: none; background: currentColor; mask: var(--ss-i-check) center / contain no-repeat;
+                                   animation: ss-pop-in .3s var(--ss-spring); }
+}
+
+@keyframes ss-spin { to { rotate: 360deg; } }
+@keyframes ss-indet { from { translate: -100% 0; } to { translate: 250% 0; } }
+@keyframes ss-drop { from { opacity: 0; translate: 0 -100%; } }
+@keyframes ss-sheet-up { from { translate: 0 100%; } }
+@keyframes ss-timer { from { --ss-t: 360deg; } to { --ss-t: 0deg; } }
+@keyframes ss-needle { from { rotate: -90deg; } }
+@keyframes ss-fade { from { opacity: 0; } }
+@keyframes ss-pop-in { from { scale: 0; } }
+@keyframes ss-highlight { from { background-color: color-mix(in srgb, var(--accent) 22%, transparent); } to { background-color: transparent; } }
+@keyframes ss-head { to { padding-block: .5rem; box-shadow: 0 1px 0 var(--line); } }
+@keyframes ss-head-title { to { font-size: 1.1rem; } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* A barra de carregamento fica parada e cheia; o resto já para na regra geral acima. */
+  .ss-loading-bar::before { width: 100%; opacity: .6; }
+}

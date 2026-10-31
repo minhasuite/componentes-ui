@@ -34,4 +34,41 @@ class HelpersTest < Minitest::Test
     assert_includes rings, "--v:100.0;--i:1"
     assert_includes rings, "<span>72%</span>"
   end
+
+  def test_odometro_gera_digitos
+    html = ss_odometer("R$ 1.204")
+    assert_equal 4, html.scan('class="ss-odo-digit"').size
+    assert_includes html, "--d:2"
+    assert_includes html, '<span class="ss-sr">R$ 1.204</span>'
+    assert_includes ss_odometer("<1>"), "&lt;"
+  end
+
+  def test_gauge_e_countdown_limitam
+    assert_includes ss_gauge(0.724, label: "da meta"), "--v:0.724"
+    assert_includes ss_gauge(1.7, label: "x"), "<b>100%</b>"
+    assert_includes ss_gauge(0.5, label: "x", text: "R$ 5"), "<b>R$ 5</b>"
+    assert_includes ss_countdown(total: 10, left: 7, label: "dias"), "--n:10;--left:7"
+    assert_includes ss_countdown(total: 10, left: 12), "--left:10"
+    assert_includes ss_countdown(total: 365, left: 73), "--n:60;--left:12"
+  end
+
+  def test_heat_semanas_e_niveis
+    today = Date.new(2026, 10, 31) # sábado
+    html = ss_heat({ today => 4, "2026-10-30" => 1, Date.new(2026, 10, 29) => 2 }, weeks: 2, today: today)
+    assert_equal 14, html.scan("<i ").size
+    assert_includes html, 'data-level="4" title="31/10: 4"'
+    assert_includes html, 'data-level="2" title="30/10: 1"'
+    assert_includes html, 'data-level="0" title="18/10: 0"' # 1ª coluna começa no domingo
+    assert_equal 0, ss_heat_level(0, [1, 2])
+    assert_equal 4, ss_heat_level(5, [5, 5, 5])
+    assert_equal 1, ss_heat_level(1, [1, 2, 3, 10])
+    assert_equal 4, ss_heat_level(10, [1, 2, 3, 10])
+  end
+
+  def test_status_pelo_mapa
+    map = { "pago" => ["Pago", :success], atrasado: ["Atrasado", :danger] }
+    assert_equal '<span class="ss-status" data-tone="success">Pago</span>', ss_status(:pago, map)
+    assert_includes ss_status("atrasado", map), 'data-tone="danger"'
+    assert_equal '<span class="ss-status" data-tone="neutral">outro</span>', ss_status("outro", map)
+  end
 end
