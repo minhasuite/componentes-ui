@@ -80,7 +80,9 @@ void main() {
       ),
     );
     await t.tap(find.text('abrir'));
-    await t.pumpAndSettle();
+    // Só a entrada: a borda de contagem anima até o fim do prazo (pumpAndSettle iria até lá).
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 500));
     expect(find.text('Salvo'), findsOneWidget);
     await t.tap(find.text('Desfazer'));
     await t.pump();
