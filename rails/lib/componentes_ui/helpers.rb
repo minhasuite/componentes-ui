@@ -125,9 +125,11 @@ module ComponentesUi
     def ss_heat_level(v, values)
       return 0 if v <= 0
 
-      # Posição do valor entre os dias com valor (quartil): o maior é sempre 4.
-      pos = values.select(&:positive?)
-      (pos.count { |x| x <= v } * 4.0 / pos.size).ceil.clamp(1, 4)
+      # Mesma conta do ssHeatLevel do Flutter: fração do maior valor, em 4 faixas.
+      max = values.max.to_f
+      return 0 if max <= 0
+
+      (v / max * 4).ceil.clamp(1, 4)
     end
   end
 end

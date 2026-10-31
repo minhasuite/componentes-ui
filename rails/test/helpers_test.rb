@@ -57,7 +57,7 @@ class HelpersTest < Minitest::Test
     html = ss_heat({ today => 4, "2026-10-30" => 1, Date.new(2026, 10, 29) => 2 }, weeks: 2, today: today)
     assert_equal 14, html.scan("<i ").size
     assert_includes html, 'data-level="4" title="31/10: 4"'
-    assert_includes html, 'data-level="2" title="30/10: 1"'
+    assert_includes html, 'data-level="1" title="30/10: 1"'
     assert_includes html, 'data-level="0" title="18/10: 0"' # 1ª coluna começa no domingo
     assert_equal 0, ss_heat_level(0, [1, 2])
     assert_equal 4, ss_heat_level(5, [5, 5, 5])
