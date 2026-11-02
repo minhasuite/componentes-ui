@@ -84,6 +84,7 @@ class _SsTipState extends State<SsTip> with SingleTickerProviderStateMixin {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (widget.title != null)
