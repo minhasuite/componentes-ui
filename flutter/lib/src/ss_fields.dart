@@ -100,6 +100,11 @@ class SsTextField extends StatefulWidget {
     this.style,
     this.prefixText,
     this.suffix,
+    this.suffixText,
+    this.textCapitalization = TextCapitalization.none,
+    this.maxLength,
+    this.autofillHints,
+    this.focusNode,
   });
 
   final String? label;
@@ -127,12 +132,27 @@ class SsTextField extends StatefulWidget {
   /// Fim do campo (ex.: botão de mostrar senha).
   final Widget? suffix;
 
+  /// Unidade depois do valor ("kg", "cm").
+  final String? suffixText;
+
+  /// `sentences` em nome e título.
+  final TextCapitalization textCapitalization;
+
+  /// Limite de caracteres (sem contador embaixo).
+  final int? maxLength;
+
+  /// Autopreenchimento do sistema (`AutofillHints.email`, `.password`).
+  final Iterable<String>? autofillHints;
+
+  /// Foco de fora (pular para o próximo campo); sem ele, o campo cria o seu.
+  final FocusNode? focusNode;
+
   @override
   State<SsTextField> createState() => _SsTextFieldState();
 }
 
 class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStateMixin {
-  final _focus = FocusNode();
+  late final FocusNode _focus = widget.focusNode ?? FocusNode();
   final _field = GlobalKey<FormFieldState<String>>();
   late final _shake = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
   var _mode = AutovalidateMode.disabled;
@@ -154,7 +174,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
 
   @override
   void dispose() {
-    _focus.dispose();
+    if (widget.focusNode == null) _focus.dispose();
     _shake.dispose();
     super.dispose();
   }
@@ -194,7 +214,12 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       onFieldSubmitted: widget.onSubmitted,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
-      inputFormatters: widget.inputFormatters,
+      inputFormatters: [
+        ...?widget.inputFormatters,
+        if (widget.maxLength != null) LengthLimitingTextInputFormatter(widget.maxLength),
+      ],
+      textCapitalization: widget.textCapitalization,
+      autofillHints: widget.autofillHints,
       obscureText: widget.obscureText,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       enabled: widget.enabled,
@@ -210,6 +235,8 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
         prefixText: widget.prefixText,
         prefixStyle: widget.style ?? TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w600),
         suffixIcon: widget.suffix,
+        suffixText: widget.suffixText,
+        suffixStyle: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
         filled: true,
         fillColor: on ? c.surface : c.field,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -793,6 +820,178 @@ class SsSwitchRow extends StatelessWidget {
                 ),
                 trackOutlineColor: WidgetStateProperty.resolveWith(
                   (s) => s.contains(WidgetState.selected) ? Colors.transparent : c.line,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Campo só de hora (lembrete, horário de treino): mostra "07:30" em DM Mono
+/// e o toque abre o relógio do sistema (24 h). [clearable] põe um × para
+/// voltar a "sem horário".
+class SsTimeField extends StatelessWidget {
+  const SsTimeField({
+    super.key,
+    this.label,
+    required this.value,
+    required this.onChanged,
+    this.hint = 'Sem horário',
+    this.clearable = false,
+    this.enabled = true,
+  });
+
+  final String? label;
+  final TimeOfDay? value;
+  final ValueChanged<TimeOfDay?> onChanged;
+  final String hint;
+  final bool clearable;
+  final bool enabled;
+
+  /// "07:30".
+  static String format(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  Future<void> _abrir(BuildContext context) async {
+    final r = await showTimePicker(
+      context: context,
+      initialTime: value ?? const TimeOfDay(hour: 7, minute: 0),
+      builder: (context, child) =>
+          MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
+    );
+    if (r != null) onChanged(r);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final texto = value == null ? null : format(value!);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (label != null) _Label(label!),
+        Semantics(
+          button: true,
+          enabled: enabled,
+          label: label,
+          value: texto ?? hint,
+          excludeSemantics: true,
+          child: SsPressable(
+            enabled: enabled,
+            onTap: enabled ? () => _abrir(context) : null,
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.only(left: 14, right: 4),
+              decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.field)),
+              child: Row(
+                children: [
+                  Icon(Icons.schedule_rounded, size: 21, color: c.muted),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: texto == null
+                        ? Text(
+                            hint,
+                            style: TextStyle(color: c.muted, fontSize: AppType.body),
+                          )
+                        : Text(
+                            texto,
+                            style: AppTheme.number(context, size: AppType.md, color: enabled ? c.ink : c.muted),
+                          ),
+                  ),
+                  if (clearable && value != null && enabled)
+                    IconButton(
+                      tooltip: 'Limpar horário',
+                      onPressed: () => onChanged(null),
+                      icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
+                    )
+                  else
+                    const SizedBox(width: 10),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Linha com caixa de marcar (aceite, "lembrar"): toda a linha é o alvo do
+/// toque; a marca entra com mola. [child] no lugar de [title] para texto com
+/// link.
+class SsCheckRow extends StatelessWidget {
+  const SsCheckRow({super.key, this.title, this.child, this.subtitle, required this.value, required this.onChanged})
+    : assert(title != null || child != null);
+
+  final String? title;
+  final Widget? child;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final on = onChanged != null;
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.fast;
+    return Semantics(
+      checked: value,
+      enabled: on,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: on
+            ? () {
+                HapticFeedback.selectionClick();
+                onChanged!(!value);
+              }
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedContainer(
+                duration: dur,
+                curve: Curves.easeOutBack,
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: value ? c.accent : c.field,
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(color: value ? c.accent : c.muted2, width: 1.5),
+                ),
+                child: AnimatedScale(
+                  duration: dur,
+                  curve: Curves.easeOutBack,
+                  scale: value ? 1 : 0,
+                  child: const Icon(Icons.check_rounded, size: 17, color: AppColors.onDark),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    child ??
+                        Text(
+                          title!,
+                          style: TextStyle(
+                            color: on ? c.ink : c.muted,
+                            fontSize: AppType.body,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

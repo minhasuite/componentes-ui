@@ -27,14 +27,18 @@ class SsShareController {
 /// Pinta o fundo da página por trás do [child], para o PNG não sair
 /// transparente (fica preto em vários apps de mensagem).
 class SsShareable extends StatelessWidget {
-  const SsShareable({super.key, required this.child, required this.controller});
+  const SsShareable({super.key, required this.child, required this.controller, this.background});
 
   final Widget child;
   final SsShareController controller;
 
+  /// Fundo da imagem; sem ele, o da tela. `Colors.transparent` para cartão
+  /// de cantos arredondados (o PNG sai com os cantos vazios).
+  final Color? background;
+
   @override
   Widget build(BuildContext context) => RepaintBoundary(
     key: controller._key,
-    child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor, child: child),
+    child: ColoredBox(color: background ?? Theme.of(context).scaffoldBackgroundColor, child: child),
   );
 }

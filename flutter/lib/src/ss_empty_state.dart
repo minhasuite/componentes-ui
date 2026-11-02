@@ -15,7 +15,12 @@ class SsEmptyState extends StatelessWidget {
     this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.compact = false,
   });
+
+  /// Dentro de folha ou seção que já rola: sem card, sem rolagem própria e
+  /// com a ilustração menor.
+  final bool compact;
 
   final IconData icon;
   final String title;
@@ -26,35 +31,40 @@ class SsEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final corpo = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        EmptyIllustration(icon: icon, size: compact ? 72 : 112),
+        const SizedBox(height: 14),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: AppType.lg, color: c.ink),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            subtitle!,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: c.muted, height: 1.35),
+          ),
+        ],
+        if (actionLabel != null && onAction != null) ...[
+          const SizedBox(height: 16),
+          SsButton(label: actionLabel!, expand: false, onPressed: onAction),
+        ],
+      ],
+    );
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: corpo),
+      );
+    }
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: SsCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              EmptyIllustration(icon: icon, size: 112),
-              const SizedBox(height: 14),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: AppType.lg, color: c.ink),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  subtitle!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: c.muted, height: 1.35),
-                ),
-              ],
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 16),
-                SsButton(label: actionLabel!, expand: false, onPressed: onAction),
-              ],
-            ],
-          ),
-        ),
+        child: SsCard(child: corpo),
       ),
     );
   }

@@ -45,10 +45,14 @@ class SsAsyncBody<T> extends StatelessWidget {
     this.empty,
     this.isOffline,
     this.errorMessage,
+    this.showRefreshing = true,
   });
 
   final AsyncValue<T> value;
   final Widget Function(T data) data;
+
+  /// Falso em tela que se atualiza sozinha (a cada poucos segundos): sem o fio.
+  final bool showRefreshing;
   final VoidCallback? onRetry;
   final Widget? loading;
   final bool Function(T data)? isEmpty;
@@ -68,7 +72,7 @@ class SsAsyncBody<T> extends StatelessWidget {
       return Stack(
         children: [
           Positioned.fill(child: vazio ? empty! : data(v)),
-          if (value.isLoading) _fio(),
+          if (value.isLoading && showRefreshing) _fio(),
         ],
       );
     }

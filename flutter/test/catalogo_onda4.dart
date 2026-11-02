@@ -11,8 +11,9 @@ Widget _pad(Widget w) => Padding(
 );
 const _tela = Size(360, 780);
 
-Widget _cabecalho({double rolado = 0}) => SsScreenHeader(
+Widget _cabecalho({double rolado = 0, bool voltar = false}) => SsScreenHeader(
   title: 'Lançamentos',
+  leading: voltar ? const SsHeaderAction(icon: Icons.arrow_back_rounded, tooltip: 'Voltar', onPressed: _nada) : null,
   subtitle: 'Outubro de 2026',
   controller: ScrollController(initialScrollOffset: rolado),
   summary: Builder(
@@ -133,10 +134,18 @@ final catalogoOnda4 = <Componente>[
       'Linha fina embaixo aparece só quando encolhido.',
       'Respeita a área segura de cima. Título marcado como cabeçalho no leitor de tela.',
       'SsHeaderAction: botão redondo de 40 px (alvo de 48) com tooltip e selo opcional.',
+      'Tela aberta por cima de outra ganha o voltar sozinha (como a AppBar); leading troca o botão.',
+      'onRefresh liga o puxar para atualizar por fora da rolagem.',
     ],
     estados: [
       Estado('aberto', 'aberto', (_) => _cabecalho(), tamanho: const Size(360, 360)),
       Estado('encolhido', 'rolado', (_) => _cabecalho(rolado: 200), tamanho: const Size(360, 360)),
+      Estado(
+        'voltar',
+        'com voltar, rolado',
+        (_) => _cabecalho(rolado: 200, voltar: true),
+        tamanho: const Size(360, 360),
+      ),
     ],
   ),
   Componente(

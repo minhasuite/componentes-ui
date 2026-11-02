@@ -36,19 +36,7 @@ class SsListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final cor = tone ?? c.accent;
-    final lead =
-        leading ??
-        (icon == null
-            ? null
-            : Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: cor.withValues(alpha: c.isDark ? .2 : .14),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Icon(icon, size: 21, color: cor),
-              ));
+    final lead = leading ?? (icon == null ? null : SsIconTile(icon!, tone: cor));
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -253,6 +241,36 @@ class SsAvatarStack extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Ícone num quadrado (ou círculo) no tom da cor a 14% (20% no escuro): o
+/// "ícone tonal" dos itens, cabeçalhos e estados. Sem [tone], a cor da marca.
+class SsIconTile extends StatelessWidget {
+  const SsIconTile(this.icon, {super.key, this.size = 42, this.tone, this.circle = false, this.filled = false});
+
+  final IconData icon;
+  final double size;
+  final Color? tone;
+  final bool circle;
+
+  /// Fundo cheio na cor e ícone claro (ex.: concluído em verde).
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final cor = tone ?? c.accent;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: filled ? cor : cor.withValues(alpha: c.isDark ? .2 : .14),
+        shape: circle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circle ? null : BorderRadius.circular(size * .31),
+      ),
+      child: Icon(icon, size: size * .5, color: filled ? AppColors.onDark : cor),
     );
   }
 }

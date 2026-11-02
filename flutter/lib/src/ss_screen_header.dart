@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'ss_async.dart';
 import 'motion.dart';
 
 /// Tela com título grande que encolhe ao rolar: monta um `CustomScrollView`
@@ -16,6 +17,8 @@ class SsScreenHeader extends StatelessWidget {
     this.bottom,
     this.bottomHeight = 52,
     this.controller,
+    this.leading,
+    this.onRefresh,
     required this.slivers,
   });
 
@@ -26,10 +29,21 @@ class SsScreenHeader extends StatelessWidget {
   final Widget? bottom;
   final double bottomHeight;
   final ScrollController? controller;
+
+  /// Ver [SsSliverHeader.leading].
+  final Widget? leading;
+
+  /// Puxar para atualizar (o [SsPullToRefresh] por fora da rolagem).
+  final Future<void> Function()? onRefresh;
   final List<Widget> slivers;
 
   @override
-  Widget build(BuildContext context) => CustomScrollView(
+  Widget build(BuildContext context) {
+    final view = _view();
+    return onRefresh == null ? view : SsPullToRefresh(onRefresh: onRefresh!, child: view);
+  }
+
+  Widget _view() => CustomScrollView(
     controller: controller,
     slivers: [
       SsSliverHeader(
@@ -39,6 +53,7 @@ class SsScreenHeader extends StatelessWidget {
         summary: summary,
         bottom: bottom,
         bottomHeight: bottomHeight,
+        leading: leading,
       ),
       ...slivers,
     ],
@@ -59,10 +74,15 @@ class SsSliverHeader extends StatelessWidget {
     this.summary,
     this.bottom,
     this.bottomHeight = 52,
+    this.leading,
   });
 
   final String title;
   final String? subtitle;
+
+  /// À esquerda da barra. Sem ele, a tela aberta por cima de outra ganha o
+  /// botão de voltar sozinha (como a AppBar).
+  final Widget? leading;
 
   /// Normalmente [SsHeaderAction]s.
   final List<Widget> actions;
@@ -75,6 +95,15 @@ class SsSliverHeader extends StatelessWidget {
     pinned: true,
     delegate: _Delegate(
       header: this,
+      leading:
+          leading ??
+          ((ModalRoute.of(context)?.canPop ?? false)
+              ? SsHeaderAction(
+                  icon: Icons.arrow_back_rounded,
+                  tooltip: 'Voltar',
+                  onPressed: () => Navigator.maybePop(context),
+                )
+              : null),
       top: MediaQuery.paddingOf(context).top,
       reduce: reduceMotion(context),
       c: SsColors.of(context),
@@ -85,9 +114,10 @@ class SsSliverHeader extends StatelessWidget {
 const _bar = 56.0;
 
 class _Delegate extends SliverPersistentHeaderDelegate {
-  _Delegate({required this.header, required this.top, required this.reduce, required this.c});
+  _Delegate({required this.header, required this.leading, required this.top, required this.reduce, required this.c});
 
   final SsSliverHeader header;
+  final Widget? leading;
   final double top;
   final bool reduce;
   final SsColors c;
@@ -159,9 +189,10 @@ class _Delegate extends SliverPersistentHeaderDelegate {
             top: top,
             height: _bar,
             child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 12),
+              padding: EdgeInsets.only(left: leading == null ? 20 : 8, right: 12),
               child: Row(
                 children: [
+                  if (leading != null) Padding(padding: const EdgeInsets.only(right: 4), child: leading),
                   Expanded(
                     child: ExcludeSemantics(
                       excluding: small == 0,

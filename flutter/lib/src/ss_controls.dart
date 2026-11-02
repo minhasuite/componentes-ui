@@ -163,11 +163,21 @@ class SsChipBar extends StatelessWidget {
 /// Busca "afundada": sem borda, fundo de campo; no foco ganha anel e halo na
 /// cor da marca. Botão de limpar quando há texto.
 class SsSearchField extends StatefulWidget {
-  const SsSearchField({super.key, this.controller, this.hint = 'Buscar', this.onChanged, this.autofocus = false});
+  const SsSearchField({
+    super.key,
+    this.controller,
+    this.hint = 'Buscar',
+    this.onChanged,
+    this.onSubmitted,
+    this.autofocus = false,
+  });
 
   final TextEditingController? controller;
   final String hint;
   final ValueChanged<String>? onChanged;
+
+  /// Enter do teclado (busca que vai ao servidor só ao confirmar).
+  final ValueChanged<String>? onSubmitted;
   final bool autofocus;
 
   @override
@@ -216,6 +226,7 @@ class _SsSearchFieldState extends State<SsSearchField> {
               focusNode: _focus,
               autofocus: widget.autofocus,
               onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
               textInputAction: TextInputAction.search,
               style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w600),
               decoration: InputDecoration.collapsed(

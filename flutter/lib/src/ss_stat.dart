@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'ss_list.dart';
 import 'motion.dart';
 import 'ss_charts.dart';
 
@@ -94,6 +95,7 @@ class SsStatCard extends StatelessWidget {
     this.spark,
     this.onTap,
     this.valueSize = 28,
+    this.tone,
   });
 
   final String label;
@@ -108,6 +110,9 @@ class SsStatCard extends StatelessWidget {
   final List<double>? spark;
   final VoidCallback? onTap;
   final double valueSize;
+
+  /// Cor do ícone (sucesso, aviso...); sem ela, a da marca.
+  final Color? tone;
 
   @override
   Widget build(BuildContext context) {
@@ -135,12 +140,14 @@ class SsStatCard extends StatelessWidget {
                   Row(
                     children: [
                       if (icon != null) ...[
-                        Container(
-                          width: 26,
-                          height: 26,
-                          decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(8)),
-                          child: Icon(icon, size: 15, color: c.accentText),
-                        ),
+                        tone == null
+                            ? Container(
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(8)),
+                                child: Icon(icon, size: 15, color: c.accentText),
+                              )
+                            : SsIconTile(icon!, size: 26, tone: tone),
                         const SizedBox(width: 8),
                       ],
                       Expanded(
@@ -154,7 +161,12 @@ class SsStatCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  SsAmount(value, size: valueSize),
+                  // Encolhe em vez de estourar na grade de 2 colunas em 360 dp.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: SsAmount(value, size: valueSize),
+                  ),
                   if (delta != null || caption != null) ...[
                     const SizedBox(height: 8),
                     Row(

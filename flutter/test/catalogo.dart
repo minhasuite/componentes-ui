@@ -10,6 +10,7 @@ import 'catalogo_onda3.dart';
 import 'catalogo_onda3b.dart';
 import 'catalogo_onda4.dart';
 import 'catalogo_extras.dart';
+import 'catalogo_v06.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -234,6 +235,7 @@ final catalogo = <Componente>[
     comportamentos: [
       'A ilustração flutua devagar (4 s, vai e volta) e para quando o sistema pede menos animação.',
       'A ação só aparece com actionLabel e onAction.',
+      'compact: sem card nem rolagem própria, para dentro de folha ou seção que já rola.',
     ],
     estados: [
       Estado(
@@ -247,6 +249,17 @@ final catalogo = <Componente>[
           onAction: _nada,
         ),
         tamanho: const Size(360, 380),
+      ),
+      Estado(
+        'compacto',
+        'compacto (dentro de folha)',
+        (_) => const SsEmptyState(
+          icon: Icons.flag_outlined,
+          title: 'Nenhum trecho salvo',
+          subtitle: 'Marque um trecho no fim da corrida.',
+          compact: true,
+        ),
+        tamanho: const Size(360, 240),
       ),
     ],
   ),
@@ -419,6 +432,7 @@ final catalogo = <Componente>[
       'O minigráfico se desenha da esquerda para a direita (700 ms).',
       'Encolhe para 0,97 ao toque quando tem onTap.',
       'No escuro, borda de 1 px.',
+      'tone pinta o ícone (sucesso, aviso); o número encolhe em vez de estourar a coluna.',
     ],
     estados: [
       Estado(
@@ -454,6 +468,22 @@ final catalogo = <Componente>[
           ),
         ),
         tamanho: const Size(360, 160),
+      ),
+      Estado(
+        'tom',
+        'ícone no tom de aviso e número longo encolhido',
+        (_) => _pad(
+          const SizedBox(
+            width: 150,
+            child: SsStatCard(
+              label: 'Ofensiva',
+              icon: Icons.local_fire_department_outlined,
+              tone: AppColors.aquecFg,
+              value: '128.450 kg',
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 150),
       ),
     ],
   ),
@@ -752,6 +782,7 @@ final catalogo = <Componente>[
   ...catalogoOnda3b,
   ...catalogoOnda4,
   ...catalogoExtras,
+  ...catalogoV06,
 ];
 
 const _verde = SsBrand(

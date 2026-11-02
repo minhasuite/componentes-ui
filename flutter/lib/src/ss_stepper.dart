@@ -21,6 +21,7 @@ class SsStepper extends StatefulWidget {
     this.step = 1,
     this.decimals = 0,
     this.unit,
+    this.label,
   });
 
   final num value;
@@ -32,6 +33,9 @@ class SsStepper extends StatefulWidget {
 
   /// Texto pequeno depois do número ("kg", "pessoas").
   final String? unit;
+
+  /// Rótulo pequeno em maiúsculas em cima ("PESO (KG)").
+  final String? label;
 
   /// Arredonda em [decimals] casas e prende entre [min] e [max].
   static num fit(num v, {num min = 0, num max = 9999, int decimals = 0}) {
@@ -171,7 +175,8 @@ class _SsStepperState extends State<SsStepper> {
     }
 
     String falado(num v) => '${SsStepper.format(v, widget.decimals)}${widget.unit == null ? '' : ' ${widget.unit}'}';
-    return Semantics(
+    final stepper = Semantics(
+      label: widget.label,
       value: falado(widget.value),
       increasedValue: falado(_fit(widget.value + widget.step)),
       decreasedValue: falado(_fit(widget.value - widget.step)),
@@ -189,6 +194,23 @@ class _SsStepperState extends State<SsStepper> {
           ],
         ),
       ),
+    );
+    if (widget.label == null) return stepper;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 5),
+          child: ExcludeSemantics(
+            child: Text(
+              widget.label!.toUpperCase(),
+              style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w700, letterSpacing: .4),
+            ),
+          ),
+        ),
+        stepper,
+      ],
     );
   }
 

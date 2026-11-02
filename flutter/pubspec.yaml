@@ -1,7 +1,7 @@
 name: componentes_ui
 description: Design system "Lista Clara" da MinhaSuite (tema, tokens e componentes Ss*).
 publish_to: "none"
-version: 0.5.0
+version: 0.6.0
 
 environment:
   sdk: ^3.12.0

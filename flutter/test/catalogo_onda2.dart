@@ -38,12 +38,13 @@ class _InvalidoState extends State<_Invalido> {
 
 /// Stepper com estado próprio (o catálogo não tem pai que guarde o valor).
 class _Stepper extends StatefulWidget {
-  const _Stepper(this.inicio, {this.max = 10, this.decimals = 0, this.step = 1, this.unit});
+  const _Stepper(this.inicio, {this.max = 10, this.decimals = 0, this.step = 1, this.unit, this.label});
   final num inicio;
   final num max;
   final int decimals;
   final num step;
   final String? unit;
+  final String? label;
 
   @override
   State<_Stepper> createState() => _StepperState();
@@ -59,6 +60,7 @@ class _StepperState extends State<_Stepper> {
     step: widget.step,
     decimals: widget.decimals,
     unit: widget.unit,
+    label: widget.label,
     onChanged: (n) => setState(() => v = n),
   );
 }
@@ -89,8 +91,15 @@ final catalogoOnda2 = <Componente>[
       'Valida ao sair do campo; depois do primeiro erro, valida a cada letra.',
       'O erro aparece embaixo com ícone e o campo dá uma sacudida curta no envio do formulário.',
       'É um TextFormField: funciona dentro de Form.',
+      'suffixText põe a unidade ("kg") depois do valor; maxLength limita sem contador; textCapitalization para nome e título.',
     ],
     estados: [
+      Estado(
+        'unidade',
+        'com unidade no fim',
+        (_) => _pad(const SsTextField(label: 'Peso', initialValue: '82,5', suffixText: 'kg')),
+        tamanho: _campo,
+      ),
       Estado(
         'vazio',
         'vazio',
@@ -321,6 +330,7 @@ final catalogoOnda2 = <Componente>[
       'Segurar um botão repete cada vez mais rápido.',
       'No limite o botão apaga e vibra forte ("bateu").',
       'Tocar no número abre para digitar.',
+      'label põe o rótulo pequeno em maiúsculas em cima (e no leitor de tela).',
     ],
     estados: [
       Estado('meio', 'no meio', (_) => _pad(const SizedBox(width: 200, child: _Stepper(3, unit: 'pessoas')))),
@@ -328,7 +338,13 @@ final catalogoOnda2 = <Componente>[
       Estado(
         'decimal',
         'decimal no máximo',
-        (_) => _pad(const SizedBox(width: 200, child: _Stepper(20, max: 20, decimals: 1, step: .5, unit: 'kg'))),
+        (_) => _pad(
+          const SizedBox(
+            width: 200,
+            child: _Stepper(20, max: 20, decimals: 1, step: .5, unit: 'kg', label: 'Peso'),
+          ),
+        ),
+        tamanho: const Size(360, 120),
       ),
     ],
   ),
