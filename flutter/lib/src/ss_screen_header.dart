@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
@@ -105,6 +107,7 @@ class SsSliverHeader extends StatelessWidget {
                 )
               : null),
       top: MediaQuery.paddingOf(context).top,
+      scale: MediaQuery.textScalerOf(context).scale(100) / 100,
       reduce: reduceMotion(context),
       c: SsColors.of(context),
     ),
@@ -114,15 +117,25 @@ class SsSliverHeader extends StatelessWidget {
 const _bar = 56.0;
 
 class _Delegate extends SliverPersistentHeaderDelegate {
-  _Delegate({required this.header, required this.leading, required this.top, required this.reduce, required this.c});
+  _Delegate({
+    required this.header,
+    required this.leading,
+    required this.top,
+    required this.scale,
+    required this.reduce,
+    required this.c,
+  });
 
   final SsSliverHeader header;
   final Widget? leading;
   final double top;
+
+  /// Escala da fonte: o título grande cresce junto (senão estoura em 1,6×).
+  final double scale;
   final bool reduce;
   final SsColors c;
 
-  double get _large => header.subtitle == null ? 52 : 74;
+  double get _large => (header.subtitle == null ? 52 : 74) * math.max(1, scale);
   double get _bottom => header.bottom == null ? 0 : header.bottomHeight;
 
   @override

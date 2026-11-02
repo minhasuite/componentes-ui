@@ -13,7 +13,8 @@ import 'ss_list.dart';
 /// tamanho original.
 ///
 /// Sem cache em disco: só o cache de memória do Flutter (o pacote não tem
-/// dependência de cache). App que precisa de offline usa o próprio plugin.
+/// dependência de cache). App que precisa de offline passa o provider do
+/// próprio plugin em [provider] (ex. `CachedNetworkImageProvider.new`).
 ///
 /// `SsNetImage(p.photoUrl, width: 56, height: 56, name: p.name)`
 class SsNetImage extends StatelessWidget {
@@ -26,6 +27,7 @@ class SsNetImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.fallbackIcon = Icons.image_outlined,
     this.name,
+    this.provider,
   });
 
   final String? url;
@@ -37,6 +39,9 @@ class SsNetImage extends StatelessWidget {
 
   /// Iniciais no vazio e rótulo para o leitor de tela.
   final String? name;
+
+  /// Troca o `NetworkImage` (cache em disco, cabeçalhos): recebe a URL.
+  final ImageProvider Function(String url)? provider;
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +62,12 @@ class SsNetImage extends StatelessWidget {
               final u = url?.trim() ?? '';
               if (u.isEmpty) return placeholder;
               final w = width ?? (box.hasBoundedWidth ? box.maxWidth : null);
-              return Image.network(
-                u,
+              final base = provider?.call(u) ?? NetworkImage(u);
+              return Image(
+                image: ResizeImage.resizeIfNeeded(w == null ? null : (w * dpr).round(), null, base),
                 width: width,
                 height: height,
                 fit: fit,
-                cacheWidth: w == null ? null : (w * dpr).round(),
                 frameBuilder: (_, child, frame, sync) {
                   if (sync) return child;
                   return Stack(

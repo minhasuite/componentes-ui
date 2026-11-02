@@ -11,6 +11,10 @@ import 'catalogo_onda3b.dart';
 import 'catalogo_onda4.dart';
 import 'catalogo_extras.dart';
 import 'catalogo_v06.dart';
+import 'catalogo_v07_compras.dart';
+import 'catalogo_v07_cultivo.dart';
+import 'catalogo_v07_gestor.dart';
+import 'catalogo_v07_viagens.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -783,6 +787,10 @@ final catalogo = <Componente>[
   ...catalogoOnda4,
   ...catalogoExtras,
   ...catalogoV06,
+  ...catalogoV07Compras,
+  ...catalogoV07Cultivo,
+  ...catalogoV07Gestor,
+  ...catalogoV07Viagens,
 ];
 
 const _verde = SsBrand(

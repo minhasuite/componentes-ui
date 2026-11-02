@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion.dart';
 
 /// Skeleton loader reutilizável: uma lista de "cartões-fantasma" que pulsam
 /// suavemente enquanto os dados carregam. Substitui os spinners nas listas,
@@ -17,6 +18,18 @@ class SkeletonList extends StatefulWidget {
 class _SkeletonListState extends State<SkeletonList> with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))
     ..repeat(reverse: true);
+
+  // Com "reduzir movimento" fica parado no meio da pulsação.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (reduceMotion(context)) {
+      _c.stop();
+      _c.value = .5;
+    } else if (!_c.isAnimating) {
+      _c.repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {
@@ -97,6 +110,18 @@ class SkeletonBox extends StatefulWidget {
 class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))
     ..repeat(reverse: true);
+
+  // Com "reduzir movimento" fica parado no meio da pulsação.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (reduceMotion(context)) {
+      _c.stop();
+      _c.value = .5;
+    } else if (!_c.isAnimating) {
+      _c.repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {
