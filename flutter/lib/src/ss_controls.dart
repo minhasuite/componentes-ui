@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,14 +7,24 @@ import 'app_theme.dart';
 import 'motion.dart';
 
 /// Seletor de 2 a 4 opções (período, abas de uma tela): trilha afundada e uma
-/// pílula que desliza com mola até a opção escolhida.
+/// pílula que desliza com mola até a opção escolhida. [icons] (um por opção,
+/// `null` sem ícone) vai antes do texto; opção em [disabled] fica apagada.
 class SsSegmented<T> extends StatelessWidget {
-  const SsSegmented({super.key, required this.segments, required this.value, required this.onChanged})
-    : assert(segments.length >= 2);
+  const SsSegmented({
+    super.key,
+    required this.segments,
+    required this.value,
+    required this.onChanged,
+    this.icons,
+    this.disabled = const {},
+  }) : assert(segments.length >= 2),
+       assert(icons == null || icons.length == segments.length);
 
   final List<(T, String)> segments;
   final T value;
   final ValueChanged<T> onChanged;
+  final List<IconData?>? icons;
+  final Set<T> disabled;
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +62,11 @@ class SsSegmented<T> extends StatelessWidget {
                   child: Semantics(
                     button: true,
                     selected: k == i,
+                    enabled: !disabled.contains(segments[k].$1),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
-                        if (k == i) return;
+                        if (k == i || disabled.contains(segments[k].$1)) return;
                         HapticFeedback.selectionClick();
                         onChanged(segments[k].$1);
                       },
@@ -62,11 +75,24 @@ class SsSegmented<T> extends StatelessWidget {
                           duration: const Duration(milliseconds: 200),
                           style: TextStyle(
                             fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                            color: k == i ? c.accentText : c.muted,
+                            color: k == i
+                                ? c.accentText
+                                : c.muted.withValues(alpha: disabled.contains(segments[k].$1) ? .45 : 1),
                             fontSize: AppType.sub,
                             fontWeight: k == i ? FontWeight.w800 : FontWeight.w600,
                           ),
-                          child: Text(segments[k].$2, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (icons?[k] case final ic?) ...[
+                                Builder(
+                                  builder: (ctx) => Icon(ic, size: 16, color: DefaultTextStyle.of(ctx).style.color),
+                                ),
+                                const SizedBox(width: 5),
+                              ],
+                              Flexible(child: Text(segments[k].$2, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -83,12 +109,15 @@ class SsSegmented<T> extends StatelessWidget {
 /// Filtro em pílula: marcado fica na cor da marca a 12% com um ✓ que entra
 /// crescendo; [count] aparece em DM Mono.
 class SsFilterChip extends StatelessWidget {
-  const SsFilterChip(this.label, {super.key, required this.selected, required this.onTap, this.count});
+  const SsFilterChip(this.label, {super.key, required this.selected, required this.onTap, this.count, this.icon});
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final int? count;
+
+  /// Ícone antes do texto; marcado, dá lugar ao ✓.
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +149,12 @@ class SsFilterChip extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 5),
                         child: Icon(Icons.check_rounded, size: 16, color: fg),
                       )
-                    : const SizedBox.shrink(),
+                    : icon == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(right: 5),
+                        child: Icon(icon, size: 16, color: fg),
+                      ),
               ),
               Text(
                 label,
@@ -161,7 +195,9 @@ class SsChipBar extends StatelessWidget {
 }
 
 /// Busca "afundada": sem borda, fundo de campo; no foco ganha anel e halo na
-/// cor da marca. Botão de limpar quando há texto.
+/// cor da marca. Botão de limpar quando há texto. Com [debounce], o
+/// [onChanged] só dispara depois que a pessoa para de digitar (busca no
+/// servidor); limpar dispara na hora. [suffix] fica no fim (filtro, leitor de código).
 class SsSearchField extends StatefulWidget {
   const SsSearchField({
     super.key,
@@ -170,7 +206,12 @@ class SsSearchField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
+    this.debounce,
+    this.suffix,
   });
+
+  final Duration? debounce;
+  final Widget? suffix;
 
   final TextEditingController? controller;
   final String hint;
@@ -195,8 +236,18 @@ class _SsSearchFieldState extends State<SsSearchField> {
     _ctrl.addListener(() => setState(() {}));
   }
 
+  Timer? _timer;
+
+  void _changed(String v) {
+    _timer?.cancel();
+    final d = widget.debounce;
+    if (d == null || v.isEmpty) return widget.onChanged?.call(v);
+    _timer = Timer(d, () => widget.onChanged?.call(v));
+  }
+
   @override
   void dispose() {
+    _timer?.cancel();
     _focus.dispose();
     if (widget.controller == null) _ctrl.dispose();
     super.dispose();
@@ -225,8 +276,11 @@ class _SsSearchFieldState extends State<SsSearchField> {
               controller: _ctrl,
               focusNode: _focus,
               autofocus: widget.autofocus,
-              onChanged: widget.onChanged,
-              onSubmitted: widget.onSubmitted,
+              onChanged: _changed,
+              onSubmitted: (v) {
+                _timer?.cancel();
+                widget.onSubmitted?.call(v);
+              },
               textInputAction: TextInputAction.search,
               style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w600),
               decoration: InputDecoration.collapsed(
@@ -241,11 +295,12 @@ class _SsSearchFieldState extends State<SsSearchField> {
               icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
               onPressed: () {
                 _ctrl.clear();
-                widget.onChanged?.call('');
+                _changed('');
               },
             )
-          else
+          else if (widget.suffix == null)
             const SizedBox(width: 12),
+          ?widget.suffix,
         ],
       ),
     );

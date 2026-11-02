@@ -276,7 +276,8 @@ class _SsThinkingState extends State<SsThinking> with SingleTickerProviderStateM
 /// Campo da conversa + botão de enviar redondo que acende quando há texto.
 /// [onSend] recebe o texto sem espaços nas pontas; limpar o campo é do app
 /// (para devolver o texto se o envio falhar). [sending] troca o ícone por
-/// carregando e trava o envio.
+/// carregando e trava o envio. [enabled] falso trava campo e botão (sem
+/// cota, sem rede). [leading] vai antes do campo (anexar foto, microfone).
 class SsChatInput extends StatelessWidget {
   const SsChatInput({
     super.key,
@@ -284,16 +285,20 @@ class SsChatInput extends StatelessWidget {
     required this.onSend,
     this.hint = 'Escreva uma mensagem',
     this.sending = false,
+    this.enabled = true,
+    this.leading,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onSend;
   final String hint;
   final bool sending;
+  final bool enabled;
+  final Widget? leading;
 
   void _enviar() {
     final t = controller.text.trim();
-    if (t.isEmpty || sending) return;
+    if (t.isEmpty || sending || !enabled) return;
     SsHaptics.tick();
     onSend(t);
   }
@@ -308,9 +313,11 @@ class SsChatInput extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            ?leading,
             Expanded(
               child: TextField(
                 controller: controller,
+                enabled: enabled,
                 minLines: 1,
                 maxLines: 5,
                 textCapitalization: TextCapitalization.sentences,
@@ -335,7 +342,7 @@ class SsChatInput extends StatelessWidget {
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) {
-                final pode = controller.text.trim().isNotEmpty && !sending;
+                final pode = enabled && controller.text.trim().isNotEmpty && !sending;
                 return Semantics(
                   button: true,
                   enabled: pode,

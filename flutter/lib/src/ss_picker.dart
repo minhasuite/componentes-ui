@@ -34,6 +34,7 @@ Future<T?> showSsPicker<T>(
   Widget Function(BuildContext context, T item)? itemBuilder,
   String emptyText = 'Nada encontrado',
   String hint = 'Buscar',
+  String initialQuery = '',
 }) => showModalBottomSheet<T>(
   context: context,
   isScrollControlled: true,
@@ -47,6 +48,7 @@ Future<T?> showSsPicker<T>(
     itemBuilder: itemBuilder,
     emptyText: emptyText,
     hint: hint,
+    initialQuery: initialQuery,
     onSelect: (v) => Navigator.pop(context, v),
   ),
 );
@@ -64,6 +66,7 @@ class SsPickerSheet<T> extends StatefulWidget {
     this.itemBuilder,
     this.emptyText = 'Nada encontrado',
     this.hint = 'Buscar',
+    this.initialQuery = '',
   }) : assert(load != null || items != null, 'Passe load ou items');
 
   final String title;
@@ -75,12 +78,16 @@ class SsPickerSheet<T> extends StatefulWidget {
   final String emptyText;
   final String hint;
 
+  /// Busca já preenchida ao abrir (o texto que a pessoa digitou no campo).
+  final String initialQuery;
+
   @override
   State<SsPickerSheet<T>> createState() => _SsPickerSheetState<T>();
 }
 
 class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
-  String _q = '';
+  late String _q = widget.initialQuery;
+  late final _ctrl = TextEditingController(text: widget.initialQuery);
   List<T> _result = const [];
   bool _loading = false;
   Object? _error;
@@ -98,6 +105,7 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _ctrl.dispose();
     super.dispose();
   }
 
@@ -190,7 +198,12 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
             Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 12), child: SsSheetHeader(widget.title)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SsSearchField(hint: widget.hint, onChanged: _onQuery, autofocus: widget.load != null),
+              child: SsSearchField(
+                controller: _ctrl,
+                hint: widget.hint,
+                onChanged: _onQuery,
+                autofocus: widget.load != null,
+              ),
             ),
             SizedBox(height: 2, child: _loading && _result.isNotEmpty ? const LinearProgressIndicator() : null),
             const SizedBox(height: 6),

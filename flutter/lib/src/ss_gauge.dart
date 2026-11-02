@@ -138,14 +138,29 @@ class _GaugePainter extends CustomPainter {
 
 /// Contagem regressiva em gomos (um por dia de [total]): os [left] que restam
 /// ficam na cor (marca; aquecimento quando sobram 20% ou menos; vermelho em 0)
-/// e o número vai no meio, com [label] embaixo ("dias").
+/// e o número vai no meio, com [label] embaixo ("dias"). [format] troca o
+/// número (`SsCountdownRing.mmss` para descanso em segundos); [onDark] é
+/// para fundo escuro ou gradiente (texto claro, trilha translúcida).
 class SsCountdownRing extends StatelessWidget {
-  const SsCountdownRing({super.key, required this.total, required this.left, this.label = 'dias', this.size = 104});
+  const SsCountdownRing({
+    super.key,
+    required this.total,
+    required this.left,
+    this.label = 'dias',
+    this.size = 104,
+    this.format,
+    this.onDark = false,
+  });
 
   final int total;
   final int left;
   final String label;
   final double size;
+  final String Function(int left)? format;
+  final bool onDark;
+
+  /// 90 → "1:30".
+  static String mmss(int s) => '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
@@ -156,13 +171,16 @@ class SsCountdownRing extends StatelessWidget {
         : total > 0 && resta / total <= .2
         ? AppColors.aquecFg
         : c.accent;
-    final texto = resta == 0
+    final texto = onDark
+        ? AppColors.onDark
+        : resta == 0
         ? c.dangerText
         : cor == AppColors.aquecFg
         ? c.aquecText
         : c.ink;
+    final numero = format?.call(resta) ?? '$resta';
     return Semantics(
-      label: 'Faltam $resta de $total $label',
+      label: format == null ? 'Faltam $resta de $total $label' : 'Faltam $numero $label',
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: size,
@@ -170,19 +188,32 @@ class SsCountdownRing extends StatelessWidget {
           tween: Tween(begin: 0, end: 1),
           duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 600),
           curve: Curves.easeOutCubic,
-          builder: (_, t, child) => CustomPaint(painter: _GomosPainter(total, resta, t, cor, c.field), child: child),
+          builder: (_, t, child) => CustomPaint(
+            painter: _GomosPainter(
+              total,
+              resta,
+              t,
+              onDark && cor == c.accent ? AppColors.onDark : cor,
+              onDark ? AppColors.onDark.withValues(alpha: .22) : c.field,
+            ),
+            child: child,
+          ),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$resta',
+                  numero,
                   style: AppTheme.number(context, size: size * .28, weight: FontWeight.w500, color: texto),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  style: TextStyle(fontSize: AppType.micro, fontWeight: FontWeight.w700, color: c.muted),
+                  style: TextStyle(
+                    fontSize: AppType.micro,
+                    fontWeight: FontWeight.w700,
+                    color: onDark ? AppColors.onDark.withValues(alpha: .75) : c.muted,
+                  ),
                 ),
               ],
             ),
@@ -218,6 +249,12 @@ class _GomosPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.butt;
+    if (total > 60) {
+      // Muitos gomos: dois arcos contínuos (gomo a gomo deixa riscos de serrilhado).
+      canvas.drawArc(rect, 0, 2 * math.pi, false, p..color = trilha);
+      canvas.drawArc(rect, -math.pi / 2 + passo * passados, passo * acesos, false, p..color = cor);
+      return;
+    }
     for (var i = 0; i < total; i++) {
       final aceso = i >= passados && i < passados + acesos;
       canvas.drawArc(rect, -math.pi / 2 + passo * i + folga / 2, passo - folga, false, p..color = aceso ? cor : trilha);

@@ -5,16 +5,27 @@ import 'ss_button.dart';
 import 'ss_sheet.dart';
 
 /// Abre a folha "chegou no limite do plano" ([SsPlanLimit]). "Ver planos"
-/// fecha a folha e chama [onUpgrade]; "Agora não" só fecha.
+/// fecha a folha e chama [onUpgrade]; "Agora não" só fecha. Com
+/// [secondaryLabel] e [onSecondary], o segundo botão vira essa ação (ex.:
+/// "Apagar um antigo") e também fecha a folha.
 Future<void> showSsPlanLimit(
   BuildContext context, {
   required String title,
   required String message,
   required VoidCallback onUpgrade,
   String upgradeLabel = 'Ver planos',
+  String? secondaryLabel,
+  VoidCallback? onSecondary,
 }) => showSsSheet<void>(
   context,
-  child: SsPlanLimit(title: title, message: message, onUpgrade: onUpgrade, upgradeLabel: upgradeLabel),
+  child: SsPlanLimit(
+    title: title,
+    message: message,
+    onUpgrade: onUpgrade,
+    upgradeLabel: upgradeLabel,
+    secondaryLabel: secondaryLabel,
+    onSecondary: onSecondary,
+  ),
 );
 
 /// Corpo da folha de limite do plano (o que o [showSsPlanLimit] mostra).
@@ -25,12 +36,16 @@ class SsPlanLimit extends StatelessWidget {
     required this.message,
     required this.onUpgrade,
     this.upgradeLabel = 'Ver planos',
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   final String title;
   final String message;
   final VoidCallback onUpgrade;
   final String upgradeLabel;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +80,13 @@ class SsPlanLimit extends StatelessWidget {
           },
         ),
         const SizedBox(height: 4),
-        TextButton(onPressed: () => Navigator.maybePop(context), child: const Text('Agora não')),
+        TextButton(
+          onPressed: () {
+            Navigator.maybePop(context);
+            onSecondary?.call();
+          },
+          child: Text(onSecondary == null ? 'Agora não' : secondaryLabel ?? 'Agora não'),
+        ),
       ],
     );
   }

@@ -16,6 +16,10 @@ class SsListItem extends StatelessWidget {
     this.valueCaption,
     this.tone,
     this.onTap,
+    this.onLongPress,
+    this.trailing,
+    this.dimmed = false,
+    this.maxLines = 1,
   });
 
   final String title;
@@ -31,14 +35,25 @@ class SsListItem extends StatelessWidget {
   final String? valueCaption;
   final Color? tone;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  /// Depois do valor (chevron, [SsOverflowMenu], checkbox).
+  final Widget? trailing;
+
+  /// Item apagado (concluído, arquivado, fora de estoque): opacidade 0,5.
+  final bool dimmed;
+
+  /// Linhas do título e do subtítulo antes da reticência.
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final cor = tone ?? c.accent;
     final lead = leading ?? (icon == null ? null : SsIconTile(icon!, tone: cor));
-    return InkWell(
+    final item = InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(14),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
@@ -51,7 +66,7 @@ class SsListItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    maxLines: 1,
+                    maxLines: maxLines,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w700),
                   ),
@@ -59,7 +74,7 @@ class SsListItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      maxLines: 1,
+                      maxLines: maxLines,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: c.muted, fontSize: AppType.sub),
                     ),
@@ -86,10 +101,12 @@ class SsListItem extends StatelessWidget {
                 ],
               ),
             ],
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
           ],
         ),
       ),
     );
+    return dimmed ? Opacity(opacity: .5, child: item) : item;
   }
 }
 

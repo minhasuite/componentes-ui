@@ -7,19 +7,22 @@ import 'ss_button.dart';
 import 'ss_progress.dart';
 
 /// Uma página do [SsOnboarding]: [illustration] (qualquer widget) ou, sem
-/// ela, a [EmptyIllustration] com [icon].
+/// ela, a [EmptyIllustration] com [icon]. [action] fica embaixo do texto
+/// ("Permitir notificações", "Entrar com Google").
 class SsOnboardingPage {
   const SsOnboardingPage({
     required this.title,
     required this.text,
     this.icon = Icons.auto_awesome_outlined,
     this.illustration,
+    this.action,
   });
 
   final String title;
   final String text;
   final IconData icon;
   final Widget? illustration;
+  final Widget? action;
 }
 
 /// Boas-vindas em páginas: desliza entre [pages], indicador em pílula que
@@ -118,6 +121,7 @@ class _SsOnboardingState extends State<SsOnboarding> {
                         textAlign: TextAlign.center,
                         style: TextStyle(color: c.muted, fontSize: AppType.body, height: 1.45),
                       ),
+                      if (p.action != null) ...[const SizedBox(height: 20), p.action!],
                     ],
                   ),
                 );

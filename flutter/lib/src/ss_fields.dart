@@ -9,6 +9,7 @@ import 'format.dart';
 import 'motion.dart';
 import 'ss_button.dart';
 import 'ss_controls.dart';
+import 'ss_list.dart';
 import 'ss_picker.dart';
 import 'ss_sheet.dart';
 import 'ss_stat.dart';
@@ -93,6 +94,8 @@ class SsTextField extends StatefulWidget {
     this.inputFormatters,
     this.obscureText = false,
     this.maxLines = 1,
+    this.minLines,
+    this.helperText,
     this.enabled = true,
     this.autofocus = false,
     this.readOnly = false,
@@ -120,6 +123,12 @@ class SsTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final int? maxLines;
+
+  /// Altura mínima em linhas (observação que já abre com 3 linhas).
+  final int? minLines;
+
+  /// Dica fixa embaixo do campo (some enquanto há erro).
+  final String? helperText;
   final bool enabled;
   final bool autofocus;
   final bool readOnly;
@@ -222,6 +231,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       autofillHints: widget.autofillHints,
       obscureText: widget.obscureText,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
+      minLines: widget.obscureText ? null : widget.minLines,
       enabled: widget.enabled,
       autofocus: widget.autofocus,
       readOnly: widget.readOnly,
@@ -231,6 +241,9 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       decoration: InputDecoration(
         hintText: widget.hint,
         hintStyle: TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w500),
+        helperText: widget.helperText,
+        helperMaxLines: 3,
+        helperStyle: TextStyle(color: c.muted, fontSize: AppType.meta),
         prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: 21, color: on ? c.accent : c.muted),
         prefixText: widget.prefixText,
         prefixStyle: widget.style ?? TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w600),
@@ -448,6 +461,9 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
 /// Data por atalhos em chips: "Hoje", "Amanhã" e o próximo dia útil (Sex, ou
 /// Seg quando amanhã já é sexta ou fim de semana); o calendário só abre em
 /// "Outra…" (que passa a mostrar a data escolhida). [clearable] põe um ✕.
+/// [initialDate] é onde o calendário abre sem valor (ex.: nascimento);
+/// [showShortcuts] falso deixa só o chip do calendário. Com [validator], vale
+/// dentro de [Form] e mostra o erro embaixo.
 class SsDateField extends StatelessWidget {
   const SsDateField({
     super.key,
@@ -457,6 +473,9 @@ class SsDateField extends StatelessWidget {
     this.firstDate,
     this.lastDate,
     this.clearable = false,
+    this.initialDate,
+    this.validator,
+    this.showShortcuts = true,
   }) : _hora = false;
 
   const SsDateField._hora({
@@ -467,6 +486,9 @@ class SsDateField extends StatelessWidget {
     this.firstDate,
     this.lastDate,
     this.clearable = false,
+    this.initialDate,
+    this.validator,
+    this.showShortcuts = true,
   }) : _hora = true;
 
   final String? label;
@@ -475,6 +497,9 @@ class SsDateField extends StatelessWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool clearable;
+  final DateTime? initialDate;
+  final String? Function(DateTime? value)? validator;
+  final bool showShortcuts;
   final bool _hora;
 
   /// Os 3 atalhos a partir de [today]: (rótulo, dia).
@@ -500,7 +525,7 @@ class SsDateField extends StatelessWidget {
     final hoje = DateUtils.dateOnly(DateTime.now());
     final first = firstDate ?? DateTime(2000);
     final last = lastDate ?? DateTime(2100);
-    var inicial = value ?? hoje;
+    var inicial = value ?? initialDate ?? hoje;
     if (inicial.isBefore(first)) inicial = first;
     if (inicial.isAfter(last)) inicial = last;
     final d = await showDatePicker(
@@ -526,10 +551,13 @@ class SsDateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final atalhos = shortcuts(DateTime.now()).where((a) => _noIntervalo(a.$2)).toList();
+    final atalhos = showShortcuts
+        ? shortcuts(DateTime.now()).where((a) => _noIntervalo(a.$2)).toList()
+        : <(String, DateTime)>[];
     final v = value;
     final outra = v != null && !atalhos.any((a) => DateUtils.isSameDay(a.$2, v));
-    return Column(
+    final rotulo = showShortcuts ? 'Outra…' : 'Escolher data';
+    final campo = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -545,7 +573,7 @@ class SsDateField extends StatelessWidget {
                 selected: v != null && DateUtils.isSameDay(dia, v),
                 onTap: () => onChanged(_comHora(dia)),
               ),
-            SsFilterChip(outra ? date(v) : 'Outra…', selected: outra, onTap: () => _outra(context)),
+            SsFilterChip(outra ? date(v) : rotulo, selected: outra, onTap: () => _outra(context)),
             if (_hora)
               SsFilterChip(
                 v == null ? 'Hora' : '${two(v.hour)}:${two(v.minute)}',
@@ -563,6 +591,15 @@ class SsDateField extends StatelessWidget {
         ),
       ],
     );
+    if (validator == null) return campo;
+    return FormField<DateTime>(
+      validator: (_) => validator!(value),
+      builder: (f) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [campo, if (f.errorText != null) _ErrorLine(f.errorText!)],
+      ),
+    );
   }
 }
 
@@ -577,6 +614,9 @@ class SsDateTimeField extends SsDateField {
     super.firstDate,
     super.lastDate,
     super.clearable,
+    super.initialDate,
+    super.validator,
+    super.showShortcuts,
   }) : super._hora();
 }
 
@@ -763,8 +803,17 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
 /// Linha com título, subtítulo e um Switch na cor da marca; tocar em
 /// qualquer lugar da linha alterna. [onChanged] nulo desabilita.
 class SsSwitchRow extends StatelessWidget {
-  const SsSwitchRow({super.key, required this.title, this.subtitle, required this.value, required this.onChanged});
+  const SsSwitchRow({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.icon,
+  });
 
+  /// Quadrado tonal à esquerda ([SsIconTile]).
+  final IconData? icon;
   final String title;
   final String? subtitle;
   final bool value;
@@ -786,6 +835,7 @@ class SsSwitchRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Row(
             children: [
+              if (icon != null) ...[SsIconTile(icon!, size: 38), const SizedBox(width: 12)],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

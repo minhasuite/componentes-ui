@@ -10,7 +10,8 @@ import 'ss_card.dart';
 class SsEmptyState extends StatelessWidget {
   const SsEmptyState({
     super.key,
-    required this.icon,
+    this.icon = Icons.inbox_outlined,
+    this.art,
     required this.title,
     this.subtitle,
     this.actionLabel,
@@ -23,6 +24,9 @@ class SsEmptyState extends StatelessWidget {
   final bool compact;
 
   final IconData icon;
+
+  /// Arte própria do produto no lugar da ilustração com [icon].
+  final Widget? art;
   final String title;
   final String? subtitle;
   final String? actionLabel;
@@ -34,7 +38,7 @@ class SsEmptyState extends StatelessWidget {
     final corpo = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        EmptyIllustration(icon: icon, size: compact ? 72 : 112),
+        art ?? EmptyIllustration(icon: icon, size: compact ? 72 : 112),
         const SizedBox(height: 14),
         Text(
           title,

@@ -16,8 +16,9 @@ import 'motion.dart';
 class SsProgress extends StatelessWidget {
   const SsProgress(this.value, {super.key, this.height = 8, this.color, this.marker, this.markerLabel, this.segments});
 
-  /// 0 a 1 (mais que 1 = estourou).
-  final double value;
+  /// 0 a 1 (mais que 1 = estourou). `null` = indeterminado (enviando, sem
+  /// saber quanto falta): faixa que corre na cor da marca.
+  final double? value;
   final double height;
   final Color? color;
   final double? marker;
@@ -27,7 +28,22 @@ class SsProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final v = math.max(0.0, value);
+    if (value == null) {
+      return Semantics(
+        label: 'Carregando',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          child: LinearProgressIndicator(
+            minHeight: height,
+            color: color ?? c.accent,
+            backgroundColor: c.field,
+            // Sem movimento: a faixa fica parada em 1/3.
+            value: reduceMotion(context) ? .33 : null,
+          ),
+        ),
+      );
+    }
+    final v = math.max(0.0, value!);
     final cor = color ?? (v >= 1 && v <= 1.0001 ? AppColors.success : c.accent);
     final escala = math.max(1.0, v); // largura total = max(1, valor)
     final temMarca = marker != null;
@@ -170,7 +186,7 @@ class _SsProportionBarState extends State<SsProportionBar> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final paleta = [c.accent, ...AppColors.series.skip(1)];
+    final paleta = c.series;
     final total = widget.parts.fold<double>(0, (s, p) => s + math.max(0, p.$1));
     final partes = [
       for (var i = 0; i < widget.parts.length; i++)

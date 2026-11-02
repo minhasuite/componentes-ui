@@ -134,7 +134,9 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
 }
 
 /// Pede um texto curto. Devolve o texto aparado, ou `null` se cancelou ou
-/// deixou vazio. [validator] devolve a mensagem de erro (ou `null` se ok).
+/// deixou vazio (com [allowEmpty], vazio volta `''`: apagar a observação).
+/// [validator] devolve a mensagem de erro (ou `null` se ok). [message] é um
+/// texto acima do campo; [maxLines] > 1 vira campo de várias linhas.
 Future<String?> showSsPrompt(
   BuildContext context, {
   required String title,
@@ -144,6 +146,10 @@ Future<String?> showSsPrompt(
   String? Function(String value)? validator,
   TextInputType keyboardType = TextInputType.text,
   String confirmLabel = 'Salvar',
+  bool allowEmpty = false,
+  int maxLines = 1,
+  int? maxLength,
+  String? message,
 }) async {
   final r = await showDialog<String>(
     context: context,
@@ -155,9 +161,12 @@ Future<String?> showSsPrompt(
       validator: validator,
       keyboardType: keyboardType,
       confirmLabel: confirmLabel,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      message: message,
     ),
   );
-  return (r == null || r.isEmpty) ? null : r;
+  return (r == null || (r.isEmpty && !allowEmpty)) ? null : r;
 }
 
 /// Conteúdo de [showSsPrompt] (público para o catálogo).
@@ -171,6 +180,9 @@ class SsPromptDialog extends StatefulWidget {
     this.validator,
     this.keyboardType = TextInputType.text,
     this.confirmLabel = 'Salvar',
+    this.maxLines = 1,
+    this.maxLength,
+    this.message,
   });
 
   final String title;
@@ -180,6 +192,9 @@ class SsPromptDialog extends StatefulWidget {
   final String? Function(String value)? validator;
   final TextInputType keyboardType;
   final String confirmLabel;
+  final int maxLines;
+  final int? maxLength;
+  final String? message;
 
   @override
   State<SsPromptDialog> createState() => _SsPromptDialogState();
@@ -204,14 +219,30 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
     title: Text(widget.title),
     content: Form(
       key: _form,
-      child: TextFormField(
-        controller: _texto,
-        autofocus: true,
-        keyboardType: widget.keyboardType,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(labelText: widget.label, hintText: widget.hint),
-        validator: widget.validator == null ? null : (v) => widget.validator!((v ?? '').trim()),
-        onFieldSubmitted: (_) => _salvar(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.message != null) ...[
+            Text(
+              widget.message!,
+              style: TextStyle(color: SsColors.of(context).ink2, fontSize: AppType.sub),
+            ),
+            const SizedBox(height: 12),
+          ],
+          TextFormField(
+            controller: _texto,
+            autofocus: true,
+            keyboardType: widget.maxLines > 1 ? TextInputType.multiline : widget.keyboardType,
+            textCapitalization: TextCapitalization.sentences,
+            maxLines: widget.maxLines,
+            minLines: 1,
+            maxLength: widget.maxLength,
+            decoration: InputDecoration(labelText: widget.label, hintText: widget.hint),
+            validator: widget.validator == null ? null : (v) => widget.validator!((v ?? '').trim()),
+            onFieldSubmitted: widget.maxLines > 1 ? null : (_) => _salvar(),
+          ),
+        ],
       ),
     ),
     actions: [
@@ -228,12 +259,22 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
 /// Bloqueia a tela (fundo escurecido, spinner e [label]) enquanto [task]
 /// roda, e sempre fecha no fim. Devolve o resultado ou repassa o erro:
 /// `final r = await ssRunBlocking(context, () => api.salvar(p));`
-Future<T> ssRunBlocking<T>(BuildContext context, Future<T> Function() task, {String label = 'Um instante…'}) async {
+/// Com [onCancel], o cartão ganha "Cancelar": chama [onCancel] (o app cancela
+/// o `CancelToken`, e a [task] termina com erro) e a tela fecha quando ela acabar.
+Future<T> ssRunBlocking<T>(
+  BuildContext context,
+  Future<T> Function() task, {
+  String label = 'Um instante…',
+  VoidCallback? onCancel,
+}) async {
   final navigator = Navigator.of(context, rootNavigator: true);
   final rota = DialogRoute<void>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => PopScope(canPop: false, child: SsBlockingIndicator(label: label)),
+    builder: (_) => PopScope(
+      canPop: false,
+      child: SsBlockingIndicator(label: label, onCancel: onCancel),
+    ),
   );
   navigator.push(rota);
   try {
@@ -248,10 +289,18 @@ Future<T> ssRunBlocking<T>(BuildContext context, Future<T> Function() task, {Str
 }
 
 /// O cartão de espera do [ssRunBlocking] (público para o catálogo).
-class SsBlockingIndicator extends StatelessWidget {
-  const SsBlockingIndicator({super.key, this.label = 'Um instante…'});
+class SsBlockingIndicator extends StatefulWidget {
+  const SsBlockingIndicator({super.key, this.label = 'Um instante…', this.onCancel});
 
   final String label;
+  final VoidCallback? onCancel;
+
+  @override
+  State<SsBlockingIndicator> createState() => _SsBlockingIndicatorState();
+}
+
+class _SsBlockingIndicatorState extends State<SsBlockingIndicator> {
+  var _cancelado = false;
 
   @override
   Widget build(BuildContext context) {
@@ -259,21 +308,40 @@ class SsBlockingIndicator extends StatelessWidget {
     return Center(
       child: Semantics(
         liveRegion: true,
-        label: label,
+        label: _cancelado ? 'Cancelando…' : widget.label,
         child: Material(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppRadius.card),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-            child: Row(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.6, color: c.accent)),
-                const SizedBox(width: 14),
-                Text(
-                  label,
-                  style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.6, color: c.accent)),
+                    const SizedBox(width: 14),
+                    Flexible(
+                      child: Text(
+                        _cancelado ? 'Cancelando…' : widget.label,
+                        style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
+                      ),
+                    ),
+                  ],
                 ),
+                if (widget.onCancel != null) ...[
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: _cancelado
+                        ? null
+                        : () {
+                            setState(() => _cancelado = true);
+                            widget.onCancel!();
+                          },
+                    child: const Text('Cancelar'),
+                  ),
+                ],
               ],
             ),
           ),
@@ -284,19 +352,22 @@ class SsBlockingIndicator extends StatelessWidget {
 }
 
 /// Em volta de um formulário: com [dirty], voltar pergunta "Descartar as
-/// alterações?" antes de sair.
+/// alterações?" antes de sair. [isDirty] é a alternativa sem rebuild: é
+/// chamada na hora de voltar (ex.: `() => _form.mudou`).
 class SsUnsavedGuard extends StatelessWidget {
-  const SsUnsavedGuard({super.key, required this.dirty, required this.child});
+  const SsUnsavedGuard({super.key, this.dirty = false, this.isDirty, required this.child});
 
   final bool dirty;
+  final bool Function()? isDirty;
   final Widget child;
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !dirty,
+    canPop: !dirty && isDirty == null,
     onPopInvokedWithResult: (didPop, _) async {
       if (didPop) return;
       final navigator = Navigator.of(context);
+      if (!dirty && !(isDirty?.call() ?? false)) return navigator.pop();
       final ok = await showSsConfirm(
         context,
         title: 'Descartar as alterações?',

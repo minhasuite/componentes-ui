@@ -12,6 +12,7 @@ class SsCard extends StatelessWidget {
     this.onTap,
     this.active = false,
     this.done = false,
+    this.tint,
   });
 
   final Widget child;
@@ -19,6 +20,9 @@ class SsCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool active;
   final bool done;
+
+  /// Cor de um tom ([SsTone], categoria): fundo a 8% sobre a superfície.
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +33,7 @@ class SsCard extends StatelessWidget {
       curve: Curves.easeOut,
       padding: padding,
       decoration: BoxDecoration(
-        color: c.surface,
+        color: tint == null ? c.surface : Color.alphaBlend(tint!.withValues(alpha: .08), c.surface),
         borderRadius: radius,
         border: active ? Border.all(color: c.accentBright, width: 2) : null,
         boxShadow: active ? c.activeShadow : AppShadows.card,

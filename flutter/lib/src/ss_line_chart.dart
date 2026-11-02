@@ -75,7 +75,7 @@ class _SsLineChartState extends State<SsLineChart> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final paleta = [c.accent, ...AppColors.series.skip(1)];
+    final paleta = c.series;
     final series = [
       for (var i = 0; i < widget.series.length; i++) (widget.series[i].values, widget.series[i].color ?? paleta[i]),
     ];

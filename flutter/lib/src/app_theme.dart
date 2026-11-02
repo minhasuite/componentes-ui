@@ -180,6 +180,10 @@ class SsColors {
   Color get brandTo => brand.brandTo;
   Color get brandDeep => brand.brandDeep;
 
+  /// [AppColors.series] com a 1ª cor trocada pela marca do produto: use esta
+  /// (e não `AppColors.series[0]`, que é sempre o violeta).
+  List<Color> get series => [accent, ...AppColors.series.skip(1)];
+
   /// Glow direcional do botão primário e do card ativo, na cor da marca.
   List<BoxShadow> get primaryShadow => [
     BoxShadow(

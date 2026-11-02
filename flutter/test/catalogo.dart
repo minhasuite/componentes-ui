@@ -15,6 +15,7 @@ import 'catalogo_v07_compras.dart';
 import 'catalogo_v07_cultivo.dart';
 import 'catalogo_v07_gestor.dart';
 import 'catalogo_v07_viagens.dart';
+import 'catalogo_v08.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -87,7 +88,7 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = <Componente>[
+final catalogo = comV08(<Componente>[
   Componente(
     'ss-nav-bar',
     'SsNavBar',
@@ -791,7 +792,7 @@ final catalogo = <Componente>[
   ...catalogoV07Cultivo,
   ...catalogoV07Gestor,
   ...catalogoV07Viagens,
-];
+]);
 
 const _verde = SsBrand(
   accentLight: Color(0xFF1F9D6B),

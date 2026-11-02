@@ -7,11 +7,14 @@ enum SsBadgeVariant { accent, success, warning, danger, ghost, aquec }
 /// Badge pill "soft" do design system: fundo dessaturado + texto na cor. Espelha
 /// `.mp-badge` (font 11/700, pill). `micro` = variante compacta (10/700, uppercase).
 class SsBadge extends StatelessWidget {
-  const SsBadge(this.label, {super.key, this.variant = SsBadgeVariant.accent, this.micro = false});
+  const SsBadge(this.label, {super.key, this.variant = SsBadgeVariant.accent, this.micro = false, this.icon});
 
   final String label;
   final SsBadgeVariant variant;
   final bool micro;
+
+  /// Ícone antes do texto, na cor do texto.
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -44,15 +47,21 @@ class SsBadge extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: micro ? 8 : 12, vertical: micro ? 3 : 5),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppRadius.pill)),
-        child: Text(
-          micro ? label.toUpperCase() : label,
-          style: TextStyle(
-            color: fg,
-            fontSize: micro ? AppType.micro : AppType.label,
-            fontWeight: FontWeight.w700,
-            letterSpacing: micro ? 0.5 : 0,
-            height: 1.1,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[Icon(icon, size: micro ? 11 : 13, color: fg), const SizedBox(width: 4)],
+            Text(
+              micro ? label.toUpperCase() : label,
+              style: TextStyle(
+                color: fg,
+                fontSize: micro ? AppType.micro : AppType.label,
+                fontWeight: FontWeight.w700,
+                letterSpacing: micro ? 0.5 : 0,
+                height: 1.1,
+              ),
+            ),
+          ],
         ),
       ),
     );

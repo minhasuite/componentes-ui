@@ -3,30 +3,48 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 
-/// Uma ação do [SsOverflowMenu]. [destructive] pinta de vermelho (excluir).
+/// Uma ação do [SsOverflowMenu]. [destructive] pinta de vermelho (excluir);
+/// [checked] põe um ✓ no fim (ordem, filtro ativo); [subtitle] é uma linha menor.
 class SsMenuAction {
-  const SsMenuAction(this.icon, this.label, this.onTap, {this.destructive = false});
+  const SsMenuAction(
+    this.icon,
+    this.label,
+    this.onTap, {
+    this.destructive = false,
+    this.checked = false,
+    this.subtitle,
+  });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool destructive;
+  final bool checked;
+  final String? subtitle;
 }
 
 /// Ações secundárias num ⋮ que abre um menu ancorado embaixo dele (raio,
 /// ícone + texto, destrutivo em vermelho). Com uma ação só, vira o ícone
 /// dela com tooltip; sem ações, não mostra nada.
 class SsOverflowMenu extends StatelessWidget {
-  const SsOverflowMenu({super.key, required this.items, this.tooltip = 'Mais opções'});
+  const SsOverflowMenu({
+    super.key,
+    required this.items,
+    this.tooltip = 'Mais opções',
+    this.icon = Icons.more_vert_rounded,
+  });
 
   final List<SsMenuAction> items;
   final String tooltip;
+
+  /// Ícone do botão (ex.: `Icons.sort_rounded` num menu de ordem).
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
     final c = SsColors.of(context);
-    if (items.length == 1) {
+    if (items.length == 1 && !items.single.checked) {
       final a = items.single;
       return IconButton(
         tooltip: a.label,
@@ -36,7 +54,7 @@ class SsOverflowMenu extends StatelessWidget {
     }
     return PopupMenuButton<int>(
       tooltip: tooltip,
-      icon: const Icon(Icons.more_vert_rounded),
+      icon: Icon(icon),
       position: PopupMenuPosition.under,
       color: c.surface,
       surfaceTintColor: Colors.transparent,
@@ -71,10 +89,27 @@ class SsMenuActionRow extends StatelessWidget {
       children: [
         Icon(action.icon, size: 20, color: action.destructive ? AppColors.danger : c.ink2),
         const SizedBox(width: 12),
-        Text(
-          action.label,
-          style: TextStyle(color: cor, fontSize: AppType.set, fontWeight: FontWeight.w600),
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                action.label,
+                style: TextStyle(color: cor, fontSize: AppType.set, fontWeight: FontWeight.w600),
+              ),
+              if (action.subtitle != null)
+                Text(
+                  action.subtitle!,
+                  style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                ),
+            ],
+          ),
         ),
+        if (action.checked) ...[
+          const SizedBox(width: 12),
+          Icon(Icons.check_rounded, size: 20, color: c.accentText, semanticLabel: 'marcado'),
+        ],
       ],
     );
   }
