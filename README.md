@@ -40,36 +40,13 @@ static final light = AppTheme.build(Brightness.light, brand: minhaMarca);
   `SsShareController.capture`). Fica no app o que depende da API dele (tradução de
   erro, `CancelToken`), o `share_file` e o `theme_mode_provider`.
 
-## Acesso (o repo é privado)
+## Acesso
 
-Uma chave SSH **só de leitura e só deste repo** (deploy key "CI dos produtos"),
-em `minha-infra/vault/ssh/componentes-ui-deploy`. Os produtos continuam usando o
-endereço HTTPS acima; quem tem a chave troca por SSH com variáveis do git.
-
-- **CI dos apps:** secret `COMPONENTES_UI_DEPLOY_KEY` em cada repo e o passo
-  "Acesso ao componentes-ui" antes do `checkout` de cada job que roda `pub get`
-  (já está nos `ci.yml` e `deploy-play.yml` dos 7 apps).
-- **Local (container):**
-
-```bash
-K=~/projects/minha-infra/vault/ssh/componentes-ui-deploy
-docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w /app \
-  -e GIT_CONFIG_COUNT=2 \
-  -e GIT_CONFIG_KEY_0=url.git@github.com:minhasuite/componentes-ui.insteadOf \
-  -e GIT_CONFIG_VALUE_0=https://github.com/minhasuite/componentes-ui \
-  -e GIT_CONFIG_KEY_1=core.sshCommand \
-  -e "GIT_CONFIG_VALUE_1=ssh -i /k -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
-  ghcr.io/cirruslabs/flutter:stable bash -lc 'flutter pub get'
-```
-
-  Depois do 1º `pub get` o pacote fica no volume `flutter_pub`, e o `--offline` dos
-  comandos de cada app volta a funcionar sem a chave.
-- **Webs Rails:** secret `COMPONENTES_UI_DEPLOY_KEY` no repo, o mesmo passo no
-  `ci-cd.yml` (a qualidade monta o `$RUNNER_TEMP` e repassa os `GIT_CONFIG_*` ao
-  `docker run`) e, no `Dockerfile.prod`, `git openssh-client` e
-  `RUN --mount=type=secret,id=componentes_ui --mount=type=secret,id=github_known_hosts ... bundle install`
-  com `docker build --secret ...`. Modelo pronto: `minhas-vendas` (o secret também
-  já está no `meu-gestor`). O devcontainer precisa de `openssh-client`.
+Repo **público** desde 04/11/2026 (licença Apache 2.0, arquivo `LICENSE`): os
+produtos usam o endereço HTTPS acima sem chave. A deploy key "CI dos produtos"
+(`COMPONENTES_UI_DEPLOY_KEY` nos CIs, `--secret componentes_ui` nos
+`Dockerfile.prod`) deixou de ser necessária; pode sair de cada produto quando ele
+for mexido.
 
 ## Rails (Tailwind 4, tailwindcss-rails ≥ 4.2)
 
