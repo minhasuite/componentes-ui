@@ -8,7 +8,9 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/minhasuite/componentes-ui"
   spec.license = "Nenhuma (uso interno)"
   spec.required_ruby_version = ">= 3.3"
-  spec.files = Dir["app/**/*", "lib/**/*"]
+  spec.files = Dir["app/**/*", "lib/**/*", "config/**/*"]
   spec.add_dependency "railties", ">= 8.0"
   spec.add_dependency "tailwindcss-rails", ">= 4.2"
+  # Componentes de tela (Ss::*Component) desde a v0.9.
+  spec.add_dependency "view_component", ">= 3.9"
 end

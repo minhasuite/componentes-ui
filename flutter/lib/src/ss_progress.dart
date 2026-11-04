@@ -5,9 +5,10 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 
 /// Barra de progresso do design system: 100% é sucesso (verde). Cresce de 0
-/// ao aparecer.
+/// quando entra na tela; mudar o valor anima do atual até o novo.
 ///
 /// - [marker] (0 a 1): tracinho de "onde devia estar hoje", com [markerLabel].
 /// - [value] acima de 1 é estouro: a barra passa a valer [value] e o excesso
@@ -50,10 +51,8 @@ class SsProgress extends StatelessWidget {
     final bar = SizedBox(
       height: height + (temMarca ? 8 : 0),
       width: double.infinity,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: v),
-        duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 600),
-        curve: Curves.easeOutCubic,
+      child: SsTweenInView(
+        end: v,
         builder: (_, t, _) => CustomPaint(
           painter: _BarPainter(
             t: t / escala,
@@ -209,10 +208,8 @@ class _SsProportionBarState extends State<SsProportionBar> {
             height: widget.height,
             color: c.field,
             alignment: Alignment.centerLeft,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 600),
-              curve: Curves.easeOutCubic,
+            child: SsTweenInView(
+              end: 1,
               builder: (_, t, child) => FractionallySizedBox(widthFactor: t, child: child),
               child: Row(
                 children: [

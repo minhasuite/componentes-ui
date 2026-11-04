@@ -1,0 +1,11 @@
+<%= tag.section(**root_attrs(class: classes("ss-hero-section", ("has-media" if media?)))) do %>
+  <% if @texture %><div class="ss-texture" aria-hidden="true"></div><% end %>
+  <div class="ss-hero-section-text">
+    <% if @kicker %><p class="ss-hero-section-kicker"><%= @kicker %></p><% end %>
+    <%= content_tag(@heading, title_html, class: "ss-hero-section-title") %>
+    <% if @text %><p class="ss-hero-section-lead"><%= @text %></p><% end %>
+    <% if actions? %><div class="ss-hero-section-actions"><%= actions %></div><% end %>
+    <%= content %>
+  </div>
+  <% if media? %><div class="ss-hero-section-media"><%= media %></div><% end %>
+<% end %>

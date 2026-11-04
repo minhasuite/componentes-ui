@@ -1,0 +1,42 @@
+<%# titulo: Ajuda na tela | grupo: Retorno | ordem: 30 %>
+<%= render Ss::TourComponent.new(id: "vitrine-ajuda", autostart: false, steps: [
+      { target: "popover", title: "Popover nativo", text: "Abre com a Popover API: Esc ou clique fora fecha, sem JS para abrir." },
+      { target: "novidades", title: "Novidades", text: "O ponto some quando você abre. O que é novo ganha o selo." },
+      { target: "atalhos", title: "Atalhos", text: "Aperte ? em qualquer lugar da página para ver a lista." }]) do %>
+  <%= demo "Ss::TourComponent", "Destaque guiado: escurece a tela com recorte no alvo [data-tour-step], balão com passo n/total; lembra no navegador que você viu (autostart).",
+        uso: 'render Ss::TourComponent.new(id: "painel-v2", steps: [{ target: "kpis", title:, text: }]) do … <button data-action="ss-tour#start"> … end' do %>
+    <button type="button" class="ss-btn ss-btn-primary" data-action="ss-tour#start">Começar o tour</button>
+  <% end %>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1.5rem;align-items:start">
+    <%= demo "Ss::PopoverComponent", "Popover API (popovertarget) + CSS anchor; sem anchor, o controller posiciona.", uso: 'render Ss::PopoverComponent.new(label: "Como calculamos?", title: "Saldo previsto") do … end' do %>
+      <div data-tour-step="popover" style="display:inline-flex;gap:.5rem">
+        <%= render Ss::PopoverComponent.new(label: "Como calculamos?", title: "Saldo previsto") do %>
+          <p style="color:var(--ink-2)">Saldo de hoje + contas a receber − contas a pagar até o fim do mês. Lançamentos recorrentes entram pela previsão.</p>
+        <% end %>
+      </div>
+    <% end %>
+    <%= demo "Ss::TooltipComponent", "Dica no hover e no foco (Esc esconde).", uso: 'render Ss::TooltipComponent.new(text: "Exportar CSV") do … end' do %>
+      <div style="display:flex;gap:.5rem;padding-top:1.5rem">
+        <%= render Ss::TooltipComponent.new(text: "Exportar CSV") do %><button type="button" class="ss-btn ss-btn-outline ss-btn-sm" aria-label="Exportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m-4-4 4 4 4-4M5 20h14"/></svg></button><% end %>
+        <%= render Ss::TooltipComponent.new(text: "Imprimir (Ctrl P)", placement: :bottom) do %><button type="button" class="ss-btn ss-btn-outline ss-btn-sm">Imprimir</button><% end %>
+      </div>
+    <% end %>
+    <%= demo "Ss::WhatsNewComponent", "Sino com ponto + lista com data e selo “novo”; abrir marca como visto.", uso: 'render Ss::WhatsNewComponent.new(id: "financeiro", items: [{ id:, date:, title:, text:, url: }])' do %>
+      <div data-tour-step="novidades" style="display:inline-flex">
+        <%= render Ss::WhatsNewComponent.new(id: "vitrine", items: [
+              { id: "2026-11-04-ia", date: Date.new(2026, 11, 4), title: "Pergunte à IA", text: "Faça perguntas sobre seus gastos em português.", url: "#" },
+              { id: "2026-10-28-pix", date: Date.new(2026, 10, 28), title: "Cobrança por Pix", text: "Gere o QR e o copia-e-cola direto do título." },
+              { id: "2026-10-10-tema", date: Date.new(2026, 10, 10), title: "Tema OLED", text: "Preto de verdade para telas OLED." }]) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render Ss::ShortcutsComponent.new(groups: [
+        { title: "Ir para", items: [{ keys: "g t", label: "Tabela de dados", url: vitrine_path("dados_tabela") }, { keys: "g i", label: "Indicadores", url: vitrine_path("dados_indicadores") }, { keys: "g c", label: "Cards", url: vitrine_path("cards_ingressos") }] },
+        { title: "Nesta tela", items: [{ keys: "/", label: "Buscar" }, { keys: "n", label: "Novo pedido" }, { keys: "?", label: "Ver atalhos" }] }]) do %>
+    <%= demo "Ss::ShortcutsComponent", "Aperte ? (fora de um campo) para abrir. “g t” vai para a tabela de dados.", uso: 'render Ss::ShortcutsComponent.new(groups: [{ title: "Ir para", items: [{ keys: "g p", label: "Pedidos", url: pedidos_path }] }])' do %>
+      <button type="button" class="ss-btn ss-btn-outline" data-tour-step="atalhos" data-action="ss-shortcuts#open">Ver atalhos <kbd class="ss-kbd">?</kbd></button>
+    <% end %>
+  <% end %>
+<% end %>

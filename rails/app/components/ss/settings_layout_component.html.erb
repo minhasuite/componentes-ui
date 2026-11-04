@@ -1,0 +1,12 @@
+<%= tag.div(**root_attrs(class: classes("ss-settings"), data: { controller: "ss-scrollspy" })) do %>
+  <nav class="ss-settings-nav" aria-label="<%= @nav_label %>" data-controller="ss-indicator" data-ss-indicator-selector-value="a">
+    <% if @title %><p class="ss-settings-title"><%= @title %></p><% end %>
+    <% sections.each_with_index do |s, i| %>
+      <a href="#<%= s.id %>" <%= 'aria-current="true"'.html_safe if i.zero? %>><%= icon(s.icon) %><span><%= s.title %></span></a>
+    <% end %>
+  </nav>
+  <div class="ss-settings-main">
+    <% sections.each do |s| %><%= s %><% end %>
+    <%= content %>
+  </div>
+<% end %>

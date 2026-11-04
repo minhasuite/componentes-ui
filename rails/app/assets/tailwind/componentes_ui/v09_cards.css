@@ -1,0 +1,245 @@
+/* v0.9 · Cards (lote B): ingresso, cartão de embarque, produto, depoimento, planos,
+   card com aba de situação, Pix/QR, insight da IA, nível/pontos e pessoa. */
+@property --ss-ai-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+@layer components {
+  /* ── Ingresso (Ss::TicketCardComponent) ── */
+  .ss-ticket { --notch: 13px; display: grid; filter: drop-shadow(0 1px 1px rgba(30, 26, 56, .05)) drop-shadow(0 10px 16px rgba(30, 26, 56, .09)); }
+  [data-theme="dark"] .ss-ticket { filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .5)); }
+  .ss-ticket-top, .ss-ticket-stub { position: relative; padding: 1.15rem 1.3rem; background: var(--surface); }
+  .ss-ticket-top { border-radius: var(--r-card) var(--r-card) 0 0; }
+  .ss-ticket-top:only-child { border-radius: var(--r-card); }
+  .ss-ticket-top:not(:only-child) {
+    mask: radial-gradient(circle var(--notch) at 0 100%, #0000 98%, #000) 0 0 / 51% 100% no-repeat,
+          radial-gradient(circle var(--notch) at 100% 100%, #0000 98%, #000) 100% 0 / 51% 100% no-repeat; }
+  .ss-ticket-stub { border-radius: 0 0 var(--r-card) var(--r-card); transform-origin: 0 0; transition: translate .5s var(--ss-bounce), rotate .5s var(--ss-bounce);
+    mask: radial-gradient(circle var(--notch) at 0 0, #0000 98%, #000) 0 0 / 51% 100% no-repeat,
+          radial-gradient(circle var(--notch) at 100% 0, #0000 98%, #000) 100% 0 / 51% 100% no-repeat; }
+  .ss-ticket-stub::before { content: ""; position: absolute; top: 0; left: calc(var(--notch) + 6px); right: calc(var(--notch) + 6px); border-top: 2px dashed var(--line); }
+  /* O canhoto "descola" de leve no hover, como quem vai destacar. */
+  .ss-ticket:hover .ss-ticket-stub { translate: 0 3px; rotate: -.7deg; }
+  .ss-ticket.is-accent .ss-ticket-top { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); }
+  @media print {
+    .ss-ticket { filter: none; break-inside: avoid; }
+    .ss-ticket-top, .ss-ticket-stub { box-shadow: inset 0 0 0 1px #bbb; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+
+  /* ── Cartão de embarque (Ss::BoardingPassComponent) ── */
+  .ss-pass { max-width: 24rem; }
+  .ss-pass-route { position: relative; }
+  .ss-pass-arc { display: block; width: 100%; height: auto; overflow: visible; }
+  .ss-pass-path { fill: none; stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 2; stroke-dasharray: 4 6; }
+  .ss-pass-done { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; animation: ss-pass-draw 1s cubic-bezier(.45, .05, .25, 1) .15s backwards; }
+  .ss-pass-end { fill: var(--surface); stroke: var(--accent); stroke-width: 3; }
+  .ss-pass-halo { fill: var(--accent-soft); }
+  .ss-pass-plane { fill: var(--accent); }
+  .ss-pass-ends { display: flex; justify-content: space-between; gap: 1rem; margin-top: .4rem; }
+  .ss-pass-ends > div { display: grid; gap: .05rem; }
+  .ss-pass-ends > .is-end { text-align: right; }
+  .ss-pass-code { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; color: var(--ink); }
+  .ss-pass-ends span { font-size: .84rem; font-weight: 600; color: var(--ink-2); }
+  .ss-pass-ends small { font-size: .74rem; color: var(--muted); }
+  .ss-pass-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1rem; margin: 1.2rem 0 .2rem; }
+  .ss-pass-fields dt { font-size: .7rem; font-weight: 600; color: var(--muted); }
+  .ss-pass-fields dd { margin: .1rem 0 0; font-weight: 800; font-size: .95rem; color: var(--ink); }
+  .ss-pass-stub { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .ss-pass-carrier { display: grid; gap: .15rem; }
+  .ss-pass-carrier small { font-size: .76rem; color: var(--muted); }
+  .ss-pass-qr { width: 6.5rem; flex: none; padding: .5rem; }
+
+  /* Caixa branca do QR (igual nos dois temas: o leitor precisa de contraste). */
+  .ss-qr-box { display: grid; place-items: center; padding: .9rem; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px rgba(20, 22, 40, .08); }
+  .ss-qr-box > :is(svg, img) { display: block; width: 100%; height: auto; }
+
+  /* ── Produto (Ss::ProductCardComponent) ── */
+  .ss-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: 1.25rem; }
+  .ss-product { position: relative; display: flex; flex-direction: column; margin-top: 4rem; padding: 0 1.1rem 1.1rem; border-radius: var(--r-card); background: var(--surface);
+                box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); text-align: center;
+                transition: box-shadow .25s ease, translate .45s var(--ss-bounce);
+                animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--ss-iv-i, 0) * 80ms); }
+  .ss-product:hover { box-shadow: var(--shadow-hover); translate: 0 -3px; }
+  /* A imagem pula com a mola da suíte no hover (e volta com ela). */
+  .ss-product-img { width: 72%; aspect-ratio: 1; margin: -4rem auto .5rem; filter: drop-shadow(0 16px 18px rgba(20, 22, 40, .18));
+                    transition: scale .5s var(--ss-bounce), rotate .5s var(--ss-bounce), translate .5s var(--ss-bounce); }
+  .ss-product:hover .ss-product-img { scale: 1.06; rotate: -3deg; translate: 0 -4px; }
+  .ss-product-img > :is(img, svg) { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ss-product-badge { position: absolute; top: .9rem; left: .9rem; }
+  .ss-product h3 { font-size: 1rem; font-weight: 800; color: var(--ink); }
+  .ss-product-link { text-decoration: none; }
+  .ss-product-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+  .ss-product-link:focus-visible { outline: none; }
+  .ss-product:has(.ss-product-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-product p { margin-top: .25rem; font-size: .84rem; color: var(--muted); }
+  .ss-product-foot { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .9rem; text-align: left; }
+  .ss-product-foot .ss-amount { font-size: 1.25rem; }
+  .ss-product-foot form { display: contents; }
+  .ss-product-btn { position: relative; z-index: 1; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; flex: none; border: 0; border-radius: 14px; cursor: pointer;
+                    background: var(--accent); color: var(--surface); box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent); transition: transform .15s, background .2s; }
+  .ss-product-btn:hover { background: var(--accent-hover); }
+  .ss-product-btn:active { transform: scale(.92); }
+  .ss-product-btn svg { width: 1.2rem; height: 1.2rem; }
+
+  /* ── Depoimento (Ss::ReviewCardComponent) ── */
+  .ss-review { position: relative; display: grid; gap: .75rem; margin: 0; padding: 1.25rem;
+                animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--ss-iv-i, 0) * 80ms); }
+  .ss-review::before { content: "\201C"; position: absolute; top: .2rem; right: 1rem; font: 800 4.5rem/1 Georgia, serif; color: var(--accent-soft); pointer-events: none; }
+  .ss-stars { --v: 5; --star: color-mix(in oklab, #f5a524 65%, var(--warn)); display: inline-block; width: 6rem; height: 1.2rem;
+              background: linear-gradient(90deg, var(--star) calc(var(--v) / 5 * 100%), var(--line) 0);
+              mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6L2.5 9.3l6.6-.8z'/%3E%3C/svg%3E") 0 0 / 1.2rem 1.2rem repeat-x; }
+  .ss-review blockquote { position: relative; margin: 0; font-size: .95rem; line-height: 1.55; color: var(--ink-2); }
+  .ss-review figcaption { display: flex; align-items: center; gap: .65rem; }
+  .ss-review figcaption > span { display: grid; }
+  .ss-review figcaption b { font-size: .9rem; color: var(--ink); }
+  .ss-review figcaption small { font-size: .76rem; color: var(--muted); }
+
+  /* ── Planos (Ss::PricingTableComponent) ── */
+  .ss-pricing { display: grid; gap: 1.5rem; }
+  .ss-seg.ss-pricing-toggle { justify-self: center; width: 17rem; }
+  .ss-seg.ss-pricing-toggle > label { gap: .35rem; grid-auto-flow: column; }
+  .ss-pricing-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .ss-pricing-toggle:has(> :nth-child(2) input:checked) { --i: 1; }
+  .ss-pricing-toggle > label:has(input:checked) { color: var(--accent); font-weight: 800; }
+  .ss-pricing-toggle > label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 999px; }
+  .ss-pricing-save { padding: .05rem .4rem; border-radius: 999px; background: var(--success-soft); color: var(--success); font-size: .66rem; font-weight: 800; }
+  .ss-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.25rem; align-items: stretch; }
+  .ss-pricing-plan { position: relative; display: flex; flex-direction: column; gap: .4rem; padding: 1.5rem 1.35rem 1.35rem;
+                      animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 90ms); }
+  .ss-pricing-plan.is-featured { box-shadow: var(--shadow-hover); }
+  @media (min-width: 900px) { .ss-pricing-plan.is-featured { translate: 0 -.5rem; } }
+  .ss-pricing-seal { position: absolute; top: -.8rem; left: 50%; translate: -50% 0; white-space: nowrap; }
+  .ss-pricing-plan h3 { font-size: 1.05rem; font-weight: 800; }
+  .ss-pricing-desc { font-size: .84rem; color: var(--muted); min-height: 2.5em; }
+  .ss-pricing-price { display: flex; align-items: baseline; gap: .3rem; margin: .5rem 0 0; }
+  .ss-pricing-price > small { font-size: .82rem; color: var(--muted); }
+  .ss-pricing-note { font-size: .76rem; font-weight: 700; color: var(--success); }
+  .ss-pricing-features { display: grid; gap: .5rem; margin: 1rem 0 1.25rem; padding: 0; list-style: none; font-size: .87rem; color: var(--ink-2); }
+  .ss-pricing-features li { display: flex; gap: .5rem; align-items: flex-start; }
+  .ss-pricing-features svg { width: 1.05rem; height: 1.05rem; flex: none; margin-top: .1rem; color: var(--success); }
+  .ss-pricing-cta { margin-top: auto; width: 100%; }
+  .ss-pricing:not(:has(input[value="yearly"]:checked)) .is-yearly { display: none; }
+  .ss-pricing:has(input[value="yearly"]:checked) .is-monthly { display: none; }
+
+  /* ── Card com aba de situação (Ss::StatusTabCardComponent) ── */
+  .ss-tabcard { --tone: var(--accent); --bg: color-mix(in oklab, var(--tone) 20%, var(--surface)); --r: 22px; display: grid; }
+  .ss-tabcard[data-tone="success"] { --tone: var(--success); }
+  .ss-tabcard[data-tone="warn"] { --tone: var(--warn); }
+  .ss-tabcard[data-tone="danger"] { --tone: var(--danger); }
+  .ss-tabcard[data-tone="info"] { --tone: var(--ss-info); }
+  .ss-tabcard-top { display: flex; align-items: center; gap: .75rem; min-height: 2.6rem; }
+  .ss-tabcard-tab { position: relative; align-self: stretch; display: flex; align-items: center; padding: .4rem 1.2rem .2rem; border-radius: var(--r) var(--r) 0 0;
+                    background: var(--bg); color: var(--ink); font-size: .8rem; font-weight: 800; }
+  .ss-tabcard-tab::after { content: ""; position: absolute; left: calc(100% - 1px); bottom: 0; width: var(--r); height: var(--r);
+                           background: radial-gradient(circle at 100% 0, transparent calc(var(--r) - .5px), var(--bg) var(--r)); }
+  .ss-tabcard-top .ss-avatars { margin-left: calc(var(--r) - .25rem); }
+  .ss-tabcard-progress { display: flex; align-items: center; gap: .5rem; margin-left: auto; font-size: .78rem; color: var(--tone); padding-right: .25rem; }
+  .ss-tabcard-progress > i { display: block; width: 4.5rem; height: 6px; border-radius: 999px; background: color-mix(in oklab, var(--tone) 18%, var(--field)); overflow: hidden; }
+  .ss-tabcard-progress > i b { display: block; height: 100%; border-radius: inherit; background: var(--tone); }
+  .ss-tabcard-body { display: flex; align-items: center; gap: 1.1rem; padding: 1.1rem .75rem 1.1rem 1.2rem; border-radius: 0 var(--r) var(--r) var(--r); background: var(--bg); }
+  .ss-tabcard-icon { display: grid; place-items: center; width: 2.9rem; height: 2.9rem; margin: .35rem; flex: none; border-radius: 13px; rotate: 45deg;
+                     background: var(--tone); color: var(--surface); }
+  .ss-tabcard-icon svg { width: 1.35rem; height: 1.35rem; rotate: -45deg; }
+  .ss-tabcard-text { flex: 1; min-width: 0; }
+  .ss-tabcard-text h3 { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+  .ss-tabcard-text h3 a { text-decoration: none; }
+  .ss-tabcard-text h3 a:hover { text-decoration: underline; }
+  .ss-tabcard-text p { font-size: .84rem; color: var(--ink-2); }
+  .ss-tabcard .ss-menu > summary { color: var(--ink-2); }
+  .ss-tabcard .ss-menu > summary:hover, .ss-tabcard .ss-menu[open] > summary { background: color-mix(in oklab, var(--tone) 18%, transparent); }
+
+  /* ── Pix/QR (Ss::QrCardComponent) ── */
+  .ss-qrcard { display: grid; gap: .85rem; max-width: 22rem; padding: 1.25rem; text-align: center; }
+  .ss-qrcard-head h3 { font-size: .95rem; font-weight: 800; color: var(--muted); }
+  .ss-qrcard-head .ss-amount { display: block; margin-top: .2rem; font-size: 1.8rem; }
+  .ss-qrcard > .ss-qr-box { width: min(13rem, 100%); justify-self: center; transition: opacity .3s; }
+  .ss-qrcard-timer { font-size: .84rem; color: var(--muted); }
+  .ss-qrcard-timer b { color: var(--ink); font-weight: 500; }
+  .ss-qrcard-expired { display: none; color: var(--danger); font-weight: 700; }
+  .ss-qrcard[data-expired] .ss-qrcard-expired { display: inline; }
+  .ss-qrcard[data-expired] .ss-qrcard-valid { display: none; }
+  .ss-qrcard[data-expired] > .ss-qr-box { opacity: .25; }
+  .ss-qrcard-code { display: flex; gap: .4rem; padding: .3rem; border-radius: 14px; background: var(--field); border: 1px solid var(--line); }
+  .ss-qrcard-code input { flex: 1; min-width: 0; padding: 0 .5rem; border: 0; outline: 0; background: none; color: var(--ink-2); font-size: .78rem; text-overflow: ellipsis; }
+  .ss-qrcard-code.is-copied .ss-btn { background: var(--success); box-shadow: none; }
+  .ss-qrcard-hint { font-size: .78rem; color: var(--muted); }
+
+  /* ── Insight da IA (Ss::AiInsightCardComponent) ── */
+  .ss-ai-card { position: relative; padding: 1.5px; border-radius: var(--r-card); isolation: isolate;
+                background: conic-gradient(from var(--ss-ai-a), var(--accent), color-mix(in oklab, var(--accent) 15%, var(--line)) 22%,
+                            var(--aurora-3) 50%, color-mix(in oklab, var(--accent) 15%, var(--line)) 78%, var(--accent));
+                box-shadow: 0 16px 36px -22px color-mix(in srgb, var(--accent) 70%, transparent); animation: ss-ai-spin 8s linear infinite; }
+  .ss-ai-card.is-thinking { animation-duration: 2.6s; }
+  .ss-ai-inner { display: grid; gap: .65rem; padding: 1.1rem 1.2rem 1.15rem; border-radius: calc(var(--r-card) - 1.5px);
+                 background: radial-gradient(120% 90% at 100% 0, color-mix(in oklab, var(--accent) 8%, transparent), transparent 55%), var(--surface); }
+  .ss-ai-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+  .ss-ai-badge { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem .2rem .45rem; border-radius: 999px; background: var(--accent); color: var(--surface);
+                 font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
+  .ss-ai-badge svg { width: .9rem; height: .9rem; animation: ss-twinkle 3.2s ease-in-out infinite; }
+  .ss-ai-conf { font-size: .74rem; color: var(--muted); }
+  .ss-ai-conf b { color: var(--ink-2); }
+  .ss-ai-when { margin-left: auto; font-size: .74rem; color: var(--muted); }
+  .ss-ai-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); letter-spacing: -.01em; }
+  .ss-ai-text { font-size: .9rem; line-height: 1.55; color: var(--ink-2); }
+  .ss-ai-text b, .ss-ai-text strong { color: var(--ink); }
+  .ss-ai-sources { font-size: .82rem; }
+  .ss-ai-sources > summary { display: inline-flex; align-items: center; gap: .35rem; list-style: none; cursor: pointer; color: var(--accent); font-weight: 700; }
+  .ss-ai-sources > summary::-webkit-details-marker { display: none; }
+  .ss-ai-sources > summary::after { content: ""; width: .85rem; height: .85rem; background: currentColor; mask: var(--ss-i-chev) center / contain no-repeat; transition: rotate .2s; }
+  .ss-ai-sources[open] > summary::after { rotate: 180deg; }
+  .ss-ai-sources > summary small { color: var(--muted); font-weight: 500; }
+  .ss-ai-sources ul { display: grid; gap: .35rem; margin: .5rem 0 0; padding: .6rem .75rem; list-style: none; border-radius: 12px; background: var(--field); animation: ss-fade .2s ease; }
+  .ss-ai-sources li { display: flex; justify-content: space-between; gap: .75rem; color: var(--ink-2); }
+  .ss-ai-sources li a { color: var(--ink); font-weight: 600; }
+  .ss-ai-sources li small { color: var(--muted); }
+  .ss-ai-actions { display: flex; gap: .5rem; margin-top: .2rem; }
+  .ss-ai-form { display: contents; }
+  .ss-ai-thinking { display: flex; align-items: center; gap: .6rem; font-size: .88rem; font-weight: 600; color: var(--ink-2); }
+  .ss-ai-thinking .ss-thinking { padding: 0; background: none; box-shadow: none; }
+
+  /* ── Nível/pontos (Ss::LevelCardComponent) ── */
+  .ss-level { display: grid; gap: 1.1rem; padding: 1.25rem; }
+  .ss-level-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .ss-level-points { display: grid; padding-left: .85rem; border-left: 4px solid var(--accent); }
+  .ss-level-points b { font-size: 2.6rem; font-weight: 500; line-height: 1; letter-spacing: -.03em; color: var(--ink); }
+  .ss-level-points span { font-size: .82rem; color: var(--muted); }
+  .ss-level-seal { display: inline-flex; align-items: center; gap: .45rem; }
+  .ss-level-seal small { font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+  .ss-level-seal b { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent); color: var(--surface); font-size: .85rem; }
+  .ss-level-next { display: grid; gap: .4rem; }
+  .ss-level .ss-progress-bar { transition: width .7s var(--ss-bounce); animation: ss-fill 1s var(--ss-bounce) .2s backwards; }
+  .ss-level-next small { font-size: .78rem; color: var(--muted); }
+  .ss-level-next small b { color: var(--ink); font-weight: 500; }
+  .ss-level-list { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .ss-level-list th, .ss-level-list td { padding: .55rem 0; text-align: left; border-bottom: 1px solid var(--line); }
+  .ss-level-list thead th { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .ss-level-list tbody th { font-weight: 600; color: var(--ink); }
+  .ss-level-list tr:last-child > * { border-bottom: 0; }
+  .ss-level-list .r { text-align: right; }
+  .ss-level-list td.num { color: var(--muted); }
+  .ss-level-list .ss-level-plus { color: var(--ink); font-weight: 500; }
+
+  /* ── Entrada dos blocos de vitrine (o CSS deles mora no v09_layout) ──
+     Mosaico e faixa de vantagens: os filhos sobem em cascata (--i vem do ss-in-view). */
+  .ss-bento-cell { animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+  .ss-feature { animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 90ms); }
+  .ss-feature-icon { animation: ss-iv-pop .55s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 90ms + .2s); }
+
+  /* ── Pessoa (Ss::PersonCardComponent) ── */
+  .ss-person { display: grid; gap: 1rem; padding: 1.25rem; animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--ss-iv-i, 0) * 80ms); }
+  .ss-person-head { display: flex; align-items: center; gap: .85rem; }
+  .ss-person-head h3 { font-size: 1.02rem; font-weight: 800; }
+  .ss-person-head h3 a { text-decoration: none; }
+  .ss-person-head h3 a:hover { color: var(--accent); }
+  .ss-person-head p { font-size: .82rem; color: var(--muted); }
+  .ss-person-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: .5rem; margin: 0; }
+  .ss-person-metrics > div { padding: .6rem .7rem; border-radius: 12px; background: var(--field); }
+  .ss-person-metrics dt { font-size: .7rem; font-weight: 700; color: var(--muted); }
+  .ss-person-metrics dd { margin: .15rem 0 0; font-size: 1rem; color: var(--ink); }
+  .ss-person-team { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .ss-person-team small { font-size: .76rem; font-weight: 600; color: var(--muted); }
+  .ss-person-actions { display: flex; gap: .5rem; }
+  .ss-person-actions > * { flex: 1; }
+}
+@keyframes ss-pass-draw { from { stroke-dasharray: 0 100; } }
+@keyframes ss-ai-spin { to { --ss-ai-a: 360deg; } }
+@keyframes ss-twinkle { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .8; opacity: .75; } }
+[data-privacy="on"] :is(.ss-level-points b, .ss-person-metrics dd, .ss-pricing-price) { filter: blur(7px); user-select: none; }

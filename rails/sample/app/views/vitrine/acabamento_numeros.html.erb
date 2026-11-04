@@ -1,0 +1,11 @@
+<%# titulo: Número que conta | grupo: Acabamento | ordem: 20 %>
+<%= demo "Ss::CountUpComponent", "Conta de 0 até o valor quando entra na tela (IntersectionObserver). Sem JS ou com menos movimento, mostra o valor final. O leitor de tela lê o valor certo.",
+      uso: 'render Ss::CountUpComponent.new(value: 48320.5, format: :money)  ·  Ss::CountUpComponent.new(value: 214, suffix: " pedidos")' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:1rem">
+    <div class="ss-card ss-card-pad"><p class="ss-kicker">Vendido no mês</p><div style="font-size:2rem;margin-top:.4rem"><%= render Ss::CountUpComponent.new(value: 48320.5, format: :money) %></div></div>
+    <div class="ss-card ss-card-pad"><p class="ss-kicker">Pedidos</p><div style="font-size:2rem;margin-top:.4rem"><%= render Ss::CountUpComponent.new(value: 214) %></div></div>
+    <div class="ss-card ss-card-pad"><p class="ss-kicker">Meta batida</p><div style="font-size:2rem;margin-top:.4rem"><%= render Ss::CountUpComponent.new(value: 92.4, format: :percent, decimals: 1) %></div></div>
+  </div>
+  <div style="height:60vh;display:grid;place-items:center;color:var(--muted);font-size:.85rem">role para baixo ↓</div>
+  <div class="ss-aurora" style="max-width:28rem"><p class="ss-kicker ss-muted-on-dark">Economizado no ano</p><div style="font-size:2.4rem;margin-top:.4rem"><%= render Ss::CountUpComponent.new(value: 12876.4, format: :money, duration: 1400) %></div></div>
+<% end %>

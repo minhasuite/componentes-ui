@@ -8,7 +8,7 @@ import 'app_theme.dart';
 import 'motion.dart';
 
 /// Ajuste numérico "− valor +": o número (DM Mono) rola na direção da
-/// mudança, segurar um botão repete cada vez mais rápido, o botão desabilita
+/// mudança e assenta com mola, os botões afundam e voltam com mola, segurar um botão repete cada vez mais rápido, o botão desabilita
 /// no limite (com vibração de "bateu") e tocar no número abre para digitar.
 /// Com [decimals] > 0 o valor vem como `double`; senão, como `int`.
 class SsStepper extends StatefulWidget {
@@ -120,7 +120,7 @@ class _SsStepperState extends State<SsStepper> {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final text = SsStepper.format(widget.value, widget.decimals);
-    final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 260);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.slow;
     final numStyle = AppTheme.number(context, size: AppType.lg, color: c.ink);
 
     Widget valor;
@@ -143,7 +143,8 @@ class _SsStepperState extends State<SsStepper> {
         child: ClipRect(
           child: AnimatedSwitcher(
             duration: dur,
-            switchInCurve: Curves.easeOutBack,
+            // O número novo chega com a mola (passa um tiquinho e assenta).
+            switchInCurve: SsMotion.bounce,
             switchOutCurve: Curves.easeIn,
             transitionBuilder: (child, anim) {
               // Entra de baixo e sai por cima quando sobe (o contrário quando desce).

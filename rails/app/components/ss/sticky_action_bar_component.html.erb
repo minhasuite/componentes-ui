@@ -1,0 +1,12 @@
+<%= tag.div(**root_attrs(class: classes("ss-sticky-bar"), role: "region", "aria-label": "Ações do formulário", "data-visible": (@always ? "" : nil),
+      data: { controller: "ss-dirty", ss_dirty_message_value: @confirm }.compact)) do %>
+  <span class="ss-sticky-bar-msg" aria-live="polite"><%= @message %></span>
+  <div class="ss-sticky-bar-actions">
+    <% if content? %>
+      <%= content %>
+    <% else %>
+      <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-dirty#reset"><%= @cancel_label %></button>
+      <button type="submit" class="ss-btn ss-btn-primary ss-btn-sm"><%= @save_label %></button>
+    <% end %>
+  </div>
+<% end %>

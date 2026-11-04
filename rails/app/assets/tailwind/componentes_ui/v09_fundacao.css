@@ -1,0 +1,138 @@
+/* v0.9 · fundação: paletas, OLED, vidro, brilho, sombra tingida, textura, squircle e swatch.
+   As paletas são a única exceção à regra "sem cor fixa": aqui ficam as definições
+   (tokens). Componentes só leem var(--accent), var(--grad), var(--grad-4)…
+   Especificidade: :root[data-palette] (0,2,0) vence o :root do engine.css (que vem
+   depois); o escuro da paleta (0,3,0) vence o escuro do engine. */
+
+/* As paletas (data-palette no <html>, [data-swatch] e o --grad-4 da padrão) são geradas
+   de paletas/paletas.json por paletas/gerar.py, junto com as do Flutter. */
+@import "./paletas.css";
+
+/* Anel de foco na cor da marca (qualquer paleta). */
+:root {
+  --ring: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* ── OLED: página preta e superfícies quase pretas (economiza bateria em tela OLED). ── */
+:root[data-theme="dark"][data-oled] {
+  --page: #000; --surface: #0a0a0d; --field: #111116; --head: #0d0d11; --line: #1e1d27; --side: #000;
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-oled] {
+    --page: #000; --surface: #0a0a0d; --field: #111116; --head: #0d0d11; --line: #1e1d27; --side: #000;
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, .06);
+  }
+}
+:root[data-theme="dark"][data-oled] body { background: var(--page); }
+
+@layer components {
+  /* ── Vidro: SÓ em sobreposição (menu suspenso, barra sobre foto, herói). Nunca em
+     card ou lista (direção visual). 1 = leve, 2 = médio, 3 = forte. Filete de luz
+     na borda de cima. Precisa de algo atrás (foto, gradiente) para fazer sentido. */
+  .ss-glass-1, .ss-glass-2, .ss-glass-3 {
+    border-radius: 18px; border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 10px 30px -14px rgba(20, 22, 40, .35); }
+  .ss-glass-1 { background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(8px) saturate(1.2); }
+  .ss-glass-2 { background: color-mix(in srgb, var(--surface) 58%, transparent); backdrop-filter: blur(14px) saturate(1.3); }
+  .ss-glass-3 { background: color-mix(in srgb, var(--surface) 42%, transparent); backdrop-filter: blur(22px) saturate(1.4); }
+  [data-theme="dark"] :is(.ss-glass-1, .ss-glass-2, .ss-glass-3) { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 10px 30px -14px rgba(0, 0, 0, .6); }
+
+  /* Brilho radial na cor da marca atrás do conteúdo (um por tela). */
+  .ss-glow { position: relative; isolation: isolate; }
+  .ss-glow::before { content: ""; position: absolute; z-index: -1; inset: -20% -10%; pointer-events: none;
+    background: radial-gradient(45% 55% at 70% 40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+                radial-gradient(35% 45% at 25% 70%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%); }
+
+  /* Sombra na cor do próprio elemento: style="--tint: var(--success)" (padrão: a marca). */
+  .ss-shadow-tint { box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--tint, var(--accent)) 55%, transparent),
+                                0 2px 6px -2px color-mix(in srgb, var(--tint, var(--accent)) 30%, transparent); }
+
+  /* Textura topográfica: <div class="ss-texture" aria-hidden="true"></div> dentro de
+     um pai com position:relative (herói, faixa). Pega a cor do texto (currentColor). */
+  .ss-texture { position: absolute; inset: 0; z-index: 0; pointer-events: none; color: inherit; opacity: .1;
+    background: currentColor; border-radius: inherit;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M-20 80c60-40 110 30 170 0s100-60 160-20 80 40 110 20'/%3E%3Cpath d='M-20 120c60-40 110 30 170 0s100-60 160-20 80 40 110 20'/%3E%3Cpath d='M-20 160c60-40 110 30 170 0s100-60 160-20 80 40 110 20'/%3E%3Cpath d='M-20 240c50 30 120-40 180-10s90 60 150 30 70-30 110-10'/%3E%3Cpath d='M-20 280c50 30 120-40 180-10s90 60 150 30 70-30 110-10'/%3E%3Cpath d='M-20 320c50 30 120-40 180-10s90 60 150 30 70-30 110-10'/%3E%3Cellipse cx='300' cy='200' rx='40' ry='22'/%3E%3Cellipse cx='300' cy='200' rx='70' ry='40'/%3E%3Cellipse cx='90' cy='210' rx='28' ry='14'/%3E%3C/svg%3E") 0 0 / 400px repeat; }
+
+  /* Raio contínuo (squircle) onde o navegador suporta; senão, raio comum. */
+  .ss-squircle { border-radius: var(--r-card); }
+  @supports (corner-shape: squircle) { .ss-squircle { corner-shape: squircle; border-radius: calc(var(--r-card) * 1.8); } }
+
+  /* ── Swatch: paleta em pílula de vidro, 4 círculos sobrepostos e o gradiente embaixo.
+     <button class="ss-swatch" data-swatch="eucalipto" aria-pressed="false">
+       <span class="ss-swatch-dots"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar"></span>
+       <span class="ss-swatch-name">Eucalipto</span></button>
+     Cores próprias: style="--p1:…;--p2:…;--p3:…;--p4:…". Sem blur (é pequeno e fica na página). */
+  .ss-swatch { display: inline-grid; justify-items: center; gap: .4rem; padding: .55rem .6rem .5rem; border-radius: 22px; cursor: pointer;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 90%, transparent), color-mix(in srgb, var(--field) 80%, transparent));
+    border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); color: var(--ink-2); font: 700 .72rem var(--font-sans);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 6px 16px -10px rgba(20, 22, 40, .3);
+    transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease, border-color .2s ease; }
+  [data-theme="dark"] .ss-swatch { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 16px -10px rgba(0, 0, 0, .6); }
+  button.ss-swatch:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  button.ss-swatch:active { transform: scale(.95); transition: transform 80ms ease-out, box-shadow .2s ease, border-color .2s ease; }
+  .ss-swatch[aria-pressed="true"], .ss-swatch:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring), inset 0 1px 0 rgba(255, 255, 255, .5); color: var(--accent); }
+  .ss-swatch { --sw1: color-mix(in oklab, var(--accent) 60%, #000); --sw2: var(--accent); --sw3: color-mix(in oklab, var(--accent) 60%, #fff); --sw4: color-mix(in oklab, var(--accent) 22%, #fff); }
+  .ss-swatch-dots { display: flex; padding-right: .5rem; }
+  .ss-swatch-dots i { width: 1.6rem; height: 1.6rem; margin-right: -.5rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 2px 6px -2px rgba(0, 0, 0, .35); }
+  .ss-swatch-dots i:nth-child(1) { background: var(--p1, var(--sw1)); }
+  .ss-swatch-dots i:nth-child(2) { background: var(--p2, var(--sw2)); }
+  .ss-swatch-dots i:nth-child(3) { background: var(--p3, var(--sw3)); }
+  .ss-swatch-dots i:nth-child(4) { background: var(--p4, var(--sw4)); }
+  .ss-swatch-bar { display: block; width: 100%; min-width: 4.5rem; height: .45rem; border-radius: 999px;
+    background: linear-gradient(90deg, var(--p1, var(--sw1)), var(--p2, var(--sw2)), var(--p3, var(--sw3)), var(--p4, var(--sw4))); }
+  .ss-swatch-lg .ss-swatch-dots i { width: 3rem; height: 3rem; margin-right: -.8rem; }
+  .ss-swatch-lg .ss-swatch-bar { height: .9rem; }
+  .ss-swatch-lg { padding: .9rem 1rem .8rem; border-radius: 30px; gap: .6rem; font-size: .8rem; }
+}
+
+@layer components {
+  /* ── Movimento: indicador que desliza (controller ss-indicator) ──────────────
+     Um só elemento (.ss-ind) por grupo, posicionado por --ind-x/--ind-y/--ind-w/--ind-h
+     (o controller mede o item ativo). Vai com a mola (--ss-bounce); o controller estica no
+     meio do caminho (WAAPI no `scale`). --ind-out folga (+) ou recolhe (−) em volta do item.
+     Tipos: .is-pill (fundo atrás do item), .is-line (sublinhado), .is-ring (anel por cima). */
+  :where([data-controller~="ss-indicator"]) { position: relative; isolation: isolate; }
+  .ss-ind { --o: var(--ind-out, 0px); position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; box-sizing: border-box;
+            width: calc(var(--ind-w, 0px) + 2 * var(--o)); height: calc(var(--ind-h, 0px) + 2 * var(--o));
+            translate: calc(var(--ind-x, 0px) - var(--o)) calc(var(--ind-y, 0px) - var(--o));
+            border-radius: var(--ind-r, 12px); background: var(--accent-soft);
+            transition: translate var(--ss-dur-indicator) var(--ind-ease, var(--ss-bounce)), width var(--ss-dur-indicator) var(--ind-ease, var(--ss-bounce)),
+                        height var(--ss-dur-indicator) var(--ind-ease, var(--ss-bounce)), opacity var(--ss-dur-fast) ease, scale var(--ss-dur-fast) ease; }
+  .ss-ind.is-line { top: auto; bottom: -1px; height: 3px; translate: calc(var(--ind-x, 0px) - var(--o)) 0; border-radius: 3px 3px 0 0; background: var(--accent); }
+  /* Sublinhado anda como minhoca (o controller anima por WAAPI) e, no voo (data-ss-ind-move="r|l"
+     no grupo), deixa um rastro de brilho atrás da cabeça: transparente → cor da marca, ~35%. */
+  .ss-ind.is-line::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 9px; border-radius: 6px; pointer-events: none; opacity: 0;
+                           background: linear-gradient(to right, transparent, var(--accent)); filter: blur(3px); }
+  [data-ss-ind-move="l"] > .ss-ind.is-line::after { background: linear-gradient(to left, transparent, var(--accent)); }
+  [data-ss-ind-move] > .ss-ind.is-line::after { animation: ss-worm-glow .52s ease-out; }
+  .ss-ind.is-ring { z-index: 3; background: color-mix(in srgb, var(--accent) 7%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
+  /* Sem item ativo: some encolhendo. Antes de medir (ou ao redimensionar): sem transição. */
+  [data-ss-ind-empty] > .ss-ind { opacity: 0; scale: .6; }
+  :not([data-ss-ind]) > .ss-ind { opacity: 0; }
+  [data-ss-ind="still"] > :is(.ss-ind, [data-ss-indicator-target~="ink"]) { transition: none !important; }
+
+  /* ── Movimento: toque ──
+     Aperta rápido (80 ms) e volta com a mola ao soltar: a transição do estado de destino
+     vale, então o :active encurta e a regra base devolve com --ss-bounce. */
+  :is(a.ss-card, .ss-card-link):not(:disabled) { transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  :is(a.ss-card, .ss-card-link):active { scale: .98; transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease, scale 80ms ease-out; }
+  /* Visões salvas da barra de filtros: o sublinhado (::after) vira o .ss-ind is-line que desliza. */
+  .ss-fb-views[data-ss-ind] > .ss-fb-view::after { content: none; }
+  .ss-fb-views > .ss-ind { --ind-out: -.6rem; }
+  .ss-fb-view { transition: color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-fb-view:active { scale: .95; transition: color .2s, scale 80ms ease-out; }
+  /* Paginação (quando a tabela liga o ss-indicator no .ss-dt-pager): a pílula da página desliza. */
+  .ss-dt-pager[data-ss-ind] > a[aria-current="page"] { background: none; color: var(--surface); }
+  .ss-dt-pager > :not(.ss-ind) { position: relative; z-index: 1; }
+  .ss-dt-pager > .ss-ind { background: var(--accent); --ind-r: 10px; }
+  .ss-dt-pager > a { transition: scale var(--ss-dur-indicator) var(--ss-bounce), color .2s; }
+  .ss-dt-pager > a:active { scale: .9; transition: scale 80ms ease-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-swatch { transition: none; }
+}
+
+/* Rastro da minhoca (sublinhado do ss-indicator e .ss-tabs-ink). */
+@keyframes ss-worm-glow { 0% { opacity: 0; } 22% { opacity: .35; } 60% { opacity: .22; } 100% { opacity: 0; } }

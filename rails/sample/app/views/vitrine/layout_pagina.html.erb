@@ -1,0 +1,66 @@
+<%# titulo: Página, abas e salvar | grupo: Layout | ordem: 1 %>
+<% if params[:parte] == "historico" %>
+  <%# Resposta do frame preguiçoso: o Turbo pega o 1º turbo-frame com o mesmo id. %>
+  <turbo-frame id="pedido-abas-historico-frame">
+    <ol class="ss-timeline" style="display:grid;gap:10px">
+      <li><b>Pedido criado</b> · <span class="num">04/11 09:12</span></li>
+      <li><b>Aprovado</b> por Ana · <span class="num">04/11 09:40</span></li>
+      <li><b>Faturado</b> · NF <span class="num">3321</span></li>
+    </ol>
+  </turbo-frame>
+<% end %>
+<% ico_plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>'.html_safe %>
+
+<%= demo "Ss::PageComponent + Ss::BreadcrumbsComponent", "Cabeçalho da tela: migalhas, título, subtítulo, ações, abas e filtros; o bloco é o corpo.",
+         uso: 'render Ss::PageComponent.new(title: "Pedidos", subtitle: "…", crumbs: [["Início", "/"], ["Pedidos"]]) { |p| p.with_actions { … }; p.with_tabs { … }; p.with_filters { … } }' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::PageComponent.new(title: "Pedidos", subtitle: "Abril de 2026 · 128 pedidos", crumbs: [["Início", "#"], ["Vendas", "#"], ["Pedidos"]]) do |p| %>
+      <% p.with_actions do %>
+        <button class="ss-btn ss-btn-outline">Exportar</button>
+        <button class="ss-btn ss-btn-primary"><%= ico_plus %>Novo pedido</button>
+      <% end %>
+      <% p.with_tabs do %>
+        <%= render Ss::TabsComponent.new(label: "Situação") do |t| %>
+          <% t.with_tab(label: "Todos", href: "#", current: true, badge: 128) %>
+          <% t.with_tab(label: "Em aberto", href: "#", badge: 12) %>
+          <% t.with_tab(label: "Faturados", href: "#") %>
+        <% end %>
+      <% end %>
+      <% p.with_filters do %>
+        <div class="ss-filters" style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px"><label class="ss-label" for="f-cli">Cliente</label><input id="f-cli" class="ss-input" placeholder="Nome ou CPF"></div>
+          <div><label class="ss-label" for="f-per">Período</label><select id="f-per" class="ss-input"><option>Este mês</option></select></div>
+        </div>
+      <% end %>
+      <div class="ss-card"><table class="ss-table"><thead><tr><th>Pedido</th><th>Cliente</th><th class="r">Total</th></tr></thead>
+        <tbody><tr><td class="num">1042</td><td>Mercado Bom Preço</td><td class="r num">R$ 1.250,00</td></tr><tr><td class="num">1041</td><td>Padaria Central</td><td class="r num">R$ 318,40</td></tr></tbody></table></div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::TabsComponent", "Indicador que desliza; painéis na página, turbo-frame preguiçoso (frame_src:, carrega só ao abrir) ou link. Teclado: ← → Home End.",
+         uso: 't.with_tab(label: "Itens", selected: true) { … }  ·  t.with_tab(label: "Histórico", frame_src: historico_path)  ·  t.with_tab(label: "Notas", href: notas_path)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::TabsComponent.new(label: "Seções do pedido", id: "pedido-abas") do |t| %>
+      <% t.with_tab(label: "Itens", badge: 3) do %>
+        <ul style="display:grid;gap:8px">
+          <li class="ss-item" style="display:flex;justify-content:space-between"><span>Arroz 5 kg × 2</span><span class="num">R$ 50,00</span></li>
+          <li class="ss-item" style="display:flex;justify-content:space-between"><span>Feijão 1 kg × 4</span><span class="num">R$ 36,00</span></li>
+          <li class="ss-item" style="display:flex;justify-content:space-between"><span>Óleo 900 ml × 1</span><span class="num">R$ 8,90</span></li>
+        </ul>
+      <% end %>
+      <% t.with_tab(label: "Pagamento") do %><p>Pix à vista · vence em <span class="num">05/11/2026</span>.</p><% end %>
+      <% t.with_tab(label: "Histórico (frame)", id: "historico", frame_src: vitrine_path("layout_pagina", parte: "historico")) %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::StickyActionBarComponent", "Mude um campo: a barra “Salvar · Cancelar” aparece fixa embaixo; Cancelar volta ao original; sair da página com alteração pede confirmação (ss-dirty).",
+         uso: 'form_with … do |f| … render Ss::StickyActionBarComponent.new end' do %>
+  <form class="ss-card ss-card-pad" action="<%= vitrine_path("layout_pagina") %>" method="get" style="display:grid;gap:14px;max-width:560px" onsubmit="event.preventDefault()">
+    <div class="ss-field"><label for="sb-nome">Nome da loja</label><input id="sb-nome" name="nome" class="ss-input" value="Loja Centro"></div>
+    <div class="ss-field"><label for="sb-tel">Telefone</label><input id="sb-tel" name="tel" class="ss-input num" value="(11) 3333-4444"></div>
+    <label class="ss-switch-row"><span>Aceitar fiado<small>Clientes com cadastro completo</small></span><input type="checkbox" role="switch" name="fiado"></label>
+    <%= render Ss::StickyActionBarComponent.new %>
+  </form>
+<% end %>

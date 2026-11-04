@@ -16,6 +16,11 @@ import 'catalogo_v07_cultivo.dart';
 import 'catalogo_v07_gestor.dart';
 import 'catalogo_v07_viagens.dart';
 import 'catalogo_v08.dart';
+import 'catalogo_v09_a.dart';
+import 'catalogo_v09_b.dart';
+import 'catalogo_mov_a.dart';
+import 'catalogo_mov_b.dart';
+import 'catalogo_paletas.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -792,6 +797,11 @@ final catalogo = comV08(<Componente>[
   ...catalogoV07Cultivo,
   ...catalogoV07Gestor,
   ...catalogoV07Viagens,
+  ...catalogoV09A,
+  ...catalogoV09B,
+  ...catalogoMovA,
+  ...catalogoMovB,
+  ...catalogoPaletas,
 ]);
 
 const _verde = SsBrand(

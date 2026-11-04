@@ -1,0 +1,15 @@
+<%# titulo: Impressão (A4) | grupo: Layout | ordem: 5 %>
+<%= demo "Ss::PrintLayoutComponent", "Recibo, pedido ou relatório em folha A4: cabeçalho com marca, partes, tabela, totais, observação e rodapé. Imprimir (Ctrl+P) sai só a folha, em preto, sem a moldura.",
+         uso: 'render Ss::PrintLayoutComponent.new(title: "Pedido", number:, date:, company: { name:, lines: [] }, customer: { name:, lines: [] }, columns: [["Item"], ["Qtd", :r]], rows: [...], totals: [[label, valor, :strong]]) { |p| p.with_notes { … }; p.with_footer { … } }' do %>
+  <p class="ss-no-print" style="margin-bottom:14px"><button class="ss-btn ss-btn-outline" onclick="print()">Imprimir</button></p>
+  <%= render Ss::PrintLayoutComponent.new(title: "Pedido", number: "1042", date: "04/11/2026",
+        company: { name: "Loja Centro", lines: ["CNPJ 12.345.678/0001-90", "Rua das Flores, 120 · Centro · São Paulo/SP", "(11) 3333-4444"] },
+        customer: { label: "Cliente", name: "Mercado Bom Preço", lines: ["CNPJ 98.765.432/0001-10", "Av. Brasil, 900 · Campinas/SP"] },
+        columns: [["Item"], ["Qtd", :r], ["Unitário", :r], ["Total", :r]],
+        rows: [["Arroz tipo 1 · 5 kg", "10", "R$ 25,00", "R$ 250,00"], ["Feijão carioca · 1 kg", "24", "R$ 8,90", "R$ 213,60"],
+               ["Óleo de soja · 900 ml", "12", "R$ 7,49", "R$ 89,88"], ["Café torrado · 500 g", "6", "R$ 18,90", "R$ 113,40"]],
+        totals: [["Subtotal", "R$ 666,88"], ["Desconto", "− R$ 16,88"], ["Total", "R$ 650,00", :strong]]) do |p| %>
+    <% p.with_notes do %>Pagamento: Pix à vista. Entrega na terça pela manhã.<% end %>
+    <% p.with_footer do %>Documento sem valor fiscal · gerado por Minhas Vendas<% end %>
+  <% end %>
+<% end %>

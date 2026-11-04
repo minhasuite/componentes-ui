@@ -28,7 +28,8 @@ String ssMonthName(DateTime m) => '${_meses[m.month - 1]} ${m.year}';
 DateTime _mes(DateTime d) => DateTime(d.year, d.month);
 DateTime _dia(DateTime d) => DateTime(d.year, d.month, d.day);
 
-/// ‹ Outubro 2026 ›: troca de mês. O título desliza na direção da troca;
+/// ‹ Outubro 2026 ›: troca de mês. O título desliza na direção da troca e
+/// assenta com mola;
 /// tocar nele volta ao mês atual. [min]/[max] travam as setas.
 class SsMonthSwitcher extends StatefulWidget {
   const SsMonthSwitcher({super.key, required this.month, required this.onChanged, this.min, this.max});
@@ -88,8 +89,9 @@ class _SsMonthSwitcherState extends State<SsMonthSwitcher> {
                 height: 48,
                 child: ClipRect(
                   child: AnimatedSwitcher(
-                    duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 260),
-                    switchInCurve: Curves.easeOutBack,
+                    duration: reduceMotion(context) ? Duration.zero : SsMotion.slow,
+                    // O mês novo entra com a mola: passa um pouco do meio e assenta.
+                    switchInCurve: SsMotion.bounce,
                     switchOutCurve: Curves.easeIn,
                     transitionBuilder: (child, anim) {
                       // O que entra vem do lado da troca; o que sai vai para o outro.
@@ -137,7 +139,7 @@ List<DateTime> ssMonthDays(DateTime month) {
 }
 
 /// Grade do mês (7 colunas, semana começa no domingo). Hoje tem anel, o
-/// selecionado tem o fundo da marca, [markers] viram pontinhos embaixo do dia
+/// selecionado tem o fundo da marca (e dá um pulinho com mola ao ser escolhido), [markers] viram pontinhos embaixo do dia
 /// (até 3) e os dias de fora do mês ficam apagados. Arrastar para o lado
 /// chama [onMonthChanged] com o mês vizinho.
 class SsMonthGrid extends StatelessWidget {
@@ -188,23 +190,27 @@ class SsMonthGrid extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 180),
-              width: 34,
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: eSel ? c.accent : Colors.transparent,
-                border: eHoje && !eSel ? Border.all(color: c.accent, width: 1.6) : null,
-              ),
-              child: Text(
-                '${d.day}',
-                style: AppTheme.number(
-                  context,
-                  size: AppType.set,
-                  weight: eSel || eHoje ? FontWeight.w700 : FontWeight.w500,
-                  color: cor,
+            // O dia escolhido enche e dá um pulinho com mola.
+            SsPop(
+              active: eSel && !fora,
+              child: AnimatedContainer(
+                duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 180),
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: eSel ? c.accent : Colors.transparent,
+                  border: eHoje && !eSel ? Border.all(color: c.accent, width: 1.6) : null,
+                ),
+                child: Text(
+                  '${d.day}',
+                  style: AppTheme.number(
+                    context,
+                    size: AppType.set,
+                    weight: eSel || eHoje ? FontWeight.w700 : FontWeight.w500,
+                    color: cor,
+                  ),
                 ),
               ),
             ),

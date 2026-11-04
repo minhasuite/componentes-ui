@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 
 /// Uma ação do [SsOverflowMenu]. [destructive] pinta de vermelho (excluir);
 /// [checked] põe um ✓ no fim (ordem, filtro ativo); [subtitle] é uma linha menor.
@@ -25,7 +26,8 @@ class SsMenuAction {
 
 /// Ações secundárias num ⋮ que abre um menu ancorado embaixo dele (raio,
 /// ícone + texto, destrutivo em vermelho). Com uma ação só, vira o ícone
-/// dela com tooltip; sem ações, não mostra nada.
+/// dela com tooltip; sem ações, não mostra nada. O menu abre da âncora e as
+/// linhas descem em cascata com mola.
 class SsOverflowMenu extends StatelessWidget {
   const SsOverflowMenu({
     super.key,
@@ -65,9 +67,18 @@ class SsOverflowMenu extends StatelessWidget {
         side: c.isDark ? BorderSide(color: c.line) : BorderSide.none,
       ),
       onOpened: SsHaptics.tick,
+      // Abre rápido; as linhas descem em cascata com mola (SsRouteStagger).
+      popUpAnimationStyle: reduceMotion(context)
+          ? AnimationStyle.noAnimation
+          : AnimationStyle(curve: Curves.easeOutCubic, duration: const Duration(milliseconds: 300)),
       onSelected: (i) => items[i].onTap(),
       itemBuilder: (_) => [
-        for (final (i, a) in items.indexed) PopupMenuItem(value: i, height: 48, child: SsMenuActionRow(a)),
+        for (final (i, a) in items.indexed)
+          PopupMenuItem(
+            value: i,
+            height: 48,
+            child: SsRouteStagger(index: i, child: SsMenuActionRow(a)),
+          ),
       ],
     );
   }

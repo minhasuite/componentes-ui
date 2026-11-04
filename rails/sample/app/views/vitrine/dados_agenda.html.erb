@@ -1,0 +1,52 @@
+<%# titulo: Agenda e cronograma | grupo: Dados | ordem: 30 %>
+<%
+  hoje = Date.new(2026, 11, 4)
+  agora = Time.zone.local(2026, 11, 4, 13, 20)
+  t = ->(d, h, m = 0) { Time.zone.local(d.year, d.month, d.day, h, m) }
+  eventos = [
+    { title: "Web design", sub: "Projeto do cliente", starts_at: t.(hoje, 8, 30), ends_at: t.(hoje, 10), tone: :success, url: "#" },
+    { title: "Visita: Mercado Bom Preço", sub: "Zona Sul", starts_at: t.(hoje, 10, 30), ends_at: t.(hoje, 12), tone: :accent, url: "#" },
+    { title: "Ligação fornecedor", starts_at: t.(hoje, 11), ends_at: t.(hoje, 11, 45), tone: :warn },
+    { title: "Almoço", starts_at: t.(hoje, 12, 15), ends_at: t.(hoje, 13) , tone: :info },
+    { title: "Pesquisa de mercado", sub: "Empresa", starts_at: t.(hoje, 14), ends_at: t.(hoje, 16), tone: :accent },
+    { title: "Revisão de títulos", sub: "Financeiro", starts_at: t.(hoje, 14, 30), ends_at: t.(hoje, 15, 30), tone: :danger },
+    { title: "Programa família", starts_at: t.(hoje, 17), ends_at: t.(hoje, 18, 30), tone: :info }
+  ]
+  semana = (0..4).map { hoje - hoje.wday + 1 + _1 }
+  ev_semana = semana.each_with_index.flat_map do |d, i|
+    [{ title: ["Visita", "Reunião", "Entrega", "Treino", "Inventário"][i], starts_at: t.(d, 9 + i % 3), ends_at: t.(d, 10 + i % 3, 30), tone: %i[accent success warn info danger][i] },
+     { title: "Rota Zona #{%w[Sul Norte Leste Oeste Centro][i]}", starts_at: t.(d, 13 + (i % 2)), ends_at: t.(d, 15 + (i % 2)), tone: :accent }]
+  end
+%>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::AgendaComponent (dia)", "Blocos pelo início/fim, cor tonal, linha do agora (13:20) e eventos sobrepostos lado a lado.",
+        uso: 'render Ss::AgendaComponent.new(days: [Date.current], from: 8, to: 19, now: Time.current, events: [{ title:, starts_at:, ends_at:, tone: }])' do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::AgendaComponent.new(days: [hoje], from: 8, to: 19, now: agora, events: eventos, label: "Agenda de quarta, 4/11") %></div>
+  <% end %>
+  <%= demo "Ss::AgendaComponent (semana)", "Mesma peça com days: a semana.", uso: "Ss::AgendaComponent.new(days: (seg..sex).to_a, …)" do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::AgendaComponent.new(days: semana, from: 8, to: 17, now: agora, events: ev_semana, label: "Agenda da semana", hour_height: 46) %></div>
+  <% end %>
+</div>
+
+<%= demo "Ss::TimelineHorizontalComponent", "Marcos numa linha horizontal com rolagem (encaixa no marco).",
+      uso: 'render Ss::TimelineHorizontalComponent.new(items: [{ title:, date:, text:, state: :done }])' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::TimelineHorizontalComponent.new(label: "Andamento do pedido 1042", items: [
+          { title: "Pedido feito", date: "28/10 09:12", text: "Pelo app da Ana", state: :done },
+          { title: "Aprovado", date: "28/10 11:40", text: "Alçada do gerente", state: :done },
+          { title: "Separação", date: "30/10 08:00", text: "12 de 14 itens", state: :current },
+          { title: "Nota emitida", date: "previsto 04/11" },
+          { title: "Saiu para entrega", date: "previsto 05/11" },
+          { title: "Entregue", date: "previsto 06/11" }]) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::GanttComponent", "Barras por tarefa numa grade de dias, hoje marcado, progresso dentro da barra. Rola na horizontal no celular.",
+      uso: 'render Ss::GanttComponent.new(start:, days: 14, today:, tasks: [{ label:, from:, to:, progress: 0.6, tone: }])' do %>
+  <%= render Ss::GanttComponent.new(start: hoje - 4, days: 16, today: hoje, label: "Cronograma da loja nova", tasks: [
+        { label: "Levantamento", from: hoje - 4, to: hoje - 1, progress: 1, tone: :success },
+        { label: "Layout e projeto", from: hoje - 2, to: hoje + 3, progress: 0.6 },
+        { label: "Compras", from: hoje + 1, to: hoje + 6, progress: 0.1, tone: :warn },
+        { label: "Obra", from: hoje + 4, to: hoje + 11, progress: 0, tone: :info },
+        { label: "Inauguração", from: hoje + 11, to: hoje + 11, progress: 0, tone: :danger }]) %>
+<% end %>

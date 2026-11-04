@@ -1,0 +1,32 @@
+<%= tag.figure(**root_attrs(class: classes("ss-area"), data: { controller: "ss-chart", ss_chart_points_value: data_points, ss_chart_index_value: active, ss_chart_w_value: W, ss_chart_h_value: H })) do %>
+  <figcaption class="<%= show_title? ? "ss-area-title" : "ss-sr" %>"><%= title %></figcaption>
+  <div class="ss-area-plot" tabindex="0" role="group" aria-roledescription="gráfico" aria-label="<%= title %>. Use as setas para ver cada ponto." data-ss-chart-target="plot"
+       data-action="pointermove->ss-chart#move pointerdown->ss-chart#move keydown->ss-chart#key">
+    <svg viewBox="0 0 <%= W %> <%= H %>" aria-hidden="true">
+      <defs>
+        <linearGradient id="<%= uid %>-g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style="stop-color:var(--accent);stop-opacity:.34"/>
+          <stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/>
+        </linearGradient>
+      </defs>
+      <% guides.each do |(y, v)| %>
+        <line class="ss-area-guide" x1="<%= PX %>" x2="<%= W - PX %>" y1="<%= y %>" y2="<%= y %>"/>
+        <text class="ss-area-ytext" x="<%= PX %>" y="<%= y - 5 %>"><%= fmt(v) %></text>
+      <% end %>
+      <path class="ss-area-fill" d="<%= area_d %>" fill="url(#<%= uid %>-g)"/>
+      <path class="ss-area-line" d="<%= line_d %>" pathLength="1"/>
+      <line class="ss-area-cursor" data-ss-chart-target="cursor" x1="<%= coords[active][0] %>" x2="<%= coords[active][0] %>" y1="<%= PT - 6 %>" y2="<%= H - PB %>"/>
+      <circle class="ss-area-dot" data-ss-chart-target="dot" cx="<%= coords[active][0] %>" cy="<%= coords[active][1] %>" r="6"/>
+      <% points.each_with_index do |(label, _), i| %>
+        <text class="ss-area-xtext<%= " is-active" if i == active %>" data-ss-chart-target="label" x="<%= coords[i][0] %>" y="<%= H - 8 %>" text-anchor="<%= i.zero? ? "start" : (i == points.size - 1 ? "end" : "middle") %>"><%= label %></text>
+      <% end %>
+    </svg>
+    <span class="ss-area-pill num" data-ss-chart-target="pill" style="left:<%= pct_x(active) %>%;top:<%= pct_y(active) %>%"><%= fmt(points[active][1]) %></span>
+  </div>
+  <p class="ss-sr" aria-live="polite" data-ss-chart-target="live"></p>
+  <table class="ss-sr">
+    <caption><%= title %></caption>
+    <thead><tr><th scope="col">Período</th><th scope="col">Valor</th></tr></thead>
+    <tbody><% points.each do |(label, v)| %><tr><th scope="row"><%= label %></th><td><%= fmt(v) %></td></tr><% end %></tbody>
+  </table>
+<% end %>

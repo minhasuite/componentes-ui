@@ -1,0 +1,11 @@
+<%= tag.div(class: classes("ss-field", "ss-money-input"), **root_attrs(data: { controller: "ss-money" })) do %>
+  <label for="<%= id %>"><%= label %></label>
+  <div class="ss-money-box">
+    <input id="<%= id %>" type="text" inputmode="numeric" autocomplete="off" class="ss-input ss-money" value="<%= formatted %>"
+           placeholder="R$ 0,00"<% if required %> required<% end %><% if help %> aria-describedby="<%= id %>-help"<% end %>
+           data-ss-money-target="input" data-action="input->ss-money#format focus->ss-money#toEnd click->ss-money#toEnd keydown->ss-money#key">
+    <span class="ss-money-view num" aria-hidden="true" data-ss-money-target="view"><%= helpers.ss_amount(formatted) unless formatted.empty? %></span>
+  </div>
+  <% if help %><small class="ss-field-help" id="<%= id %>-help"><%= help %></small><% end %>
+  <input type="hidden" name="<%= name %>" value="<%= value_cents %>" data-ss-money-target="hidden">
+<% end %>

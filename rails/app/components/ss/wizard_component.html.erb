@@ -1,0 +1,18 @@
+<%= tag.div(class: classes("ss-wizard"), **root_attrs(data: { controller: "ss-wizard", ss_wizard_key_value: draft_key }.compact)) do %>
+  <ol class="ss-wizard-steps" style="--n:<%= steps.size %>" data-controller="ss-indicator" data-ss-indicator-selector-value="li > span" data-ss-indicator-active-value="[aria-current=step] > span" data-ss-indicator-motion-value="pop">
+    <% steps.each_with_index do |s, i| %>
+      <li data-ss-wizard-target="dot" <% if i.zero? %>aria-current="step"<% end %>><span class="num"><%= i + 1 %></span><b><%= s.title %></b></li>
+    <% end %>
+  </ol>
+  <div class="ss-progress ss-wizard-progress" role="progressbar" aria-label="Progresso" aria-valuemin="1" aria-valuemax="<%= steps.size %>" aria-valuenow="1" data-ss-wizard-target="progress">
+    <div class="ss-progress-bar" style="width:<%= (100.0 / [steps.size, 1].max).round(1) %>%"></div>
+  </div>
+  <% steps.each_with_index do |s, i| %>
+    <section class="ss-wizard-panel" data-ss-wizard-target="panel" aria-label="Passo <%= i + 1 %>: <%= s.title %>" <% unless i.zero? %>hidden<% end %>><%= s %></section>
+  <% end %>
+  <div class="ss-wizard-nav">
+    <button type="button" class="ss-btn ss-btn-ghost" data-ss-wizard-target="back" data-action="ss-wizard#back" disabled>Voltar</button>
+    <button type="button" class="ss-btn ss-btn-primary" data-ss-wizard-target="next" data-action="ss-wizard#next">Avançar</button>
+    <button type="submit" class="ss-btn ss-btn-primary" data-ss-wizard-target="submit" data-action="ss-wizard#finish" hidden><%= submit_label %></button>
+  </div>
+<% end %>

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'motion_view.dart';
 
 /// Uma coluna do [SsKanban]: [id] estável, [title], os [items] na ordem e a
 /// cor da bolinha do cabeçalho (sem ela, a da marca).
@@ -23,6 +24,7 @@ class SsKanbanColumn<T> {
 /// tracejado; perto da borda o quadro rola sozinho). Precisa de altura
 /// definida (ex.: `Expanded`). [onMove] recebe o índice no destino já
 /// sem o item (pronto para `removeAt` + `insert`); quem chama atualiza as listas.
+/// Os cards chegam em cascata, subindo com mola, quando a coluna aparece.
 class SsKanban<T extends Object> extends StatefulWidget {
   const SsKanban({
     super.key,
@@ -211,42 +213,46 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
           if (_alvo == (col.id, i)) _Vaga(altura: _tamanho?.height),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Builder(
-              builder: (cardCtx) => LongPressDraggable<_Arrasto<T>>(
-                data: _Arrasto(item, col.id, i),
-                hapticFeedbackOnStart: false,
-                onDragStarted: () {
-                  HapticFeedback.mediumImpact();
-                  _tamanho = cardCtx.size;
-                },
-                onDragUpdate: (d) => _borda(d.globalPosition),
-                onDragEnd: (_) => _fim(),
-                feedback: Transform.rotate(
-                  angle: 2 * math.pi / 180,
-                  child: Transform.scale(
-                    scale: 1.03,
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: Container(
-                        width: largura,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppRadius.card),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x40000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 14),
-                              spreadRadius: -6,
-                            ),
-                          ],
+            // Os cards chegam em cascata, com mola, quando a coluna aparece.
+            child: SsInViewReveal(
+              index: i,
+              child: Builder(
+                builder: (cardCtx) => LongPressDraggable<_Arrasto<T>>(
+                  data: _Arrasto(item, col.id, i),
+                  hapticFeedbackOnStart: false,
+                  onDragStarted: () {
+                    HapticFeedback.mediumImpact();
+                    _tamanho = cardCtx.size;
+                  },
+                  onDragUpdate: (d) => _borda(d.globalPosition),
+                  onDragEnd: (_) => _fim(),
+                  feedback: Transform.rotate(
+                    angle: 2 * math.pi / 180,
+                    child: Transform.scale(
+                      scale: 1.03,
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Container(
+                          width: largura,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppRadius.card),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x40000000),
+                                blurRadius: 24,
+                                offset: Offset(0, 14),
+                                spreadRadius: -6,
+                              ),
+                            ],
+                          ),
+                          child: card,
                         ),
-                        child: card,
                       ),
                     ),
                   ),
+                  childWhenDragging: Opacity(opacity: .3, child: card),
+                  child: card,
                 ),
-                childWhenDragging: Opacity(opacity: .3, child: card),
-                child: card,
               ),
             ),
           ),

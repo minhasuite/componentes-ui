@@ -1,0 +1,17 @@
+<%= tag.fieldset(class: classes("ss-allot"), **root_attrs(data: { controller: "ss-split", ss_split_total_value: total })) do %>
+  <legend class="ss-label"><%= legend %></legend>
+  <div class="ss-allot-bar" aria-hidden="true">
+    <% items.each_with_index do |it, i| %><i data-ss-split-target="seg" style="--i:<%= i %>;width:<%= it[:value] %>%"></i><% end %>
+  </div>
+  <% items.each_with_index do |it, i| %>
+    <div class="ss-allot-row" style="--i:<%= i %>">
+      <label for="<%= "#{name}-#{it[:key]}" %>"><span class="ss-allot-dot"></span><%= it[:label] %></label>
+      <input type="range" class="ss-range" min="0" max="100" step="1" value="<%= it[:value] %>" id="<%= "#{name}-#{it[:key]}" %>"
+             name="<%= "#{name}[#{it[:key]}]" %>" style="--p:<%= it[:value] %>%" aria-valuetext="<%= it[:value] %>%"
+             data-ss-split-target="slider" data-action="input->ss-split#move">
+      <output class="ss-allot-out num" for="<%= "#{name}-#{it[:key]}" %>" data-ss-split-target="out">
+        <b><%= it[:value] %>%</b><% if total %><small><%= money(part_value(it[:value])) %></small><% end %>
+      </output>
+    </div>
+  <% end %>
+<% end %>

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+part 'paletas.g.dart';
+
 /// Design system "Lista Clara" da MinhaSuite. A cor da marca vem de [SsBrand]
 /// (padrão: violeta `#5A45E8`); o resto dos tokens é igual em todos os apps. Tokens por tema em [AppColors], forma em [AppRadius]/[AppShadows],
 /// tipografia em [AppType]. Os `ColorScheme` são montados à mão (NÃO `fromSeed`)
@@ -38,6 +40,12 @@ class AppColors {
   static const pageDark = Color(0xFF0F1017);
   static const lineDark = Color(0x14FFFFFF); // rgba(255,255,255,.08)
 
+  // ---- Escuro OLED (página preta pura; superfícies quase pretas) ----
+  static const pageOled = Color(0xFF000000);
+  static const surfaceOled = Color(0xFF0B0B10);
+  static const fieldOled = Color(0xFF17171F);
+  static const headerOledBg = Color(0xFF07070A);
+
   // ---- Fixos nos dois temas ----
   static const headerLine = Color(0xFF2C3040);
   static const success = Color(0xFF22C483);
@@ -48,6 +56,15 @@ class AppColors {
   static const aquecBg = Color(0xFFFBEED3);
   static const onDark = Color(0xFFFFFFFF);
   static const onDarkMuted = Color(0xFF9FA3BD);
+
+  /// Texto secundário claro sobre gradiente/cor da marca (85% de branco).
+  static const onDarkSoft = Color(0xD9FFFFFF);
+
+  /// Véu escuro para texto claro sobre foto ou gradiente (base dos degradês).
+  static const scrim = Color(0xFF000000);
+
+  /// Tinta das sombras pintadas à mão (drawShadow).
+  static const shadowInk = Color(0xFF141628);
 
   // Ícones/labels sobre header e sheets escuros (contraste AA sobre #1C1F2B).
   static const onDarkIcon = Color(0xFFC9CBE0);
@@ -90,6 +107,7 @@ class SsBrand extends ThemeExtension<SsBrand> {
     required this.brandFrom,
     required this.brandTo,
     required this.brandDeep,
+    this.stops,
   });
 
   final Color accentLight;
@@ -101,23 +119,148 @@ class SsBrand extends ThemeExtension<SsBrand> {
   final Color brandTo;
   final Color brandDeep;
 
+  /// As 4 cores do gradiente, da mais funda à mais clara. Sem elas, derivam de
+  /// [brandDeep], [brandTo], [brandFrom] e [accentDark] (ver [gradientColors]).
+  final List<Color>? stops;
+
+  /// As 4 paradas do gradiente da marca (funda → clara).
+  List<Color> get gradientColors => stops ?? [brandDeep, brandTo, brandFrom, accentDark];
+
+  /// Gradiente de 4 paradas da marca (135°). Decorativo: fundo de herói,
+  /// mosaico e cartão; nunca em texto ou botão.
+  LinearGradient get gradient =>
+      LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradientColors);
+
+  // <paletas> gerado por paletas/gerar.py a partir de paletas/paletas.json, não edite.
   /// Violeta da suíte (financeiro, vendas, gestor...).
-  static const violeta = SsBrand(
-    accentLight: Color(0xFF5A45E8),
-    accentHoverLight: Color(0xFF4A37D1),
-    accentSoftLight: Color(0xFFEEEBFF),
-    accentDark: Color(0xFF8F7DFF),
-    accentSoftDark: Color(0xFF241F45),
-    brandFrom: Color(0xFF7B5CFF),
-    brandTo: Color(0xFF5A45E8),
-    brandDeep: Color(0xFF3B2BB0),
-  );
+  static const violeta = _violeta;
+
+  /// Noite de Tóquio: anil profundo, roxo, magenta e rosa neon.
+  static const tokyoNight = _tokyoNight;
+
+  /// Safira: azul real profundo ao azul-céu.
+  static const safira = _safira;
+
+  /// Meia-noite: quase preto, azul-marinho e um anil de luar.
+  static const meiaNoite = _meiaNoite;
+
+  /// Vinho: bordô, carmim e rosé.
+  static const vinho = _vinho;
+
+  /// Ameixa: roxo fechado, orquídea e lilás.
+  static const ameixa = _ameixa;
+
+  /// Ardósia: grafite azulado, sóbrio (painel, relatório).
+  static const ardosia = _ardosia;
+
+  /// Neon pop: noite roxa, magenta e amarelo elétrico.
+  static const neonPop = _neonPop;
+
+  /// Cereja: vermelho intenso ao rosa-claro.
+  static const cereja = _cereja;
+
+  /// Coral: salmão vivo, coral e espuma.
+  static const coral = _coral;
+
+  /// Laranja: tangerina cheia, do queimado ao creme.
+  static const laranja = _laranja;
+
+  /// Turquesa: petróleo, ciano e água clara.
+  static const turquesa = _turquesa;
+
+  /// Marple: framboesa, coral, pêssego e creme.
+  static const marple = _marple;
+
+  /// Terracota: barro cozido, telha e argila clara.
+  static const terracota = _terracota;
+
+  /// Pôr do sol: roxo da noite, rosa, laranja e dourado.
+  static const porDoSol = _porDoSol;
+
+  /// Âmbar: mel escuro, âmbar e amarelo-manteiga.
+  static const ambar = _ambar;
+
+  /// Café: grão torrado, caramelo e leite.
+  static const cafe = _cafe;
+
+  /// Crepúsculo violeta: ameixa, malva, areia e marfim.
+  static const violetDusk = _violetDusk;
+
+  /// Lavanda: lilás suave, campo de lavanda e névoa.
+  static const lavanda = _lavanda;
+
+  /// Pêssego: damasco, pêssego e creme.
+  static const pessego = _pessego;
+
+  /// Algodão-doce: rosa e azul de parque, bem claros.
+  static const algodaoDoce = _algodaoDoce;
+
+  /// Oceano: fundo do mar, azul-petróleo e espuma.
+  static const oceano = _oceano;
+
+  /// Ártico: azul-gelo, glaciar e branco de neve.
+  static const artico = _artico;
+
+  /// Menta: verde-água fresco, do jade ao gelo de menta.
+  static const menta = _menta;
+
+  /// Eucalipto: verdes acinzentados, calmos (jardim, saúde).
+  static const eucalipto = _eucalipto;
+
+  /// Floresta: pinheiro, folha e broto.
+  static const floresta = _floresta;
+
+  /// Oliva: azeitona, musgo dourado e palha.
+  static const oliva = _oliva;
+
+  /// Sálvia: folha seca, verde-acinzentado e linho.
+  static const salvia = _salvia;
+
+  /// Paletas prontas por nome em pt-BR (28, a violeta primeiro, agrupadas por família):
+  /// seletor de aparência e vitrine. Com slug e família: [SsPaleta.todas].
+  static const paletas = _ssPaletasMapa;
+  // </paletas>
 
   @override
   SsBrand copyWith() => this;
 
   @override
   SsBrand lerp(SsBrand? other, double t) => t < .5 || other == null ? this : other;
+}
+
+/// Paleta pronta com o que o seletor precisa: slug (o mesmo do `data-palette` do
+/// Rails), nome em pt-BR, família e a marca. A fonte é `paletas/paletas.json`
+/// (gerado por `paletas/gerar.py`): o Rails tem as mesmas, com os mesmos nomes e cores.
+@immutable
+class SsPaleta {
+  const SsPaleta({required this.slug, required this.nome, required this.familia, required this.brand});
+
+  final String slug;
+  final String nome;
+  final String familia;
+  final SsBrand brand;
+
+  /// Todas, na ordem do seletor (a violeta primeiro, agrupadas por família).
+  static const todas = _ssPaletasLista;
+
+  /// Famílias na ordem do seletor (Profundas, Vivas, Quentes, Pastel, Frias, Natureza).
+  static const familias = _ssFamilias;
+
+  /// A paleta de uma marca, se for uma das prontas.
+  static SsPaleta? of(SsBrand brand) {
+    for (final p in todas) {
+      if (identical(p.brand, brand) || p.brand == brand) return p;
+    }
+    return null;
+  }
+
+  /// A paleta pelo slug (`tokyo-night`…), se existir.
+  static SsPaleta? porSlug(String slug) {
+    for (final p in todas) {
+      if (p.slug == slug) return p;
+    }
+    return null;
+  }
 }
 
 class AppRadius {
@@ -129,6 +272,11 @@ class AppRadius {
   static const thumb = 12.0;
   static const pill = 999.0;
   static const sheet = 26.0;
+
+  /// Squircle (canto contínuo, estilo iOS) com raio visual próximo de [r]:
+  /// `Container(decoration: ShapeDecoration(shape: AppRadius.squircle(20), ...))`.
+  static ContinuousRectangleBorder squircle(double r, {BorderSide side = BorderSide.none}) =>
+      ContinuousRectangleBorder(borderRadius: BorderRadius.circular(r * 2.3), side: side);
 }
 
 /// Sombras do design system. O botão primário e o card ativo têm o "glow" roxo
@@ -159,19 +307,39 @@ class AppType {
 /// Cores resolvidas do tema atual — atalho para os widgets `Ss*` lerem tokens
 /// que não existem no `ColorScheme` (ex.: field, muted2, ink2, accentBright).
 class SsColors {
-  SsColors._(this._dark, this.brand);
+  SsColors._(this._dark, this.brand, [this._oled = false]);
   final bool _dark;
+  final bool _oled;
   final SsBrand brand;
 
   static SsColors of(BuildContext context) {
     final t = Theme.of(context);
-    return SsColors._(t.brightness == Brightness.dark, t.extension<SsBrand>() ?? SsBrand.violeta);
+    final dark = t.brightness == Brightness.dark;
+    return SsColors._(dark, t.extension<SsBrand>() ?? SsBrand.violeta, dark && (t.extension<_SsOled>()?.on ?? false));
   }
 
   /// Para testes de contraste.
-  factory SsColors.forDark(bool dark, [SsBrand brand = SsBrand.violeta]) => SsColors._(dark, brand);
+  factory SsColors.forDark(bool dark, [SsBrand brand = SsBrand.violeta, bool oled = false]) =>
+      SsColors._(dark, brand, dark && oled);
 
   bool get isDark => _dark;
+
+  /// Escuro OLED: página preta pura e superfícies quase pretas.
+  bool get isOled => _oled;
+
+  /// Gradiente de 4 paradas da marca (ver [SsBrand.gradient]).
+  LinearGradient get gradient4 => brand.gradient;
+
+  /// Sombra na cor do card (card colorido "flutua" na própria cor). No escuro
+  /// fica mais forte, porque a sombra preta some no fundo.
+  List<BoxShadow> tintedShadow(Color color, {double strength = 1}) => [
+    BoxShadow(
+      color: color.withValues(alpha: ((_dark ? .5 : .38) * strength).clamp(0.0, 1.0)),
+      offset: const Offset(0, 14),
+      blurRadius: 28,
+      spreadRadius: -12,
+    ),
+  ];
 
   Color get accent => _dark ? brand.accentDark : brand.accentLight;
   Color get accentSoft => _dark ? brand.accentSoftDark : brand.accentSoftLight;
@@ -205,11 +373,11 @@ class SsColors {
   Color get ink2 => _dark ? AppColors.ink2Dark : AppColors.ink2Light;
   Color get muted => _dark ? AppColors.mutedDark : AppColors.mutedLight;
   Color get muted2 => _dark ? AppColors.muted2Dark : AppColors.muted2Light;
-  Color get surface => _dark ? AppColors.surfaceDark : AppColors.surfaceLight;
-  Color get field => _dark ? AppColors.fieldDark : AppColors.fieldLight;
-  Color get page => _dark ? AppColors.pageDark : AppColors.pageLight;
+  Color get surface => _oled ? AppColors.surfaceOled : (_dark ? AppColors.surfaceDark : AppColors.surfaceLight);
+  Color get field => _oled ? AppColors.fieldOled : (_dark ? AppColors.fieldDark : AppColors.fieldLight);
+  Color get page => _oled ? AppColors.pageOled : (_dark ? AppColors.pageDark : AppColors.pageLight);
   Color get line => _dark ? AppColors.lineDark : AppColors.lineLight;
-  Color get headerBg => _dark ? AppColors.headerDarkBg : AppColors.headerLightBg;
+  Color get headerBg => _oled ? AppColors.headerOledBg : (_dark ? AppColors.headerDarkBg : AppColors.headerLightBg);
   Color get headerLine => AppColors.headerLine;
   Color get danger => AppColors.danger;
   Color get success => AppColors.success;
@@ -223,6 +391,19 @@ class SsColors {
   Color get aquecSoft => _dark ? const Color(0xFF3A2A12) : AppColors.aquecBg;
 }
 
+/// Marca do tema OLED (lida por [SsColors.of]).
+@immutable
+class _SsOled extends ThemeExtension<_SsOled> {
+  const _SsOled(this.on);
+  final bool on;
+
+  @override
+  _SsOled copyWith() => this;
+
+  @override
+  _SsOled lerp(_SsOled? other, double t) => t < .5 || other == null ? this : other;
+}
+
 class AppTheme {
   const AppTheme._();
 
@@ -231,13 +412,16 @@ class AppTheme {
   static final ThemeData light = build(Brightness.light);
   static final ThemeData dark = build(Brightness.dark);
 
-  static ThemeData build(Brightness brightness, {SsBrand brand = SsBrand.violeta}) {
+  /// [oled] (só no escuro): página preta pura e superfícies quase pretas,
+  /// para tela OLED (economiza bateria). `SsColors.isOled` fica verdadeiro.
+  static ThemeData build(Brightness brightness, {SsBrand brand = SsBrand.violeta, bool oled = false}) {
     final isDark = brightness == Brightness.dark;
+    final isOled = isDark && oled;
     final accent = isDark ? brand.accentDark : brand.accentLight;
     final accentSoft = isDark ? brand.accentSoftDark : brand.accentSoftLight;
-    final page = isDark ? AppColors.pageDark : AppColors.pageLight;
-    final surface = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final field = isDark ? AppColors.fieldDark : AppColors.fieldLight;
+    final page = isOled ? AppColors.pageOled : (isDark ? AppColors.pageDark : AppColors.pageLight);
+    final surface = isOled ? AppColors.surfaceOled : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
+    final field = isOled ? AppColors.fieldOled : (isDark ? AppColors.fieldDark : AppColors.fieldLight);
     final ink = isDark ? AppColors.inkDark : AppColors.inkLight;
     final muted = isDark ? AppColors.mutedDark : AppColors.mutedLight;
     final line = isDark ? AppColors.lineDark : AppColors.lineLight;
@@ -283,7 +467,7 @@ class AppTheme {
     final text = _textTheme(manrope, ink, muted);
 
     return base.copyWith(
-      extensions: [brand],
+      extensions: [brand, if (isOled) const _SsOled(true)],
       colorScheme: scheme,
       scaffoldBackgroundColor: page,
       textTheme: text,

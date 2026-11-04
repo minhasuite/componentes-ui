@@ -1,0 +1,30 @@
+<%= tag.section(**root_attrs(class: classes("ss-agenda", ("is-week" if week?)), "aria-label": label, style: "--hours:#{hours.size};--days:#{days.size};--hour-h:#{hour_height}px")) do %>
+  <% if week? %>
+    <div class="ss-agenda-head" aria-hidden="true">
+      <span></span>
+      <% days.each do |d| %><span class="<%= "is-today" if today?(d) %>"><small><%= WEEKDAYS[d.wday] %></small><b class="num"><%= d.day %></b></span><% end %>
+    </div>
+  <% end %>
+  <div class="ss-agenda-body">
+    <ol class="ss-agenda-hours" aria-hidden="true">
+      <% hours.each do |h| %><li class="num"><%= format("%02d:00", h) %></li><% end %>
+    </ol>
+    <div class="ss-agenda-grid">
+      <div class="ss-agenda-lines" aria-hidden="true"><% hours.each do %><i></i><% end %></div>
+      <% days.each do |d| %>
+        <div class="ss-agenda-col" role="group" aria-label="<%= day_label(d) %>">
+          <ul>
+            <% layout(events_on(d)).each do |p| %>
+              <% e = p[:event] %>
+              <li class="ss-agenda-event" data-tone="<%= e[:tone] || "accent" %>" style="top:<%= p[:top] %>%;height:<%= p[:height] %>%;left:<%= p[:left] %>%;width:<%= p[:width] %>%">
+                <%= e[:url] ? link_to(e[:url], class: "ss-agenda-in") { safe_join([tag.b(e[:title]), tag.small(safe_join([tag.span("#{hhmm(e[:starts_at])}–#{hhmm(e[:ends_at])}", class: "num"), (" · #{e[:sub]}" if e[:sub])].compact))]) } :
+                              tag.div(class: "ss-agenda-in") { safe_join([tag.b(e[:title]), tag.small(safe_join([tag.span("#{hhmm(e[:starts_at])}–#{hhmm(e[:ends_at])}", class: "num"), (" · #{e[:sub]}" if e[:sub])].compact))]) } %>
+              </li>
+            <% end %>
+          </ul>
+          <% if (nt = now_top(d)) %><div class="ss-agenda-now" style="top:<%= nt %>%"><span class="ss-sr">Agora, <%= hhmm(@now) %></span></div><% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

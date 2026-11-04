@@ -1,0 +1,38 @@
+<%# titulo: Arquivos, edição e passos | grupo: Formulários | ordem: 40 %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
+<%= demo "Ss::FileDropComponent", "Arraste e solte ou clique: prévia da imagem, tamanho e remover. Com direct_upload_url: (Active Storage), a barra de cada arquivo segue os eventos direct-upload:*.",
+      uso: 'render Ss::FileDropComponent.new(name: "nota[anexos][]", accept: "image/*,.pdf", direct_upload_url: rails_direct_uploads_url)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::FileDropComponent.new(name: "anexos[]", label: "Comprovantes", accept: "image/*,.pdf") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::InlineEditComponent", "Clique no valor: vira campo. Enter salva (form com Turbo para url:), Esc cancela, sair do campo salva se mudou. Aqui está sem url: (só local).",
+      uso: 'render Ss::InlineEditComponent.new(value: @cliente.nome, name: "cliente[nome]", label: "Nome", url: cliente_path(@cliente))' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:.9rem">
+    <div><p class="ss-kicker">Cliente</p><h2 style="font-size:1.25rem;margin-top:4px"><%= render Ss::InlineEditComponent.new(value: "Mercado Bom Preço", name: "cliente[nome]", label: "Nome do cliente") %></h2></div>
+    <div><p class="ss-kicker">Telefone</p><%= render Ss::InlineEditComponent.new(value: "(85) 99876-5432", name: "cliente[telefone]", label: "Telefone", type: "tel", css: "num") %></div>
+  </div>
+<% end %>
+</div>
+
+<%= demo "Ss::WizardComponent", "Passos com progresso; Avançar valida os campos do passo (validação nativa); Voltar não perde nada. Com draft_key: guarda o rascunho no localStorage e restaura ao voltar.",
+      uso: 'render Ss::WizardComponent.new(draft_key: "novo-cliente") { |w| w.with_step(title: "Dados") { … } }' do %>
+  <form class="ss-card ss-card-pad" style="max-width:640px" action="<%= vitrine_path("formularios_fluxo") %>" method="post" data-turbo="false">
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    <%= render Ss::WizardComponent.new(draft_key: "vitrine-cliente", submit_label: "Cadastrar") do |w| %>
+      <% w.with_step(title: "Dados") do %>
+        <div class="ss-field"><label for="wz-nome">Nome <abbr class="ss-req" title="obrigatório">*</abbr></label><input id="wz-nome" name="wz[nome]" class="ss-input" required><small class="ss-field-error">Preencha este campo.</small></div>
+        <div class="ss-field"><label for="wz-doc">CPF ou CNPJ</label><input id="wz-doc" name="wz[doc]" class="ss-input num" inputmode="numeric"></div>
+      <% end %>
+      <% w.with_step(title: "Endereço") do %>
+        <div class="ss-field"><label for="wz-cep">CEP</label><input id="wz-cep" name="wz[cep]" class="ss-input num" inputmode="numeric" pattern="\d{5}-?\d{3}" placeholder="00000-000"><small class="ss-field-error">CEP com 8 números.</small></div>
+        <div class="ss-field"><label for="wz-cidade">Cidade</label><input id="wz-cidade" name="wz[cidade]" class="ss-input"></div>
+      <% end %>
+      <% w.with_step(title: "Revisão") do %>
+        <label class="ss-switch-row"><span>Mandar boas-vindas<small>Por WhatsApp, agora.</small></span><input type="checkbox" role="switch" name="wz[boas_vindas]" value="1" checked></label>
+      <% end %>
+    <% end %>
+  </form>
+<% end %>

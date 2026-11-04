@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.8.0
+      ref: v0.9.0
 ```
 
 ```dart
@@ -75,7 +75,7 @@ docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w 
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.8.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.9.0"
 ```
 
 ```css
@@ -182,6 +182,123 @@ rolam), `SsActionButton` / `.ss-action-btn` (carregando → ✓), `showSsCommand
 (antes/depois), `SsKanban` (arrastar entre fases; `.ss-kanban` com `.is-dragging`),
 `ssFlyTo` (valor que voa até o total).
 
+## v0.9: paletas, componentes Rails e vitrines
+
+Inspirada nas referências de `D:\Componentes`. Nada quebra da v0.8; a gem passa a
+depender do `view_component` (>= 3.9; testado na 3.24 e na 4.22).
+
+**Fundação (os dois lados).** Paletas prontas (28, ver "Paletas" abaixo: `SsBrand.tokyoNight`,
+`eucalipto`, `safira`…, mapa `SsBrand.paletas` / `data-palette="tokyo-night|…"`),
+gradiente de 4 paradas (`SsColors.gradient4` / `--grad-4`), OLED
+(`AppTheme.build(b, oled: true)` / `[data-theme=dark][data-oled]`), sombra na cor do card
+(`SsColors.tintedShadow` / `.ss-shadow-tint`), vidro só para sobreposição e herói
+(`SsGlass` / `.ss-glass-1..3`), brilho e textura (`SsGlow`, `SsTexture` / `.ss-glow`,
+`.ss-texture`), raio contínuo (`AppRadius.squircle` / `.ss-squircle`) e `.ss-swatch`.
+
+**Flutter (novos):** navegação `SsTabsUnderline`, `SsCurvedHeader`, `SsSideRail`,
+`SsBellDot`, `SsCountTabs`, `SsStepTopBar`, `SsNavBar(center:)`, `SsSegmented(onDark:)`;
+cards `SsMosaicGrid`, `SsTicketCard`, `SsBoardingPass`, `SsWalletCard`, `SsCardStack`,
+`SsStatusTabCard`, `SsShapeIcon`, `SsPopOutCard`, `SsDuoStat`, `SsGoalCard`, `SsQrCard`
+(recebe o QR pronto), `SsRecurringCard`, `SsFeatureTile`; herói `SsHeroSplash`,
+`SsIllustratedSplit`, `SsHeroFlight`, `SsHexButton`, `SsShimmerGlass`; campos
+`SsSplitSlider`, `SsVerticalSlider`, `SsDial`, `SsHoldToConfirm`, `SsSwipeToConfirm`,
+`SsMorphButton`, `SsPeoplePicker`; agenda `SsDateStrip`, `SsDayAgenda`; mídia
+`SsAttachBar`, `SsSnapCarousel`, `SsThumbRail`; dados `SsAreaChart`, `SsExplodedDonut`,
+`SsBigRing`, `SsFloatingBars`, `SsLevelCard`, `SsPriceBoard`; social `SsPulseAvatar`,
+`SsStoryRing`, `SsProfileHero`, `SsCelebrate`, `SsCallControls`;
+`SsAvatar(unread:, ring:)`, `SsAvatarStack(onAdd:)`. Linha de transação rica e
+Mês/Semana/Dia não viraram peça: `SsListItem(subtitle:, valueCaption:)` e `SsSegmented`.
+
+**Rails (novos): componentes `Ss::*Component`** (em `app/components/ss`), com
+comportamento em controllers Stimulus da gem. O app liga uma vez:
+
+```js
+// app/javascript/controllers/index.js
+eagerLoadControllersFrom("componentes_ui/controllers", application) // data-controller="ss-*"
+```
+
+- Layout: `Page`, `Breadcrumbs`, `AppShell` (menu recolhível, Ctrl+K), `SplitView`,
+  `Drawer`, `Tabs` (frame lazy), `StickyActionBar` (form sujo), `SettingsLayout`,
+  `BentoGrid`, `HeroSection`, `FeatureStrip`, `PrintLayout` (A4), `ThemeSwitcher`.
+- Formulários: `ss_form_with` (`f.ss_text_field :nome, help:, prefix:, suffix:, counter:`,
+  obrigatório pelo validator, erro inline do model, `f.ss_submit`), `Combobox`,
+  `MoneyInput`, `DateRange`, `SplitAllocator`, `FileDrop` (direct upload), `InlineEdit`,
+  `Wizard`, `OtpInput`, `SwatchPicker`, `TagInput`, `OptionCard`, `Range` / `.ss-range`.
+- Dados: `DataTable` (ordenação por link com aria-sort, colunas e densidade lembradas,
+  linha expansível, seleção em massa, paginação, vira cards no celular), `FilterBar`,
+  `KpiStrip`, `AreaChart`, `DonutChart`, `Agenda`, `TimelineHorizontal`, `Gantt`,
+  `TreeView`, `AuditTrail`, `PriceBoard`, `CompareTable`.
+- Retorno: `Toast` + `ToastStack` (`Ss::ToastStackComponent.append(turbo_stream, ...)`),
+  `ConfirmDanger`, `Skeleton` (`frame:` para turbo-frame lazy), `JobProgress`,
+  `EmptyState`, `Popover`, `Tooltip`, `Tour`, `WhatsNew`, `Shortcuts` (`?`).
+- Cards: `TicketCard`, `BoardingPass`, `ProductCard`, `ReviewCard`, `PricingTable`,
+  `StatusTabCard`, `QrCard` (Pix: copiar + validade), `AiInsightCard`, `LevelCard`, `PersonCard`.
+- Acabamento: View Transitions do Turbo (`Ss::TransitionComponent`, `.ss-vt-*`) e `CountUp`.
+
+Os helpers da gem (`ss_amount`, `ss_sparkline`…) valem dentro dos componentes
+(`Ss::BaseComponent`). Correção: `ss_sparkline` voltou a sair `html_safe`.
+
+### Paletas (fonte única: `paletas/paletas.json`)
+
+As paletas existem **uma vez só**, em `paletas/paletas.json` (slug, nome em pt-BR, `dartName`,
+família, as 4 paradas do gradiente da funda à clara, os 5 accents e brandFrom/To/Deep).
+`python3 paletas/gerar.py` (no host; não precisa de container) confere o contraste WCAG e
+escreve os dois lados de uma vez:
+
+- `flutter/lib/src/paletas.g.dart` (part de `app_theme.dart`) e o trecho
+  `// <paletas>` do `SsBrand`: as consts (`SsBrand.safira`…), `SsBrand.paletas`
+  (nome → marca) e `SsPaleta.todas` (slug, nome, família, brand) / `SsPaleta.familias`;
+- `rails/app/assets/tailwind/componentes_ui/paletas.css` (importado pelo
+  `v09_fundacao.css`): `:root[data-palette=…]` claro e escuro e `[data-swatch=…]`;
+- `rails/lib/componentes_ui/paletas.rb`: `ComponentesUi::PALETAS` (slug → nome),
+  `PALETA_FAMILIA` e `PALETA_FAMILIAS`, de onde sai o `ThemeSwitcherComponent::PALETTES`.
+
+**Para criar ou mudar uma paleta:** edite o JSON, rode `python3 paletas/gerar.py`, depois
+`bin/rails tailwindcss:build` na vitrine. Os gerados não se editam à mão;
+`python3 paletas/gerar.py --check` falha se estiverem atrasados ou se o contraste quebrar
+(accent claro e hover ≥ 4,5:1 sobre o branco e as páginas claras, accent escuro ≥ 4,5:1 sobre
+as páginas escuras e o OLED, `--grad` ≥ 4,5:1 com texto branco). Testes de paridade:
+`flutter/test/paletas_test.dart` e `rails/sample/test/components/paletas_test.rb`.
+
+Seletor: `Ss::ThemeSwitcherComponent` mostra fichas redondas com o gradiente, agrupadas por
+família (mais de 8; `group: false` desliga), o nome da marcada no cabeçalho e o anel que
+desliza; `compact: true` vira faixa rolável. No Flutter, `SsPalettePicker(value:, onChanged:)`
+é a mesma peça (faixa rolável, anel com `SsSlidingIndicator`). A violeta continua padrão
+(`palettes: %w[none …]`; `"violeta"` também vale). Mudança visual: Noite de Tóquio, Marple,
+Crepúsculo e Neon pop no Rails passaram a usar os accents do Flutter (antes divergiam), e o
+`--grad-4` da violeta no Rails segue o do Flutter (`#3b2bb0 → #8f7dff`).
+
+### Vitrines (todos os componentes ao vivo)
+
+- **Flutter** (`flutter/example`): navegador do catálogo inteiro (os mesmos estados
+  do SVG) + telas montadas, claro/escuro/OLED e as paletas.
+  `flutter/example/tool/vitrine.sh` compila para web e serve em http://localhost:3910.
+  O `example/lib/catalogo` é link para `../../test`.
+- **Rails** (`rails/sample`): app Rails 8.1 com a gem por `path:`, uma página por grupo,
+  com o código de uso. `rails/sample/bin/vitrine` sobe em http://localhost:3900
+  (`PORTA=` muda). O CSS da gem não entra no watch: mudou um `v09_*.css`, rode
+  `bin/rails tailwindcss:build`. Testes dos componentes: `bin/rails test` dentro de `sample`.
+
+### Movimento (mola do menu do app em tudo)
+
+Uma mola só nos dois lados: `SsMotion.bounce` (Flutter) e `--ss-bounce` (CSS),
+passa ~12% do ponto e assenta. "Reduzir movimento" do sistema desliga tudo.
+
+- **Flutter:** `SsSlidingIndicator` (segmented, chips, abas, trilho, faixa de
+  datas), `SsPop`, `SsCheckMark`, `SsSwitch`; `SsPressable` volta com mola.
+  Em `motion_view.dart`: `SsInView` (anima quando entra na tela, não ao montar),
+  `SsInViewReveal`, `SsTweenInView`, `SsRollSwitcher`/`SsRollingText` (valor que
+  rola), `SsOverlayMotion.sheet/dialog` (folha e diálogo com mola);
+  `SsAmount(countUp:, roll:)`, `SsOdometer(rollIn:)`. Aviso arrasta para fechar.
+- **Rails:** `ss-indicator` (pílula/traço/anel que desliza: abas, segmented,
+  filtros, tema, wizard, menu, paginação), `ss-in-view` (entrada ao rolar, com
+  cascata; sem JS nada fica escondido), `Ss::CountUpComponent(roll: true)` e
+  `ssRoll`, `KpiStripComponent(count:)`; aviso arrastável, gaveta/diálogo/folha
+  com entrada e saída. Checkbox e rádio de `.ss-check` passam a ser desenhados
+  pelo CSS (para o ✓ se desenhar): o visual muda um pouco.
+- Vitrines: seção "Movimento" no Flutter; páginas "Movimento: toque e seleção"
+  e "Movimento: entrada, números e camadas" no Rails.
+
 ## Verificar
 
 ```bash
@@ -204,6 +321,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.9.0` (04/11/2026): paletas, OLED, 58 peças Flutter e 60 componentes Rails (`Ss::*Component` + Stimulus + `ss_form_with`), vitrines Flutter e Rails (seção "v0.9"), movimento com a mola do menu do app em tudo e 28 paletas geradas de `paletas/paletas.json` para os dois lados. A gem passa a depender do `view_component`. Nada quebra da v0.8; no web o `.ss-check` passa a ser desenhado pelo CSS e quatro paletas antigas mudam um pouco de cor (alinhadas ao Flutter).
 - `v0.8.0` (02/11/2026): parâmetros que as migrações pediram. `SsListItem(trailing:, dimmed:, onLongPress:, maxLines:)`, `SsTextField(helperText:, minLines:)`, `showSsPrompt(allowEmpty:, maxLines:, maxLength:, message:)`, `SsSearchField(debounce:, suffix:)`, `SsDateField(initialDate:, validator:, showShortcuts:)`, `ssRunBlocking(onCancel:)`, `SsUnsavedGuard(isDirty:)`, `SsSegmented(icons:, disabled:)`, `SsFilterChip(icon:)`, `SsSwitchRow(icon:)`, `SsBadge(icon:)`, `SsCard(tint:)`, `SsMenuAction(checked:, subtitle:)`, `SsOverflowMenu(icon:)`, `SsEmptyState(art:)`, `SsProgress(null)` (indeterminado), `SsChatInput(enabled:, leading:)`, `SsOnboardingPage(action:)`, `showSsPlanLimit(secondaryLabel:, onSecondary:)`, `showSsPicker(initialQuery:)`, `SsCountdownRing(format:, onDark:)` e `SsCountdownRing.mmss`, `SsColors.series` (a 1ª cor é a marca do produto; `AppColors.series[0]` segue violeta). Só Flutter. Nada quebra da v0.7.
 - `v0.7.0` (02/11/2026): o que a migração de gestor, compras, viagens, cultivo e financeiro pediu. Novos `SsAsyncSliver` (o `SsAsyncBody` como sliver, para o `SsScreenHeader`), `SsFit`/`SsFitTitle`/`SsButtonPair` (valor e título que encolhem; dois botões que empilham com fonte grande), `SsSectionHeader` (título de bloco com explicação e ação) e `SsValueTile` (linha com nome em 2 linhas e valor que encolhe ou desce). `SsNetImage(provider:)` aceita o provider do app (cache em disco). Correções: o título grande do `SsScreenHeader` cresce com a fonte (estourava em 1,6×) e `SkeletonList`/`SkeletonBox` param com "reduzir movimento". Só Flutter. Nada quebra da v0.6.
 - `v0.6.0` (01/11/2026): o que a migração do meu-personal pediu. Novos `SsIconTile` (ícone tonal, `filled`/`circle`), `SsTimeField` e `SsCheckRow`; parâmetros novos, todos opcionais: `SsStepper(label:)`, `SsStatCard(tone:)` (e o número encolhe em vez de estourar a coluna), `SsTextField(suffixText:, textCapitalization:, maxLength:, autofillHints:, focusNode:)`, `SsSearchField(onSubmitted:)`, `SsScreenHeader`/`SsSliverHeader(leading:)` com voltar automático quando a tela pode voltar, `SsScreenHeader(onRefresh:)`, `SsAsyncBody(showRefreshing:)`, `SsEmptyState(compact:)`, `SsShareable(background:)`. Só Flutter (a web já tinha os equivalentes). Nada quebra da v0.5.

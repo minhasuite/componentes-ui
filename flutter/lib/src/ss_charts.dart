@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 import 'ss_aurora.dart';
 
 /// Linha sem eixo com preenchimento que some para baixo e um ponto no último
-/// valor. Desenha-se da esquerda para a direita ao aparecer (700 ms).
+/// valor. Desenha-se da esquerda para a direita quando entra na tela (700 ms).
 class SsSparkline extends StatelessWidget {
   const SsSparkline(this.values, {super.key, this.color, this.height = 40, this.edgeToEdge = false});
 
@@ -24,10 +25,9 @@ class SsSparkline extends StatelessWidget {
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 700),
-        curve: Curves.easeOutCubic,
+      child: SsTweenInView(
+        end: 1,
+        duration: const Duration(milliseconds: 700),
         builder: (_, t, _) => CustomPaint(painter: _SparkPainter(values, cor, t, inset: edgeToEdge ? 0 : 4)),
       ),
     );
@@ -113,7 +113,7 @@ class SsRing {
 }
 
 /// Anéis concêntricos com ponta arredondada sobre a trilha da mesma cor a 12%.
-/// Preenchem em cascata ao aparecer (80 ms entre eles). Até 3 anéis; sem cor,
+/// Preenchem em cascata quando entram na tela (80 ms entre eles). Até 3 anéis; sem cor,
 /// usam as cores da aurora da marca. [center] vai no meio (o número).
 class SsRings extends StatelessWidget {
   const SsRings(this.rings, {super.key, this.size = 128, this.stroke = 11, this.center});
@@ -131,9 +131,10 @@ class SsRings extends StatelessWidget {
     final total = 700 + 80 * (n - 1);
     return SizedBox.square(
       dimension: size,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: reduceMotion(context) ? Duration.zero : Duration(milliseconds: total),
+      child: SsTweenInView(
+        end: 1,
+        duration: Duration(milliseconds: total),
+        curve: Curves.linear,
         builder: (_, t, child) => CustomPaint(
           painter: _RingsPainter([
             for (var i = 0; i < n; i++)
@@ -181,7 +182,8 @@ class _RingsPainter extends CustomPainter {
 
 /// Barras em pílula (7 a 12 colunas). A coluna [highlight] (padrão: a última,
 /// "hoje") fica na cor da marca e as outras a 22%. Tocar numa barra mostra o
-/// valor em cima dela ([format]). Crescem de baixo ao aparecer.
+/// valor em cima dela ([format]). Crescem de baixo com mola, em cascata,
+/// quando entram na tela.
 class SsPillBars extends StatefulWidget {
   const SsPillBars({
     super.key,
@@ -205,6 +207,12 @@ class SsPillBars extends StatefulWidget {
 class _SsPillBarsState extends State<SsPillBars> {
   int? _sel;
 
+  /// Altura (0 a ~1,12) da barra [i] no instante [t] da cascata.
+  double _sobe(double t, int i) {
+    final total = 520 + 40 * (widget.values.length - 1);
+    return SsMotion.bounce.transform(((t * total - 40 * i) / 520).clamp(0.0, 1.0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -213,11 +221,11 @@ class _SsPillBarsState extends State<SsPillBars> {
     final mostrar = _sel ?? (widget.format != null ? destaque : null);
     return SizedBox(
       height: widget.height,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 650),
-        curve: Curves.easeOutBack,
-        builder: (context, t, _) => Row(
+      // Cada barra sobe com mola, 40 ms depois da anterior, quando entra na tela.
+      child: SsInView(
+        duration: Duration(milliseconds: 520 + 40 * (widget.values.length - 1)),
+        curve: Curves.linear,
+        builder: (context, anim, _) => Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             for (var i = 0; i < widget.values.length; i++)
@@ -245,7 +253,9 @@ class _SsPillBarsState extends State<SsPillBars> {
                         const SizedBox(height: 4),
                         Flexible(
                           child: FractionallySizedBox(
-                            heightFactor: hi == 0 ? .04 : math.max(.04, widget.values[i] / hi * t.clamp(0.0, 1.05)),
+                            heightFactor: hi == 0
+                                ? .04
+                                : math.max(.04, widget.values[i] / hi * _sobe(anim.value, i).clamp(0.0, 1.05)),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 14,

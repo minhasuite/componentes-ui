@@ -1,0 +1,149 @@
+<%# titulo: Movimento: toque e seleção | grupo: Acabamento | ordem: 20 %>
+<% ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">#{d}</svg>).html_safe } %>
+<% aqui = "acabamento_movimento_toque" %>
+<p style="color:var(--muted);max-width:52rem">
+  Tudo aqui mexe: clique, arraste e marque. O que se move até o lugar usa a mola <code>--ss-bounce</code> (passa ~12% e assenta),
+  como o círculo do menu do app. Com “reduzir movimento” no sistema, nada anima (o estado só troca).
+</p>
+
+<%= demo "Indicador que desliza (ss-indicator)", "Um só elemento por grupo vai do item antigo ao novo com a mola e estica no sentido do movimento no meio do caminho, achatando ao pousar. Longe = estica mais.",
+      uso: '<div class="ss-seg" data-controller="ss-indicator" data-ss-indicator-toggle-value="aria-pressed">…</div>  ·  kind-value: pill | line | ring  ·  key-value: lembra entre páginas' do %>
+  <div style="display:grid;gap:1.25rem;max-width:40rem">
+    <div class="ss-seg" style="--n:4" data-controller="ss-indicator" data-ss-indicator-selector-value="button" data-ss-indicator-toggle-value="aria-pressed">
+      <button type="button" aria-pressed="true">Dia</button><button type="button" aria-pressed="false">Semana</button>
+      <button type="button" aria-pressed="false">Mês</button><button type="button" aria-pressed="false">Ano</button>
+    </div>
+    <div class="ss-chipbar" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value=".ss-fchip" data-ss-indicator-toggle-value="aria-current" style="padding:.35rem .1rem">
+      <% %w[Todos Pix Cartão Boleto Dinheiro Fiado].each_with_index do |t, i| %>
+        <button type="button" class="ss-fchip" <%= 'aria-current="true"'.html_safe if i.zero? %>><%= t %></button>
+      <% end %>
+    </div>
+    <nav class="ss-dt-pager" aria-label="Paginação (exemplo)" style="justify-content:flex-start" data-controller="ss-indicator" data-ss-indicator-selector-value="a" data-ss-indicator-toggle-value="aria-current:page">
+      <% (1..7).each do |n| %><a href="#" class="num" <%= 'aria-current="page"'.html_safe if n == 1 %>><%= n %></a><% end %>
+    </nav>
+  </div>
+<% end %>
+
+<%= demo "Ss::TabsComponent", "O sublinhado anda como minhoca: a ponta da frente dispara, a de trás vem ~90 ms depois com a mola; no meio cobre as duas abas e afina, ao pousar achata e assenta (520 ms), com um rastro de brilho atrás da cabeça. O rótulo novo sobe 2 px e volta com a mola enquanto a cor cruza (teclado ← → também).",
+      uso: 'render Ss::TabsComponent.new(label: "Pedido") { |t| t.with_tab(label: "Itens", selected: true) { … } }' do %>
+  <div class="ss-card ss-card-pad" style="max-width:40rem">
+    <%= render Ss::TabsComponent.new(label: "Pedido (movimento)", id: "mov-abas") do |t| %>
+      <% t.with_tab(label: "Itens", badge: 3) { tag.p("Três itens no pedido.", style: "color:var(--muted)") } %>
+      <% t.with_tab(label: "Pagamento") { tag.p("Pix à vista.", style: "color:var(--muted)") } %>
+      <% t.with_tab(label: "Entrega e retirada") { tag.p("Retira na loja.", style: "color:var(--muted)") } %>
+      <% t.with_tab(label: "Notas") { tag.p("Sem notas.", style: "color:var(--muted)") } %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::FilterBarComponent · visões salvas", "São links (GET): o sublinhado começa a andar no clique e, na página nova, continua de onde estava (key: “fb-views”, por sessionStorage).",
+      uso: 'render Ss::FilterBarComponent.new(views: [{ label: "Todos", params: {} }, { label: "Vencidos", params: { status: "vencido" }, count: 4 }], …)' do %>
+  <%= render Ss::FilterBarComponent.new(url: vitrine_path(aqui), search: nil,
+        views: [{ label: "Todos", params: {} }, { label: "Vencidos", params: { status: "vencido" }, count: 4 },
+                { label: "A vencer esta semana", params: { status: "semana" }, count: 12 }, { label: "Pagos", params: { status: "pago" } }]) %>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:0 2rem">
+  <%= demo "Ss::ThemeSwitcherComponent", "A pílula do tema e o anel da paleta deslizam (a troca de cor vai num view transition).",
+        uso: "render Ss::ThemeSwitcherComponent.new" do %>
+    <%= render Ss::ThemeSwitcherComponent.new %>
+  <% end %>
+
+  <%= demo "Ss::DateRangeComponent", "O anel vai de atalho em atalho; mexa numa data à mão e ele some encolhendo; volte a um atalho e ele surge com mola.",
+        uso: 'render Ss::DateRangeComponent.new(from_name: "de", to_name: "ate")' do %>
+    <%= render Ss::DateRangeComponent.new(from_name: "mov_de", to_name: "mov_ate") %>
+  <% end %>
+</div>
+
+<%= demo "Ss::WizardComponent", "A ligação e a barra enchem como minhoca (a cabeça corre na frente e passa um pouco, o corpo alcança) com uma faísca na cabeça; o círculo novo estala (0,6 → 1,15 → 1) e solta uma ondinha, o ✓ se desenha e o painel entra do lado para onde se andou. Voltar esvazia ao contrário, com a faísca voltando.",
+      uso: 'render Ss::WizardComponent.new { |w| w.with_step(title: "Dados") { … } }' do %>
+  <div class="ss-card ss-card-pad" style="max-width:40rem">
+    <%= render Ss::WizardComponent.new(submit_label: "Concluir") do |w| %>
+      <% w.with_step(title: "Dados") { tag.p("Nome e documento.", style: "color:var(--muted)") } %>
+      <% w.with_step(title: "Endereço") { tag.p("Rua, número e CEP.", style: "color:var(--muted)") } %>
+      <% w.with_step(title: "Pagamento") { tag.p("Forma e prazo.", style: "color:var(--muted)") } %>
+      <% w.with_step(title: "Revisão") { tag.p("Confira e conclua.", style: "color:var(--muted)") } %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Toque: botões, ícones, cards e chips", "Apertou, encolhe rápido (80 ms); soltou, volta com a mola. Chip marcado estala uma vez.",
+      uso: '.ss-btn · .ss-menu > summary · .ss-stepper button · a.ss-card · a.ss-bento-cell · .ss-option-card · .ss-fchip' do %>
+  <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center">
+    <button type="button" class="ss-btn ss-btn-primary"><%= ic.('<path d="M12 5v14M5 12h14"/>') %>Novo pedido</button>
+    <button type="button" class="ss-btn ss-btn-outline">Exportar</button>
+    <button type="button" class="ss-btn ss-btn-ghost" aria-pressed="false" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')">Favorito</button>
+    <button type="button" class="ss-btn ss-btn-danger ss-btn-sm">Excluir</button>
+    <details class="ss-menu"><summary aria-label="Mais ações">⋮</summary><div><button type="button">Duplicar</button><button type="button" class="is-danger">Excluir</button></div></details>
+    <div class="ss-stepper"><button type="button" aria-label="Menos" onclick="const o=this.nextElementSibling;o.value=o.textContent=Math.max(0,+o.textContent-1)">−</button><output class="num">3</output><button type="button" aria-label="Mais" onclick="const o=this.previousElementSibling;o.value=o.textContent=+o.textContent+1">+</button></div>
+  </div>
+  <div class="ss-chipbar" style="margin-top:1rem">
+    <% [["Atrasados", true], ["Com desconto", false], ["Retirada", false], ["Fiado", true]].each do |t, on| %>
+      <button type="button" class="ss-fchip" aria-pressed="<%= on %>" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')"><%= t %></button>
+    <% end %>
+  </div>
+  <div class="ss-bento" style="--cols:3;grid-auto-rows:minmax(6.5rem,auto);margin-top:1rem;max-width:48rem">
+    <a href="#" class="ss-bento-cell is-grad" onclick="event.preventDefault()"><span class="ss-kicker">Vendas hoje</span><h3>R$ 4.210</h3></a>
+    <a href="#" class="ss-bento-cell" onclick="event.preventDefault()"><span class="ss-kicker">Pedidos</span><h3>38</h3></a>
+    <a href="#" class="ss-card ss-card-pad" onclick="event.preventDefault()" style="text-decoration:none"><span class="ss-kicker">Card clicável</span><p style="font-weight:800;margin-top:.3rem">Abrir relatório</p></a>
+  </div>
+<% end %>
+
+<%= demo "Chaves, caixinhas e rádios", "Chave: a bolinha estica até 1,45× no caminho, achata ao bater e volta com a mola; a cor entra como líquido a partir da bolinha (e escoa ao desligar), um ✓ gira e estala na bolinha e um halo se abre. Caixinha: antecipa, estala, o fundo inunda do centro, o ✓ se desenha e 8 partículas se espalham; ao desmarcar, o ✓ se desfaz, o fundo encolhe e a caixinha balança. Rádio: o ponto cai com mola e uma onda se abre. Nada disso toca ao carregar a página (só na troca, pelo ss_motion_controller).",
+      uso: '<label class="ss-switch-row">… <input type="checkbox" role="switch"></label>  ·  <label class="ss-check"><input type="checkbox"> …</label>' do %>
+  <div class="ss-card ss-card-pad" style="max-width:40rem;display:grid;gap:.25rem">
+    <label class="ss-switch-row"><span>Avisar por WhatsApp<small>Recibo e lembrete de vencimento</small></span><input type="checkbox" role="switch" checked></label>
+    <label class="ss-switch-row"><span>Modo compacto</span><input type="checkbox" role="switch"></label>
+    <div style="display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;padding:.75rem .25rem">
+      <label class="ss-check"><input type="checkbox" checked> Lembrar de mim</label>
+      <label class="ss-check"><input type="checkbox"> Aceito os termos</label>
+      <label class="ss-check"><input type="radio" name="mov_entrega" checked> Entrega</label>
+      <label class="ss-check"><input type="radio" name="mov_entrega"> Retirada</label>
+    </div>
+  </div>
+<% end %>
+
+<%= demo "Ss::OptionCardComponent e Ss::SwatchPickerComponent", "O anel do card vem de fora e trava com mola, o ✓ estala e o ícone pula. Na cor, o anel desliza até a bolinha escolhida.",
+      uso: 'render Ss::OptionCardComponent.new(name:, value:, title:, …)  ·  render Ss::SwatchPickerComponent.new(name:, options:, selected:)' do %>
+  <div class="ss-option-grid" role="radiogroup" aria-label="Plano (movimento)" style="max-width:52rem">
+    <%= render Ss::OptionCardComponent.new(name: "mov_plano", value: "mensal", title: "Mensal", description: "R$ 29,90 por mês.", icon: ic.('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>')) %>
+    <%= render Ss::OptionCardComponent.new(name: "mov_plano", value: "anual", title: "Anual", badge: "−17%", description: "Dois meses grátis.", checked: true, icon: ic.('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.6 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>')) %>
+    <%= render Ss::OptionCardComponent.new(name: "mov_avisos[]", value: "email", type: :checkbox, title: "Resumo por e-mail", description: "Toda segunda.") %>
+  </div>
+  <div style="margin-top:1.25rem">
+    <%= render Ss::SwatchPickerComponent.new(name: "mov_cor", legend: "Cor da etiqueta", selected: "roxo", options: [
+          { value: "roxo", label: "Roxo", color: "#5a45e8" }, { value: "rosa", label: "Rosa", color: "#da0090" }, { value: "coral", label: "Coral", color: "#ff6766" },
+          { value: "amarelo", label: "Amarelo", color: "#f2cb30" }, { value: "verde", label: "Verde", color: "#4c7a66" }, { value: "azul", label: "Azul", color: "#3b82f6" }]) %>
+  </div>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
+  <%= demo "Ss::RangeComponent", "Arrastando, o seletor cresce com a mola e ganha halo; o valor ao lado acompanha.",
+        uso: 'render Ss::RangeComponent.new(name: "desconto", label: "Desconto", value: 10, max: 30, format: "%d%%")' do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::RangeComponent.new(name: "mov_desconto", label: "Desconto", value: 10, max: 30, format: "%d%%", ticks: [0, 10, 20, 30]) %></div>
+  <% end %>
+
+  <%= demo "Ss::OtpInputComponent", "Cada dígito estala a caixinha; colar preenche em cascata; completo, passa uma onda.",
+        uso: 'render Ss::OtpInputComponent.new(name: "codigo", length: 6)' do %>
+    <%= render Ss::OtpInputComponent.new(name: "mov_codigo", length: 6) %>
+  <% end %>
+</div>
+
+<%= demo "Ss::TagInputComponent", "A etiqueta nova entra crescendo com mola; a removida encolhe e fecha o espaço.",
+      uso: 'render Ss::TagInputComponent.new(name: "produto[tags]", label: "Etiquetas", values: [...])' do %>
+  <div style="max-width:32rem"><%= render Ss::TagInputComponent.new(name: "mov_tags", label: "Etiquetas", values: ["orgânico", "sem glúten", "promoção"]) %></div>
+<% end %>
+
+<%= demo "Ss::SettingsLayoutComponent e menu lateral", "Na seção ativa (pelo scrollspy) a pílula desliza. O menu desta vitrine (Ss::AppShellComponent) também: troque de página e veja a pílula andar do item antigo ao novo.",
+      uso: 'render Ss::SettingsLayoutComponent.new(title: "Configurações") { |s| s.with_section(id:, title:) { … } }' do %>
+  <%= render Ss::SettingsLayoutComponent.new(title: "Ajustes") do |s| %>
+    <% [["mov-conta", "Conta"], ["mov-avisos", "Avisos"], ["mov-aparencia", "Aparência"]].each do |id, t| %>
+      <% s.with_section(id: id, title: t, description: "Role a página ou clique no menu.") do |sec| %>
+        <% sec.with_item(title: "#{t}: primeira opção", description: "Descrição curta.") { tag.span("Ativo", class: "ss-badge ss-badge-accent") } %>
+        <% sec.with_item(title: "#{t}: segunda opção", description: "Outra descrição.") %>
+        <% sec.with_item(title: "#{t}: terceira opção", description: "Mais uma.") %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <div style="height:40vh"></div>
+<% end %>

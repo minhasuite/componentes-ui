@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion_view.dart';
 import 'ss_button.dart';
 import 'ss_list.dart';
 import 'ss_sheet.dart';
@@ -18,6 +19,7 @@ Future<bool> showSsConfirm(
 }) async =>
     await showDialog<bool>(
       context: context,
+      animationStyle: SsOverlayMotion.dialog(context),
       builder: (_) => SsConfirmDialog(
         title: title,
         message: message,
@@ -41,6 +43,7 @@ Future<bool> showSsConfirmIrreversible(
 }) async =>
     await showDialog<bool>(
       context: context,
+      animationStyle: SsOverlayMotion.dialog(context),
       builder: (_) => SsConfirmDialog(
         title: title,
         message: message,
@@ -90,8 +93,11 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
     super.dispose();
   }
 
+  // O cartão abre de 0,9 com mola (o fundo só esmaece).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SsRouteScale(child: _dialogo(context));
+
+  Widget _dialogo(BuildContext context) {
     final c = SsColors.of(context);
     final word = widget.word;
     final liberado = word == null || _texto.text.trim().toUpperCase() == word.toUpperCase();
@@ -153,6 +159,7 @@ Future<String?> showSsPrompt(
 }) async {
   final r = await showDialog<String>(
     context: context,
+    animationStyle: SsOverlayMotion.dialog(context),
     builder: (_) => SsPromptDialog(
       title: title,
       label: label,
@@ -215,7 +222,9 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => SsRouteScale(child: _dialogo(context));
+
+  Widget _dialogo(BuildContext context) => AlertDialog(
     title: Text(widget.title),
     content: Form(
       key: _form,

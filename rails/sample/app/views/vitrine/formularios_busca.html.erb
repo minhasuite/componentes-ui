@@ -1,0 +1,45 @@
+<%# titulo: Busca, dinheiro e datas | grupo: Formulários | ordem: 20 %>
+<% clientes = [
+     { id: 1, label: "Mercado Bom Preço", hint: "Fortaleza" }, { id: 2, label: "Padaria Central", hint: "Sobral" },
+     { id: 3, label: "Açougue São João", hint: "Crato" }, { id: 4, label: "Farmácia Popular", hint: "Juazeiro" },
+     { id: 5, label: "Mercadinho da Esquina", hint: "Fortaleza" }, { id: 6, label: "Distribuidora Ceará", hint: "Maracanaú" }
+   ] %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
+<%= demo "Ss::ComboboxComponent", "Busca com teclado (↑ ↓ Enter Esc) e aria-activedescendant. No produto, url: busca no servidor com debounce (JSON ou HTML); aqui, options: faz a busca local. Com create: true oferece “Criar ‘x’”.",
+      uso: 'render Ss::ComboboxComponent.new(name: "pedido[cliente_id]", label: "Cliente", url: clientes_path(format: :json), create: true)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::ComboboxComponent.new(name: "pedido[cliente_id]", label: "Cliente", options: clientes, create: true, create_name: "pedido[cliente_novo]",
+          help: "Digite parte do nome ou da cidade.") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::MoneyInputComponent", "Máscara BRL ao digitar (os dígitos entram pela direita), centavos menores e o valor em centavos inteiros no hidden. Tecle - para negativo.",
+      uso: 'render Ss::MoneyInputComponent.new(name: "lancamento[valor_cents]", label: "Valor", value_cents: 12990)' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:1rem">
+    <%= render Ss::MoneyInputComponent.new(name: "lancamento[valor_cents]", label: "Valor", value_cents: 123456, help: "Valor em centavos vai no hidden.") %>
+    <%= render Ss::MoneyInputComponent.new(name: "lancamento[desconto_cents]", label: "Desconto") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::DateRangeComponent", "Dois input type=date nativos com atalhos; o atalho que bate com as datas fica marcado.",
+      uso: 'render Ss::DateRangeComponent.new(from_name: "de", to_name: "ate", from: params[:de], to: params[:ate])' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::DateRangeComponent.new(from_name: "de", to_name: "ate") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::TagInputComponent", "Enter ou vírgula vira chip; Backspace no campo vazio apaga o último; colar “a, b, c” cria três. O hidden leva a lista separada por vírgula.",
+      uso: 'render Ss::TagInputComponent.new(name: "produto[tags]", label: "Etiquetas", values: @produto.tags)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::TagInputComponent.new(name: "produto[tags]", label: "Etiquetas", values: ["orgânico", "sem glúten"], help: "Ajuda a achar o produto na busca.") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::OtpInputComponent", "Caixinhas que pulam sozinhas, Backspace volta, setas andam, colar preenche todas (autocomplete one-time-code no celular). Completo, fica verde e dispara ss-otp:complete.",
+      uso: 'render Ss::OtpInputComponent.new(name: "codigo", length: 6)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::OtpInputComponent.new(name: "codigo", length: 6) %>
+  </div>
+<% end %>
+</div>

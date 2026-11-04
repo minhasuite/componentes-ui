@@ -1,0 +1,40 @@
+<%# titulo: Avisos, exclusão e jobs | grupo: Retorno | ordem: 10 %>
+<%= demo "Ss::ToastStackComponent + Ss::ToastComponent", "Pilha no canto. Some sozinho em 5 s, pausa com o mouse em cima, Desfazer por link/form. O app empilha com turbo_stream.append \"ss-toasts\", Ss::ToastComponent.new(…).",
+      uso: 'render Ss::ToastStackComponent.new  ·  Ss::ToastStackComponent.append(turbo_stream, message: "Pedido excluído", undo_url: …)' do %>
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+    <%= link_to "Salvar (aviso de sucesso)", vitrine_path("retorno_avisos", toast: "ok"), class: "ss-btn ss-btn-outline" %>
+    <%= link_to "Excluir (com Desfazer)", vitrine_path("retorno_avisos", toast: "undo"), class: "ss-btn ss-btn-outline" %>
+    <%= link_to "Erro", vitrine_path("retorno_avisos", toast: "erro"), class: "ss-btn ss-btn-outline" %>
+  </div>
+  <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Como fica (parados, aqui no meio da página):</p>
+  <div class="ss-toasts is-inline" style="gap:.6rem">
+    <%= render Ss::ToastComponent.new(message: "Pedido 1042 salvo", tone: :good, sticky: true, dismissible: false) %>
+    <%= render Ss::ToastComponent.new(message: "Cliente excluído", undo_url: vitrine_path("retorno_avisos"), undo_method: :get, sticky: true) %>
+    <%= render Ss::ToastComponent.new(message: "Não deu para enviar a nota", tone: :bad, sticky: true) %>
+  </div>
+<% end %>
+<% toast = case params[:toast]
+           when "ok" then { message: "Alterações salvas", tone: :good }
+           when "undo" then { message: "Pedido 1042 excluído", undo_url: vitrine_path("retorno_avisos", toast: "ok"), undo_method: :get }
+           when "erro" then { message: "Sem conexão. Tente de novo.", tone: :bad }
+           end %>
+<%= render Ss::ToastStackComponent.new(toasts: [toast].compact) %>
+
+<%= demo "Ss::ConfirmDangerComponent", "<dialog> de exclusão que só libera o botão quando a pessoa digita o nome.",
+      uso: 'render Ss::ConfirmDangerComponent.new(name: "Mercado Bom Preço", url: cliente_path(c), title: "Excluir cliente?", text: "…")' do %>
+  <%= render Ss::ConfirmDangerComponent.new(name: "Mercado Bom Preço", url: vitrine_path("retorno_avisos"), method: :get,
+        title: "Excluir o cliente?", text: "Some com os 14 pedidos e 3 títulos dele. Isso não pode ser desfeito.", trigger_label: "Excluir cliente") %>
+<% end %>
+
+<%= demo "Ss::JobProgressComponent", "Job em andamento atualizado por Turbo Stream replace (mesmo id): na fila, rodando n%, concluído com link, falhou com motivo.",
+      uso: 'turbo_stream.replace "importacao-42", Ss::JobProgressComponent.new(id: "importacao-42", title:, state: :running, progress: 0.42, steps: [...], current_step: 1)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem">
+    <%= render Ss::JobProgressComponent.new(id: "job-fila", title: "Relatório de vendas", state: :queued, detail: "2 na frente") %>
+    <%= render Ss::JobProgressComponent.new(id: "job-rodando", title: "Importação de clientes", state: :running, progress: 0.42,
+          steps: ["Ler arquivo", "Validar", "Gravar", "Avisar"], current_step: 2, detail: "1.264 de 3.010 linhas") %>
+    <%= render Ss::JobProgressComponent.new(id: "job-ok", title: "Importação de produtos", state: :done, steps: ["Ler arquivo", "Validar", "Gravar"],
+          result_url: "#", result_label: "Ver 820 produtos") %>
+    <%= render Ss::JobProgressComponent.new(id: "job-erro", title: "Leitura da fatura (IA)", state: :failed, steps: ["Enviar", "Ler", "Lançar"], current_step: 1,
+          error: "A imagem está tremida: não deu para ler os valores.") %>
+  </div>
+<% end %>

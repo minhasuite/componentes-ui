@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "../builds/tailwind/componentes_ui";
+
+/* Só a moldura da vitrine (o resto vem da gem). */
+.vt-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.vt-side { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 20px 14px; border-right: 1px solid var(--line); background: var(--surface); }
+.vt-side h4 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 10px 6px; font-weight: 800; }
+.vt-side a { display: block; padding: 7px 10px; border-radius: 10px; font-size: 14px; color: var(--ink-2); text-decoration: none; }
+.vt-side a:hover { background: var(--field); }
+.vt-side a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.vt-main { padding: 28px clamp(16px, 4vw, 48px) 80px; min-width: 0; }
+.vt-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.vt-demo { margin: 28px 0 8px; }
+.vt-demo > h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.vt-demo > p { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.vt-demo > code { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display:block; margin-bottom: 12px; }
+@media (max-width: 860px) { .vt-shell { grid-template-columns: 1fr; } .vt-side { position: static; height: auto; } }

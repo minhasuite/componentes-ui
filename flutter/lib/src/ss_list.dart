@@ -1,9 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion.dart';
 
 /// Item de lista: ícone num quadrado no tom da categoria (14%), título e
 /// subtítulo, e o valor à direita em DM Mono. Sem [tone], usa a cor da marca.
+/// Com [onTap], afunda de leve no toque e volta com mola ([SsPressable]).
 class SsListItem extends StatelessWidget {
   const SsListItem({
     super.key,
@@ -106,7 +110,9 @@ class SsListItem extends StatelessWidget {
         ),
       ),
     );
-    return dimmed ? Opacity(opacity: .5, child: item) : item;
+    // Tocável: afunda de leve no toque e volta com mola ao soltar.
+    final tocavel = SsPressable(enabled: onTap != null || onLongPress != null, scale: .98, child: item);
+    return dimmed ? Opacity(opacity: .5, child: tocavel) : tocavel;
   }
 }
 
@@ -143,13 +149,21 @@ class SsGroupHeader extends StatelessWidget {
 
 /// Avatar com iniciais sobre um gradiente que sai do nome (o mesmo nome dá
 /// sempre a mesma cor, na família de cores da marca). Anel da cor da página,
-/// para empilhar; [status] = ponto no canto (visitado, pendente...).
+/// para empilhar; [status] = ponto no canto (visitado, pendente...);
+/// [unread] = contagem de não lidas no canto de cima; [ring] = anel colorido
+/// em volta (selecionado, conversa nova).
 class SsAvatar extends StatelessWidget {
-  const SsAvatar(this.name, {super.key, this.size = 42, this.status});
+  const SsAvatar(this.name, {super.key, this.size = 42, this.status, this.unread, this.ring});
 
   final String name;
   final double size;
   final Color? status;
+
+  /// Não lidas (0 ou nulo: nada; acima de 99 mostra "99+").
+  final int? unread;
+
+  /// Cor do anel em volta (o avatar encolhe um pouco por dentro).
+  final Color? ring;
 
   static String initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
@@ -169,29 +183,44 @@ class SsAvatar extends StatelessWidget {
     final hue = (base.hue + (seed(name) % 5 - 2) * 24) % 360;
     final de = HSLColor.fromAHSL(1, hue, .62, .56).toColor();
     final ate = HSLColor.fromAHSL(1, (hue + 20) % 360, .58, .4).toColor();
+    final n = unread ?? 0;
+    final inner = ring == null ? size : size - 6;
+    Widget face = Container(
+      width: inner,
+      height: inner,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [de, ate]),
+        border: Border.all(color: c.page, width: 2),
+      ),
+      child: ExcludeSemantics(
+        child: Text(
+          initials(name),
+          style: TextStyle(color: Colors.white, fontSize: inner * .36, fontWeight: FontWeight.w800, height: 1),
+        ),
+      ),
+    );
+    if (ring != null) {
+      face = Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: ring!, width: 2.2),
+        ),
+        child: face,
+      );
+    }
     return Semantics(
-      label: name,
+      label: n > 0 ? '$name, $n não lidas' : name,
       child: SizedBox.square(
         dimension: size,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              width: size,
-              height: size,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [de, ate]),
-                border: Border.all(color: c.page, width: 2),
-              ),
-              child: ExcludeSemantics(
-                child: Text(
-                  initials(name),
-                  style: TextStyle(color: Colors.white, fontSize: size * .36, fontWeight: FontWeight.w800, height: 1),
-                ),
-              ),
-            ),
+            face,
             if (status != null)
               Positioned(
                 right: -1,
@@ -206,6 +235,34 @@ class SsAvatar extends StatelessWidget {
                   ),
                 ),
               ),
+            if (n > 0)
+              Positioned(
+                right: -4,
+                top: -3,
+                child: ExcludeSemantics(
+                  child: Container(
+                    constraints: BoxConstraints(minWidth: math.max(18, size * .4)),
+                    height: math.max(18, size * .4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: c.accent,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      border: Border.all(color: c.page, width: 2),
+                    ),
+                    child: Text(
+                      n > 99 ? '99+' : '$n',
+                      textScaler: TextScaler.noScaling,
+                      style: AppTheme.number(
+                        context,
+                        size: math.max(10, size * .22),
+                        weight: FontWeight.w600,
+                        color: AppColors.onDark,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -213,13 +270,27 @@ class SsAvatar extends StatelessWidget {
   }
 }
 
-/// Avatares sobrepostos (−8) com "+N" no fim quando passa de [max].
+/// Avatares sobrepostos (−8) com "+N" no fim quando passa de [max]. Com
+/// [onAdd], um botão "+" fecha a fileira (convidar, dividir com mais alguém).
 class SsAvatarStack extends StatelessWidget {
-  const SsAvatarStack(this.names, {super.key, this.max = 3, this.size = 34});
+  const SsAvatarStack(
+    this.names, {
+    super.key,
+    this.max = 3,
+    this.size = 34,
+    this.onAdd,
+    this.addLabel = 'Adicionar pessoa',
+  });
 
   final List<String> names;
   final int max;
   final double size;
+
+  /// Toque no "+" do fim. Nulo: sem botão.
+  final VoidCallback? onAdd;
+
+  /// Rótulo do "+" para o leitor de tela.
+  final String addLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -227,20 +298,26 @@ class SsAvatarStack extends StatelessWidget {
     final shown = names.take(max).toList();
     final extra = names.length - shown.length;
     final step = size - 8;
-    final count = shown.length + (extra > 0 ? 1 : 0);
+    final count = shown.length + (extra > 0 ? 1 : 0) + (onAdd != null ? 1 : 0);
+    // Com o "+", a linha ganha altura de alvo de toque (48) e o avatar fica no meio.
+    final height = onAdd == null ? size : math.max(size, 48.0);
+    final top = (height - size) / 2;
+    final width = count == 0 ? 0.0 : step * (count - 1) + size;
     return SizedBox(
-      height: size,
-      width: count == 0 ? 0 : step * (count - 1) + size,
+      height: height,
+      width: onAdd == null ? width : width + (48 - size).clamp(0.0, 48.0) / 2,
       child: Stack(
         children: [
           for (var i = 0; i < shown.length; i++)
             Positioned(
               left: step * i,
+              top: top,
               child: SsAvatar(shown[i], size: size),
             ),
           if (extra > 0)
             Positioned(
               left: step * shown.length,
+              top: top,
               child: Container(
                 width: size,
                 height: size,
@@ -253,6 +330,36 @@ class SsAvatarStack extends StatelessWidget {
                 child: Text(
                   '+$extra',
                   style: AppTheme.number(context, size: size * .32, color: c.ink2),
+                ),
+              ),
+            ),
+          if (onAdd != null)
+            Positioned(
+              left: step * (count - 1) - (48 - size).clamp(0.0, 48.0) / 2,
+              top: 0,
+              width: math.max(size, 48),
+              height: height,
+              child: Semantics(
+                button: true,
+                label: addLabel,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    SsHaptics.tick();
+                    onAdd!();
+                  },
+                  child: Center(
+                    child: Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        color: c.accentSoft,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: c.page, width: 2),
+                      ),
+                      child: Icon(Icons.add_rounded, size: size * .5, color: c.accentText),
+                    ),
+                  ),
                 ),
               ),
             ),

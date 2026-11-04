@@ -1,0 +1,26 @@
+<%= tag.div(**root_attrs(class: classes("ss-theme-switcher", ("is-compact" if @compact)), role: "group", "aria-label": @label, data: { controller: "ss-theme" })) do %>
+  <div class="ss-seg ss-theme-seg" data-controller="ss-indicator" data-ss-indicator-selector-value="button">
+    <% themes.each do |value, text, oled| %>
+      <button type="button" aria-pressed="false" data-action="ss-theme#set" data-ss-theme-theme-param="<%= value %>" <%= %(data-ss-theme-oled-param="#{oled}").html_safe unless oled.nil? %>><%= text %></button>
+    <% end %>
+  </div>
+  <% if @palettes.any? %>
+    <div class="ss-theme-palettes">
+      <% unless @compact %>
+        <div class="ss-theme-pal-head"><span>Paleta</span><strong data-ss-theme-target="name" aria-live="polite"><%= default_name %></strong></div>
+      <% end %>
+      <div class="ss-theme-pal-grid<%= " is-grouped" if @group %>" role="group" aria-label="Paleta" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value=".ss-pal-chip">
+        <% palette_groups.each do |familia, items| %>
+          <div class="ss-theme-pal-row">
+            <% if familia %><span class="ss-theme-pal-fam"><%= familia %></span><% end %>
+            <div class="ss-theme-pal-chips">
+              <% items.each do |key, name, slug| %>
+                <button type="button" class="ss-pal-chip" data-swatch="<%= slug %>" aria-pressed="false" aria-label="<%= name %>" title="<%= name %>" data-action="ss-theme#set" data-ss-theme-palette-param="<%= key %>"><span aria-hidden="true"></span></button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

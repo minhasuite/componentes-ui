@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -724,7 +725,8 @@ class SsChoiceField<T> extends StatelessWidget {
   }
 }
 
-/// A lista da folha do [SsChoiceField]: a opção marcada tem ✓; com mais de 8,
+/// A lista da folha do [SsChoiceField]: a opção marcada tem ✓ (que se desenha
+/// com um pulinho ao trocar); com mais de 8,
 /// aparece a busca. Sem [onSelect], fecha a rota com `(valor,)`.
 class SsChoiceList<T> extends StatefulWidget {
   const SsChoiceList({super.key, required this.options, this.selected, this.onSelect});
@@ -788,7 +790,11 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
                           ),
                         ),
                       ),
-                      if (e.key == widget.selected) Icon(Icons.check_rounded, size: 22, color: c.accent),
+                      // O ✓ se desenha na opção escolhida (e some da anterior).
+                      SsPop(
+                        active: e.key == widget.selected,
+                        child: SsCheckMark(value: e.key == widget.selected, size: 22, strokeWidth: 2.6),
+                      ),
                     ],
                   ),
                 ),
@@ -800,7 +806,7 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
   }
 }
 
-/// Linha com título, subtítulo e um Switch na cor da marca; tocar em
+/// Linha com título, subtítulo e um [SsSwitch] na cor da marca; tocar em
 /// qualquer lugar da linha alterna. [onChanged] nulo desabilita.
 class SsSwitchRow extends StatelessWidget {
   const SsSwitchRow({
@@ -822,15 +828,16 @@ class SsSwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    void alterna(bool v) {
-      HapticFeedback.selectionClick();
-      onChanged!(v);
-    }
-
     return MergeSemantics(
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: onChanged == null ? null : () => alterna(!value),
+        // O toque no próprio interruptor já dá o haptic (SsSwitch).
+        onTap: onChanged == null
+            ? null
+            : () {
+                SsHaptics.tick();
+                onChanged!(!value);
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Row(
@@ -859,25 +866,244 @@ class SsSwitchRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Switch(
-                value: value,
-                onChanged: onChanged == null ? null : alterna,
-                thumbColor: WidgetStateProperty.resolveWith(
-                  (s) => s.contains(WidgetState.selected) ? AppColors.onDark : c.muted,
-                ),
-                trackColor: WidgetStateProperty.resolveWith(
-                  (s) => s.contains(WidgetState.selected) ? c.accent : c.field,
-                ),
-                trackOutlineColor: WidgetStateProperty.resolveWith(
-                  (s) => s.contains(WidgetState.selected) ? Colors.transparent : c.line,
-                ),
-              ),
+              SsSwitch(value: value, onChanged: onChanged),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+/// Interruptor da suíte, "líquido": ao trocar, a bolinha **estica** no
+/// caminho (até 1,45× a largura, a ponta de trás ficando para trás), bate no
+/// fim, **amassa** (0,82 × 1,12) e volta com a mola ([SsMotion.bounce]). A
+/// cor da marca **escorre** na trilha a partir de onde a bolinha saiu (um
+/// círculo crescendo) e, ao desligar, escoa de volta. Ligado, um ✓ entra
+/// girando na bolinha; ao bater no fim, um anel ([SsRipple]) se abre em volta.
+/// Toque alterna (com haptic, sem arrasto); [onChanged] nulo desabilita
+/// (apagado). [activeColor] troca a cor da marca (ex.: `colorScheme.primary`).
+class SsSwitch extends StatefulWidget {
+  const SsSwitch({super.key, required this.value, required this.onChanged, this.activeColor});
+
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Color? activeColor;
+
+  @override
+  State<SsSwitch> createState() => _SsSwitchState();
+}
+
+class _SsSwitchState extends State<SsSwitch> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: SsMotion.worm, value: 1);
+  // De onde a bolinha e a cor saíram (0 desligado, 1 ligado).
+  late double _from = widget.value ? 1 : 0;
+  late double _cheio0 = _from;
+
+  static const _w = 52.0, _h = 32.0, _thumb = 24.0, _pad = 4.0;
+
+  /// Instante (0..1) em que a bolinha bate no fim; o resto é o amassado.
+  static const _batida = .5;
+
+  double get _to => widget.value ? 1 : 0;
+
+  /// Viagem até a batida, acelerando e freando como líquido.
+  double get _viagem => Curves.easeInOutCubic.transform((_c.value / _batida).clamp(0.0, 1.0));
+
+  /// Posição da bolinha (0 desligado, 1 ligado).
+  double get _pos => lerpDouble(_from, _to, _viagem)!;
+
+  /// Quanto da trilha está cheio da cor (vem um pouco atrás da bolinha).
+  double get _cheio => lerpDouble(_cheio0, _to, Curves.easeInOutCubic.transform((_c.value / .7).clamp(0.0, 1.0)))!;
+
+  @override
+  void didUpdateWidget(SsSwitch old) {
+    super.didUpdateWidget(old);
+    if (old.value == widget.value) return;
+    // Sai de onde a bolinha e a cor estão (trocar de novo no meio não
+    // teleporta): as contas abaixo ainda usam o alvo antigo.
+    final alvoAntigo = old.value ? 1.0 : 0.0;
+    final t = _c.value;
+    final pos = lerpDouble(_from, alvoAntigo, Curves.easeInOutCubic.transform((t / _batida).clamp(0.0, 1.0)))!;
+    final cheio = lerpDouble(_cheio0, alvoAntigo, Curves.easeInOutCubic.transform((t / .7).clamp(0.0, 1.0)))!;
+    if (reduceMotion(context)) {
+      _from = _cheio0 = _to;
+      _c.value = 1;
+      return;
+    }
+    _from = pos;
+    _cheio0 = cheio;
+    _c.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  void _alterna() {
+    SsHaptics.tick();
+    widget.onChanged!(!widget.value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final on = widget.onChanged != null;
+    final accent = widget.activeColor ?? c.accent;
+    const curso = _w - _pad * 2 - _thumb;
+    return Semantics(
+      toggled: widget.value,
+      enabled: on,
+      onTap: on ? () => widget.onChanged!(!widget.value) : null,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: on ? _alterna : null,
+        child: SizedBox(
+          width: 60,
+          height: 48,
+          child: Center(
+            child: Opacity(
+              opacity: on ? 1 : .5,
+              child: AnimatedBuilder(
+                animation: _c,
+                builder: (context, _) {
+                  final t = _c.value;
+                  final p = _pos;
+                  final k = _cheio.clamp(0.0, 1.0);
+                  final dist = (_to - _from).abs();
+                  final indo = _to >= _from;
+                  // Gota: estica até 1,45× no caminho e volta a ser bola na batida.
+                  final gota = t >= 1 ? 0.0 : math.sin(math.pi * (t / _batida).clamp(0.0, 1.0)) * dist;
+                  // Amassado: chega rápido no máximo e volta com a mola (passa um tiquinho).
+                  final v = ((t - _batida) / (1 - _batida)).clamp(0.0, 1.0);
+                  final amassa = t >= 1 || v <= 0
+                      ? 0.0
+                      : (v < .12 ? v / .12 : 1 - SsMotion.bounce.transform((v - .12) / .88)) * dist;
+                  final frente = _pad + p * curso;
+                  final esticada = _thumb + _thumb * .45 * gota;
+                  final w = esticada * (1 - .18 * amassa);
+                  final hh = _thumb * (1 - .12 * gota) * (1 + .12 * amassa);
+                  // A ponta de trás fica para trás; no amassado, encosta na parede.
+                  final left = (indo ? frente + _thumb - w : frente).clamp(1.0, _w - w - 1);
+                  // ✓: ligando, entra girando (−90° → 0) e pula depois da batida;
+                  // desligando, some rápido.
+                  final double icone, giro;
+                  if (widget.value) {
+                    final a = ((t - .4) / .6).clamp(0.0, 1.0);
+                    icone = a <= 0 ? 0 : SsMotion.pop.transform(a);
+                    giro = -math.pi / 2 * (1 - Curves.easeOutCubic.transform(a));
+                  } else {
+                    icone = t >= 1 ? 0 : (1 - t / .2).clamp(0.0, 1.0);
+                    giro = 0;
+                  }
+                  return CustomPaint(
+                    painter: _SwitchTrackPainter(
+                      cheio: k,
+                      centro: const Offset(_pad + _thumb / 2, _h / 2),
+                      vazio: c.field,
+                      bordaVazia: c.line,
+                      cor: accent,
+                    ),
+                    child: SizedBox(
+                      width: _w,
+                      height: _h,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Halo: um anel se abre em volta da bolinha quando ela bate no fim.
+                          Positioned(
+                            left: _pad + _to * curso,
+                            top: (_h - _thumb) / 2,
+                            width: _thumb,
+                            height: _thumb,
+                            child: SsRipple(
+                              trigger: widget.value,
+                              delay: SsMotion.worm * _batida * .9,
+                              duration: const Duration(milliseconds: 420),
+                              begin: 1,
+                              color: accent,
+                              child: const SizedBox.shrink(),
+                            ),
+                          ),
+                          Positioned(
+                            left: left,
+                            top: (_h - hh) / 2,
+                            width: w,
+                            height: hh,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Color.lerp(c.muted, AppColors.onDark, k),
+                                borderRadius: BorderRadius.circular(_thumb / 2),
+                                boxShadow: const [
+                                  BoxShadow(color: Color(0x29000000), blurRadius: 3, offset: Offset(0, 1)),
+                                ],
+                              ),
+                              child: icone <= 0
+                                  ? null
+                                  : Center(
+                                      child: Transform(
+                                        alignment: Alignment.center,
+                                        transform: Matrix4.rotationZ(giro)
+                                          ..multiply(Matrix4.diagonal3Values(icone, icone, 1)),
+                                        child: SsCheckMark(value: true, size: 14, color: accent, strokeWidth: 2.2),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Trilha do [SsSwitch]: fundo vazio, a cor da marca num círculo que cresce
+/// a partir de [centro] (recortado na pílula) e a borda que acompanha.
+class _SwitchTrackPainter extends CustomPainter {
+  _SwitchTrackPainter({
+    required this.cheio,
+    required this.centro,
+    required this.vazio,
+    required this.bordaVazia,
+    required this.cor,
+  });
+  final double cheio;
+  final Offset centro;
+  final Color vazio, bordaVazia, cor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rr = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(size.height / 2));
+    canvas.drawRRect(rr, Paint()..color = vazio);
+    if (cheio > 0) {
+      // Raio que cobre a pílula inteira a partir do centro de partida.
+      final longe = Offset(size.width, 0) - centro;
+      canvas.save();
+      canvas.clipRRect(rr);
+      canvas.drawCircle(centro, (longe.distance + 2) * cheio, Paint()..color = cor);
+      canvas.restore();
+    }
+    canvas.drawRRect(
+      rr.deflate(.75),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = Color.lerp(bordaVazia, cor, cheio)!,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SwitchTrackPainter old) =>
+      old.cheio != cheio || old.cor != cor || old.vazio != vazio || old.bordaVazia != bordaVazia;
 }
 
 /// Campo só de hora (lembrete, horário de treino): mostra "07:30" em DM Mono
@@ -970,7 +1196,9 @@ class SsTimeField extends StatelessWidget {
 }
 
 /// Linha com caixa de marcar (aceite, "lembrar"): toda a linha é o alvo do
-/// toque; a marca entra com mola. [child] no lugar de [title] para texto com
+/// toque. A caixa é um [SsCheckBox]: ao marcar, encolhe, pula com mola, a cor
+/// inunda do centro, o ✓ se desenha e sai um estouro de risquinhos; ao
+/// desmarcar, desfaz e balança. [child] no lugar de [title] para texto com
 /// link.
 class SsCheckRow extends StatelessWidget {
   const SsCheckRow({super.key, this.title, this.child, this.subtitle, required this.value, required this.onChanged})
@@ -986,7 +1214,6 @@ class SsCheckRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final on = onChanged != null;
-    final dur = reduceMotion(context) ? Duration.zero : SsMotion.fast;
     return Semantics(
       checked: value,
       enabled: on,
@@ -1003,23 +1230,9 @@ class SsCheckRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AnimatedContainer(
-                duration: dur,
-                curve: Curves.easeOutBack,
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: value ? c.accent : c.field,
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(color: value ? c.accent : c.muted2, width: 1.5),
-                ),
-                child: AnimatedScale(
-                  duration: dur,
-                  curve: Curves.easeOutBack,
-                  scale: value ? 1 : 0,
-                  child: const Icon(Icons.check_rounded, size: 17, color: AppColors.onDark),
-                ),
-              ),
+              // Marcou: a caixa encolhe, pula, a cor inunda do centro, o ✓ se
+              // desenha e sai um estouro; desmarcou: desfaz e balança.
+              SsCheckBox(value: value),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

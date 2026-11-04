@@ -1,0 +1,43 @@
+<%= tag.article(**root_attrs(class: classes("ss-print"), "aria-label": [@title, @number].compact.join(" "))) do %>
+  <header class="ss-print-head">
+    <div class="ss-print-brand">
+      <% if brand? %><span class="ss-print-logo"><%= brand %></span><% else %><span class="ss-print-mark" aria-hidden="true"><%= @company[:name].to_s[0] %></span><% end %>
+      <div>
+        <strong><%= @company[:name] %></strong>
+        <% Array(@company[:lines]).each do |l| %><span><%= l %></span><% end %>
+      </div>
+    </div>
+    <div class="ss-print-doc">
+      <p class="ss-print-title"><%= @title %></p>
+      <% if @number %><p class="num">Nº <%= @number %></p><% end %>
+      <% if @date %><p class="num"><%= @date %></p><% end %>
+    </div>
+  </header>
+  <% if @customer %>
+    <section class="ss-print-party">
+      <p class="ss-kicker"><%= @customer[:label] || "Cliente" %></p>
+      <strong><%= @customer[:name] %></strong>
+      <% Array(@customer[:lines]).each do |l| %><span><%= l %></span><% end %>
+    </section>
+  <% end %>
+  <% if @columns.any? %>
+    <table class="ss-print-table">
+      <thead><tr><% @columns.each_with_index do |c, i| %><th class="<%= "r" if right?(i) %>" scope="col"><%= c.first %></th><% end %></tr></thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <tr><% row.each_with_index do |cell, i| %><td class="<%= "r num" if right?(i) %>"><%= cell %></td><% end %></tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+  <% if @totals.any? %>
+    <dl class="ss-print-totals">
+      <% @totals.each do |label, value, strong| %>
+        <div class="<%= "is-strong" if strong %>"><dt><%= label %></dt><dd class="num"><%= value %></dd></div>
+      <% end %>
+    </dl>
+  <% end %>
+  <%= content %>
+  <% if notes? %><section class="ss-print-notes"><%= notes %></section><% end %>
+  <% if footer? %><footer class="ss-print-foot"><%= footer %></footer><% end %>
+<% end %>

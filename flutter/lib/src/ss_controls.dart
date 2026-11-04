@@ -7,8 +7,11 @@ import 'app_theme.dart';
 import 'motion.dart';
 
 /// Seletor de 2 a 4 opções (período, abas de uma tela): trilha afundada e uma
-/// pílula que desliza com mola até a opção escolhida. [icons] (um por opção,
+/// pílula que desliza com mola até a opção escolhida, esticando no caminho
+/// ([SsSlidingIndicator]). [icons] (um por opção,
 /// `null` sem ícone) vai antes do texto; opção em [disabled] fica apagada.
+/// [onDark]: variante "embutida" para dentro de cabeçalho escuro
+/// (`SsCurvedHeader`): trilha clara translúcida e texto claro.
 class SsSegmented<T> extends StatelessWidget {
   const SsSegmented({
     super.key,
@@ -17,6 +20,7 @@ class SsSegmented<T> extends StatelessWidget {
     required this.onChanged,
     this.icons,
     this.disabled = const {},
+    this.onDark = false,
   }) : assert(segments.length >= 2),
        assert(icons == null || icons.length == segments.length);
 
@@ -26,31 +30,41 @@ class SsSegmented<T> extends StatelessWidget {
   final List<IconData?>? icons;
   final Set<T> disabled;
 
+  /// Sobre fundo escuro (cabeçalho em `brandDeep`/`headerBg`).
+  final bool onDark;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final n = segments.length;
     final i = segments.indexWhere((s) => s.$1 == value).clamp(0, n - 1);
-    final move = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 340);
     return Container(
       height: 42,
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.pill)),
+      decoration: BoxDecoration(
+        color: onDark ? AppColors.onDark.withValues(alpha: .1) : c.field,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: onDark ? Border.all(color: AppColors.onDark.withValues(alpha: .08)) : null,
+      ),
       child: Stack(
         children: [
-          AnimatedAlign(
-            alignment: Alignment(n == 1 ? 0 : -1 + 2 * i / (n - 1), 0),
-            duration: move,
-            curve: Curves.easeOutBack,
-            child: FractionallySizedBox(
-              widthFactor: 1 / n,
-              heightFactor: 1,
-              child: Container(
+          // A pílula desliza com mola até a opção nova, esticando no caminho.
+          Positioned.fill(
+            child: SsSlidingIndicator(
+              index: i,
+              count: n,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   // No escuro a pílula precisa ser mais clara que a trilha.
-                  color: c.isDark ? Color.lerp(c.field, Colors.white, .1) : c.surface,
+                  color: onDark
+                      ? AppColors.onDark
+                      : c.isDark
+                      ? Color.lerp(c.field, Colors.white, .1)
+                      : c.surface,
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  boxShadow: const [BoxShadow(color: Color(0x1F141628), offset: Offset(0, 1), blurRadius: 3)],
+                  boxShadow: onDark
+                      ? const []
+                      : const [BoxShadow(color: Color(0x1F141628), offset: Offset(0, 1), blurRadius: 3)],
                 ),
               ),
             ),
@@ -76,8 +90,10 @@ class SsSegmented<T> extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
                             color: k == i
-                                ? c.accentText
-                                : c.muted.withValues(alpha: disabled.contains(segments[k].$1) ? .45 : 1),
+                                ? (onDark ? c.brand.accentHoverLight : c.accentText)
+                                : (onDark ? AppColors.onDarkSoft : c.muted).withValues(
+                                    alpha: disabled.contains(segments[k].$1) ? .45 : 1,
+                                  ),
                             fontSize: AppType.sub,
                             fontWeight: k == i ? FontWeight.w800 : FontWeight.w600,
                           ),
@@ -106,8 +122,8 @@ class SsSegmented<T> extends StatelessWidget {
   }
 }
 
-/// Filtro em pílula: marcado fica na cor da marca a 12% com um ✓ que entra
-/// crescendo; [count] aparece em DM Mono.
+/// Filtro em pílula: marcado fica na cor da marca a 12%, dá um pulinho com
+/// mola e o ✓ se desenha no lugar do ícone; [count] aparece em DM Mono.
 class SsFilterChip extends StatelessWidget {
   const SsFilterChip(this.label, {super.key, required this.selected, required this.onTap, this.count, this.icon});
 
@@ -124,50 +140,71 @@ class SsFilterChip extends StatelessWidget {
     final c = SsColors.of(context);
     final fg = selected ? c.accentText : c.ink2;
     final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 220);
+    final temIcone = selected || icon != null;
     return Semantics(
       button: true,
       selected: selected,
       child: SsPressable(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: dur,
-          height: 34,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            border: Border.all(color: selected ? c.accent.withValues(alpha: .35) : c.line),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSize(
-                duration: dur,
-                curve: Curves.easeOutBack,
-                child: selected
-                    ? Padding(
+        // Marcou: o chip dá um pulinho com mola e o ✓ se desenha.
+        child: SsPop(
+          active: selected,
+          from: .9,
+          child: AnimatedContainer(
+            duration: dur,
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: selected ? c.accent.withValues(alpha: .35) : c.line),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // A vaga do ícone abre (sem ícone) e o ✓ toma o lugar dele.
+                ClipRect(
+                  child: AnimatedContainer(
+                    duration: dur,
+                    curve: Curves.easeOutCubic,
+                    width: temIcone ? 21 : 0,
+                    child: OverflowBox(
+                      minWidth: 21,
+                      maxWidth: 21,
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
                         padding: const EdgeInsets.only(right: 5),
-                        child: Icon(Icons.check_rounded, size: 16, color: fg),
-                      )
-                    : icon == null
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.only(right: 5),
-                        child: Icon(icon, size: 16, color: fg),
+                        child: SizedBox.square(
+                          dimension: 16,
+                          child: Stack(
+                            children: [
+                              if (icon != null)
+                                AnimatedScale(
+                                  duration: dur,
+                                  scale: selected ? 0 : 1,
+                                  child: Icon(icon, size: 16, color: fg),
+                                ),
+                              SsCheckMark(value: selected, size: 16, color: fg, strokeWidth: 2.2),
+                            ],
+                          ),
+                        ),
                       ),
-              ),
-              Text(
-                label,
-                style: TextStyle(color: fg, fontSize: AppType.sub, fontWeight: FontWeight.w700),
-              ),
-              if (count != null) ...[
-                const SizedBox(width: 6),
-                Text(
-                  '$count',
-                  style: AppTheme.number(context, size: AppType.meta, color: selected ? fg : c.muted),
+                    ),
+                  ),
                 ),
+                Text(
+                  label,
+                  style: TextStyle(color: fg, fontSize: AppType.sub, fontWeight: FontWeight.w700),
+                ),
+                if (count != null) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    '$count',
+                    style: AppTheme.number(context, size: AppType.meta, color: selected ? fg : c.muted),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

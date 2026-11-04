@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion.dart';
 
 /// Card do design system: superfície, raio 18 (22 quando ativo), sombra suave
 /// (glow roxo quando ativo) e borda accent no estado ativo. Espelha `.ss-card`.
+/// Com [onTap], afunda de leve no toque e volta com mola ([SsPressable]).
 class SsCard extends StatelessWidget {
   const SsCard({
     super.key,
@@ -46,10 +48,14 @@ class SsCard extends StatelessWidget {
       ),
     );
     if (onTap == null) return content;
-    return Material(
-      color: Colors.transparent,
-      borderRadius: radius,
-      child: InkWell(onTap: onTap, borderRadius: radius, child: content),
+    // Tocável: afunda de leve no toque e volta com mola ao soltar.
+    return SsPressable(
+      scale: .98,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(onTap: onTap, borderRadius: radius, child: content),
+      ),
     );
   }
 }

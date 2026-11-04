@@ -1,0 +1,25 @@
+<%# Ilustração de planta (só tokens) para os cards de produto da vitrine. variante: 0..3 %>
+<% v = local_assigns[:variante].to_i % 4 %>
+<svg viewBox="0 0 160 160" aria-hidden="true">
+  <% case v when 0 %>
+    <path d="M80 104C60 80 36 74 22 50c22-2 46 12 58 40z" style="fill:color-mix(in oklab, var(--success) 75%, #000 0%)"/>
+    <path d="M80 104c14-30 36-48 62-50-8 26-34 44-62 50z" style="fill:color-mix(in oklab, var(--success) 60%, var(--surface))"/>
+    <path d="M80 106C74 70 80 40 96 18c10 30 4 60-16 88z" style="fill:var(--success)"/>
+  <% when 1 %>
+    <ellipse cx="62" cy="70" rx="20" ry="34" transform="rotate(-24 62 70)" style="fill:var(--success)"/>
+    <ellipse cx="98" cy="66" rx="20" ry="36" transform="rotate(22 98 66)" style="fill:color-mix(in oklab, var(--success) 65%, var(--surface))"/>
+    <ellipse cx="80" cy="58" rx="16" ry="40" style="fill:color-mix(in oklab, var(--success) 85%, var(--ink))"/>
+    <path d="M80 100V40" style="stroke:var(--surface);stroke-width:2;opacity:.5"/>
+  <% when 2 %>
+    <circle cx="80" cy="64" r="34" style="fill:color-mix(in oklab, var(--success) 70%, var(--surface))"/>
+    <circle cx="58" cy="78" r="22" style="fill:var(--success)"/><circle cx="104" cy="80" r="20" style="fill:color-mix(in oklab, var(--success) 85%, var(--ink))"/>
+    <circle cx="70" cy="50" r="4" style="fill:var(--warn)"/><circle cx="96" cy="58" r="4" style="fill:var(--danger)"/><circle cx="82" cy="40" r="4" style="fill:var(--warn)"/>
+  <% else %>
+    <path d="M80 108V30M80 60l-22-18M80 76l24-20M80 92l-26-12" style="stroke:color-mix(in oklab, var(--success) 70%, var(--ink));stroke-width:4;stroke-linecap:round;fill:none"/>
+    <ellipse cx="56" cy="40" rx="12" ry="7" transform="rotate(30 56 40)" style="fill:var(--success)"/><ellipse cx="106" cy="54" rx="13" ry="7" transform="rotate(-30 106 54)" style="fill:var(--success)"/>
+    <ellipse cx="52" cy="80" rx="13" ry="7" transform="rotate(20 52 80)" style="fill:color-mix(in oklab, var(--success) 70%, var(--surface))"/><ellipse cx="80" cy="26" rx="7" ry="11" style="fill:var(--success)"/>
+  <% end %>
+  <path d="M46 104h68l-8 46a8 8 0 0 1-8 6H62a8 8 0 0 1-8-6z" style="fill:var(--accent)"/>
+  <path d="M42 100h76v10H42z" rx="4" style="fill:color-mix(in oklab, var(--accent) 75%, var(--ink))"/>
+  <path d="M60 118h40" style="stroke:var(--surface);stroke-width:3;stroke-linecap:round;opacity:.35"/>
+</svg>

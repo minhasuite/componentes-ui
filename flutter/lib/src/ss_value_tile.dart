@@ -10,6 +10,8 @@ import 'ss_stat.dart';
 /// [trailing] é a ação no fim (botão, menu). Diferente do [SsListItem] (uma
 /// linha e sem ação) e do [SsValueRow] (rótulo … valor de recibo).
 ///
+/// O valor conta de 0 quando a linha entra na tela e rola ao mudar.
+///
 /// `SsValueTile(title: 'Café torrado', subtitle: 'Melitta · 500 g', value: money(1890))`
 class SsValueTile extends StatelessWidget {
   const SsValueTile({
@@ -54,7 +56,7 @@ class SsValueTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: below ? Alignment.centerLeft : Alignment.centerRight,
-            child: SsAmount(value!, size: AppType.body, color: valueColor),
+            child: SsAmount(value!, size: AppType.body, color: valueColor, countUp: true, roll: true),
           ),
           if (valueNote != null)
             Text(

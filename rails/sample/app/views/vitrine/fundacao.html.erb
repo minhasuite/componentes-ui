@@ -1,0 +1,84 @@
+<%# titulo: Paletas, OLED e luz | grupo: Fundação | ordem: 1 %>
+<% paletas = Ss::ThemeSwitcherComponent::PALETTES %>
+
+<%= demo "Paletas", "#{ComponentesUi::PALETAS.size} paletas, as mesmas do Flutter (fonte: paletas/paletas.json, gerar.py). data-palette no <html> troca --accent, --grad, --grad-4 e --glow, em claro e escuro (AA). Escolha aqui ou na barra de cima; o produto fixa a dele no layout.",
+         uso: '<html data-palette="eucalipto">  ·  render Ss::ThemeSwitcherComponent.new' do %>
+  <%= render Ss::ThemeSwitcherComponent.new %>
+<% end %>
+
+<%= demo "Tokens da paleta atual", "O que os componentes leem. --grad-4 é o gradiente de 4 paradas, para faixas e ilustrações (nunca em texto)." do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+    <% { "--accent" => "var(--accent)", "--accent-soft" => "var(--accent-soft)", "--grad" => "var(--grad)", "--grad-4" => "var(--grad-4)", "--grad-soft" => "var(--grad-soft)" }.each do |nome, valor| %>
+      <div class="ss-card" style="overflow:hidden">
+        <div style="height:64px;background:<%= valor %>"></div>
+        <p class="num" style="padding:10px 12px;font-size:12px;color:var(--ink-2)"><%= nome %></p>
+      </div>
+    <% end %>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="ss-btn ss-btn-primary">Primário</button><button class="ss-btn ss-btn-outline">Outline</button>
+    <span class="ss-badge ss-badge-accent">Selo</span><a href="#" class="ss-chip" aria-current="true">Chip atual</a><a href="#" class="ss-chip">Chip</a>
+  </div>
+<% end %>
+
+<%= demo ".ss-swatch", "Paleta em pílula: 4 círculos sobrepostos e o gradiente embaixo. Vira o seletor de paleta (button com aria-pressed) ou só mostra (span). .ss-swatch-lg para destaque.",
+         uso: '<span class="ss-swatch ss-swatch-lg" data-swatch="neon-pop"><span class="ss-swatch-dots"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar"></span></span>' do %>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:16px">
+    <span class="ss-swatch ss-swatch-lg" data-swatch="tokyo-night"><span class="ss-swatch-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar" aria-hidden="true"></span><span class="ss-swatch-name">ss-swatch-lg</span></span>
+    <span class="ss-swatch" style="--p1:#0f8a5f;--p2:#34d399;--p3:#a7f3d0;--p4:#ecfdf5"><span class="ss-swatch-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar" aria-hidden="true"></span><span class="ss-swatch-name">Cores próprias</span></span>
+  </div>
+  <% paletas.group_by { |_k, (_n, sw)| ComponentesUi::PALETA_FAMILIA[sw] }.each do |familia, itens| %>
+    <p style="font:700 11px var(--font-sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px"><%= familia %></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+      <% itens.each do |_k, (nome, sw)| %>
+        <span class="ss-swatch" data-swatch="<%= sw %>"><span class="ss-swatch-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar" aria-hidden="true"></span><span class="ss-swatch-name"><%= nome %></span></span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%= demo "OLED", "Escuro com página preta e superfícies quase pretas: [data-theme=dark][data-oled]. Escolha OLED na barra de cima (ss-theme com data-ss-theme-oled-param).",
+         uso: '<button data-action="ss-theme#set" data-ss-theme-theme-param="dark" data-ss-theme-oled-param="true">OLED</button>' do %>
+  <div data-controller="ss-theme" style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-theme#set" data-ss-theme-theme-param="dark" data-ss-theme-oled-param="true">Ligar OLED</button>
+    <button class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-theme#set" data-ss-theme-theme-param="dark" data-ss-theme-oled-param="false">Escuro comum</button>
+    <button class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-theme#set" data-ss-theme-theme-param="light">Claro</button>
+  </div>
+<% end %>
+
+<%= demo ".ss-glass-1 · 2 · 3", "Vidro com filete de luz na borda de cima. SÓ em sobreposição (menu suspenso, barra sobre foto, herói), nunca em card ou lista. Precisa de algo atrás.",
+         uso: '<div class="ss-glass-2">…</div>' do %>
+  <div class="ss-hero" style="padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+    <% [1, 2, 3].each do |n| %>
+      <div class="ss-glass-<%= n %>" style="padding:16px;color:var(--ink)">
+        <p class="ss-kicker" style="color:var(--ink-2)">ss-glass-<%= n %></p>
+        <p class="num" style="font-size:22px;font-weight:500">R$ 1.250<small style="opacity:.6">,00</small></p>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo ".ss-glow · .ss-texture", "Brilho radial da marca atrás do conteúdo (um por tela) e textura topográfica opcional atrás de herói (div vazia, aria-hidden, num pai com position:relative).",
+         uso: '<div class="ss-glow">…</div>  ·  <div class="ss-texture" aria-hidden="true"></div>' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+    <div class="ss-glow" style="padding:40px 24px;text-align:center">
+      <p class="ss-kicker">Saldo do mês</p>
+      <%= ss_amount("R$ 8.420,50") %>
+    </div>
+    <div class="ss-card" style="position:relative;overflow:hidden;padding:40px 24px;color:var(--accent)">
+      <div class="ss-texture" aria-hidden="true"></div>
+      <p style="position:relative;color:var(--ink);font-weight:800;font-size:18px">Textura topográfica</p>
+      <p style="position:relative;color:var(--muted);font-size:13px">Pega a cor do texto do pai (aqui, a marca) a 10%.</p>
+    </div>
+  </div>
+<% end %>
+
+<%= demo ".ss-shadow-tint · .ss-squircle", "Sombra na cor do próprio elemento (--tint; padrão a marca) e raio contínuo com corner-shape: squircle (cai para raio comum onde não há suporte).",
+         uso: '<div class="ss-shadow-tint" style="--tint: var(--success)">  ·  <div class="ss-squircle">' do %>
+  <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+    <span class="ss-icon-tile ss-shadow-tint" style="width:56px;height:56px;background:var(--accent);color:#fff;box-shadow:none" aria-hidden="true"></span>
+    <button class="ss-btn ss-shadow-tint" style="--tint:var(--success);background:var(--success);color:#fff">Pago</button>
+    <button class="ss-btn ss-shadow-tint" style="--tint:var(--danger);background:var(--danger);color:#fff">Vencido</button>
+    <div class="ss-squircle ss-card" style="width:120px;height:120px;display:grid;place-items:center;font-weight:800">squircle</div>
+  </div>
+<% end %>

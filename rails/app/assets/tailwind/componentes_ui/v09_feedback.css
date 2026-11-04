@@ -1,0 +1,203 @@
+/* v0.9 · Retorno (lote B): pilha de toasts, exclusão confirmada, esqueleto, job,
+   vazio ilustrado, popover, tooltip, tour, novidades e atalhos. */
+
+/* Diálogo de excluir e de atalhos estendem o .ss-dialog (fora das camadas, como ele). */
+.ss-confirm-label { display: block; margin: 1rem 0 .4rem; font-size: .82rem; color: var(--ink-2); text-align: left; }
+.ss-confirm-label b { font-weight: 800; color: var(--ink); overflow-wrap: anywhere; }
+.ss-dialog.is-danger .ss-input:focus { border-color: var(--danger); box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 16%, transparent); }
+.ss-dialog.is-danger .ss-btn-primary:disabled { opacity: .45; }
+.ss-sc-dialog { width: min(40rem, calc(100vw - 2rem)); }
+.ss-sc-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); }
+.ss-sc-head h2 { font-size: 1.05rem; }
+.ss-sc-close { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; background: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; }
+.ss-sc-close:hover { background: var(--field); color: var(--ink); }
+.ss-sc-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 1.75rem; padding: 1rem 1.25rem; max-height: 65vh; overflow: auto; }
+.ss-sc-body h3 { margin-bottom: .35rem; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ss-sc-body dl > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.ss-sc-body dl > div:last-child { border-bottom: 0; }
+.ss-sc-body dd { display: flex; align-items: center; gap: .3rem; margin: 0; }
+.ss-sc-body .ss-kbd { min-width: 1.5rem; text-align: center; font-size: .75rem; padding: .3rem .45rem; box-shadow: 0 2px 0 var(--line); }
+.ss-sc-then { font-size: .7rem; color: var(--muted); }
+.ss-sc-foot { padding: .75rem 1.25rem 1rem; font-size: .78rem; color: var(--muted); border-top: 1px solid var(--line); }
+
+.ss-popover.ss-wn-panel { width: min(22rem, calc(100vw - 1.5rem)); padding: .9rem .5rem .5rem; }
+.ss-wn-panel .ss-popover-title { padding: 0 .5rem; }
+
+/* Popover nativo: [popover] fica no top layer; posição por CSS anchor quando há. */
+.ss-popover { margin: 0; inset: auto; width: max-content; max-width: min(22rem, calc(100vw - 1.5rem)); padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 16px;
+              background: var(--surface); color: var(--ink); font-size: .88rem; box-shadow: 0 18px 40px -16px rgba(20, 22, 40, .35); }
+/* Nasce do botão com mola (origem no lado do botão) e some rápido. Com @starting-style
+   e allow-discrete a saída também anima; sem suporte, só a entrada (animação). */
+.ss-popover { transform-origin: left top; opacity: 0; scale: .9; translate: 0 -4px;
+              transition: opacity .14s ease, scale .14s ease, translate .14s ease, display .14s allow-discrete, overlay .14s allow-discrete; }
+.ss-popover[data-placement="bottom-end"] { transform-origin: right top; }
+.ss-popover[data-placement="top-start"] { transform-origin: left bottom; translate: 0 4px; }
+.ss-popover:popover-open { opacity: 1; scale: 1; translate: 0 0;
+                           transition: opacity .18s ease, scale .46s var(--ss-bounce), translate .46s var(--ss-bounce), display .46s allow-discrete, overlay .46s allow-discrete; }
+@starting-style { .ss-popover:popover-open { opacity: 0; scale: .9; translate: 0 -4px; } }
+@supports not (transition-behavior: allow-discrete) {
+  .ss-popover:popover-open { animation: ss-popover-in .46s var(--ss-bounce); }
+}
+/* Itens da lista (novidades) entram em cascata quando o painel abre. */
+.ss-wn-panel:popover-open .ss-wn-list > li { animation: ss-iv-rise .45s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 45ms + 60ms); }
+.ss-popover-title { margin-bottom: .35rem; font-weight: 800; }
+@supports (anchor-name: --a) {
+  .ss-popover { position-area: bottom span-right; margin-top: 8px; position-try-fallbacks: flip-block, flip-inline; }
+  .ss-popover[data-placement="bottom-end"] { position-area: bottom span-left; }
+  .ss-popover[data-placement="top-start"] { position-area: top span-right; margin: 0 0 8px; }
+}
+
+@layer components {
+  /* ── Pilha de toasts (Ss::ToastStackComponent + Ss::ToastComponent) ── */
+  .ss-toasts { position: fixed; z-index: 60; display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; right: 1.25rem; bottom: 1.25rem;
+               max-width: calc(100vw - 2rem); pointer-events: none; }
+  .ss-toasts[data-position="bottom-center"] { right: 50%; translate: 50% 0; align-items: center; }
+  .ss-toasts[data-position="top-right"] { bottom: auto; top: 1.25rem; flex-direction: column-reverse; }
+  .ss-toasts > * { pointer-events: auto; }
+  /* Entra com mola de baixo (de cima na pilha do topo); arrastar para o lado dispensa. */
+  .ss-toasts .ss-toast { animation: ss-toast .56s var(--ss-bounce); touch-action: pan-y; user-select: none; }
+  .ss-toasts[data-position^="top"] .ss-toast { animation-name: ss-toast-top; }
+  .ss-toast.is-dragging { cursor: grabbing; transition: none; }
+  .ss-toasts.is-inline { position: static; translate: none; align-items: flex-start; }
+  .ss-toast-msg { flex: 1; min-width: 0; }
+  .ss-toast .ss-toast-timer::before { animation-duration: var(--ss-toast-d, 5s); }
+  .ss-toast.is-paused .ss-toast-timer::before { animation-play-state: paused; }
+  .ss-toast .ss-toast-undo { display: contents; }
+  .ss-toast .ss-toast-close { width: 2rem; height: 2rem; padding: 0; display: grid; place-items: center; color: rgba(255, 255, 255, .55); font-size: 1.15rem; font-weight: 600; }
+  .ss-toast .ss-toast-close:hover { color: #fff; }
+  .ss-toasts .ss-toast.is-leaving, .ss-toast.is-leaving { animation: ss-toast-out .26s cubic-bezier(.4, 0, 1, 1) forwards; }
+
+  /* ── Esqueleto (Ss::SkeletonComponent) ── */
+  .ss-skel { --sk: color-mix(in srgb, var(--line) 75%, var(--field)); display: grid; gap: .6rem; }
+  .ss-skel i { display: block; height: .8rem; border-radius: 999px; position: relative; overflow: hidden;
+               background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--surface) 70%, transparent) 50%, transparent 70%) var(--sk);
+               background-size: 220% 100%; animation: ss-shimmer 1.4s linear infinite; }
+  .ss-skel.is-card { padding: 1rem; border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); }
+  .ss-skel .ss-skel-media { height: 8.5rem; border-radius: 14px; }
+  .ss-skel .ss-skel-title { height: 1.05rem; margin-top: .25rem; }
+  .ss-skel.is-table { gap: 0; border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); overflow: hidden; }
+  .ss-skel-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1.25rem; align-items: center; padding: .95rem 1rem; border-top: 1px solid var(--line); }
+  .ss-skel-row.is-head { border-top: 0; background: var(--head); padding-block: .8rem; }
+  .ss-skel-row.is-head i { height: .55rem; width: 45%; }
+  .ss-skel.is-list { gap: .25rem; }
+  .ss-skel-item { display: flex; align-items: center; gap: .75rem; padding: .55rem .25rem; }
+  .ss-skel-item > span { flex: 1; display: grid; gap: .4rem; }
+  .ss-skel .ss-skel-dot { width: 42px; height: 42px; flex: none; border-radius: 13px; }
+  .ss-skel .ss-skel-sub { height: .6rem; }
+  .ss-skel .ss-skel-val { width: 4.5rem; flex: none; }
+
+  /* ── Job (Ss::JobProgressComponent) ── */
+  .ss-job { display: grid; gap: .75rem; padding: 1rem 1.1rem; }
+  .ss-job-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .ss-job-head b { font-weight: 800; }
+  .ss-job-bar { position: relative; height: .5rem; border-radius: 999px; background: var(--field); overflow: hidden; }
+  .ss-job-bar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--grad); transition: width .7s var(--ss-bounce); }
+  /* Entrou na tela vindo de fora (armado pelo ss-in-view): enche do zero com mola. */
+  .ss-job.ss-iv[data-in-view] .ss-job-bar:not(.is-indet) i { animation: ss-fill .9s var(--ss-bounce) .1s backwards; }
+  .ss-job-bar.is-indet i { width: 35% !important; animation: ss-indet 1.3s cubic-bezier(.4, 0, .2, 1) infinite; }
+  .ss-job[data-state="queued"] .ss-job-bar i { background: color-mix(in srgb, var(--muted) 45%, transparent); }
+  .ss-job[data-state="done"] .ss-job-bar i { background: var(--success); }
+  .ss-job-steps { display: flex; flex-wrap: wrap; gap: .35rem .9rem; list-style: none; margin: 0; padding: 0; font-size: .8rem; color: var(--muted); }
+  .ss-job-steps li { display: inline-flex; align-items: center; gap: .4rem; }
+  .ss-job-steps li::before { content: ""; box-sizing: border-box; width: .95rem; height: .95rem; border-radius: 50%; border: 2px solid var(--line); }
+  .ss-job-steps .is-done { color: var(--ink-2); }
+  .ss-job-steps .is-done::before { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 70% no-repeat; }
+  .ss-job-steps .is-current { color: var(--ink); font-weight: 700; }
+  .ss-job-steps .is-current::before { border-color: var(--accent); border-top-color: transparent; animation: ss-spin .8s linear infinite; }
+  .ss-job-steps .is-failed { color: var(--danger); font-weight: 700; }
+  .ss-job-steps .is-failed::before { border-color: var(--danger); background: var(--danger); }
+  .ss-job-detail { font-size: .8rem; color: var(--muted); }
+  .ss-job-error { display: flex; gap: .5rem; padding: .65rem .8rem; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-size: .85rem; font-weight: 600; }
+  .ss-job-error::before { content: ""; width: 1.1rem; height: 1.1rem; flex: none; background: currentColor; mask: var(--ss-i-alert) center / contain no-repeat; }
+  .ss-job > .ss-btn, .ss-job > form { justify-self: start; }
+
+  /* ── Vazio ilustrado (Ss::EmptyStateComponent) ── */
+  .ss-empty-state { display: grid; justify-items: center; gap: .4rem; max-width: 26rem; margin: 0 auto; padding: 2rem 1rem; text-align: center; }
+  .ss-empty-state.is-compact { padding: 1rem; }
+  .ss-empty-art { width: 10rem; margin-bottom: .5rem; animation: ss-iv-pop .6s var(--ss-bounce) backwards; }
+  /* O brilho/ponto da ilustração pulam logo depois (uma vez). */
+  .ss-empty-art :is(.ss-ill-accent, .ss-ill-dot, .ss-ill-dot2, .ss-ill-danger) { transform-box: fill-box; transform-origin: center; animation: ss-iv-pop .5s var(--ss-bounce) .35s backwards; }
+  .ss-empty-state.is-compact .ss-empty-art { width: 7rem; }
+  .ss-empty-art svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .ss-empty-state h3 { font-size: 1.1rem; font-weight: 800; color: var(--ink); }
+  .ss-empty-state p { color: var(--muted); font-size: .9rem; }
+  .ss-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
+  .ss-ill-floor { fill: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .ss-ill-orbit { fill: none; stroke: color-mix(in srgb, var(--accent) 30%, transparent); stroke-dasharray: 3 7; }
+  .ss-ill-card { fill: var(--surface); stroke: color-mix(in srgb, var(--accent) 22%, var(--line)); stroke-width: 1.5; }
+  .ss-ill-soft { fill: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .ss-ill-line { fill: none; stroke: color-mix(in srgb, var(--accent) 55%, var(--line)); stroke-width: 4; stroke-linecap: round; }
+  .ss-ill-accent { fill: var(--accent); }
+  .ss-ill-accent-s { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .ss-ill-dot { fill: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .ss-ill-dot2 { fill: color-mix(in srgb, var(--success) 70%, transparent); }
+  .ss-ill-lens { fill: color-mix(in srgb, var(--accent) 8%, var(--surface)); stroke: var(--accent); stroke-width: 5; }
+  .ss-ill-handle { stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+  .ss-ill-danger { fill: var(--danger); }
+  .ss-empty-state[data-variant="erro"] .ss-ill-floor { fill: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+  /* ── Tooltip (Ss::TooltipComponent) ── */
+  .ss-tooltip-host { position: relative; display: inline-flex; }
+  .ss-tooltip { position: absolute; left: 50%; bottom: calc(100% + 8px); z-index: 50; translate: -50% 4px; width: max-content; max-width: 16rem;
+                padding: .35rem .6rem; border-radius: 8px; background: #1a1826; color: #fff; font-size: .76rem; font-weight: 600; line-height: 1.35;
+                opacity: 0; visibility: hidden; pointer-events: none; scale: .85; transform-origin: 50% 100%;
+                transition: opacity .12s, translate .12s, scale .12s, visibility .12s; }
+  .ss-tooltip::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% -4px; width: 8px; height: 8px; rotate: 45deg; background: inherit; border-radius: 1px; }
+  .ss-tooltip-host[data-placement="bottom"] .ss-tooltip { bottom: auto; top: calc(100% + 8px); translate: -50% -4px; transform-origin: 50% 0; }
+  .ss-tooltip-host[data-placement="bottom"] .ss-tooltip::after { top: auto; bottom: 100%; translate: -50% 4px; }
+  .ss-tooltip-host:is(:hover, :focus-within):not(.is-dismissed) .ss-tooltip { opacity: 1; visibility: visible; translate: -50% 0; scale: 1; transition-delay: .25s;
+    transition-duration: .16s, .42s, .42s, .16s; transition-timing-function: ease, var(--ss-bounce), var(--ss-bounce), ease; }
+  .ss-tooltip-host:focus-within:not(.is-dismissed) .ss-tooltip { transition-delay: 0s; }
+
+  /* ── Tour (Ss::TourComponent) ── */
+  .ss-tour-layer { position: fixed; inset: 0; z-index: 70; }
+  .ss-tour-layer[hidden] { display: none; }
+  /* Recorte e balão em coordenadas da página (top/left) com mola entre os passos; a
+     rolagem só desloca (--sx/--sy, sem transição). .is-first = 1º passo, sem voar. */
+  .ss-tour-hole { position: fixed; border-radius: 14px; box-shadow: 0 0 0 100vmax rgba(14, 13, 22, .58), 0 0 0 3px var(--accent);
+                  translate: calc(var(--sx, 0) * -1px) calc(var(--sy, 0) * -1px);
+                  transition: top .6s var(--ss-bounce), left .6s var(--ss-bounce), width .6s var(--ss-bounce), height .6s var(--ss-bounce); pointer-events: none;
+                  animation: ss-fade .3s ease; }
+  .ss-tour-pop { position: fixed; width: min(20rem, calc(100vw - 1.5rem)); padding: 1rem 1.1rem; border-radius: 18px; background: var(--surface); color: var(--ink);
+                 border: 1px solid var(--line); box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .5);
+                 translate: calc(var(--sx, 0) * -1px) calc(var(--sy, 0) * -1px);
+                 transition: top .55s var(--ss-bounce) .04s, left .55s var(--ss-bounce) .04s;
+                 animation: ss-iv-pop .45s var(--ss-bounce); }
+  .ss-tour-layer.is-first :is(.ss-tour-hole, .ss-tour-pop) { transition: none; }
+  .ss-tour-pop:focus { outline: none; }
+  .ss-tour-count { font-size: .72rem; color: var(--accent); font-weight: 500; }
+  .ss-tour-pop h3 { margin: .2rem 0 .3rem; font-size: 1rem; font-weight: 800; }
+  .ss-tour-pop p { font-size: .86rem; color: var(--ink-2); }
+  .ss-tour-actions { display: flex; gap: .4rem; margin-top: .9rem; }
+  .ss-tour-actions > :first-child { margin-right: auto; }
+  .ss-tour-actions [hidden] { display: none; }
+
+  /* ── Novidades (Ss::WhatsNewComponent) ── */
+  .ss-whats-new { position: relative; display: inline-flex; }
+  .ss-wn-bell { position: relative; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 12px; background: none; color: var(--ink-2); cursor: pointer; }
+  .ss-wn-bell:hover { background: var(--field); color: var(--ink); }
+  .ss-wn-bell svg { width: 1.3rem; height: 1.3rem; }
+  .ss-wn-dot { position: absolute; top: .5rem; right: .55rem; width: .55rem; height: .55rem; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 2px var(--surface); }
+  .ss-wn-dot[hidden] { display: none; }
+  .ss-wn-dot:not([hidden]) { animation: ss-pop-in .45s var(--ss-bounce); }
+  /* Há novidade: o sino balança uma vez (não fica em loop). */
+  .ss-wn-bell:has(.ss-wn-dot:not([hidden])) svg { transform-origin: 50% 10%; animation: ss-bell .9s ease .5s; }
+  .ss-wn-list { list-style: none; margin: 0; padding: 0; max-height: 60vh; overflow: auto; }
+  .ss-wn-list > li > :is(a, div) { display: grid; gap: .15rem; padding: .6rem .5rem; border-radius: 12px; color: inherit; text-decoration: none; }
+  .ss-wn-list > li > a:hover { background: var(--field); }
+  .ss-wn-list > li + li { border-top: 1px solid var(--line); }
+  .ss-wn-meta { display: flex; align-items: center; gap: .45rem; font-size: .72rem; color: var(--muted); }
+  .ss-wn-new { padding: .05rem .4rem; border-radius: 999px; background: var(--accent); color: var(--surface); font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .ss-wn-new[hidden] { display: none; }
+  .ss-wn-list b { font-size: .9rem; }
+  .ss-wn-list p { font-size: .82rem; color: var(--muted); }
+}
+@keyframes ss-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes ss-toast-out { to { opacity: 0; transform: translateX(32px) scale(.94); } }
+@keyframes ss-toast-top { from { opacity: 0; transform: translateY(-40px) scale(.92); } }
+@keyframes ss-popover-in { from { opacity: 0; scale: .9; translate: 0 -4px; } }
+@keyframes ss-bell { 0%, 100% { rotate: 0deg; } 15% { rotate: 14deg; } 30% { rotate: -11deg; } 45% { rotate: 7deg; } 60% { rotate: -4deg; } 75% { rotate: 2deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-skel i { background: var(--sk); }
+  .ss-job-bar.is-indet i { width: 100% !important; opacity: .5; }
+}

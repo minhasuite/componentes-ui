@@ -1,0 +1,6 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  # lib/catalogo é link para ../../test (analisado no pacote); os *_test.dart de lá usam flutter_test.
+  exclude: [build/**, lib/catalogo/**]
+formatter:
+  page_width: 120

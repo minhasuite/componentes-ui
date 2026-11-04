@@ -8,7 +8,8 @@ import 'motion.dart';
 import 'ss_button.dart';
 
 /// [SsButton] que roda uma ação assíncrona: carregando → ✓ [doneLabel] em
-/// verde (volta ao normal após 1,4 s). Se [onPressed] lançar erro, o botão
+/// verde, que chega com mola (volta ao normal após 1,4 s). O toque afunda e
+/// volta com mola, como no [SsButton]. Se [onPressed] lançar erro, o botão
 /// sacode e volta: mostre o aviso dentro dele e relance.
 /// `SsActionButton(label: 'Salvar', onPressed: () => api.salvar())`.
 class SsActionButton extends StatefulWidget {
@@ -91,11 +92,12 @@ class _SsActionButtonState extends State<SsActionButton> with SingleTickerProvid
           return Transform.translate(offset: Offset(math.sin(v * math.pi * 6) * 8 * (1 - v), 0), child: child);
         },
         child: AnimatedSwitcher(
-          duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 320),
+          duration: reduceMotion(context) ? Duration.zero : SsMotion.indicator,
+          // O "pronto" verde chega com a mola de verdade (passa do tamanho e assenta).
           transitionBuilder: (child, a) => FadeTransition(
-            opacity: a,
+            opacity: a.drive(CurveTween(curve: const Interval(0, .4))),
             child: ScaleTransition(
-              scale: Tween(begin: .9, end: 1.0).animate(CurvedAnimation(parent: a, curve: Curves.easeOutBack)),
+              scale: Tween(begin: .86, end: 1.0).animate(CurvedAnimation(parent: a, curve: SsMotion.bounce)),
               child: child,
             ),
           ),

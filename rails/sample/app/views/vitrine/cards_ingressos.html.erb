@@ -1,0 +1,30 @@
+<%# titulo: Ingressos, embarque e Pix | grupo: Cards | ordem: 10 %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::TicketCardComponent", "Recortes laterais e linha tracejada entre topo e base. Imprime limpo.", uso: 'render Ss::TicketCardComponent.new do |t| … t.with_stub { … } end' do %>
+    <%= render Ss::TicketCardComponent.new do |t| %>
+      <p class="ss-kicker">Divisão da conta · Bar do Português</p>
+      <div class="ss-value-row"><span>Total da mesa</span><b>R$ 412,80</b></div>
+      <div class="ss-value-row"><span>Serviço (10%)</span><b>R$ 41,28</b></div>
+      <div class="ss-value-row"><span>Pessoas</span><b>4</b></div>
+      <% t.with_stub do %>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+          <span class="ss-avatars"><%= ss_avatar("Ana Souza", size: 32) %><%= ss_avatar("Bruno Lima", size: 32) %><%= ss_avatar("Carla Mendes", size: 32) %><%= ss_avatar("Duda Reis", size: 32) %></span>
+          <div style="text-align:right"><small style="color:var(--muted);font-size:.75rem">cada um</small><br><%= ss_amount("R$ 113,52", css: "ss-ticket-amount") %></div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= demo "Ss::BoardingPassComponent", "Origem → destino com arco tracejado e o avião em progress; campos; QR na base (SVG pronto do app).",
+        uso: 'render Ss::BoardingPassComponent.new(from: { code:, city:, time:, date: }, to: { … }, progress: 0.45, fields: [["Assento", "24A"]], carrier:, qr:)' do %>
+    <%= render Ss::BoardingPassComponent.new(progress: 0.42,
+          from: { code: "GRU", city: "São Paulo", date: "qui, 12/11", time: "20:50" }, to: { code: "SSA", city: "Salvador", date: "qui, 12/11", time: "23:15" },
+          fields: [["Passageiro", "Herlon Filgueira"], ["Voo", "LA 3412"], ["Assento", "24A"], ["Portão", "4F"], ["Classe", "Econômica"], ["Embarque", "20:10"]],
+          carrier: "Minhas Viagens", note: "Mostre no portão de embarque", qr: render("vitrine/qr_b", seed: 3)) %>
+  <% end %>
+  <%= demo "Ss::QrCardComponent", "QR em área branca, copia-e-cola com Copiar e a validade contando.", uso: 'render Ss::QrCardComponent.new(code:, amount:, expires_at: 30.minutes.from_now) { qr_svg }' do %>
+    <%= render Ss::QrCardComponent.new(amount: "R$ 89,90", expires_at: Time.current + 29.minutes + 41.seconds,
+          code: "00020126580014br.gov.bcb.pix0136a1b2c3d4-e5f6-7890-abcd-ef1234567890520400005303986540589.905802BR5915MINHAS VENDAS6009SAO PAULO62070503***6304ABCD") do %>
+      <%= render "vitrine/qr_b", seed: 9 %>
+    <% end %>
+  <% end %>
+</div>

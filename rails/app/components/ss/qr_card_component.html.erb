@@ -1,0 +1,16 @@
+<%= tag.article(**root_attrs(class: classes("ss-card", "ss-qrcard"), data: { controller: (expires_at ? "ss-countdown" : nil), ss_countdown_until_value: expires_at&.iso8601 })) do %>
+  <header class="ss-qrcard-head">
+    <h3><%= title %></h3>
+    <% if amount %><%= ss_amount(amount) %><% end %>
+  </header>
+  <div class="ss-qr-box" role="img" aria-label="QR Code para pagamento"><%= qr %></div>
+  <% if expires_at %>
+    <p class="ss-qrcard-timer" aria-live="off"><span class="ss-qrcard-valid">Vale por <b class="num" data-ss-countdown-target="clock"><%= mmss %></b></span><span class="ss-qrcard-expired" role="status">Código expirado. Gere outro.</span></p>
+  <% end %>
+  <div class="ss-qrcard-code" data-controller="ss-copy" data-ss-copy-text-value="<%= code %>">
+    <label class="ss-sr" for="<%= uid %>">Pix copia e cola</label>
+    <input id="<%= uid %>" class="num" value="<%= code %>" readonly data-action="focus->ss-copy#select">
+    <button type="button" class="ss-btn ss-btn-primary ss-btn-sm" data-action="ss-copy#copy" data-ss-copy-target="button"><%= COPY.html_safe %><span data-ss-copy-target="label">Copiar</span></button>
+  </div>
+  <% if hint %><p class="ss-qrcard-hint"><%= hint %></p><% end %>
+<% end %>

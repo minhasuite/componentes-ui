@@ -1,21 +1,37 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 import 'ss_stat.dart';
 
-/// Número em DM Mono (centavos menores, como o [SsAmount]) em que só os
-/// dígitos que mudam rolam: a coluna 0–9 desliza com mola até o dígito novo,
-/// subindo quando o valor aumentou e descendo quando caiu. Vírgula, ponto e
-/// "R$" ficam parados; casa nova à esquerda entra com fade.
+/// Número em DM Mono (centavos menores, como o [SsAmount]) que rola como
+/// caça-níquel: cada dígito que muda é uma coluna 0–9 que gira até o novo e
+/// assenta com mola (passa um pouco e volta), subindo quando o valor aumentou
+/// e descendo quando caiu. As casas giram em cascata da direita para a
+/// esquerda (35 ms entre elas), como o "vai um". Vírgula, ponto e "R$" ficam
+/// parados; casa nova à esquerda entra com fade. Com [rollIn], os dígitos
+/// partem do 0 quando o número entra na tela.
 /// `SsOdometer(money(total))`.
 class SsOdometer extends StatefulWidget {
-  const SsOdometer(this.text, {super.key, this.size = AppType.statNum, this.color, this.weight = FontWeight.w500});
+  const SsOdometer(
+    this.text, {
+    super.key,
+    this.size = AppType.statNum,
+    this.color,
+    this.weight = FontWeight.w500,
+    this.rollIn = false,
+  });
 
   final String text;
   final double size;
   final Color? color;
   final FontWeight weight;
+
+  /// Rola de 0 até o valor quando entra na tela (não só ao mudar).
+  final bool rollIn;
 
   /// Valor do texto ("R$ -1.234,56" → -1234.56), para saber o sentido da rolagem.
   static double? parse(String text) => double.tryParse(text.replaceAll(RegExp(r'[^\d,-]'), '').replaceAll(',', '.'));
@@ -26,19 +42,38 @@ class SsOdometer extends StatefulWidget {
 
 class _SsOdometerState extends State<SsOdometer> {
   bool _up = true;
-  late int _lenAntes = _numero(widget.text);
+  late int _lenAntes = _tamanho(widget.text);
+
+  /// Com rollIn: já trocou os zeros pelo valor (entrou na tela).
+  bool _rolou = false;
 
   @override
   void didUpdateWidget(SsOdometer old) {
     super.didUpdateWidget(old);
     if (old.text == widget.text) return;
-    _lenAntes = _numero(old.text);
+    _lenAntes = _tamanho(old.text);
     _up = (SsOdometer.parse(widget.text) ?? 0) >= (SsOdometer.parse(old.text) ?? 0);
   }
 
   @override
   Widget build(BuildContext context) {
-    final (main, cents) = SsAmount.split(widget.text);
+    if (!widget.rollIn || reduceMotion(context)) return _numero(context, widget.text);
+    // Antes de aparecer, todo dígito é 0; no quadro seguinte ao que aparece,
+    // cada coluna gira até o dela.
+    return SsInView.visible(
+      builder: (context, visible) {
+        if (visible && !_rolou) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_rolou) setState(() => _rolou = true);
+          });
+        }
+        return _numero(context, _rolou ? widget.text : widget.text.replaceAll(RegExp(r'\d'), '0'));
+      },
+    );
+  }
+
+  Widget _numero(BuildContext context, String text) {
+    final (main, cents) = SsAmount.split(text);
     final s = widget.size;
     final base = AppTheme.number(
       context,
@@ -53,7 +88,7 @@ class _SsOdometerState extends State<SsOdometer> {
       for (final ch in cents.split('')) (ch, centsStyle),
     ];
     final n = chars.length;
-    final pre = n - _numero(widget.text);
+    final pre = n - _tamanho(text);
     final animate = !reduceMotion(context);
     return Semantics(
       label: widget.text,
@@ -72,6 +107,7 @@ class _SsOdometerState extends State<SsOdometer> {
                 char: chars[i].$1,
                 style: chars[i].$2,
                 up: _up,
+                ordem: i < pre ? 0 : n - 1 - i,
                 fadeIn: animate && i >= pre && n - 1 - i >= _lenAntes,
                 animate: animate,
               ),
@@ -83,7 +119,7 @@ class _SsOdometerState extends State<SsOdometer> {
 }
 
 /// Tamanho da parte numérica: tudo depois do prefixo sem dígito ("R$ ").
-int _numero(String text) => text.length - RegExp(r'^[^\d-]*').firstMatch(text)!.end;
+int _tamanho(String text) => text.length - RegExp(r'^[^\d-]*').firstMatch(text)!.end;
 
 int? _digito(String ch) {
   final u = ch.codeUnitAt(0) - 0x30;
@@ -96,6 +132,7 @@ class _Casa extends StatefulWidget {
     required this.char,
     required this.style,
     required this.up,
+    this.ordem = 0,
     required this.fadeIn,
     required this.animate,
   });
@@ -103,6 +140,9 @@ class _Casa extends StatefulWidget {
   final String char;
   final TextStyle style;
   final bool up;
+
+  /// Casa contada da direita (0 = a última): atrasa o giro em cascata.
+  final int ordem;
   final bool fadeIn;
   final bool animate;
 
@@ -111,7 +151,9 @@ class _Casa extends StatefulWidget {
 }
 
 class _CasaState extends State<_Casa> with TickerProviderStateMixin {
-  late final _roll = AnimationController(vsync: this, duration: const Duration(milliseconds: 560), value: 1);
+  late final _roll = AnimationController(vsync: this, duration: _giro, value: 1);
+  static const _giro = Duration(milliseconds: 560);
+  Curve _curva = SsMotion.bounce;
   late final _fade = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 280),
@@ -121,7 +163,7 @@ class _CasaState extends State<_Casa> with TickerProviderStateMixin {
   late double _to = _from;
 
   /// Posição na coluna (contínua; 10 é o 0 de novo).
-  double get _pos => _from + (_to - _from) * Curves.easeOutBack.transform(_roll.value);
+  double get _pos => _from + (_to - _from) * _curva.transform(_roll.value);
 
   @override
   void initState() {
@@ -145,6 +187,11 @@ class _CasaState extends State<_Casa> with TickerProviderStateMixin {
     final passo = widget.up ? (d - alvo) % 10 : -((alvo - d) % 10);
     _from = atual;
     _to = (alvo + passo).toDouble();
+    // Mais casas a girar, um pouco mais de tempo; a cascata atrasa as da esquerda.
+    final atraso = math.min(widget.ordem, 8) * 35;
+    final giro = _giro.inMilliseconds + 18 * passo.abs();
+    _roll.duration = Duration(milliseconds: atraso + giro);
+    _curva = Interval(atraso / (atraso + giro), 1, curve: SsMotion.bounce);
     _roll.forward(from: 0);
   }
 

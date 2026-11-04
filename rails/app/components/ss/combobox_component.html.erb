@@ -1,0 +1,15 @@
+<%= tag.div(class: classes("ss-field", "ss-combobox"), **root_attrs(data: data_attrs)) do %>
+  <label for="<%= id %>"><%= label %></label>
+  <div class="ss-combobox-box">
+    <input id="<%= id %>" type="text" class="ss-input" role="combobox" autocomplete="off" spellcheck="false"
+           aria-autocomplete="list" aria-expanded="false" aria-controls="<%= id %>-list"<% if help %> aria-describedby="<%= id %>-help"<% end %>
+           placeholder="<%= placeholder %>" value="<%= text %>"
+           data-ss-combobox-target="input"
+           data-action="input->ss-combobox#search keydown->ss-combobox#key focus->ss-combobox#search blur->ss-combobox#close">
+    <ul id="<%= id %>-list" role="listbox" class="ss-combobox-list" aria-label="<%= label %>" hidden data-ss-combobox-target="list"
+        data-action="mousedown->ss-combobox#hold click->ss-combobox#pick"></ul>
+  </div>
+  <% if help %><small class="ss-field-help" id="<%= id %>-help"><%= help %></small><% end %>
+  <input type="hidden" name="<%= name %>" value="<%= value %>" data-ss-combobox-target="hidden">
+  <% if create_name %><input type="hidden" name="<%= create_name %>" value="" data-ss-combobox-target="created"><% end %>
+<% end %>

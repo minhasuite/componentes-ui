@@ -1,0 +1,31 @@
+<%# titulo: Produtos, depoimentos e planos | grupo: Cards | ordem: 20 %>
+<%= demo "Ss::ProductCardComponent", "Imagem vazando acima do card, preço com ss_amount e o botão de ação. Grade responsiva em .ss-product-grid.",
+      uso: 'render Ss::ProductCardComponent.new(name:, text:, price:, image_url:, url:, action: { label: "Adicionar", url:, method: :post })' do %>
+  <div class="ss-product-grid">
+    <% [["Costela-de-adão", "Meia-sombra, rega 2x por semana", "R$ 89,90", "Novo"], ["Espada-de-são-jorge", "Pega sol e esquece", "R$ 54,00", nil],
+        ["Pimenteira", "Sol pleno, dá fruto o ano todo", "R$ 32,50", nil], ["Samambaia", "Gosta de umidade e sombra", "R$ 47,90", nil]].each_with_index do |(n, t, p, b), i| %>
+      <%= render Ss::ProductCardComponent.new(name: n, text: t, price: p, badge: b, url: "#", action: { label: "Adicionar ao carrinho", url: "#" }) do |c| %>
+        <% c.with_image { render("vitrine/planta_b", variante: i) } %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::ReviewCardComponent", "Depoimento com estrelas (aceita meia), avatar e papel.", uso: 'render Ss::ReviewCardComponent.new(name:, role:, rating: 4.5, text:, date:)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem">
+    <%= render Ss::ReviewCardComponent.new(name: "Carla Mendes", role: "Padaria Central", date: "out/2026", rating: 5, text: "Larguei a planilha. O fechamento do caixa que levava uma hora agora leva cinco minutos.") %>
+    <%= render Ss::ReviewCardComponent.new(name: "Bruno Lima", role: "Vendedor externo", rating: 4.5, text: "O pedido sai na hora pelo app, até sem internet na estrada. Só sinto falta de mais relatórios.") %>
+    <%= render Ss::ReviewCardComponent.new(name: "Duda Reis", role: "Uso pessoal", rating: 4, text: "A IA leu minha fatura do cartão inteira e categorizou quase tudo certo.") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::PricingTableComponent", "Planos lado a lado com mensal/anual (rádio + :has, sem JS), destaque com .ss-card-grad, recursos e CTA. Para /assinar/<produto>.",
+      uso: 'render Ss::PricingTableComponent.new(yearly_badge: "−17%", plans: [{ name:, monthly:, yearly:, features: [...], cta: { label:, url:, yearly_url: }, featured: true }])' do %>
+  <%= render Ss::PricingTableComponent.new(yearly_badge: "−17%", plans: [
+        { name: "Grátis", description: "Para começar a organizar.", monthly: "R$ 0,00", yearly: "R$ 0,00", features: ["50 lançamentos por mês", "1 usuário", "Relatórios básicos"],
+          cta: { label: "Continuar grátis", url: "#" } },
+        { name: "Pro", description: "Para quem quer a IA trabalhando.", monthly: "R$ 19,90", yearly: "R$ 199,00", yearly_note: "2 meses grátis", featured: true,
+          features: ["Lançamentos ilimitados", "Pergunte à IA", "Leitura de fatura e cupom", "3 usuários"], cta: { label: "Assinar o Pro", url: "#mensal", yearly_url: "#anual" } },
+        { name: "Família", description: "A casa toda no mesmo lugar.", monthly: "R$ 29,90", yearly: "R$ 299,00", yearly_note: "2 meses grátis",
+          features: ["Tudo do Pro", "6 usuários", "Metas compartilhadas"], cta: { label: "Assinar o Família", url: "#mensal", yearly_url: "#anual" } }]) %>
+<% end %>

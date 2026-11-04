@@ -19,6 +19,19 @@ class SsNavItem {
   final String label;
 }
 
+/// Ação central elevada da [SsNavBar] (ex.: "Novo lançamento"): botão
+/// redondo na cor da marca, com sombra na própria cor, encaixado num recorte
+/// fixo no meio da barra. Não é uma aba: só chama [onTap].
+class SsNavCenter {
+  const SsNavCenter(this.icon, {required this.onTap, required this.label});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  /// Para o leitor de tela e a dica (o botão não mostra texto).
+  final String label;
+}
+
 /// Barra de abas com o item atual num círculo encaixado num recorte da barra.
 /// Ao trocar de aba, o círculo pula em arco até o item novo: achata antes de
 /// sair, estica no ar e achata de novo ao pousar; o recorte fica raso enquanto
@@ -27,13 +40,20 @@ class SsNavItem {
 /// Use no `bottomNavigationBar`. Sem `extendBody` o recorte mostra o fundo da
 /// tela (o comum); com `Scaffold(extendBody: true)` o conteúdo passa por trás,
 /// mas as listas das abas precisam reservar a altura da barra.
+///
+/// Com [center], um botão de ação fica no meio (entre as abas da metade
+/// esquerda e as da direita), num recorte fixo; o círculo da aba atual passa
+/// por cima dele ao pular de um lado para o outro. Use com 2 ou 4 abas.
 class SsNavBar extends StatefulWidget {
-  const SsNavBar({super.key, required this.items, required this.currentIndex, required this.onTap})
+  const SsNavBar({super.key, required this.items, required this.currentIndex, required this.onTap, this.center})
     : assert(items.length >= 2);
 
   final List<SsNavItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
+
+  /// Ação central elevada (opcional).
+  final SsNavCenter? center;
 
   /// Altura da barra (sem o círculo que sobe e sem a área segura).
   static const barHeight = 64.0;
@@ -43,6 +63,7 @@ class SsNavBar extends StatefulWidget {
 
   static const _circle = 52.0;
   static const _gap = 6.0;
+  static const _centerSize = 56.0;
 
   @override
   State<SsNavBar> createState() => _SsNavBarState();
@@ -106,16 +127,26 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
     final c = SsColors.of(context);
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     final n = widget.items.length;
+    final center = widget.center;
+    // Com a ação central, há uma vaga a mais no meio: a aba i vai para a vaga
+    // _slotOf(i) (contínuo, para o círculo atravessar o meio no pulo).
+    final half = n ~/ 2;
+    double slotOf(double x) => center == null ? x : x + (x - (half - 1)).clamp(0.0, 1.0);
+    final slots = center == null ? n : n + 1;
     return SizedBox(
       height: SsNavBar.rise + SsNavBar.barHeight + bottom,
       child: LayoutBuilder(
         builder: (context, box) {
-          final slot = box.maxWidth / n;
+          final slot = box.maxWidth / slots;
+          final ccx = slot * (half + .5);
           return AnimatedBuilder(
             animation: _c,
             builder: (context, _) {
               final p = _pose(widget.currentIndex);
-              final cx = slot * (p.x + .5);
+              final cx = slot * (slotOf(p.x) + .5);
+              // O recorte que anda some perto do recorte fixo do meio (não se cruzam).
+              const r = SsNavBar._circle / 2 + SsNavBar._gap;
+              final depth = center == null ? p.notch : math.min(p.notch, (((cx - ccx).abs() - r) / r).clamp(0.0, 1.0));
               // O ícone novo aparece crescendo a partir do meio do voo.
               final iconIn = Curves.easeOutBack.transform(((_c.value - .4) / .45).clamp(0.0, 1.0));
               final current = widget.items[widget.currentIndex];
@@ -124,7 +155,14 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                 children: [
                   Positioned.fill(
                     child: CustomPaint(
-                      painter: _BarPainter(color: c.surface, line: c.line, cx: cx, dark: c.isDark, depth: p.notch),
+                      painter: _BarPainter(
+                        color: c.surface,
+                        line: c.line,
+                        cx: cx,
+                        dark: c.isDark,
+                        depth: depth,
+                        centerX: center == null ? null : ccx,
+                      ),
                     ),
                   ),
                   Positioned(
@@ -134,7 +172,8 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                     height: SsNavBar.barHeight,
                     child: Row(
                       children: [
-                        for (var i = 0; i < n; i++)
+                        for (var i = 0; i < n; i++) ...[
+                          if (center != null && i == half) const Spacer(),
                           Expanded(
                             child: _Tab(
                               item: widget.items[i],
@@ -147,9 +186,16 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                               },
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ),
+                  if (center != null)
+                    Positioned(
+                      left: ccx - SsNavBar._centerSize / 2,
+                      top: SsNavBar.rise + _BarPainter.dip - SsNavBar._centerSize / 2 - 4,
+                      child: _CenterButton(center),
+                    ),
                   Positioned(
                     left: cx - SsNavBar._circle / 2,
                     top: SsNavBar.rise + _BarPainter.dip - SsNavBar._circle / 2 - p.lift,
@@ -181,6 +227,39 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _CenterButton extends StatelessWidget {
+  const _CenterButton(this.center);
+  final SsNavCenter center;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Semantics(
+      button: true,
+      label: center.label,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: center.label,
+        child: SsPressable(
+          onTap: center.onTap,
+          scale: .92,
+          child: Container(
+            key: const ValueKey('ss-nav-center'),
+            width: SsNavBar._centerSize,
+            height: SsNavBar._centerSize,
+            decoration: BoxDecoration(
+              color: c.accent,
+              borderRadius: BorderRadius.circular(SsNavBar._centerSize / 2),
+              boxShadow: c.tintedShadow(c.accent),
+            ),
+            child: Icon(center.icon, color: AppColors.onDark, size: 28),
+          ),
+        ),
       ),
     );
   }
@@ -237,7 +316,17 @@ class _Tab extends StatelessWidget {
 
 /// A barra com o recorte em U centrado em [cx].
 class _BarPainter extends CustomPainter {
-  _BarPainter({required this.color, required this.line, required this.cx, required this.dark, this.depth = 1});
+  _BarPainter({
+    required this.color,
+    required this.line,
+    required this.cx,
+    required this.dark,
+    this.depth = 1,
+    this.centerX,
+  });
+
+  /// Centro do recorte fixo da ação central (nulo: sem ação central).
+  final double? centerX;
 
   final Color color;
   final Color line;
@@ -256,13 +345,20 @@ class _BarPainter extends CustomPainter {
     const cy = top + dip;
     const r = SsNavBar._circle / 2 + SsNavBar._gap;
     const s = 14.0; // largura do ombro que suaviza a entrada do recorte
-    final edge = Path()
-      ..moveTo(0, top)
-      ..lineTo(cx - r - s, top)
-      ..cubicTo(cx - r - s * .25, top, cx - r, top + dip * .2, cx - r, cy)
-      ..arcToPoint(Offset(cx + r, cy), radius: Radius.elliptical(r, r * depth), clockwise: false)
-      ..cubicTo(cx + r, top + dip * .2, cx + r + s * .25, top, cx + r + s, top)
-      ..lineTo(size.width, top);
+    // Recortes da esquerda para a direita: o que anda e, se houver, o fixo do meio.
+    final notches = <(double, double, double)>[
+      if (depth > .01) (cx, r, depth),
+      if (centerX != null) (centerX!, SsNavBar._centerSize / 2 + SsNavBar._gap, 1.0),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    final edge = Path()..moveTo(0, top);
+    for (final (x, rr, d) in notches) {
+      edge
+        ..lineTo(x - rr - s, top)
+        ..cubicTo(x - rr - s * .25, top, x - rr, top + dip * .2, x - rr, cy)
+        ..arcToPoint(Offset(x + rr, cy), radius: Radius.elliptical(rr, rr * d), clockwise: false)
+        ..cubicTo(x + rr, top + dip * .2, x + rr + s * .25, top, x + rr + s, top);
+    }
+    edge.lineTo(size.width, top);
     final bar = Path.from(edge)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -282,5 +378,6 @@ class _BarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BarPainter old) => old.cx != cx || old.depth != depth || old.color != color || old.dark != dark;
+  bool shouldRepaint(_BarPainter old) =>
+      old.cx != cx || old.depth != depth || old.color != color || old.dark != dark || old.centerX != centerX;
 }

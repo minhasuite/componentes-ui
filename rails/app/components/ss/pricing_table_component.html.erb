@@ -1,0 +1,31 @@
+<%= tag.div(**root_attrs(class: classes("ss-pricing"), data: in_view_data)) do %>
+  <% if any_yearly? %>
+    <div class="ss-seg ss-pricing-toggle" role="radiogroup" aria-label="Período de cobrança">
+      <label><input type="radio" name="<%= uid %>" value="monthly" <%= "checked" unless yearly? %>>Mensal</label>
+      <label><input type="radio" name="<%= uid %>" value="yearly" <%= "checked" if yearly? %>>Anual<% if yearly_badge %> <span class="ss-pricing-save"><%= yearly_badge %></span><% end %></label>
+    </div>
+  <% end %>
+  <div class="ss-pricing-grid" role="list">
+    <% plans.each_with_index do |p, i| %>
+      <article class="ss-card ss-pricing-plan<%= " ss-card-grad is-featured" if p[:featured] %>" role="listitem" style="--i:<%= i %>">
+        <% if p[:featured] %><span class="ss-seal ss-pricing-seal"><%= p[:featured_label] || "Mais escolhido" %></span><% end %>
+        <h3><%= p[:name] %></h3>
+        <% if p[:description] %><p class="ss-pricing-desc"><%= p[:description] %></p><% end %>
+        <div class="ss-pricing-price is-monthly"><%= ss_amount(p[:monthly]) %><small>/mês</small></div>
+        <% if p[:yearly] %>
+          <div class="ss-pricing-price is-yearly"><%= ss_amount(p[:yearly]) %><small>/ano</small></div>
+          <% if p[:yearly_note] %><p class="ss-pricing-note is-yearly"><%= p[:yearly_note] %></p><% end %>
+        <% end %>
+        <% if p[:monthly_note] %><p class="ss-pricing-note is-monthly"><%= p[:monthly_note] %></p><% end %>
+        <ul class="ss-pricing-features">
+          <% p[:features].to_a.each do |f| %><li><%= check %><%= f %></li><% end %>
+        </ul>
+        <% if (cta = p[:cta]) %>
+          <% css = p[:featured] ? "ss-btn ss-btn-primary" : "ss-btn ss-btn-outline" %>
+          <%= link_to cta[:label], cta[:url], class: "#{css} ss-pricing-cta#{" is-monthly" if cta[:yearly_url]}" %>
+          <% if cta[:yearly_url] %><%= link_to cta[:label], cta[:yearly_url], class: "#{css} ss-pricing-cta is-yearly" %><% end %>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+<% end %>

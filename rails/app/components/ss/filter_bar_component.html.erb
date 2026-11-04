@@ -1,0 +1,38 @@
+<%= tag.div(**root_attrs(class: classes("ss-filterbar"))) do %>
+  <% if views.any? %>
+    <nav class="ss-fb-views" aria-label="Visões salvas" data-controller="ss-indicator" data-ss-indicator-kind-value="line"
+         data-ss-indicator-selector-value=".ss-fb-view" data-ss-indicator-key-value="fb-views">
+      <% views.each do |v| %>
+        <%= link_to view_href(v), class: "ss-fb-view", "aria-current": (view_current?(v) ? "page" : nil) do %><%= v[:label] %><% if v[:count] %><small class="num"><%= v[:count] %></small><% end %><% end %>
+      <% end %>
+    </nav>
+  <% end %>
+  <div class="ss-fb-row">
+    <% if search? %>
+      <form class="ss-search ss-fb-search" method="get" action="<%= url %>" role="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+        <input type="search" name="<%= @search %>" value="<%= query %>" placeholder="<%= placeholder %>" aria-label="<%= placeholder %>">
+        <% hidden_params.each do |k, v| %><input type="hidden" name="<%= k %>" value="<%= v %>"><% end %>
+      </form>
+    <% end %>
+    <ul class="ss-fb-chips" aria-label="Filtros ativos">
+      <% active.each do |f| %>
+        <li class="ss-fb-chip"><span><%= f[:label] %>: <b><%= f[:value_label] %></b></span><a href="<%= remove_href(f[:param]) %>" aria-label="Tirar o filtro <%= f[:label] %>: <%= f[:value_label] %>">×</a></li>
+      <% end %>
+    </ul>
+    <% if filters.any? %>
+      <details class="ss-menu ss-fb-add">
+        <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Filtro</summary>
+        <div>
+          <% filters.each do |f| %>
+            <p class="ss-fb-group"><%= f[:label] %></p>
+            <% f[:options].each do |(label, value)| %>
+              <%= link_to label, add_href(f[:param], value), "aria-current": (current[f[:param].to_s].to_s == value.to_s ? "true" : nil) %>
+            <% end %>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+    <% if active.any? || query.present? %><a class="ss-fb-clear" href="<%= clear_href %>">Limpar filtros</a><% end %>
+  </div>
+<% end %>

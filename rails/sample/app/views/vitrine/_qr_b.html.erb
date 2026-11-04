@@ -1,0 +1,15 @@
+<%# QR ilustrativo (padrão determinístico, não é um código de verdade): o app manda o SVG pronto. %>
+<% n = 25; seed = (local_assigns[:seed] || 7).to_i %>
+<svg viewBox="0 0 <%= n %> <%= n %>" shape-rendering="crispEdges" role="img" aria-label="QR Code ilustrativo"><rect width="<%= n %>" height="<%= n %>" fill="#fff"/>
+<% finder = ->(x, y) { [x.between?(0, 6) && y.between?(0, 6), x.between?(n - 7, n - 1) && y.between?(0, 6), x.between?(0, 6) && y.between?(n - 7, n - 1)].any? } %>
+<% n.times do |y| %><% n.times do |x| %><%
+  on = if finder.(x, y)
+    fx = x >= n - 7 ? x - (n - 7) : x; fy = y >= n - 7 ? y - (n - 7) : y
+    [0, 6].include?(fx) || [0, 6].include?(fy) || (fx.between?(2, 4) && fy.between?(2, 4))
+  elsif (x == 7 || y == 7 || x == n - 8 || y == n - 8) && (y < 8 || x < 8 || (x > n - 9 && y < 8) || (y > n - 9 && x < 8))
+    false
+  else
+    ((x * 31 + y * 17 + seed * 13 + x * y * 7) % 11) < 5
+  end
+%><% if on %><rect x="<%= x %>" y="<%= y %>" width="1" height="1" fill="#14121f"/><% end %><% end %><% end %>
+</svg>

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 
 /// Um passo do [SsTimeline]. [done] = já passou (nó cheio), [current] = é
 /// agora (anel que pulsa uma vez); nenhum dos dois = futuro (tracejado).
@@ -33,49 +34,64 @@ class SsTimelineItem {
 }
 
 /// Linha do tempo vertical: nós ligados por uma linha, cheia no que passou e
-/// tracejada no que vem. Os itens entram em cascata ao aparecer.
+/// tracejada no que vem. Quando entra na tela, os itens chegam em cascata
+/// (70 ms entre eles, subindo com mola) e o fio de cada um se desenha para
+/// baixo até o próximo.
 class SsTimeline extends StatelessWidget {
   const SsTimeline({super.key, required this.items});
 
   final List<SsTimelineItem> items;
 
+  // Cada item: 70 ms depois do anterior, 460 ms de mola; o fio começa 120 ms
+  // depois do item e leva 300 ms.
+  static const _passo = 70, _item = 460, _fioIni = 120, _fioDur = 300;
+
   @override
   Widget build(BuildContext context) {
     final n = items.length;
-    final total = 320 + 60 * (n > 1 ? n - 1 : 0);
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: reduceMotion(context) ? Duration.zero : Duration(milliseconds: total),
-      builder: (context, t, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < n; i++)
-            Builder(
-              builder: (context) {
-                // Cada item anda 320 ms, 60 ms depois do anterior.
-                final k = Curves.easeOutCubic.transform(((t * total - 60 * i) / 320).clamp(0.0, 1.0));
-                return Opacity(
-                  opacity: k,
-                  child: Transform.translate(
-                    offset: Offset(0, 12 * (1 - k)),
-                    child: _Linha(items[i], last: i == n - 1, index: i, count: n),
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
+    final total = _passo * (n > 1 ? n - 1 : 0) + _item;
+    return SsInView(
+      duration: Duration(milliseconds: total),
+      curve: Curves.linear,
+      builder: (context, anim, _) {
+        final ms = anim.value * total;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < n; i++)
+              Builder(
+                builder: (context) {
+                  final local = ((ms - _passo * i) / _item).clamp(0.0, 1.0);
+                  final k = SsMotion.bounce.transform(local);
+                  final fio = anim.value >= 1
+                      ? 1.0
+                      : Curves.easeInOutCubic.transform(((ms - _passo * i - _fioIni) / _fioDur).clamp(0.0, 1.0));
+                  return Opacity(
+                    opacity: (local * 2).clamp(0.0, 1.0),
+                    child: Transform.translate(
+                      offset: Offset(0, 14 * (1 - k)),
+                      child: _Linha(items[i], last: i == n - 1, index: i, count: n, fio: fio),
+                    ),
+                  );
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 }
 
 class _Linha extends StatelessWidget {
-  const _Linha(this.item, {required this.last, required this.index, required this.count});
+  const _Linha(this.item, {required this.last, required this.index, required this.count, this.fio = 1});
 
   final SsTimelineItem item;
   final bool last;
   final int index;
   final int count;
+
+  /// Quanto do fio até o próximo já se desenhou (0 a 1, de cima para baixo).
+  final double fio;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +116,9 @@ class _Linha extends StatelessWidget {
                   _No(item, cor),
                   if (!last)
                     Expanded(
-                      child: CustomPaint(painter: _Fio(item.done ? cor : c.muted2, tracejado: !item.done)),
+                      child: CustomPaint(
+                        painter: _Fio(item.done ? cor : c.muted2, tracejado: !item.done, ate: fio),
+                      ),
                     ),
                 ],
               ),
@@ -184,13 +202,13 @@ class _No extends StatelessWidget {
             ),
     );
     if (!item.current) return SizedBox(height: 28, child: Center(child: no));
-    // Anel que pulsa UMA vez ao aparecer.
+    // Anel que pulsa UMA vez quando entra na tela.
     return SizedBox(
       height: 28,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 900),
-        curve: Curves.easeOutCubic,
+      child: SsTweenInView(
+        end: 1,
+        duration: const Duration(milliseconds: 900),
+        delay: const Duration(milliseconds: 200),
         builder: (_, t, child) => Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
@@ -215,11 +233,14 @@ class _No extends StatelessWidget {
 
 /// Fio vertical (ou círculo, no nó futuro), cheio ou tracejado.
 class _Fio extends CustomPainter {
-  _Fio(this.cor, {required this.tracejado, this.circulo = false});
+  _Fio(this.cor, {required this.tracejado, this.circulo = false, this.ate = 1});
 
   final Color cor;
   final bool tracejado;
   final bool circulo;
+
+  /// Fração desenhada, de cima para baixo.
+  final double ate;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -236,15 +257,17 @@ class _Fio extends CustomPainter {
       return;
     }
     final x = size.width / 2;
+    final h = size.height * ate.clamp(0.0, 1.0);
+    if (h <= 0) return;
     if (!tracejado) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
+      canvas.drawLine(Offset(x, 0), Offset(x, h), p);
       return;
     }
-    for (var y = 3.0; y < size.height; y += 8) {
-      canvas.drawLine(Offset(x, y), Offset(x, math.min(y + 3, size.height)), p);
+    for (var y = 3.0; y < h; y += 8) {
+      canvas.drawLine(Offset(x, y), Offset(x, math.min(y + 3, h)), p);
     }
   }
 
   @override
-  bool shouldRepaint(_Fio old) => old.cor != cor || old.tracejado != tracejado;
+  bool shouldRepaint(_Fio old) => old.cor != cor || old.tracejado != tracejado || old.ate != ate;
 }

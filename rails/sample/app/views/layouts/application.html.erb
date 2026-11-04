@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Lista Clara · vitrine" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="view-transition" content="same-origin">
+    <%= csrf_meta_tags %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <%# Só o tailwind.css (o builds/tailwind/componentes_ui.css é fonte do build, não vai ao navegador). %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body>
+    <%# A moldura da vitrine é o próprio Ss::AppShellComponent, com o menu gerado das páginas. %>
+    <% nav = paginas.group_by { _1[:grupo] }.map do |grupo, ps|
+         { title: grupo, items: ps.map { |p| { label: p[:titulo], href: vitrine_path(p[:slug]), current: p[:slug] == pagina_atual } } }
+       end %>
+    <%= render Ss::AppShellComponent.new(brand: "Lista Clara", nav: nav, search_label: "Buscar componente…") do |s| %>
+      <% s.with_side_footer do %>
+        <p style="color:color-mix(in srgb,var(--side-ink) 55%,transparent);font-size:12px;padding:0 6px" class="ss-shell-label">componentes_ui v<%= ComponentesUi::VERSION %> · Rails</p>
+      <% end %>
+      <% s.with_top do %><%= render "vitrine/tema" %><% end %>
+      <div class="vt-top">
+        <h1><%= paginas.find { _1[:slug] == pagina_atual }&.dig(:titulo) %></h1>
+      </div>
+      <%= yield %>
+      <dialog class="ss-dialog ss-command" aria-label="Buscar componente">
+        <input type="search" placeholder="Buscar componente…" aria-label="Buscar componente"
+               oninput="const q=this.value.toLowerCase();this.nextElementSibling.querySelectorAll('a').forEach(a=>a.hidden=!a.textContent.toLowerCase().includes(q))">
+        <div class="ss-command-list">
+          <% paginas.each do |p| %>
+            <%= link_to vitrine_path(p[:slug]), class: "ss-command-item" do %><span><%= p[:titulo] %></span><small><%= p[:grupo] %></small><% end %>
+          <% end %>
+        </div>
+      </dialog>
+    <% end %>
+  </body>
+</html>

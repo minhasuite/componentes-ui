@@ -32,8 +32,8 @@ module ComponentesUi
         d << " C#{fmt(c1)} #{fmt(c2)} #{fmt(p2)}"
       end
       area_path = area ? %(<path class="area" d="#{d} L#{w},#{height} L0,#{height} Z"/>) : ""
-      %(<svg class="ss-spark" viewBox="0 0 #{w.to_i} #{height}" preserveAspectRatio="none" aria-hidden="true">) +
-        %(#{area_path}<path class="line" d="#{d}"/></svg>).html_safe
+      (%(<svg class="ss-spark" viewBox="0 0 #{w.to_i} #{height}" preserveAspectRatio="none" aria-hidden="true">) +
+        %(#{area_path}<path class="line" d="#{d}"/></svg>)).html_safe
     end
 
     # Anéis concêntricos (até 3), valores de 0 a 1; center = texto do meio.

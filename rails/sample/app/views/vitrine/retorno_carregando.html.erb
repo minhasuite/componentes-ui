@@ -1,0 +1,33 @@
+<%# titulo: Carregando e vazio | grupo: Retorno | ordem: 20 %>
+<% if params[:lazy] %>
+  <% sleep 0.8 %>
+  <turbo-frame id="ultimos-demo">
+    <div class="ss-card ss-card-pad">
+      <% [["Mercado Bom Preço", "R$ 1.250,00"], ["Padaria Central", "R$ 318,40"], ["Café Aroma", "R$ 96,00"]].each do |(n, v)| %>
+        <div class="ss-item"><span class="ss-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l3 3v15H6z"/></svg></span><span class="ss-item-main"><b><%= n %></b><small>hoje</small></span><span class="ss-item-value"><%= v %></span></div>
+      <% end %>
+    </div>
+  </turbo-frame>
+<% else %>
+<%= demo "Ss::SkeletonComponent", "Blocos com brilho que passa, por forma. Com frame: vira o recheio de um <turbo-frame loading=\"lazy\"> (abaixo, carrega de verdade).",
+      uso: 'render Ss::SkeletonComponent.new(shape: :table)  ·  Ss::SkeletonComponent.new(shape: :list, frame: { id: "ultimos", src: ultimos_path })' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1rem;align-items:start">
+    <div><p class="ss-kicker" style="margin-bottom:.5rem">line</p><%= render Ss::SkeletonComponent.new(shape: :line, lines: 4) %></div>
+    <div><p class="ss-kicker" style="margin-bottom:.5rem">card</p><%= render Ss::SkeletonComponent.new(shape: :card, lines: 2) %></div>
+    <div><p class="ss-kicker" style="margin-bottom:.5rem">list</p><%= render Ss::SkeletonComponent.new(shape: :list, rows: 3) %></div>
+  </div>
+  <p class="ss-kicker" style="margin:1rem 0 .5rem">table</p>
+  <%= render Ss::SkeletonComponent.new(shape: :table, rows: 3) %>
+  <p class="ss-kicker" style="margin:1rem 0 .5rem">turbo-frame lazy (0,8 s)</p>
+  <%= render Ss::SkeletonComponent.new(shape: :list, rows: 3, frame: { id: "ultimos-demo", src: vitrine_path("retorno_carregando", lazy: 1) }) %>
+<% end %>
+
+<%= demo "Ss::EmptyStateComponent", "Ilustração em linha (muda com a marca e o tema), título, texto e ações. Variantes: nada ainda, sem resultado da busca, erro.",
+      uso: 'render Ss::EmptyStateComponent.new(variant: :busca, title:, text:, primary: { label:, url: }, secondary: { … })' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem">
+    <div class="ss-card"><%= render Ss::EmptyStateComponent.new(variant: :nada, title: "Nenhum pedido ainda", text: "Quando você vender, os pedidos aparecem aqui.", primary: { label: "Novo pedido", url: "#" }, secondary: { label: "Importar", url: "#" }) %></div>
+    <div class="ss-card"><%= render Ss::EmptyStateComponent.new(variant: :busca, title: "Nada com “paçoca”", text: "Confira a grafia ou tire alguns filtros.", primary: { label: "Limpar busca", url: "#" }) %></div>
+    <div class="ss-card"><%= render Ss::EmptyStateComponent.new(variant: :erro, title: "Não deu para carregar", text: "O servidor não respondeu. Seus dados estão salvos.", primary: { label: "Tentar de novo", url: "#" }) %></div>
+  </div>
+<% end %>
+<% end %>

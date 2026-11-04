@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'format.dart';
-import 'motion.dart';
+import 'motion_view.dart';
 
 /// Uma série do [SsLineChart]: os valores (um por rótulo), o nome que vai no
 /// balão e a cor (sem cor: a paleta da suíte, começando na marca).
@@ -21,7 +21,7 @@ class SsSeries {
 /// valor em DM Mono e poucos rótulos embaixo. Arrastar o dedo mostra a linha
 /// vertical, os pontos e um balão com o rótulo e os valores (tique de haptic a
 /// cada ponto); soltou, some. [target] desenha uma linha tracejada de alvo
-/// com [targetLabel]. Desenha-se da esquerda para a direita ao aparecer.
+/// com [targetLabel]. Desenha-se da esquerda para a direita quando entra na tela.
 ///
 /// `SsLineChart(series: [SsSeries(precos, name: 'Preço')], labels: datas, format: (v) => money(v.round()))`
 class SsLineChart extends StatefulWidget {
@@ -112,10 +112,10 @@ class _SsLineChartState extends State<SsLineChart> {
                 clipBehavior: Clip.none,
                 children: [
                   Positioned.fill(
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0, end: 1),
-                      duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 800),
-                      curve: Curves.easeOutCubic,
+                    // Desenha-se quando entra na tela (não ao montar, fora dela).
+                    child: SsTweenInView(
+                      end: 1,
+                      duration: const Duration(milliseconds: 800),
                       builder: (_, t, _) => CustomPaint(
                         painter: _LinePainter(
                           series: series,

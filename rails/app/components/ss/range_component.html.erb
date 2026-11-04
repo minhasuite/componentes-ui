@@ -1,0 +1,15 @@
+<%= tag.div(class: classes("ss-field", "ss-range-field"), **root_attrs(data: { controller: "ss-range", ss_range_format_value: fmt })) do %>
+  <div class="ss-range-head">
+    <label for="<%= id %>"><%= label %></label>
+    <output for="<%= id %>" class="ss-range-out num" data-ss-range-target="out"><%= text %></output>
+  </div>
+  <input type="range" id="<%= id %>" name="<%= name %>" class="ss-range" min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= value %>"
+         style="--p:<%= pct %>%" aria-valuetext="<%= text %>" <% if ticks %>list="<%= id %>-ticks"<% end %>
+         data-ss-range-target="input" data-action="input->ss-range#update">
+  <% if ticks %>
+    <datalist id="<%= id %>-ticks"><% ticks.each do |t| %><option value="<%= t %>"></option><% end %></datalist>
+    <div class="ss-range-ticks" aria-hidden="true">
+      <% ticks.each do |t| %><span class="num" style="left:<%= pct(t) %>%"><%= text(t) %></span><% end %>
+    </div>
+  <% end %>
+<% end %>

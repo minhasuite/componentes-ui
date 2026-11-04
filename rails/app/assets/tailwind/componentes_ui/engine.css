@@ -1,6 +1,15 @@
 /* componentes-ui: Lista Clara (design system da suíte) no Tailwind 4: tokens em variável CSS,
    tema escuro por [data-theme="dark"] ou preferência do sistema. Cor solta
    na tela, nunca: só token. */
+/* v0.9: peças novas em arquivos separados (importados aqui). */
+@import "./v09_fundacao.css";
+@import "./v09_layout.css";
+@import "./v09_forms.css";
+@import "./v09_dados.css";
+@import "./v09_feedback.css";
+@import "./v09_cards.css";
+@import "./v09_acabamento.css";
+
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
@@ -88,15 +97,16 @@
 @layer components {
   .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .ss-card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
-  a.ss-card, .ss-card-link { transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease; }
+  a.ss-card, .ss-card-link { transition: transform .45s var(--ss-bounce), box-shadow .25s ease; }
   a.ss-card:hover, .ss-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
   .ss-card-pad { padding: 1.25rem; }
 
   .ss-btn { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 2.5rem;
             padding: 0 1rem; border-radius: var(--r-field); font-weight: 600; font-size: .875rem; border: 0;
             cursor: pointer; text-decoration: none; white-space: nowrap; position: relative; overflow: hidden;
-            transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
-  .ss-btn:active:not(:disabled) { transform: scale(.97); }
+            transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease, background-color .2s ease, color .2s ease; }
+  /* Toque: aperta em 80 ms e, ao soltar, volta com a mola (a transição da regra base). */
+  .ss-btn:active:not(:disabled) { transform: scale(.96); transition: transform 80ms ease-out, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
   .ss-btn:disabled { opacity: .5; cursor: not-allowed; }
   .ss-btn svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
   /* Primário: o gradiente-assinatura com um brilho que passa no hover. */
@@ -130,6 +140,51 @@
   input[type=file]::file-selector-button:hover { background: var(--accent); color: #fff; }
   .ss-check { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; }
   .ss-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  /* Caixinha e rádio desenhados (também o input do .ss-option-card).
+     Estado (parado no carregamento e sem JS): borda e fundo da marca, ✓ branco, ponto do rádio.
+     Marcar: o fundo inunda do centro como um círculo que cresce (--ss-fill, com a mola) e o ✓
+     se desenha logo depois. Desmarcar: o ✓ se desfaz rápido e o fundo encolhe para o centro.
+     Só quando a pessoa troca (data-ss-anim="on|off", do ss_motion_controller): antecipação
+     (encolhe a .85 e estala a 1.12), estouro de 8 partículas (::before), ondinha no rádio
+     (::after) e o balanço ao desmarcar. Keyframes e @property em v09_forms.css. */
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]) {
+    appearance: none; -webkit-appearance: none; flex: none; display: inline-grid; place-items: center; margin: 0; cursor: pointer;
+    box-sizing: border-box; border: 2px solid color-mix(in srgb, var(--muted) 55%, var(--line)); border-radius: 6px; background: var(--surface);
+    transition: border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  :is(.ss-check, .ss-option-card) > input[type="radio"] { border-radius: 50%; }
+  .ss-check > input:is([type="checkbox"], [type="radio"]) { position: relative; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"] { --ss-fill: -4%; /* abaixo de 0: nem o fio da borda do círculo aparece */
+    background: radial-gradient(circle, var(--accent) var(--ss-fill), var(--surface) calc(var(--ss-fill) + .6px)) border-box;
+    transition: border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .16s ease-in .06s; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked { --ss-fill: 100%;
+    transition: border-color .12s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .46s var(--ss-bounce) 80ms; }
+  /* Partículas: 8 pontinhos num anel de raio 22 px; parados e invisíveis até a troca. */
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]::before {
+    content: ""; position: absolute; inset: -16px; pointer-events: none; opacity: 0; --d: var(--accent); --e: color-mix(in oklab, var(--accent) 55%, #fff);
+    background: radial-gradient(circle at 50% calc(50% - 22px), var(--d) 1.7px, transparent 2.3px), radial-gradient(circle at calc(50% + 15.6px) calc(50% - 15.6px), var(--e) 1.3px, transparent 1.9px),
+                radial-gradient(circle at calc(50% + 22px) 50%, var(--d) 1.7px, transparent 2.3px), radial-gradient(circle at calc(50% + 15.6px) calc(50% + 15.6px), var(--e) 1.3px, transparent 1.9px),
+                radial-gradient(circle at 50% calc(50% + 22px), var(--d) 1.7px, transparent 2.3px), radial-gradient(circle at calc(50% - 15.6px) calc(50% + 15.6px), var(--e) 1.3px, transparent 1.9px),
+                radial-gradient(circle at calc(50% - 22px) 50%, var(--d) 1.7px, transparent 2.3px), radial-gradient(circle at calc(50% - 15.6px) calc(50% - 15.6px), var(--e) 1.3px, transparent 1.9px); }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]::after {
+    content: ""; position: absolute; inset: 1px; background: #fff; mask: var(--ss-i-check) center / contain no-repeat;
+    clip-path: inset(0 100% 0 0); transition: clip-path .1s ease-in; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked::after { clip-path: inset(0 0 0 0); transition: clip-path .24s cubic-bezier(.4, 0, .2, 1) .2s; }
+  /* Rádio: o ponto (::before) e a ondinha (::after). */
+  :is(.ss-check, .ss-option-card) > input[type="radio"]::before {
+    content: ""; position: absolute; inset: 3px; border-radius: inherit; background: var(--accent); scale: 0; transition: scale .14s ease-in; }
+  :is(.ss-check, .ss-option-card) > input[type="radio"]:checked::before { scale: 1; transition: scale var(--ss-dur-indicator) var(--ss-bounce); }
+  :is(.ss-check, .ss-option-card) > input[type="radio"]::after {
+    content: ""; position: absolute; inset: -2px; border-radius: 50%; pointer-events: none; box-shadow: inset 0 0 0 2px var(--accent); opacity: 0; }
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):checked { border-color: var(--accent); }
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):active { scale: .86; transition: scale 80ms ease-out, border-color .2s; }
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):disabled { opacity: .5; cursor: not-allowed; }
+  /* A troca feita pela pessoa (uma vez). */
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"][data-ss-anim="on"] { animation: ss-chk-on .54s ease-out; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"][data-ss-anim="on"]::before { animation: ss-chk-burst .45s cubic-bezier(.2, .7, .3, 1) 80ms; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"][data-ss-anim="off"] { animation: ss-chk-wobble .36s ease-out; }
+  :is(.ss-check, .ss-option-card) > input[type="radio"][data-ss-anim="on"]::before { animation: ss-radio-dot .5s linear; }
+  :is(.ss-check, .ss-option-card) > input[type="radio"][data-ss-anim="on"]::after { animation: ss-ring-ripple .55s ease-out; }
   /* Seção de formulário: título em caixa alta e espaçado. */
   .ss-filters { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding: .85rem 1rem; }
   .ss-filters .ss-label { margin-bottom: .25rem; }
@@ -213,9 +268,12 @@
   .ss-grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .ss-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 999px; font-size: .82rem;
              font-weight: 700; background: var(--surface); color: var(--ink-2); box-shadow: var(--shadow-card); text-decoration: none;
-             white-space: nowrap; border: 1px solid transparent; transition: transform .15s, border-color .15s; }
+             white-space: nowrap; border: 1px solid transparent; transition: transform var(--ss-dur-indicator) var(--ss-bounce), border-color .15s, background-color .2s, color .2s; }
   .ss-chip:hover { border-color: var(--accent); color: var(--accent); }
-  .ss-chip[aria-current="true"] { background: var(--accent); color: #fff; }
+  .ss-chip:active { transform: scale(.94); transition: transform 80ms ease-out, border-color .15s; }
+  .ss-chip[aria-current="true"] { background-image: var(--grad); color: #fff; /* --grad garante 4,5:1 com branco (paletas/gerar.py); --accent no escuro é claro demais */ }
+  /* Marcado com foco (acabou de ser clicado/teclado): estala uma vez. No load não toca. */
+  .ss-chip[aria-current="true"]:focus:not(:active) { animation: ss-press-pop .38s ease-out; }
   .ss-rise { animation: ss-rise .45s cubic-bezier(.2, .8, .2, 1) both; }
 
   /* Card com borda em gradiente (o que pede decisão, o destaque da IA). */
@@ -270,7 +328,22 @@
 /* Busca rápida, confirmação, contador do menu, barra de carregamento, envio em andamento. */
 .ss-dialog { margin: auto; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); color: var(--ink);
              box-shadow: 0 30px 80px -20px rgba(20, 22, 40, .45); padding: 0; }
-.ss-dialog[open] { animation: ss-pop .18s cubic-bezier(.2, .8, .2, 1); }
+/* Diálogo e folha com mola: entram crescendo de .92 (a folha sobe) e saem rápido. Com
+   @starting-style + allow-discrete a saída anima no close(); sem suporte, só a entrada. */
+dialog:is(.ss-dialog, .ss-sheet) { opacity: 0; scale: .92;
+  transition: opacity .16s ease, scale .16s cubic-bezier(.4, 0, 1, 1), translate .16s cubic-bezier(.4, 0, 1, 1), display .16s allow-discrete, overlay .16s allow-discrete; }
+dialog:is(.ss-dialog, .ss-sheet)[open] { opacity: 1; scale: 1; translate: 0 0;
+  transition: opacity .2s ease, scale .5s var(--ss-bounce), translate .5s var(--ss-bounce), display .5s allow-discrete, overlay .5s allow-discrete; }
+@starting-style { dialog:is(.ss-dialog, .ss-sheet)[open] { opacity: 0; scale: .92; } }
+dialog:is(.ss-dialog, .ss-sheet)::backdrop { opacity: 0; transition: opacity .2s ease, display .2s allow-discrete, overlay .2s allow-discrete; }
+dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { opacity: 1; }
+@starting-style { dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { opacity: 0; } }
+@supports not (transition-behavior: allow-discrete) {
+  dialog:is(.ss-dialog, .ss-sheet)[open] { animation: ss-dialog-in .5s var(--ss-bounce); }
+  dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { animation: ss-fade .2s ease; }
+}
+/* O ícone do diálogo pula logo depois do quadro. */
+dialog.ss-dialog[open] .ss-dialog-icon { animation: ss-pop-in .5s var(--ss-bounce) .08s backwards; }
 .ss-dialog::backdrop { background: rgba(14, 13, 22, .45); backdrop-filter: blur(3px); }
 .ss-pal { width: min(36rem, calc(100vw - 2rem)); margin-top: 12vh; }
 .ss-pal-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .65rem .85rem; border-radius: 12px; color: var(--ink); text-decoration: none; font-weight: 600; }
@@ -325,6 +398,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
 @keyframes ss-float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6%, 8%); } }
 @keyframes ss-shrink { from { width: 100%; } to { width: 0; } }
 @keyframes ss-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* Estalo de seleção (chip, caixinha): no `scale`, que não briga com o transform do aperto. */
+@keyframes ss-press-pop { 0% { scale: .94; } 40% { scale: 1.08; } 70% { scale: .98; } 100% { scale: 1; } }
 
 /* ── v0.4: componentes "únicos" (pares dos Ss* do Flutter) ───────────────── */
 :root {
@@ -375,7 +450,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
 
   /* Minigráfico (helper ss_sparkline): linha que se desenha e área que some. */
   .ss-spark { display: block; width: 100%; height: 44px; color: var(--accent); overflow: visible;
-              animation: ss-reveal .7s cubic-bezier(.2, .8, .2, 1) backwards; }
+              animation: ss-reveal .8s cubic-bezier(.45, .05, .25, 1) backwards; }
   .ss-spark .line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .ss-spark .area { fill: currentColor; opacity: .14; }
 
@@ -384,14 +459,14 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-rings svg { width: 100%; height: 100%; transform: rotate(-90deg); }
   .ss-rings circle { fill: none; stroke-width: 11; stroke-linecap: round; }
   .ss-rings .track { opacity: .14; }
-  .ss-rings .fill { stroke-dasharray: calc(var(--v) * 1px) 100px; animation: ss-ring .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+  .ss-rings .fill { stroke-dasharray: calc(var(--v) * 1px) 100px; animation: ss-ring .9s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 110ms); }
   .ss-rings > :not(svg) { position: absolute; font-family: var(--font-mono); font-size: 1.35rem; }
 
   /* Barras em pílula: <div class="ss-bars"><div class="ss-bar is-today" style="--v:.8"><b>13,9 mil</b><i></i><span>dom</span></div>… */
   .ss-bars { display: flex; align-items: flex-end; gap: .25rem; height: 132px; }
   .ss-bar { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .35rem; cursor: default; }
   .ss-bar i { width: 14px; min-height: 6px; height: calc(var(--v) * (100% - 2.6rem)); border-radius: 999px; background: color-mix(in oklab, var(--accent) 22%, transparent);
-              transform-origin: bottom; animation: ss-grow .65s cubic-bezier(.34, 1.56, .64, 1) backwards; transition: background .2s; }
+              transform-origin: bottom; animation: ss-grow .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 45ms); transition: background .2s; }
   .ss-bar b { font: 500 .62rem var(--font-mono); color: var(--ink); opacity: 0; transition: opacity .15s; white-space: nowrap; }
   .ss-bar span { font-size: .62rem; font-weight: 600; color: var(--muted); }
   .ss-bar.is-today i, .ss-bar:hover i { background: var(--accent); }
@@ -407,17 +482,26 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-seg:has(> :nth-child(4)[aria-pressed="true"], > :nth-child(4)[aria-current="true"]) { --i: 3; }
   .ss-seg::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 999px;
                     background: var(--surface); box-shadow: 0 1px 3px rgba(20, 22, 40, .12); transform: translateX(calc(var(--i) * 100%));
-                    transition: transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+                    transition: transform var(--ss-dur-indicator) var(--ss-bounce); }
   [data-theme="dark"] .ss-seg::before { background: color-mix(in oklab, var(--field) 88%, #fff); }
+  /* Com o controller ss-indicator (data-controller="ss-indicator"), a pílula vira um .ss-ind que
+     estica no meio do caminho e aceita itens de larguras diferentes; o ::before sai. */
+  .ss-seg[data-ss-ind]::before { content: none; }
+  .ss-seg > .ss-ind { position: absolute; display: block; z-index: 0; --ind-r: 999px; background: var(--surface); box-shadow: 0 1px 3px rgba(20, 22, 40, .12); }
+  [data-theme="dark"] .ss-seg > .ss-ind { background: color-mix(in oklab, var(--field) 88%, #fff); }
+  .ss-seg > :not(.ss-ind) { z-index: 1; transition: color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-seg > :active:not(.ss-ind) { scale: .94; transition: scale 80ms ease-out, color .2s; }
   .ss-seg > * { position: relative; display: grid; place-items: center; border: 0; background: none; cursor: pointer; text-decoration: none;
-                font-size: .82rem; font-weight: 600; color: var(--muted); transition: color .2s; }
+                font-size: .82rem; font-weight: 600; color: var(--muted); }
   .ss-seg > [aria-pressed="true"], .ss-seg > [aria-current="true"] { color: var(--accent); font-weight: 800; }
 
   /* Filtro em pílula: aria-pressed="true" marca (✓ entra crescendo); <small> = contador. */
   .ss-fchip { display: inline-flex; align-items: center; height: 34px; padding: 0 .8rem; border-radius: 999px; border: 1px solid var(--line);
               background: var(--surface); color: var(--ink-2); font-size: .82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
-              text-decoration: none; transition: background .2s, border-color .2s, transform .12s; }
-  .ss-fchip:active { transform: scale(.97); }
+              text-decoration: none; transition: background .2s, border-color .2s, transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-fchip:active { transform: scale(.94); transition: background .2s, border-color .2s, transform 80ms ease-out; }
+  /* Acabou de marcar (com foco, ao soltar): estala uma vez; no load não toca. */
+  .ss-fchip[aria-pressed="true"]:focus:not(:active) { animation: ss-press-pop .38s ease-out; }
   .ss-fchip::before { content: ""; width: 0; height: 1rem; margin-right: 0; background: currentColor; transition: width .22s cubic-bezier(.34, 1.56, .64, 1), margin .22s;
                       mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
   .ss-fchip[aria-pressed="true"] { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 35%, transparent); color: var(--accent); }
@@ -494,6 +578,11 @@ th.r .ss-sort { flex-direction: row-reverse; }
   --ss-i-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1.2 5h2.4v7h-2.4zm0 9h2.4v2.4h-2.4z'/%3E%3C/svg%3E");
   --ss-i-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --ss-spring: cubic-bezier(.34, 1.56, .64, 1);
+  /* Mola de verdade (passa ~12% e assenta): a mesma do SsMotion.bounce no Flutter e do pulo do menu do app. */
+  --ss-bounce: linear(0, .054, .188, .362, .545, .715, .86, .973, 1.052, 1.1, 1.123, 1.125, 1.114, 1.095, 1.073, 1.05, 1.029, 1.012, 1, .991, .986, .984, .984, .986, .989, .992, .995, .997, .999, 1);
+  --ss-dur-fast: .18s;
+  --ss-dur-base: .28s;
+  --ss-dur-indicator: .46s;
   --ss-info: #3b82f6;
 }
 @property --ss-t { syntax: "<angle>"; inherits: false; initial-value: 360deg; }
@@ -515,7 +604,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
 /* Folha: <dialog class="ss-sheet"> — de baixo no celular, centro no desktop. */
 .ss-sheet { width: min(32rem, calc(100vw - 2rem)); max-height: 88dvh; margin: auto; padding: 0 0 1.25rem; overflow: auto; border: 1px solid var(--line);
             border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(20, 22, 40, .45); }
-.ss-sheet[open] { animation: ss-pop .22s cubic-bezier(.2, .8, .2, 1); }
+dialog.ss-sheet:not([open]) { translate: 0 24px; }
+@starting-style { dialog.ss-sheet[open] { translate: 0 24px; } }
 .ss-sheet::backdrop { background: rgba(14, 13, 22, .45); }
 .ss-sheet > :not(.ss-sheet-header) { padding-inline: 1.25rem; }
 /* Cabeçalho: ícone (svg ou span) + h2 + p de ajuda. */
@@ -527,7 +617,11 @@ th.r .ss-sort { flex-direction: row-reverse; }
 .ss-sheet-header p { grid-column: 2; font-size: .82rem; color: var(--muted); }
 @media (max-width: 639px) {
   .ss-sheet { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 24px 24px 0 0; border-bottom: 0; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
-  .ss-sheet[open] { animation: ss-sheet-up .32s cubic-bezier(.2, .8, .2, 1); }
+  /* No celular sobe da borda; a sombra cheia embaixo tapa a fresta quando a mola passa do ponto. */
+  dialog.ss-sheet { scale: 1; box-shadow: 0 30px 80px -20px rgba(20, 22, 40, .45), 0 140px 0 0 var(--surface); }
+  dialog.ss-sheet:not([open]) { translate: 0 100%; }
+  @starting-style { dialog.ss-sheet[open] { scale: 1; translate: 0 100%; } }
+  @supports not (transition-behavior: allow-discrete) { dialog.ss-sheet[open] { animation: ss-sheet-up .5s var(--ss-bounce); } }
   .ss-sheet::before { content: ""; display: block; width: 2.5rem; height: 4px; margin: .6rem auto 0; border-radius: 999px; background: var(--line); }
 }
 
@@ -609,20 +703,39 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.25rem; padding: .5rem .25rem; cursor: pointer; }
   .ss-switch-row > span { font-weight: 600; font-size: .92rem; }
   .ss-switch-row small { display: block; font-size: .78rem; font-weight: 500; color: var(--muted); }
-  .ss-switch-row input { appearance: none; position: relative; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; cursor: pointer;
-                         background: color-mix(in srgb, var(--muted) 35%, var(--field)); transition: background .2s; }
-  .ss-switch-row input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
-                                 box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transition: translate .28s var(--ss-spring); }
-  .ss-switch-row input:checked { background: var(--accent); }
-  .ss-switch-row input:checked::before { translate: 18px 0; }
+  /* Trilho: a cor de ligado é um líquido (círculo que cresce do lado de onde a bolinha sai,
+     --ss-pour) e "derrama" no sentido do movimento; ao desligar, escoa de volta. */
+  .ss-switch-row input { appearance: none; position: relative; isolation: isolate; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; cursor: pointer;
+                         --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
+                         background: radial-gradient(circle at 14px 50%, var(--accent) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
+                         transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
+  .ss-switch-row input:checked { --ss-pour: 40px; --sw-halo: color-mix(in srgb, var(--accent) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
+  /* Bolinha presa pelas bordas: a da frente corre (rápida) e a de trás vem depois com a mola;
+     no caminho ela estica como uma gota e, ao pousar, achata e assenta. Na troca feita pela
+     pessoa (data-ss-anim) o caminho é o keyframe ss-sw-on/off: estica até 1,45× no meio, achata
+     (.82 × 1,12) no fim e volta com --ss-bounce; um halo na cor sai da bolinha e some. */
+  .ss-switch-row input::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: 21px; border-radius: 999px; background: #fff;
+                                 box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
+                                 transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
+  .ss-switch-row input:checked::before { left: 21px; right: 3px; transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; transform-origin: 100% 50%; }
+  /* ✓ miúdo na bolinha quando ligada: gira (−90° → 0) e estala; desligada, nada. */
+  .ss-switch-row input::after { content: ""; position: absolute; z-index: 2; top: 50%; left: 32px; width: 12px; height: 12px; margin: -6px 0 0 -6px; pointer-events: none;
+                                background: var(--accent); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
+                                transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
+  .ss-switch-row input:checked::after { opacity: 1; scale: 1; rotate: 0deg;
+                                        transition: opacity .12s ease-out .2s, scale .42s var(--ss-bounce) .2s, rotate .42s var(--ss-bounce) .2s; }
+  .ss-switch-row input:active::before { scale: .92; }
+  .ss-switch-row input[data-ss-anim="on"]::before { animation: ss-sw-on .54s linear, ss-sw-halo .6s ease-out; }
+  .ss-switch-row input[data-ss-anim="off"]::before { animation: ss-sw-off .54s linear, ss-sw-halo .6s ease-out; }
+  .ss-switch-row input[data-ss-anim="on"]::after { animation: ss-sw-tick .44s linear .22s both; }
   .ss-switch-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .ss-switch-row:has(input:disabled) { opacity: .5; cursor: not-allowed; }
 
   /* − valor +: <div class="ss-stepper"><button aria-label="Menos">−</button><output>3</output><button aria-label="Mais">+</button></div>. */
   .ss-stepper { display: inline-flex; align-items: center; gap: .25rem; padding: 3px; border-radius: 999px; background: var(--field); box-shadow: inset 0 0 0 1px var(--line); }
   .ss-stepper button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: var(--surface); color: var(--accent);
-                       font: 700 1.15rem var(--font-sans); cursor: pointer; box-shadow: 0 1px 2px rgba(20, 22, 40, .08); transition: transform .12s; }
-  .ss-stepper button:active:not(:disabled) { transform: scale(.9); }
+                       font: 700 1.15rem var(--font-sans); cursor: pointer; box-shadow: 0 1px 2px rgba(20, 22, 40, .08); transition: transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-stepper button:active:not(:disabled) { transform: scale(.88); transition: transform 80ms ease-out; }
   .ss-stepper button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
   .ss-stepper :is(output, input) { min-width: 2.75rem; border: 0; background: none; text-align: center; font: 500 1.05rem var(--font-mono); color: var(--ink); }
   .ss-stepper input { width: 3rem; outline: 0; -moz-appearance: textfield; }
@@ -649,7 +762,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
                       background: conic-gradient(from -90deg, var(--accent) calc(var(--v) * 180deg), var(--line) 0 180deg, transparent 0);
                       mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px)); }
   .ss-gauge::after { content: ""; position: absolute; left: calc(var(--s) / 2 - 1.5px); top: calc(var(--s) * .14); width: 3px; height: calc(var(--s) * .36); border-radius: 999px; background: var(--ink);
-                     transform-origin: 50% 100%; rotate: calc(-90deg + var(--v) * 180deg); animation: ss-needle .7s var(--ss-spring) backwards; }
+                     transform-origin: 50% 100%; rotate: calc(-90deg + var(--v) * 180deg); animation: ss-needle .95s var(--ss-bounce) .1s backwards; }
   .ss-gauge b { font: 500 1.35rem/1 var(--font-mono); color: var(--ink); }
   .ss-gauge small { margin-top: .2rem; font-size: .72rem; font-weight: 600; color: var(--muted); }
 
@@ -828,7 +941,9 @@ th.r .ss-sort { flex-direction: row-reverse; }
   /* Menu ⋮: <details class="ss-menu"><summary aria-label="Mais ações">⋮</summary><div>…links/botões, hr…</div></details>. */
   .ss-menu { position: relative; display: inline-block; }
   .ss-menu > summary { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 12px; list-style: none; cursor: pointer;
-                       color: var(--muted); font-size: 1.25rem; font-weight: 800; line-height: 1; }
+                       color: var(--muted); font-size: 1.25rem; font-weight: 800; line-height: 1;
+                       transition: background-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-menu > summary:active { scale: .9; transition: background-color .2s, color .2s, scale 80ms ease-out; }
   .ss-menu > summary::-webkit-details-marker { display: none; }
   .ss-menu > summary:hover, .ss-menu[open] > summary { background: var(--field); color: var(--ink); }
   .ss-menu > :not(summary) { position: absolute; right: 0; margin-top: .25rem; z-index: 40; min-width: 12rem; padding: .35rem; border-radius: 14px;
@@ -883,7 +998,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
                   background: var(--accent-soft); animation: ss-fade .2s ease both; }
 
   /* Botão de ação com estado: .ss-btn.ss-action-btn + .is-loading (girando) / .is-done (✓ verde). */
-  .ss-action-btn { vertical-align: middle; transition: background-color .25s, color .25s, box-shadow .25s, transform .15s; }
+  .ss-action-btn { vertical-align: middle; transition: background-color .25s, color .25s, box-shadow .25s, transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-action-btn:active:not(:disabled) { transition: background-color .25s, color .25s, box-shadow .25s, transform 80ms ease-out; }
   .ss-action-btn.is-loading { pointer-events: none; }
   .ss-action-btn.is-loading > * { visibility: hidden; }
   .ss-action-btn.is-loading { color: transparent; }
@@ -900,6 +1016,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
 @keyframes ss-sheet-up { from { translate: 0 100%; } }
 @keyframes ss-timer { from { --ss-t: 360deg; } to { --ss-t: 0deg; } }
 @keyframes ss-needle { from { rotate: -90deg; } }
+@keyframes ss-dialog-in { from { opacity: 0; scale: .92; } }
 @keyframes ss-fade { from { opacity: 0; } }
 @keyframes ss-pop-in { from { scale: 0; } }
 @keyframes ss-highlight { from { background-color: color-mix(in srgb, var(--accent) 22%, transparent); } to { background-color: transparent; } }

@@ -1,0 +1,70 @@
+<%# titulo: Moldura, lista e painel | grupo: Layout | ordem: 2 %>
+<%
+  ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe }
+  pedidos = [
+    { id: 1042, cliente: "Mercado Bom Preço", total: "R$ 1.250,00", st: "Em aberto" },
+    { id: 1041, cliente: "Padaria Central", total: "R$ 318,40", st: "Faturado" },
+    { id: 1040, cliente: "Açougue do Zé", total: "R$ 2.904,10", st: "Faturado" },
+    { id: 1039, cliente: "Hortifruti Sol", total: "R$ 88,00", st: "Cancelado" }
+  ]
+  escolhido = pedidos.find { _1[:id] == params[:pedido].to_i }
+  detalhe = ->(p) { capture do %>
+    <div data-drawer-title="Pedido <%= p[:id] %>">
+      <p class="ss-kicker">Pedido <span class="num"><%= p[:id] %></span></p>
+      <h3 style="font-size:1.2rem;font-weight:800;margin:4px 0 10px"><%= p[:cliente] %></h3>
+      <%= ss_amount(p[:total]) %>
+      <p style="margin-top:12px"><span class="ss-badge ss-badge-accent"><%= p[:st] %></span></p>
+      <div class="ss-field" style="margin-top:18px"><label for="obs-<%= p[:id] %>">Observação</label><textarea id="obs-<%= p[:id] %>" class="ss-input" rows="3">Entregar pela manhã.</textarea></div>
+    </div>
+  <% end }
+%>
+
+<%= demo "Ss::AppShellComponent", "Menu lateral recolhível (grupos, ícone, badge), barra de cima com busca (abre a .ss-command; Ctrl+K), troca de empresa e usuário. No celular vira gaveta. Esta vitrine inteira usa ela; abaixo, uma cópia num quadro.",
+         uso: 'render Ss::AppShellComponent.new(brand: "Minhas Vendas", nav: [{ title: "Vendas", items: [{ label:, href:, icon:, badge:, current: }] }], tenants: [{ name:, href:, current: }]) { |s| s.with_user { … }; s.with_top { … } }' do %>
+  <div style="transform:translateZ(0);height:460px;overflow:hidden;border-radius:20px;border:1px solid var(--line)">
+    <%= render Ss::AppShellComponent.new(brand: "Minhas Vendas", search_label: "Buscar pedido, cliente…", css: "vt-shell-demo",
+          tenants: [{ name: "Loja Centro", href: "#", current: true }, { name: "Loja Sul", href: "#" }, { name: "Distribuidora", href: "#" }],
+          nav: [{ items: [{ label: "Painel", href: "#", icon: ic.("M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 4v3h6V4z"), current: true }] },
+                { title: "Vendas", items: [{ label: "Pedidos", href: "#", icon: ic.("M6 3h9l3 3v15H6zM9 10h6M9 14h6"), badge: 3 },
+                                           { label: "Clientes", href: "#", icon: ic.("M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z") }] },
+                { title: "Financeiro", items: [{ label: "A receber", href: "#", icon: ic.("M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6") }] }]) do |s| %>
+      <% s.with_user do %><%= ss_avatar("Ana Souza", size: 34) %><% end %>
+      <% s.with_top do %><button class="ss-btn ss-btn-primary ss-btn-sm">Novo pedido</button><% end %>
+      <h2 style="font-size:1.3rem">Painel</h2>
+      <p style="color:var(--muted)">Clique na seta do menu para recolher; no celular, o menu abre pelo botão ☰.</p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::SplitViewComponent", "Lista à esquerda, detalhe à direita num turbo-frame (os links usam data-turbo-frame). No celular empilha: o detalhe vira a tela, com Voltar.",
+         uso: 'render Ss::SplitViewComponent.new(frame_id: "pedido") { |s| s.with_list { … link_to …, data: { turbo_frame: "pedido" } }; s.with_detail { … } }' do %>
+  <%= render Ss::SplitViewComponent.new(frame_id: "split_pedido") do |s| %>
+    <% s.with_list do %>
+      <% pedidos.each do |p| %>
+        <%= link_to vitrine_path("layout_app", pedido: p[:id]), data: { turbo_frame: "split_pedido" }, "aria-current": (escolhido == p ? "true" : nil) do %>
+          <span style="display:flex;justify-content:space-between;gap:8px;font-weight:700"><%= p[:cliente] %><span class="num" style="font-weight:500"><%= p[:total] %></span></span>
+          <small>Pedido <span class="num"><%= p[:id] %></span> · <%= p[:st] %></small>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% s.with_detail do %><%= detalhe.(escolhido) if escolhido %><% end %>
+    <% s.with_empty { "Escolha um pedido para ver o detalhe." } %>
+  <% end %>
+<% end %>
+
+<%= demo "Ss::DrawerComponent", "Painel lateral num <dialog>: abre por link com turbo-frame (ver/editar sem sair da lista) ou por botão data-ss-drawer-open. Esc, X e o fundo fecham.",
+         uso: 'render Ss::DrawerComponent.new(id: "painel", title: "Pedido", frame_id: "painel_frame")  ·  link_to "Ver", pedido_path(p), data: { turbo_frame: "painel_frame" }' do %>
+  <div class="ss-card">
+    <table class="ss-table"><thead><tr><th>Pedido</th><th>Cliente</th><th class="r">Total</th><th></th></tr></thead><tbody>
+      <% pedidos.first(3).each do |p| %>
+        <tr><td class="num"><%= p[:id] %></td><td><%= p[:cliente] %></td><td class="r num"><%= p[:total] %></td>
+          <td class="r"><%= link_to "Ver", vitrine_path("layout_app", painel: p[:id]), data: { turbo_frame: "painel_frame" }, class: "ss-btn ss-btn-ghost ss-btn-sm" %></td></tr>
+      <% end %>
+    </tbody></table>
+  </div>
+  <p style="margin-top:12px"><button class="ss-btn ss-btn-outline" data-ss-drawer-open="painel">Abrir por botão</button></p>
+  <%= render Ss::DrawerComponent.new(id: "painel", title: "Pedido", frame_id: "painel_frame") do |d| %>
+    <% if (p = pedidos.find { _1[:id] == params[:painel].to_i }) %><%= detalhe.(p) %><% else %><p style="color:var(--muted)">Escolha um pedido na tabela.</p><% end %>
+    <% d.with_footer do %><form method="dialog" style="display:contents"><button class="ss-btn ss-btn-ghost">Fechar</button><button class="ss-btn ss-btn-primary">Salvar</button></form><% end %>
+  <% end %>
+<% end %>

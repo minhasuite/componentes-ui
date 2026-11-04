@@ -1,0 +1,14 @@
+<%= tag.div(class: classes("ss-field", "ss-file-drop"), **root_attrs(data: { controller: "ss-file-drop" })) do %>
+  <span class="ss-label" id="<%= id %>-label"><%= label %></span>
+  <label class="ss-file-drop-zone" for="<%= id %>" data-ss-file-drop-target="zone"
+         data-action="dragenter->ss-file-drop#over dragover->ss-file-drop#over dragleave->ss-file-drop#leave drop->ss-file-drop#drop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+    <strong><%= hint %></strong>
+    <small><%= accept ? "Tipos: #{accept}" : "Qualquer tipo de arquivo" %></small>
+    <input type="file" id="<%= id %>" name="<%= name %>" class="ss-sr" aria-labelledby="<%= id %>-label"
+           <% if accept %>accept="<%= accept %>"<% end %> <% if multiple %>multiple<% end %>
+           <% if direct_upload_url %>data-direct-upload-url="<%= direct_upload_url %>"<% end %>
+           data-ss-file-drop-target="input" data-action="change->ss-file-drop#render">
+  </label>
+  <ul class="ss-file-list" data-ss-file-drop-target="list" aria-live="polite"></ul>
+<% end %>

@@ -1,0 +1,64 @@
+<%# titulo: Campos (ss_form_with) | grupo: Formulários | ordem: 10 %>
+<%
+  # Model de exemplo (a vitrine não tem banco): ActiveModel com validações.
+  cliente_class = Class.new do
+    include ActiveModel::Model
+    include ActiveModel::Attributes
+    def self.model_name = ActiveModel::Name.new(self, nil, "Cliente")
+    def self.human_attribute_name(attr, _opts = {}) = { "nome" => "Nome", "email" => "E-mail", "limite" => "Limite", "plano" => "Plano",
+      "tipo" => "Tipo", "obs" => "Observação", "aceite" => "Aceito os termos", "senha" => "Senha", "nascimento" => "Nascimento" }[attr.to_s] || attr.to_s.humanize
+    attribute :nome, :string
+    attribute :email, :string
+    attribute :senha, :string
+    attribute :limite, :decimal
+    attribute :plano, :string
+    attribute :tipo, :string, default: "pj"
+    attribute :obs, :string
+    attribute :nascimento, :date
+    attribute :aceite, :boolean
+    validates :nome, :email, :plano, presence: true
+    validates :email, format: { with: /@/, message: "precisa ter @" }, allow_blank: true
+    validates :limite, numericality: { greater_than: 0, message: "precisa ser maior que zero" }, allow_nil: true
+    validates :aceite, acceptance: { accept: [true, "1"] }
+  end
+  enviado = request.post? && params[:cliente].present?
+  novo = cliente_class.new(enviado ? params.require(:cliente).permit(:nome, :email, :senha, :limite, :plano, :tipo, :obs, :nascimento, :aceite).to_h : {})
+  novo.valid? if enviado
+  com_erro = cliente_class.new(nome: "", email: "ana.mercado", limite: -10, plano: "")
+  com_erro.valid?
+  planos = [["Mensal", "mensal"], ["Anual (2 meses grátis)", "anual"]]
+%>
+
+<%= demo "ss_form_with + ComponentesUi::FormBuilder", "Cada f.ss_* monta o .ss-field inteiro: rótulo (com * quando o model valida presença), prefixo/sufixo, ajuda, contador e o erro do model inline. Envie vazio para ver o erro do servidor; saia de um campo obrigatório vazio para ver o :user-invalid do navegador.",
+      uso: 'ss_form_with model: @cliente do |f| f.ss_text_field :nome, help: "…", counter: 60; f.ss_number_field :limite, prefix: "R$"; f.ss_submit end' do %>
+  <div class="ss-card ss-card-pad" style="max-width:680px">
+    <%= ss_form_with model: novo, url: vitrine_path("formularios_campos"), method: :post do |f| %>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem">
+        <%= f.ss_text_field :nome, help: "Como aparece no pedido.", counter: 60, autocomplete: "name" %>
+        <%= f.ss_email_field :email, help: "Para mandar o recibo.", autocomplete: "email" %>
+        <%= f.ss_number_field :limite, prefix: "R$", suffix: "/mês", step: "0.01", class: "num" %>
+        <%= f.ss_password_field :senha, help: "Mínimo de 8 caracteres.", minlength: 8, autocomplete: "new-password" %>
+        <%= f.ss_select :plano, planos, include_blank: "Escolha…" %>
+        <%= f.ss_date_field :nascimento, class: "num" %>
+      </div>
+      <%= f.ss_radio_buttons :tipo, [["Pessoa física", "pf"], ["Empresa", "pj"]] %>
+      <%= f.ss_text_area :obs, rows: 3, counter: 200, help: "Só a equipe vê." %>
+      <%= f.ss_check_box :aceite %>
+      <div><%= f.ss_submit "Salvar cliente" %></div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Erro inline do model", "O mesmo form com o model já validado (como volta do servidor depois de um create que falhou): .is-invalid no .ss-field, aria-invalid no input e a mensagem no lugar da ajuda.",
+      uso: "@cliente.valid? # false → render :new, status: :unprocessable_entity" do %>
+  <div class="ss-card ss-card-pad" style="max-width:680px">
+    <%= ss_form_with model: com_erro, url: vitrine_path("formularios_campos"), method: :post, scope: :exemplo do |f| %>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem">
+        <%= f.ss_text_field :nome, help: "Como aparece no pedido." %>
+        <%= f.ss_email_field :email %>
+        <%= f.ss_number_field :limite, prefix: "R$", class: "num" %>
+        <%= f.ss_select :plano, planos, include_blank: "Escolha…" %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

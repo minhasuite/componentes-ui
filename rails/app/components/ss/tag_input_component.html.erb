@@ -1,0 +1,14 @@
+<%= tag.div(class: classes("ss-field", "ss-tags"), **root_attrs(data: { controller: "ss-tags" })) do %>
+  <label for="<%= id %>"><%= label %></label>
+  <div class="ss-tags-box" data-action="click->ss-tags#focus">
+    <ul class="ss-tags-list" data-ss-tags-target="list" aria-label="<%= label %> escolhidas">
+      <% values.each do |v| %>
+        <li class="ss-tag"><span><%= v %></span><button type="button" aria-label="Remover <%= v %>" data-action="ss-tags#remove">×</button></li>
+      <% end %>
+    </ul>
+    <input id="<%= id %>" type="text" autocomplete="off" placeholder="<%= placeholder %>"<% if help %> aria-describedby="<%= id %>-help"<% end %>
+           data-ss-tags-target="input" data-action="keydown->ss-tags#key blur->ss-tags#commit paste->ss-tags#paste">
+  </div>
+  <% if help %><small class="ss-field-help" id="<%= id %>-help"><%= help %></small><% end %>
+  <input type="hidden" name="<%= name %>" value="<%= values.join(",") %>" data-ss-tags-target="hidden">
+<% end %>

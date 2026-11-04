@@ -1,0 +1,11 @@
+<%= tag.div(**root_attrs(class: classes("ss-split"), data: { controller: "ss-split-view", ss_split_view_frame_value: @frame_id, action: "turbo:frame-load->ss-split-view#loaded click->ss-split-view#pick" })) do %>
+  <section class="ss-split-list ss-card" aria-label="<%= @list_label %>" data-ss-split-view-target="list"><%= list %></section>
+  <section class="ss-split-detail ss-card" aria-live="polite">
+    <button type="button" class="ss-split-back ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-split-view#back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg><%= @back_label %>
+    </button>
+    <turbo-frame id="<%= @frame_id %>" data-ss-split-view-target="frame">
+      <% if detail? && detail.to_s.strip.present? %><%= detail %><% else %><div class="ss-split-empty"><%= empty? ? empty : "Escolha um item da lista." %></div><% end %>
+    </turbo-frame>
+  </section>
+<% end %>

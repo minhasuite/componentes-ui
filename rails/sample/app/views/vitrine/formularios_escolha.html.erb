@@ -1,0 +1,42 @@
+<%# titulo: Escolhas e sliders | grupo: Formulários | ordem: 30 %>
+<% ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">#{d}</svg>).html_safe } %>
+
+<%= demo "Ss::OptionCardComponent", "Radio ou checkbox como card: ícone, título e descrição. Marcado pelo :has(:checked), sem JS. Agrupe num .ss-option-grid.",
+      uso: 'render Ss::OptionCardComponent.new(name: "plano", value: "anual", title: "Anual", description: "…", icon: svg, checked: true)' do %>
+  <div class="ss-option-grid" role="radiogroup" aria-label="Plano" style="max-width:860px">
+    <%= render Ss::OptionCardComponent.new(name: "plano", value: "mensal", title: "Mensal", description: "R$ 29,90 por mês. Cancele quando quiser.", icon: ic.('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>')) %>
+    <%= render Ss::OptionCardComponent.new(name: "plano", value: "anual", title: "Anual", badge: "−17%", description: "R$ 299,00 por ano: dois meses grátis.", checked: true, icon: ic.('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.6 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>')) %>
+    <%= render Ss::OptionCardComponent.new(name: "plano", value: "empresa", title: "Empresa", description: "Vários usuários, permissões e relatórios.", icon: ic.('<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M8 7h4M8 11h4M8 15h4M2 21h20"/>')) %>
+  </div>
+  <p style="height:12px"></p>
+  <div class="ss-option-grid" style="max-width:860px">
+    <%= render Ss::OptionCardComponent.new(name: "avisos[]", value: "whatsapp", type: :checkbox, checked: true, title: "WhatsApp", description: "Recibo e lembrete de vencimento.") %>
+    <%= render Ss::OptionCardComponent.new(name: "avisos[]", value: "email", type: :checkbox, title: "E-mail", description: "Resumo semanal.") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::SwatchPickerComponent", "Cor de etiqueta ou marca no visual de paleta (pílula com círculos sobrepostos). Radio de verdade por baixo: setas do teclado trocam.",
+      uso: 'render Ss::SwatchPickerComponent.new(name: "etiqueta[cor]", options: [{ value: "verde", label: "Verde", color: "#0f8a5f" }, …], selected: "roxo")' do %>
+  <%= render Ss::SwatchPickerComponent.new(name: "etiqueta[cor]", legend: "Cor da etiqueta", selected: "roxo", options: [
+        { value: "roxo", label: "Roxo", color: "#5a45e8" }, { value: "rosa", label: "Rosa", color: "#da0090" },
+        { value: "coral", label: "Coral", color: "#ff6766" }, { value: "amarelo", label: "Amarelo", color: "#f2cb30" },
+        { value: "verde", label: "Verde", color: "#4c7a66" }, { value: "azul", label: "Azul", color: "#3b82f6" }, { value: "grafite", label: "Grafite", color: "#3f3a5c" }]) %>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
+<%= demo ".ss-range + Ss::RangeComponent", "Slider nativo estilizado: trilho com a parte cheia na cor da marca, seletor grande, marcas embaixo e o valor ao lado.",
+      uso: 'render Ss::RangeComponent.new(name: "desconto", label: "Desconto", value: 10, max: 30, format: "%d%%", ticks: [0, 10, 20, 30])' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:1.25rem">
+    <%= render Ss::RangeComponent.new(name: "desconto", label: "Desconto", value: 10, max: 30, format: "%d%%", ticks: [0, 10, 20, 30]) %>
+    <%= render Ss::RangeComponent.new(name: "raio", label: "Raio de entrega", value: 8, min: 1, max: 25, format: "%d km") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::SplitAllocatorComponent", "Partes que somam 100%: mexer numa redistribui o resto nas outras, na proporção delas. Com total:, mostra o valor de cada uma.",
+      uso: 'render Ss::SplitAllocatorComponent.new(name: "divisao", total: 18_000, items: [{ key: "ana", label: "Ana", value: 50 }, …])' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::SplitAllocatorComponent.new(name: "divisao", legend: "Conta do jantar · R$ 180,00", total: 18_000, items: [
+          { key: "ana", label: "Ana", value: 40 }, { key: "bruno", label: "Bruno", value: 35 }, { key: "carla", label: "Carla", value: 25 }]) %>
+  </div>
+<% end %>
+</div>

@@ -3,17 +3,60 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'ss_list.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 import 'ss_charts.dart';
 
 /// Valor em DM Mono com os centavos menores e apagados: "R$ 1.234" + ",56".
 /// Sem vírgula seguida de 2 dígitos no fim, mostra o texto inteiro.
+///
+/// [countUp]: conta de 0 até o valor (no mesmo formato do texto) quando entra
+/// na tela. [roll]: ao mudar, o valor novo rola na vertical (para cima quando
+/// aumentou, para baixo quando caiu) em vez de trocar seco.
 class SsAmount extends StatelessWidget {
-  const SsAmount(this.text, {super.key, this.size = AppType.statNum, this.color, this.weight = FontWeight.w500});
+  const SsAmount(
+    this.text, {
+    super.key,
+    this.size = AppType.statNum,
+    this.color,
+    this.weight = FontWeight.w500,
+    this.countUp = false,
+    this.roll = false,
+  });
 
   final String text;
   final double size;
   final Color? color;
   final FontWeight weight;
+  final bool countUp;
+  final bool roll;
+
+  /// Valor de um texto pronto ("R$ -1.234,56" → -1234.56; "12%" → 12), ou
+  /// nulo se não for um número só.
+  static double? parse(String text) {
+    final m = _numero.firstMatch(text);
+    if (m == null) return null;
+    final v = double.tryParse('${m.group(3)!.replaceAll('.', '')}.${m.group(5) ?? '0'}');
+    if (v == null) return null;
+    return '${m.group(1)}${m.group(2)}'.contains('-') ? -v : v;
+  }
+
+  /// [v] escrito no formato de [modelo] (mesmo prefixo, casas e milhar), ou
+  /// nulo se o modelo não for um número só. Usa o módulo de [v]: o sinal
+  /// fica no prefixo do modelo.
+  static String? formatLike(String modelo, double v) {
+    final m = _numero.firstMatch(modelo);
+    if (m == null) return null;
+    final casas = m.group(5)?.length ?? 0;
+    final fixo = v.abs().toStringAsFixed(casas).split('.');
+    var inteiro = fixo[0];
+    if (m.group(3)!.contains('.')) {
+      inteiro = inteiro.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+    }
+    return '${m.group(1)}${m.group(2)}$inteiro${casas > 0 ? ',${fixo[1]}' : ''}${m.group(6)}';
+  }
+
+  // prefixo sem dígito, sinal, inteiro (com ou sem milhar), ",decimais", sufixo sem dígito.
+  static final _numero = RegExp(r'^(\D*?)(-?)(\d{1,3}(?:\.\d{3})+|\d+)(,(\d+))?(\D*)$');
 
   /// (inteiro, centavos) — centavos vazio quando não há.
   static (String, String) split(String text) {
@@ -23,6 +66,19 @@ class SsAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget fixo() =>
+        roll ? SsRollSwitcher(value: parse(text) ?? text, child: _texto(context, text)) : _texto(context, text);
+    final alvo = countUp ? parse(text) : null;
+    if (alvo == null || alvo == 0) return fixo();
+    // Conta uma vez ao entrar na tela; depois, troca de valor rola (ou é seca).
+    return SsTweenInView(
+      end: 1,
+      duration: const Duration(milliseconds: 700),
+      builder: (context, t, _) => t >= 1 ? fixo() : _texto(context, formatLike(text, alvo * t) ?? text),
+    );
+  }
+
+  Widget _texto(BuildContext context, String text) {
     final (main, cents) = split(text);
     final style = AppTheme.number(context, size: size, weight: weight, color: color ?? SsColors.of(context).ink);
     return Text.rich(
@@ -165,7 +221,7 @@ class SsStatCard extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: SsAmount(value, size: valueSize),
+                    child: SsAmount(value, size: valueSize, countUp: true, roll: true),
                   ),
                   if (delta != null || caption != null) ...[
                     const SizedBox(height: 8),

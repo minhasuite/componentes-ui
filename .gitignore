@@ -3,3 +3,14 @@ build/
 pubspec.lock
 *.gem
 .flutter-plugins-dependencies
+# vitrines
+rails/sample/tmp/
+rails/sample/log/
+rails/sample/app/assets/builds/*
+!rails/sample/app/assets/builds/.keep
+flutter/example/android/.gradle/
+flutter/example/android/local.properties
+flutter/example/*.iml
+rails/sample/config/master.key
+
+__pycache__/

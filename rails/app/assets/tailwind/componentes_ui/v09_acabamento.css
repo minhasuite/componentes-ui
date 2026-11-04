@@ -1,0 +1,67 @@
+/* v0.9 · Acabamento (lote B): View Transitions (navegação e elementos que "voam" da
+   lista para o detalhe), número que conta ao entrar na tela, entrada ao aparecer
+   (ss-in-view), troca de número que rola e o painel lateral com mola. */
+@view-transition { navigation: auto; }
+
+/* Elementos com view-transition-name (Ss::TransitionComponent / .ss-vt-*): curva da suíte. */
+.ss-vt-img { view-transition-class: ss-img; }
+.ss-vt-title { view-transition-class: ss-title; }
+::view-transition-group(*) { animation-duration: .32s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-group(*.ss-img) { animation-duration: .42s; }
+::view-transition-old(*.ss-title), ::view-transition-new(*.ss-title) { height: 100%; width: auto; object-fit: none; object-position: left center; }
+::view-transition-old(root) { animation: ss-vt-out .2s ease both; }
+::view-transition-new(root) { animation: ss-vt-in .28s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes ss-vt-out { to { opacity: 0; } }
+@keyframes ss-vt-in { from { opacity: 0; translate: 0 6px; } }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+[data-privacy="on"] .ss-count-up { filter: blur(7px); user-select: none; }
+
+/* ── Entrada ao aparecer (controller ss-in-view) ──
+   Cada peça tem a animação de entrada no CSS dela (toca no carregamento, inclusive
+   sem JS). O controller arma (.ss-iv) só o que está fora da tela; armado e ainda não
+   visto, a peça fica parada e escondida. Ao ganhar data-in-view, a animação volta e
+   recomeça do zero. --ss-iv-i = posição no lote que entrou junto (cascata). Fora das
+   camadas de propósito: ganha das animações declaradas nos componentes. */
+.ss-iv:not([data-in-view]):is(.ss-product, .ss-review, .ss-person, .ss-spark),
+.ss-iv:not([data-in-view]) :is(.ss-area-line, .ss-area-fill, .ss-area-dot, .ss-area-pill, .ss-donut-slice, .ss-donut-legend li, .ss-donut-center,
+                               .ss-spark, .ss-rings .fill, .ss-bar i, .ss-job-bar i, .ss-level .ss-progress-bar, .ss-bento-cell, .ss-feature,
+                               .ss-pricing-plan, .ss-audit-entry, .ss-empty-art, .ss-pass-done, .ss-kpi .ss-delta, .ss-feature-icon,
+                               .ss-ill-accent, .ss-ill-dot, .ss-ill-dot2, .ss-ill-danger),
+.ss-iv:not([data-in-view]).ss-gauge::after,
+.ss-htl.ss-iv:not([data-in-view]) li > i::before, .ss-htl.ss-iv:not([data-in-view]) li > i::after {
+  animation: none; visibility: hidden;
+}
+
+/* ── Troca de valor que rola (ssRoll no ss_count_up_controller) ──
+   Cada posição que mudou vira uma célula com o antigo saindo e o novo entrando
+   (sobe se aumentou, desce se caiu) e assenta com mola. */
+.ss-roll { display: inline-grid; overflow: clip; overflow-clip-margin: .12em; white-space: pre; }
+.ss-roll > * { grid-area: 1 / 1; }
+
+@layer components {
+  .ss-vt { display: block; }
+  /* Número que conta (Ss::CountUpComponent): largura estável enquanto conta. */
+  .ss-count-up { display: inline-flex; align-items: baseline; gap: .25rem; font-variant-numeric: tabular-nums; }
+  .ss-count-up .num { font-weight: 500; letter-spacing: -.02em; }
+}
+
+/* ── Painel lateral (Ss::DrawerComponent): entra com mola, sai antes do close() ──
+   A sombra de 120 px à direita (cor do painel) tapa a fresta quando a mola passa do ponto. */
+dialog.ss-drawer-panel[open] { animation: ss-drawer-spring .56s var(--ss-bounce);
+                               box-shadow: -24px 0 60px -24px rgba(20, 22, 40, .45), 120px 0 0 0 var(--page); }
+dialog.ss-drawer-panel[open]::backdrop { animation: ss-fade .3s ease; }
+dialog.ss-drawer-panel.is-closing { animation: ss-drawer-out .24s cubic-bezier(.4, 0, 1, 1) forwards; }
+dialog.ss-drawer-panel.is-closing::backdrop { animation: ss-fade-out .24s ease forwards; }
+
+/* Quadros-chave do movimento (entrada, desenho, mola). */
+@keyframes ss-iv-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+@keyframes ss-iv-pop { from { opacity: 0; scale: .55; } }
+@keyframes ss-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ss-fill { from { width: 0; } }
+@keyframes ss-fade-out { to { opacity: 0; } }
+@keyframes ss-drawer-spring { from { translate: 100% 0; } to { translate: 0 0; } }
+@keyframes ss-drawer-out { to { translate: 100% 0; } }

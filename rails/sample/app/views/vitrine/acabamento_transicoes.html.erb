@@ -1,0 +1,28 @@
+<%# titulo: Transições de página | grupo: Acabamento | ordem: 10 %>
+<% plantas = [["Costela-de-adão", "R$ 89,90", "Folhas grandes recortadas. Meia-sombra, rega duas vezes por semana."], ["Espada-de-são-jorge", "R$ 54,00", "Aguenta pouca luz e esquecimento."],
+              ["Pimenteira", "R$ 32,50", "Sol pleno; dá fruto o ano todo."], ["Samambaia", "R$ 47,90", "Gosta de umidade e sombra."]] %>
+<% if (i = params[:item].presence&.to_i) && plantas[i] %>
+  <% n, p, t = plantas[i] %>
+  <%= link_to "‹ Voltar para a lista", vitrine_path("acabamento_transicoes"), class: "ss-btn ss-btn-ghost ss-btn-sm" %>
+  <div class="ss-card ss-card-pad" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:2rem;align-items:center;margin-top:1rem">
+    <%= render Ss::TransitionComponent.new(name: "planta-#{i}-img", kind: :img, style: "max-width:22rem;justify-self:center") do %><div style="width:100%;aspect-ratio:1"><%= render "vitrine/planta_b", variante: i %></div><% end %>
+    <div>
+      <p class="ss-kicker">Planta · detalhe</p>
+      <h2 class="ss-vt-title" style="<%= Ss::TransitionComponent.style("planta-#{i}-title") %>;font-size:1.8rem;letter-spacing:-.02em;margin:.25rem 0 .5rem;width:fit-content"><%= n %></h2>
+      <p style="color:var(--ink-2);margin-bottom:1rem"><%= t %></p>
+      <%= ss_amount(p) %>
+      <div style="margin-top:1.25rem"><a class="ss-btn ss-btn-primary" href="#">Adicionar ao carrinho</a></div>
+    </div>
+  </div>
+<% else %>
+  <%= demo "View Transitions + Turbo", "Clique num card: a imagem e o nome “voam” para o detalhe (mesmo view-transition-name nas duas telas). Com menos movimento, troca sem animar.",
+        uso: 'render Ss::TransitionComponent.new(name: "produto-#{p.id}-img", kind: :img) { … }  ·  tag.h1(style: Ss::TransitionComponent.style("produto-#{p.id}-title"))' do %>
+    <div class="ss-product-grid">
+      <% plantas.each_with_index do |(n, p, t), i| %>
+        <%= render Ss::ProductCardComponent.new(name: n, price: p, text: t.split(".").first, url: vitrine_path("acabamento_transicoes", item: i), vt: "planta-#{i}") do |c| %>
+          <% c.with_image { render("vitrine/planta_b", variante: i) } %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

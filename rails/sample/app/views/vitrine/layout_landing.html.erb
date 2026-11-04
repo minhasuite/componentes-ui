@@ -1,0 +1,53 @@
+<%# titulo: Landing e mosaico | grupo: Layout | ordem: 3 %>
+<% ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+
+<%= demo "Ss::HeroSectionComponent", "Topo de landing: kicker, título com uma palavra destacada na cor da marca (nunca gradiente no texto), texto, botões e mídia à direita, com brilho e textura opcional.",
+         uso: 'render Ss::HeroSectionComponent.new(kicker:, title:, highlight: "Venda mais", text:, texture: true) { |h| h.with_actions { … }; h.with_media { image_tag … } }' do %>
+  <%= render Ss::HeroSectionComponent.new(kicker: "Minhas Vendas", title: "Venda mais no balcão e na rua, sem planilha",
+        highlight: "Venda mais", text: "Pedido, caixa e contas a receber num lugar só, no computador e no celular do vendedor.", texture: true, heading: :h2) do |h| %>
+    <% h.with_actions do %>
+      <a href="#" class="ss-btn ss-btn-primary">Começar grátis</a>
+      <a href="#" class="ss-btn ss-btn-outline">Ver como funciona</a>
+    <% end %>
+    <% h.with_media do %>
+      <div class="ss-card" style="width:min(100%,360px);padding:18px;display:grid;gap:12px">
+        <p class="ss-kicker">Vendido hoje</p>
+        <%= ss_amount("R$ 4.812,30") %>
+        <%= ss_sparkline([3, 5, 4, 7, 6, 9, 8, 11]) %>
+        <div style="display:flex;gap:8px"><span class="ss-badge ss-badge-success">+18% na semana</span><span class="ss-badge">32 pedidos</span></div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= demo "Ss::FeatureStripComponent", "Faixa de 3–4 vantagens com divisórias curvas (no celular, empilha com a curva deitada). tone: :deep usa a base escura da marca.",
+         uso: 'render Ss::FeatureStripComponent.new(tone: :deep) { |f| f.with_feature(title:, text:, icon:) }' do %>
+  <% [:surface, :deep].each do |tone| %>
+    <div style="margin-bottom:16px">
+      <%= render Ss::FeatureStripComponent.new(tone: tone, label: "Vantagens") do |f| %>
+        <% f.with_feature(title: "Funciona offline", text: "O vendedor tira pedido sem sinal e sincroniza depois.", icon: ic.("M3 12a9 9 0 0 1 18 0M7 12a5 5 0 0 1 10 0M12 16h.01")) %>
+        <% f.with_feature(title: "Pix na hora", text: "QR Code no pedido e baixa automática.", icon: ic.("M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2z")) %>
+        <% f.with_feature(title: "Relatórios claros", text: "Comissão, metas e curva ABC sem planilha.", icon: ic.("M4 20V10M10 20V4M16 20v-7M22 20H2")) %>
+        <% f.with_feature(title: "Seus dados seguros", text: "Backup diário e acesso por perfil.", icon: ic.("M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z")) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%= demo "Ss::BentoGridComponent", "Mosaico de blocos com spans (cols:, rows:) — 4 colunas no desktop, 2 no tablet, 1 no celular. Um bloco :grad por tela (o momento de luz).",
+         uso: 'render Ss::BentoGridComponent.new { |g| g.with_block(cols: 2, rows: 2, tone: :grad) { … }; g.with_block(tone: :soft, href: "#") { … } }' do %>
+  <%= render Ss::BentoGridComponent.new do |g| %>
+    <% g.with_block(cols: 2, rows: 2, tone: :grad) do %>
+      <p class="ss-kicker">Explorar</p>
+      <h3 style="font-size:1.5rem">Destinos para o feriado</h3>
+      <p>Preços monitorados em 14 rotas.</p>
+      <div style="margin-top:auto" class="ss-amount">R$ 389<small>,00</small></div>
+    <% end %>
+    <% g.with_block(tone: :soft, href: "#") do %><p class="ss-kicker">Praias</p><h3>Litoral norte</h3><p>12 ofertas</p><% end %>
+    <% g.with_block(href: "#") do %><p class="ss-kicker">Serra</p><h3>Campos do Jordão</h3><p class="num">R$ 412,00</p><% end %>
+    <% g.with_block(cols: 2) do %><p class="ss-kicker">Alerta de preço</p><h3>GRU → REC caiu 22%</h3><%= ss_sparkline([9, 8, 8, 7, 6, 6, 5], height: 36) %><% end %>
+    <% g.with_block(tone: :ink) do %><p class="ss-kicker">Milhas</p><h3>48.200</h3><p>Vencem em março</p><% end %>
+    <% g.with_block do %><p class="ss-kicker">Passeios</p><h3>3 salvos</h3><% end %>
+    <% g.with_block(cols: 2, tone: :soft) do %><p class="ss-kicker">Dica</p><h3>Viaje na terça: 18% mais barato em média.</h3><% end %>
+  <% end %>
+<% end %>

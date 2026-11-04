@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion_view.dart';
 import 'ss_controls.dart';
 import 'ss_error_view.dart';
 import 'ss_list.dart';
@@ -40,6 +41,8 @@ Future<T?> showSsPicker<T>(
   isScrollControlled: true,
   useSafeArea: true,
   showDragHandle: false,
+  // Sobe com mola, como a [showSsSheet].
+  sheetAnimationStyle: SsOverlayMotion.sheet(context),
   builder: (context) => SsPickerSheet<T>(
     title: title,
     load: load,

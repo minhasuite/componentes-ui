@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 
 /// Meia-lua com faixas ([bands]: `(até, rótulo, cor)`, em ordem, a última até
 /// 1) e um ponto que vai com mola até [value] (0 a 1). A faixa do valor fica
@@ -39,10 +40,11 @@ class SsGauge extends StatelessWidget {
           SizedBox(
             width: width,
             height: width / 2 + 8,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: v),
-              duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 900),
-              curve: Curves.easeOutBack,
+            // O ponto vai com mola até o valor quando o medidor entra na tela.
+            child: SsTweenInView(
+              end: v,
+              duration: const Duration(milliseconds: 700),
+              curve: SsMotion.bounce,
               builder: (_, t, child) =>
                   CustomPaint(painter: _GaugePainter(t.clamp(-.03, 1.03), faixas, v, c.surface, c.ink), child: child),
               child: center == null
@@ -184,10 +186,8 @@ class SsCountdownRing extends StatelessWidget {
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: size,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 600),
-          curve: Curves.easeOutCubic,
+        child: SsTweenInView(
+          end: 1,
           builder: (_, t, child) => CustomPaint(
             painter: _GomosPainter(
               total,

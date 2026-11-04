@@ -1,0 +1,32 @@
+<%= render Ss::TicketCardComponent.new(css: classes("ss-pass"), **root_attrs(data: in_view_data)) do |t| %>
+  <div class="ss-pass-route">
+    <svg class="ss-pass-arc" viewBox="0 0 300 92" role="img" aria-label="Viagem <%= (progress * 100).round %>% concluída">
+      <path class="ss-pass-path" d="<%= arc_d %>"/>
+      <path class="ss-pass-done" d="<%= arc_d %>" pathLength="100" style="stroke-dasharray:<%= (progress * 100).round(2) %> 100"/>
+      <circle class="ss-pass-end" cx="<%= P0[0] %>" cy="<%= P0[1] %>" r="5"/>
+      <circle class="ss-pass-end" cx="<%= P2[0] %>" cy="<%= P2[1] %>" r="5"/>
+      <% x, y, a = plane %>
+      <g transform="translate(<%= x %> <%= y %>) rotate(<%= a %>)">
+        <circle class="ss-pass-halo" r="11"/>
+        <path class="ss-pass-plane" d="M-9 -1.4h5l-4 -6.6h2.6l6.4 6.6h5.5a1.4 1.4 0 0 1 0 2.8h-5.5l-6.4 6.6h-2.6l4 -6.6h-5z"/>
+      </g>
+    </svg>
+    <div class="ss-pass-ends">
+      <div><b class="ss-pass-code"><%= from[:code] %></b><span><%= from[:city] %></span><small class="num"><%= [from[:date], from[:time]].compact.join(" · ") %></small></div>
+      <div class="is-end"><b class="ss-pass-code"><%= to[:code] %></b><span><%= to[:city] %></span><small class="num"><%= [to[:date], to[:time]].compact.join(" · ") %></small></div>
+    </div>
+  </div>
+  <% if fields.any? %>
+    <dl class="ss-pass-fields">
+      <% fields.each do |(label, value)| %><div><dt><%= label %></dt><dd><%= value %></dd></div><% end %>
+    </dl>
+  <% end %>
+  <% if qr || carrier %>
+    <% t.with_stub do %>
+      <div class="ss-pass-stub">
+        <% if carrier %><div class="ss-pass-carrier"><b><%= carrier %></b><% if note %><small><%= note %></small><% end %></div><% end %>
+        <% if qr %><div class="ss-qr-box ss-pass-qr"><%= qr %></div><% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

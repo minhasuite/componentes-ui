@@ -6,8 +6,9 @@ import 'motion.dart';
 import 'ss_context_menu.dart';
 import 'ss_odometer.dart';
 
-/// Barra de seleção múltipla: sobe de baixo com mola quando [count] > 0
-/// ("3 selecionados", com o número rolando), as [actions] em ícones e o X
+/// Barra de seleção múltipla: sobe de baixo com mola ([SsMotion.bounce])
+/// quando [count] > 0 ("3 selecionados", com o número rolando), as [actions]
+/// em ícones e o X
 /// ([onClear]). Ponha num `Stack` alinhado embaixo ou no `bottomNavigationBar`.
 class SsSelectionBar extends StatefulWidget {
   const SsSelectionBar({super.key, required this.count, required this.actions, required this.onClear});
@@ -29,13 +30,14 @@ class _SsSelectionBarState extends State<SsSelectionBar> {
     if (widget.count > 0) _ultimo = widget.count;
     final c = SsColors.of(context);
     final on = widget.count > 0;
-    final d = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 380);
+    final d = reduceMotion(context) ? Duration.zero : (on ? SsMotion.indicator : SsMotion.base);
     return IgnorePointer(
       ignoring: !on,
+      // Sobe com a mola de verdade (passa um pouco e assenta); desce reto.
       child: AnimatedSlide(
         offset: on ? Offset.zero : const Offset(0, 1.5),
         duration: d,
-        curve: on ? Curves.easeOutBack : Curves.easeIn,
+        curve: on ? SsMotion.bounce : Curves.easeIn,
         child: AnimatedOpacity(
           opacity: on ? 1 : 0,
           duration: d,
@@ -90,7 +92,9 @@ class _SsSelectionBarState extends State<SsSelectionBar> {
 
 /// Item selecionável de lista: toque longo entra na seleção ([onToggle]);
 /// com [selecting], o toque marca/desmarca, aparece o círculo de ✓ à
-/// esquerda (entra com mola) e o selecionado ganha fundo tonal.
+/// esquerda (entra com mola) e o selecionado ganha fundo tonal. O círculo é
+/// um [SsCheckBox] redondo: ao marcar, pula, a cor inunda do centro, o ✓ se
+/// desenha e sai um estouro; ao desmarcar, desfaz e balança.
 class SsSelectable extends StatelessWidget {
   const SsSelectable({
     super.key,
@@ -129,7 +133,10 @@ class SsSelectable extends StatelessWidget {
           ),
           child: Row(
             children: [
+              // Aberto, não recorta (o estouro do círculo sai para fora); a
+              // bolinha entra encolhida, então nada vaza enquanto a vaga abre.
               ClipRect(
+                clipBehavior: selecting ? Clip.none : Clip.hardEdge,
                 child: AnimatedAlign(
                   duration: d,
                   curve: Curves.easeOut,
@@ -140,17 +147,14 @@ class SsSelectable extends StatelessWidget {
                     child: AnimatedScale(
                       scale: selecting ? 1 : 0,
                       duration: d,
-                      curve: Curves.easeOutBack,
-                      child: AnimatedContainer(
-                        duration: d,
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: selected ? c.accent : Colors.transparent,
-                          border: Border.all(color: selected ? c.accent : c.muted2, width: 2),
-                        ),
-                        child: selected ? const Icon(Icons.check_rounded, size: 16, color: AppColors.onDark) : null,
+                      curve: SsMotion.bounce,
+                      // Marcou: o círculo encolhe, pula, a cor inunda do centro, o ✓
+                      // se desenha e sai um estouro; desmarcou: desfaz e balança.
+                      child: SsCheckBox(
+                        value: selected,
+                        circle: true,
+                        borderWidth: 2,
+                        emptyColor: c.accent.withValues(alpha: 0),
                       ),
                     ),
                   ),

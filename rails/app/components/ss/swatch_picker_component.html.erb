@@ -1,0 +1,12 @@
+<%= tag.fieldset(class: classes("ss-swatch-picker"), **root_attrs) do %>
+  <legend class="ss-label"><%= legend %></legend>
+  <div class="ss-swatch-picker-row" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value=".ss-swatch-picker-item">
+    <% options.each do |o| %>
+      <label class="ss-swatch-picker-item" for="<%= input_id(o) %>" title="<%= o[:label] %>" style="--c:<%= o[:color] %>">
+        <input type="radio" class="ss-sr" id="<%= input_id(o) %>" name="<%= name %>" value="<%= o[:value] %>" <% if o[:value].to_s == selected.to_s %>checked<% end %>>
+        <span class="ss-swatch-picker-dot" aria-hidden="true"></span>
+        <span class="ss-sr"><%= o[:label] %></span>
+      </label>
+    <% end %>
+  </div>
+<% end %>

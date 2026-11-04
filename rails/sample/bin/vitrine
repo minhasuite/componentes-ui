@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Sobe a vitrine (o CSS da gem não entra no watch: depois de mudar um v09_*.css rode tailwindcss:build)
+# Sobe a vitrine em http://localhost:${PORTA:-3900} (container, gems no volume cui_sample_gems).
+# Uso (em componentes-ui/rails): sample/bin/vitrine        | PORTA=3901 sample/bin/vitrine
+set -e
+cd "$(dirname "$0")/../.."
+NOME="cui-vitrine-${PORTA:-3900}"
+podman rm -f "$NOME" >/dev/null 2>&1 || true
+exec podman run --rm --name "$NOME" -p "${PORTA:-3900}:3000" -v "$PWD":/w -v cui_sample_gems:/usr/local/bundle -w /w/sample \
+  localhost/ci-ruby:3.3-suite bash -lc 'export PATH=/usr/local/bundle/bin:$PATH; bundle check >/dev/null || bundle install; bin/rails tailwindcss:build >/dev/null; exec bin/rails server -b 0.0.0.0 -p 3000'

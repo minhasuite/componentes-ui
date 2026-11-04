@@ -120,7 +120,9 @@ class _Contagem extends CustomPainter {
 void Function([bool acted])? _fecharAtual;
 
 /// Mostra um [SsToast] subindo de baixo com mola, acima da barra de abas, por
-/// [duration]. Um novo substitui o anterior. Tocar na ação fecha o aviso.
+/// [duration]. Um novo substitui o anterior. Tocar na ação fecha o aviso;
+/// arrastar para baixo ou para o lado dispensa (no [showSsUndo], dispensar
+/// conta como não desfeito).
 void showSsToast(
   BuildContext context,
   String message, {
@@ -221,6 +223,9 @@ void _mostrar(
   overlay.insert(entry);
 }
 
+/// Entrada com mola de baixo, saída ao fim de [duration] e arrasto para
+/// dispensar: puxar para baixo ou para o lado além do limite (ou com
+/// velocidade) joga o aviso para fora; soltar antes volta com mola.
 class _Entrada extends StatefulWidget {
   const _Entrada({required this.child, required this.duration, required this.onDone});
 
@@ -232,44 +237,117 @@ class _Entrada extends StatefulWidget {
   State<_Entrada> createState() => _EntradaState();
 }
 
-class _EntradaState extends State<_Entrada> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+class _EntradaState extends State<_Entrada> with TickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: SsMotion.indicator);
+
+  /// Volta (ou saída) depois de soltar o arrasto: de [_de] até [_para].
+  late final _solta = AnimationController(vsync: this, duration: SsMotion.indicator);
+  Offset _drag = Offset.zero;
+  Offset _de = Offset.zero, _para = Offset.zero;
+  Curve _curva = SsMotion.bounce;
+  bool _arrastando = false, _venceu = false, _saindo = false;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _c.forward();
-    _timer = Timer(widget.duration, () async {
-      if (!mounted) return;
-      await _c.reverse();
-      widget.onDone();
+    _solta.addListener(() => setState(() => _drag = Offset.lerp(_de, _para, _curva.transform(_solta.value))!));
+    _timer = Timer(widget.duration, () {
+      if (_arrastando) {
+        _venceu = true;
+      } else {
+        _sai();
+      }
     });
+  }
+
+  Future<void> _sai() async {
+    if (!mounted || _saindo) return;
+    _saindo = true;
+    await _c.reverse();
+    if (mounted) widget.onDone();
+  }
+
+  void _move(DragUpdateDetails d) {
+    if (_saindo) return;
+    _arrastando = true;
+    _solta.stop();
+    var n = _drag + d.delta;
+    // Para cima resiste (não é para onde ele vai).
+    if (n.dy < 0) n = Offset(n.dx, _drag.dy + d.delta.dy * .2);
+    setState(() => _drag = n);
+  }
+
+  void _larga(DragEndDetails d) {
+    _arrastando = false;
+    if (_saindo) return;
+    final v = d.velocity.pixelsPerSecond;
+    final w = MediaQuery.sizeOf(context).width;
+    final lado = _drag.dx.abs() > 90 || v.dx.abs() > 700;
+    final baixo = _drag.dy > 36 || v.dy > 600;
+    _de = _drag;
+    if (lado || baixo) {
+      // Sai na direção do gesto e fecha.
+      _saindo = true;
+      _para = lado ? Offset(_drag.dx.sign * w, _drag.dy) : Offset(_drag.dx, 160);
+      _curva = Curves.easeIn;
+      _solta.duration = const Duration(milliseconds: 220);
+      _solta.forward(from: 0).whenComplete(() {
+        if (mounted) widget.onDone();
+      });
+      return;
+    }
+    _para = Offset.zero;
+    _curva = SsMotion.bounce;
+    _solta.duration = SsMotion.indicator;
+    _solta.forward(from: 0);
+    if (_venceu) _sai();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _c.dispose();
+    _solta.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (reduceMotion(context)) return widget.child;
+    final semMov = reduceMotion(context);
+    final w = MediaQuery.sizeOf(context).width;
+    // Some conforme se afasta (no lado conta mais que para baixo).
+    final longe = (_drag.dx.abs() / (w * .6) + _drag.dy.clamp(0, 400) / 160).clamp(0.0, 1.0);
+    Widget child = GestureDetector(
+      onPanUpdate: _move,
+      onPanEnd: _larga,
+      onPanCancel: () => _larga(DragEndDetails()),
+      child: Transform.translate(
+        offset: _drag,
+        child: Transform.rotate(
+          angle: semMov ? 0 : _drag.dx / w * .12,
+          child: Opacity(opacity: 1 - longe * .8, child: widget.child),
+        ),
+      ),
+    );
+    if (semMov) return child;
     return AnimatedBuilder(
       animation: _c,
       builder: (_, child) {
-        final t = Curves.easeOutBack.transform(_c.value);
+        // Entra com mola (passa um pouco e assenta); sai em linha reta.
+        final t = _c.status == AnimationStatus.reverse
+            ? Curves.easeIn.transform(_c.value)
+            : SsMotion.bounce.transform(_c.value);
         return Opacity(
-          opacity: _c.value.clamp(0.0, 1.0),
+          opacity: (_c.value * 1.6).clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, 40 * (1 - t)),
-            child: Transform.scale(scale: .92 + .08 * t, child: child),
+            offset: Offset(0, 48 * (1 - t)),
+            child: Transform.scale(scale: .9 + .1 * t, child: child),
           ),
         );
       },
-      child: widget.child,
+      child: child,
     );
   }
 }

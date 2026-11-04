@@ -1,0 +1,81 @@
+<%= tag.div(**root_attrs(id: id, class: classes("ss-dt"), data: { controller: "ss-table", ss_table_key_value: id, density: @density })) do %>
+  <% if @tools %>
+    <div class="ss-dt-tools">
+      <div class="ss-seg ss-dt-density" role="group" aria-label="Densidade das linhas">
+        <button type="button" aria-pressed="<%= @density == "comfortable" %>" data-action="ss-table#density" data-ss-table-density-param="comfortable">Confortável</button>
+        <button type="button" aria-pressed="<%= @density == "compact" %>" data-action="ss-table#density" data-ss-table-density-param="compact">Compacta</button>
+      </div>
+      <% if columns.any?(&:hideable) %>
+        <details class="ss-menu ss-dt-cols">
+          <summary aria-label="Escolher colunas" title="Colunas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="7" cy="18" r="2" fill="currentColor"/></svg></summary>
+          <div>
+            <p class="ss-dt-menu-title">Colunas visíveis</p>
+            <% columns.select(&:hideable).each do |c| %>
+              <label class="ss-check"><input type="checkbox" checked data-col-toggle="<%= c.key %>" data-action="ss-table#toggleColumn"> <%= c.label %></label>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="ss-card ss-dt-scroll"<% if @max_height %> style="max-height:<%= @max_height %>"<% end %>>
+    <table class="ss-table">
+      <caption class="<%= @show_caption ? "ss-dt-caption" : "ss-sr" %>"><%= caption %></caption>
+      <thead>
+        <tr>
+          <% if selectable? %><th scope="col" class="ss-dt-check"><input type="checkbox" aria-label="Selecionar todas as linhas" data-ss-table-target="all" data-action="ss-table#toggleAll"></th><% end %>
+          <% if expansion? %><th scope="col" class="ss-dt-x"><span class="ss-sr">Detalhes</span></th><% end %>
+          <% columns.each do |c| %>
+            <%= tag.th(scope: "col", class: (c.align == :right ? "r" : nil), "aria-sort": aria_sort(c), data: { col: c.key }) do %>
+              <% if c.sortable %>
+                <a class="ss-sort" href="<%= sort_href(c) %>"><%= c.label %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+              <% else %>
+                <%= c.label %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% if rows.empty? %>
+          <tr class="ss-dt-empty"><td colspan="<%= span %>"><div class="ss-empty"><%= @empty %></div></td></tr>
+        <% end %>
+        <% rows.each_with_index do |row, i| %>
+          <% k = row_key(row, i) %>
+          <tr data-ss-table-target="row">
+            <% if selectable? %><td class="ss-dt-check"><input type="checkbox" name="ids[]" value="<%= k %>" form="<%= form_id %>" aria-label="Selecionar linha <%= k %>" data-ss-table-target="check" data-action="ss-table#toggleRow"></td><% end %>
+            <% if expansion? %><td class="ss-dt-x"><button type="button" class="ss-dt-toggle" aria-expanded="false" aria-controls="<%= id %>-d-<%= k %>" aria-label="Ver detalhes" data-action="ss-table#expand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td><% end %>
+            <% columns.each do |c| %>
+              <%= tag.td(cell(row, c), class: cell_class(c), data: { col: c.key, label: c.label }) %>
+            <% end %>
+          </tr>
+          <% if expansion? %>
+            <tr class="ss-dt-detail" id="<%= id %>-d-<%= k %>" hidden><td colspan="<%= span %>"><%= expansion_for(row) %></td></tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% if @pagination && @pagination[:pages].to_i > 1 %>
+    <% pg = @pagination[:page].to_i %>
+    <nav class="ss-dt-pager" aria-label="Paginação" data-controller="ss-indicator" data-ss-indicator-key-value="dt-pager">
+      <% if @pagination[:total] %><span class="ss-dt-total num"><%= @pagination[:total] %> itens</span><% end %>
+      <%= pg > 1 ? link_to("‹", page_href(pg - 1), rel: "prev", "aria-label": "Página anterior") : tag.span("‹", "aria-disabled": "true") %>
+      <% page_items.each do |n| %>
+        <% if n == :gap %><span class="ss-dt-gap">…</span>
+        <% elsif n == pg %><a href="<%= page_href(n) %>" aria-current="page" class="num"><%= n %></a>
+        <% else %><a href="<%= page_href(n) %>" class="num"><%= n %></a><% end %>
+      <% end %>
+      <%= pg < @pagination[:pages].to_i ? link_to("›", page_href(pg + 1), rel: "next", "aria-label": "Próxima página") : tag.span("›", "aria-disabled": "true") %>
+    </nav>
+  <% end %>
+  <% if selectable? %>
+    <div class="ss-selection-bar" role="region" aria-label="Ações em massa" hidden data-ss-table-target="bar">
+      <span><b data-ss-table-target="count">0</b> selecionados</span>
+      <%= form_with url: (@bulk_url || ""), method: :post, id: form_id, class: "ss-dt-bulk" do %>
+        <%= bulk_html if bulk? %>
+      <% end %>
+      <button type="button" data-action="ss-table#clear" aria-label="Limpar seleção">✕</button>
+    </div>
+  <% end %>
+<% end %>

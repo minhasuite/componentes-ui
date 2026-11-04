@@ -1,0 +1,30 @@
+<%# titulo: Indicadores e gráficos | grupo: Dados | ordem: 20 %>
+<% brl = ->(v) { "R$ " + number_with_precision(v, precision: 2, delimiter: ".", separator: ",") } %>
+<%= demo "Ss::KpiStripComponent", "3 a 5 números lado a lado; a variação é colorida pelo sentido (good:), não pelo sinal.",
+      uso: 'render Ss::KpiStripComponent.new(items: [{ label:, value:, money: true, delta: "+12%", good: true, hint:, spark: [...] }])' do %>
+  <%= render Ss::KpiStripComponent.new(items: [
+        { label: "Vendido no mês", value: "R$ 48.320,50", money: true, delta: "+12%", good: true, hint: "vs. outubro", spark: [12, 18, 15, 22, 26, 24, 31] },
+        { label: "Pedidos", value: "214", delta: "+4%", good: true, hint: "vs. outubro", spark: [30, 28, 35, 33, 38, 36, 41] },
+        { label: "Ticket médio", value: "R$ 225,79", money: true, delta: "−2,1%", good: false, spark: [240, 238, 232, 236, 228, 230, 225] },
+        { label: "Inadimplência", value: "3,8%", delta: "−0,6 p.p.", trend: :down, good: true, hint: "caiu", spark: [5, 4.8, 4.6, 4.4, 4.1, 4, 3.8] }]) %>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::AreaChartComponent", "Área suave com gradiente da marca. Passe o mouse ou arraste; com foco, ← → andam pelos meses. Tabela alternativa para leitor de tela.",
+        uso: 'render Ss::AreaChartComponent.new(title:, points: [["jan", 1200.0], …], active: 4, format: ->(v) { … })' do %>
+    <div class="ss-card ss-card-pad">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem"><b>Gastos por mês</b><span class="ss-badge">2026</span></div>
+      <%= render Ss::AreaChartComponent.new(title: "Gastos por mês em 2026",
+            points: [["jan", 4210.0], ["fev", 3880.0], ["mar", 5120.0], ["abr", 4720.0], ["mai", 6402.0], ["jun", 5310.0], ["jul", 5890.0], ["ago", 5480.0]],
+            active: 4, format: brl) %>
+    </div>
+  <% end %>
+  <%= demo "Ss::DonutChartComponent", "Fatias com espessuras diferentes (exploded), total no centro, legenda que destaca a fatia (passar o mouse; clicar fixa).",
+        uso: 'render Ss::DonutChartComponent.new(title:, center:, center_label:, slices: [{ label:, value:, text: }], exploded: true)' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::DonutChartComponent.new(title: "Para onde foi o dinheiro em novembro", center: "R$ 980,00", center_label: "novembro", exploded: true,
+            slices: [{ label: "Saques", value: 420, text: "R$ 420,00" }, { label: "Viagens", value: 210, text: "R$ 210,00" }, { label: "Serviços", value: 160, text: "R$ 160,00" },
+                     { label: "Pagamentos", value: 120, text: "R$ 120,00" }, { label: "Outros", value: 70, text: "R$ 70,00" }]) %>
+    </div>
+  <% end %>
+</div>

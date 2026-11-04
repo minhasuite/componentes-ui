@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'ss_fields.dart' show SsSwitch;
 
 // Aba "Mais" padrão da suíte (o modelo é o menu do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
-// dos tokens de cada um. Ao mudar aqui, copie para os outros apps.
+// dos tokens de cada um (a exceção é o [SsSwitch], que recebe a cor primária).
+// Ao mudar aqui, copie para os outros apps.
 //
 // Ordem fixa: busca, perfil, planos, seções do app, "Aparência e sobre",
 // "Excluir minha conta" e "Sair".
@@ -372,11 +376,22 @@ class SsMenuSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _SsMenuCard(
     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-    child: SwitchListTile(
-      value: value,
-      onChanged: onChanged,
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: subtitle == null ? null : Text(subtitle!),
+    // O interruptor da suíte (a bolinha estica, amassa no fim e a cor escorre
+    // na trilha), na cor primária do tema.
+    child: MergeSemantics(
+      child: ListTile(
+        // O toque no próprio interruptor já dá o haptic (SsSwitch).
+        onTap: onChanged == null
+            ? null
+            : () {
+                HapticFeedback.selectionClick();
+                onChanged!(!value);
+              },
+        enabled: onChanged != null,
+        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: subtitle == null ? null : Text(subtitle!),
+        trailing: SsSwitch(value: value, onChanged: onChanged, activeColor: Theme.of(context).colorScheme.primary),
+      ),
     ),
   );
 }

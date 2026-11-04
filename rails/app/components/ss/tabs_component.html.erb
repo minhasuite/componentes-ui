@@ -1,0 +1,23 @@
+<%= tag.div(**root_attrs(class: classes("ss-tabs"), id: @id, data: { controller: "ss-tabs" })) do %>
+  <div class="ss-tabs-list" role="<%= panels? ? "tablist" : "navigation" %>" aria-label="<%= @label %>" data-ss-tabs-target="list" data-action="keydown->ss-tabs#key"
+       data-controller="ss-indicator" data-ss-indicator-kind-value="line" data-ss-indicator-selector-value=".ss-tab">
+    <% tabs.each do |t| %>
+      <% if t.link? %>
+        <%= link_to t.href, class: "ss-tab", "aria-current": (t.selected ? "page" : nil), data: { ss_tabs_target: "tab" } do %><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %><% end %>
+      <% else %>
+        <button type="button" class="ss-tab" role="tab" id="<%= t.key %>-tab" aria-controls="<%= t.key %>" aria-selected="<%= t.selected %>" tabindex="<%= t.selected ? 0 : -1 %>"
+                data-ss-tabs-target="tab" data-action="ss-tabs#select"><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %></button>
+      <% end %>
+    <% end %>
+    <span class="ss-tabs-ink" aria-hidden="true" data-ss-indicator-target="ink"></span>
+  </div>
+  <% tabs.reject(&:link?).each do |t| %>
+    <div class="ss-tab-panel" role="tabpanel" id="<%= t.key %>" aria-labelledby="<%= t.key %>-tab" tabindex="0" <%= "hidden" unless t.selected %> data-ss-tabs-target="panel">
+      <% if t.frame_src %>
+        <turbo-frame id="<%= t.key %>-frame" src="<%= t.frame_src %>" loading="lazy"><div class="ss-tab-loading" aria-busy="true">Carregando…</div></turbo-frame>
+      <% else %>
+        <%= t %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

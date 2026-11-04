@@ -7,6 +7,8 @@ enum SsButtonVariant { primary, ghost, success, danger }
 
 /// Botão do design system. `primary` tem o **glow roxo** direcional que o
 /// `elevation` do Material não reproduz. Altura 50, raio 14 (11 quando `small`).
+/// No toque afunda rápido e, ao soltar, volta com mola ([SsPressable]); o
+/// carregando e o conteúdo trocam com um cruzamento curto.
 class SsButton extends StatelessWidget {
   const SsButton({
     super.key,
@@ -75,6 +77,18 @@ class SsButton extends StatelessWidget {
         ],
       );
     }
+
+    // Conteúdo ↔ carregando: cruza com um pulinho (mola), sem pular o tamanho.
+    content = AnimatedSwitcher(
+      duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
+      switchInCurve: SsMotion.bounce,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, a) => FadeTransition(
+        opacity: a,
+        child: ScaleTransition(scale: a.drive(Tween(begin: .7, end: 1.0)), child: child),
+      ),
+      child: KeyedSubtree(key: ValueKey(loading), child: content),
+    );
 
     return SsPressable(
       enabled: enabled,

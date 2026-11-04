@@ -1,0 +1,21 @@
+<%= tag.figure(**root_attrs(class: classes("ss-donut"), data: { controller: "ss-donut" })) do %>
+  <div class="ss-donut-chart">
+    <svg viewBox="0 0 <%= SIZE %> <%= SIZE %>" role="img" aria-labelledby="<%= "d#{object_id}" %>">
+      <title id="<%= "d#{object_id}" %>"><%= title %>: <%= segments.map { "#{_1[:label]} #{pct_text(_1[:pct])}" }.join(", ") %></title>
+      <g transform="rotate(-90 <%= SIZE / 2 %> <%= SIZE / 2 %>)">
+        <% segments.each do |s| %>
+          <circle class="ss-donut-slice" data-ss-donut-target="slice" data-index="<%= s[:index] %>" cx="<%= SIZE / 2 %>" cy="<%= SIZE / 2 %>" r="<%= s[:r] %>" pathLength="100"
+                  style="stroke:<%= s[:color] %>;stroke-width:<%= s[:width] %>;stroke-dasharray:<%= dash(s) %>;stroke-dashoffset:<%= -s[:start].round(3) %>;--i:<%= s[:index] %>"><title><%= s[:label] %>: <%= s[:text] %></title></circle>
+        <% end %>
+      </g>
+    </svg>
+    <% if center %><div class="ss-donut-center"><b class="num"><%= center %></b><% if center_label %><small><%= center_label %></small><% end %></div><% end %>
+  </div>
+  <figcaption class="ss-sr"><%= title %></figcaption>
+  <ul class="ss-donut-legend">
+    <% segments.each do |s| %>
+      <li style="--i:<%= s[:index] %>"><button type="button" style="--c:<%= s[:color] %>" aria-pressed="false" data-ss-donut-target="key" data-index="<%= s[:index] %>"
+                  data-action="ss-donut#toggle mouseenter->ss-donut#peek mouseleave->ss-donut#unpeek focus->ss-donut#peek blur->ss-donut#unpeek"><%= s[:label] %> <b class="num"><%= pct_text(s[:pct]) %></b></button></li>
+    <% end %>
+  </ul>
+<% end %>

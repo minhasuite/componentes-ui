@@ -1,0 +1,13 @@
+<%= tag.div(**root_attrs(class: classes("ss-page"))) do %>
+  <header class="ss-page-head">
+    <div class="ss-page-titles">
+      <% if @crumbs.present? %><%= render Ss::BreadcrumbsComponent.new(items: @crumbs) %><% end %>
+      <h1 class="ss-page-title"><%= @title %></h1>
+      <% if @subtitle %><p class="ss-page-sub"><%= @subtitle %></p><% end %>
+    </div>
+    <% if actions? %><div class="ss-page-actions"><%= actions %></div><% end %>
+  </header>
+  <% if tabs? %><div class="ss-page-tabs"><%= tabs %></div><% end %>
+  <% if filters? %><div class="ss-page-filters"><%= filters %></div><% end %>
+  <div class="ss-page-body"><%= content %></div>
+<% end %>

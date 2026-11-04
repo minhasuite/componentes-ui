@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'motion_view.dart';
 
 /// Ação do [SsContextMenu] (e da `SsSelectionBar`). [destructive] pinta de vermelho.
 class SsContextAction {
@@ -44,7 +45,7 @@ class SsContextMenuState extends State<SsContextMenu> {
     nav.push(
       PageRouteBuilder<void>(
         opaque: false,
-        transitionDuration: rapido ? Duration.zero : const Duration(milliseconds: 300),
+        transitionDuration: rapido ? Duration.zero : SsMotion.indicator,
         reverseTransitionDuration: rapido ? Duration.zero : const Duration(milliseconds: 180),
         pageBuilder: (context, a, _) => _Menu(
           rect: rect,
@@ -87,7 +88,8 @@ class _Menu extends StatelessWidget {
     final alturaMenu = actions.length * 48.0 + 12;
     final abaixo = tela.height - rect.bottom >= alturaMenu + 24 || tela.height - rect.bottom > rect.top;
     final esquerda = rect.left.clamp(12.0, (tela.width - _largura - 12).clamp(12.0, double.infinity));
-    final curva = CurvedAnimation(parent: animation, curve: Curves.easeOutBack, reverseCurve: Curves.easeIn);
+    // Mola da suíte: o item levanta e o menu brota da âncora passando um pouco do tamanho.
+    final curva = CurvedAnimation(parent: animation, curve: SsMotion.bounce, reverseCurve: Curves.easeIn);
 
     final levantado = AnimatedBuilder(
       animation: curva,
@@ -112,10 +114,10 @@ class _Menu extends StatelessWidget {
     );
 
     final menu = ScaleTransition(
-      scale: Tween(begin: .88, end: 1.0).animate(curva),
+      scale: Tween(begin: .8, end: 1.0).animate(curva),
       alignment: abaixo ? Alignment.topLeft : Alignment.bottomLeft,
       child: FadeTransition(
-        opacity: animation,
+        opacity: CurvedAnimation(parent: animation, curve: const Interval(0, .4)),
         child: Container(
           width: _largura,
           decoration: BoxDecoration(
@@ -128,34 +130,38 @@ class _Menu extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final a in actions)
-                Semantics(
-                  button: true,
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      Navigator.of(context).pop();
-                      a.onTap();
-                    },
-                    child: SizedBox(
-                      height: 48,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Icon(a.icon, size: 20, color: a.destructive ? c.danger : c.ink2),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                a.label,
-                                style: TextStyle(
-                                  color: a.destructive ? c.dangerText : c.ink,
-                                  fontSize: AppType.body,
-                                  fontWeight: FontWeight.w700,
+              for (final (i, a) in actions.indexed)
+                SsRouteStagger(
+                  index: i,
+                  offset: abaixo ? -6 : 6,
+                  child: Semantics(
+                    button: true,
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).pop();
+                        a.onTap();
+                      },
+                      child: SizedBox(
+                        height: 48,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Icon(a.icon, size: 20, color: a.destructive ? c.danger : c.ink2),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  a.label,
+                                  style: TextStyle(
+                                    color: a.destructive ? c.dangerText : c.ink,
+                                    fontSize: AppType.body,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

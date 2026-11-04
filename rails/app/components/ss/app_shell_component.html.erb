@@ -1,0 +1,67 @@
+<%= tag.div(**root_attrs(class: classes("ss-shell"), data: { controller: "ss-shell", action: "keydown.esc@window->ss-shell#close keydown.ctrl+k@window->ss-shell#search:prevent keydown.meta+k@window->ss-shell#search:prevent" })) do %>
+  <aside class="ss-shell-side ss-side" id="ss-shell-side" data-ss-shell-target="side" aria-label="<%= @side_label %>">
+    <div class="ss-shell-brand">
+      <span class="ss-shell-logo" aria-hidden="true"></span>
+      <span class="ss-shell-label ss-shell-brand-name"><%= logo? ? logo : @brand %></span>
+      <button type="button" class="ss-shell-collapse" data-action="ss-shell#toggle" data-ss-shell-target="collapse" aria-expanded="true" aria-controls="ss-shell-side" aria-label="Recolher menu" title="Recolher menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg>
+      </button>
+    </div>
+    <% if @tenants.any? %>
+      <details class="ss-shell-tenant">
+        <summary aria-label="<%= @tenant_label %>: <%= current_tenant[:name] %>">
+          <span class="ss-shell-tenant-mark" aria-hidden="true"><%= current_tenant[:name].to_s[0] %></span>
+          <span class="ss-shell-label"><small><%= @tenant_label %></small><%= current_tenant[:name] %></span>
+          <svg class="ss-shell-label" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+        </summary>
+        <div class="ss-shell-tenant-menu" role="list">
+          <% @tenants.each do |t| %>
+            <%= link_to t[:href] || "#", class: "ss-shell-tenant-item", role: "listitem", "aria-current": (t[:current] ? "true" : nil), data: { turbo_method: t[:method] } do %>
+              <span class="ss-shell-tenant-mark" aria-hidden="true"><%= t[:name].to_s[0] %></span><%= t[:name] %>
+            <% end %>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+    <nav class="ss-nav ss-shell-nav ss-side-scroll" aria-label="<%= @side_label %>" data-controller="ss-indicator" data-ss-indicator-selector-value="a" data-ss-indicator-key-value="shell">
+      <% nav.each do |group| %>
+        <% items = capture do %>
+          <% group[:items].each do |it| %>
+            <%= link_to it[:href], "aria-current": (it[:current] ? "page" : nil), title: it[:label] do %>
+              <%= icon(it[:icon]) || tag.span(it[:label].to_s[0], class: "ss-shell-initial", "aria-hidden": "true") %><span class="ss-shell-label"><%= it[:label] %></span>
+              <% if it[:badge] %><span class="ss-nav-badge ss-shell-badge" aria-label="<%= it[:badge] %> novos"><%= it[:badge] %></span><% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% if group[:title] %>
+          <details <%= "open" if group_open?(group) %>>
+            <summary><span class="ss-shell-label"><%= group[:title] %></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg></summary>
+            <%= items %>
+          </details>
+        <% else %>
+          <%= items %>
+        <% end %>
+      <% end %>
+    </nav>
+    <% if side_footer? %><div class="ss-shell-side-foot"><%= side_footer %></div><% end %>
+  </aside>
+  <div class="ss-shell-scrim" data-action="click->ss-shell#close" aria-hidden="true"></div>
+  <div class="ss-shell-main">
+    <header class="ss-shell-top">
+      <button type="button" class="ss-shell-burger ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-shell#open" aria-controls="ss-shell-side" aria-expanded="false" data-ss-shell-target="burger" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></svg>
+      </button>
+      <% if @search %>
+        <button type="button" class="ss-shell-search" data-action="ss-shell#search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+          <span><%= @search_label %></span><kbd class="ss-kbd">Ctrl K</kbd>
+        </button>
+      <% end %>
+      <div class="ss-shell-top-end">
+        <%= top if top? %>
+        <%= user if user? %>
+      </div>
+    </header>
+    <main class="ss-shell-content" id="conteudo"><%= content %></main>
+  </div>
+<% end %>

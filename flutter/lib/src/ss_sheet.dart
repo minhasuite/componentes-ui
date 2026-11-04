@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'motion_view.dart';
 
 /// Abre uma folha de baixo no padrão da suíte: alça, raio 26, área segura,
-/// sobe junto com o teclado e rola quando o conteúdo passa da tela.
+/// sobe junto com o teclado e rola quando o conteúdo passa da tela. Sobe com
+/// mola (passa um pouco e assenta) e desce reta ([SsOverlayMotion.sheet]).
 /// [title] monta o [SsSheetHeader]; [child] é o corpo (sem Scaffold).
 Future<T?> showSsSheet<T>(
   BuildContext context, {
@@ -20,6 +22,7 @@ Future<T?> showSsSheet<T>(
   isDismissible: dismissible,
   enableDrag: dismissible,
   showDragHandle: false,
+  sheetAnimationStyle: SsOverlayMotion.sheet(context),
   builder: (context) => SsSheet(title: title, subtitle: subtitle, icon: icon, padding: padding, child: child),
 );
 

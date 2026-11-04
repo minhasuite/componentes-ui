@@ -1,0 +1,29 @@
+<%# titulo: Configurações e tema | grupo: Layout | ordem: 4 %>
+<% ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+
+<%= demo "Ss::SettingsLayoutComponent", "Menu de seções (marca a seção visível; chips no celular) e cartões com linhas de título, descrição e ação. Linha com href clica inteira, com seta (Modychat Settings).",
+         uso: 'render Ss::SettingsLayoutComponent.new(title: "Configurações") { |s| s.with_section(id:, title:, description:, icon:) { |sec| sec.with_item(title:, description:, href:) { ação } } }' do %>
+  <%= render Ss::SettingsLayoutComponent.new(title: "Configurações") do |s| %>
+    <% s.with_section(id: "conta", title: "Conta", description: "Seus dados e acesso.", icon: ic.("M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z")) do |sec| %>
+      <% sec.with_item(title: "Dados da conta", description: "Nome, e-mail e telefone", href: "#") %>
+      <% sec.with_item(title: "Senha e login", description: "Google, senha e sessões abertas", href: "#") do %>2 sessões<% end %>
+      <% sec.with_item(title: "Plano", description: "Profissional · renova em 12/12") do %><button class="ss-btn ss-btn-outline ss-btn-sm">Trocar</button><% end %>
+    <% end %>
+    <% s.with_section(id: "preferencias", title: "Preferências", description: "Como o sistema se comporta.", icon: ic.("M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4")) do |sec| %>
+      <% sec.with_item(title: "Notificações", description: "Pedido novo, título vencendo") do %><label class="ss-switch-row" style="min-height:0;padding:0"><span class="ss-sr">Notificações</span><input type="checkbox" role="switch" checked></label><% end %>
+      <% sec.with_item(title: "Aparência", description: "Tema e paleta") do %><%= render Ss::ThemeSwitcherComponent.new(palettes: false) %><% end %>
+    <% end %>
+    <% s.with_section(id: "perigo", title: "Zona de perigo", icon: ic.("M12 3 2 20h20zM12 10v4m0 3v.01")) do |sec| %>
+      <% sec.with_item(title: "Excluir conta", description: "Apaga todos os dados. Não dá para desfazer.", danger: true) do %><button class="ss-btn ss-btn-danger ss-btn-sm">Excluir</button><% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= demo "Ss::ThemeSwitcherComponent", "Auto · Claro · Escuro · OLED e as 28 paletas em bolinhas agrupadas por família (anel que desliza). compact: true é a versão da barra de cima; palettes: false ou uma lista limita as paletas.",
+         uso: 'render Ss::ThemeSwitcherComponent.new  ·  .new(compact: true)  ·  .new(palettes: %w[none eucalipto], oled: false)' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:18px">
+    <%= render Ss::ThemeSwitcherComponent.new %>
+    <%= render Ss::ThemeSwitcherComponent.new(compact: true) %>
+    <%= render Ss::ThemeSwitcherComponent.new(palettes: %w[none eucalipto marple], oled: false) %>
+  </div>
+<% end %>

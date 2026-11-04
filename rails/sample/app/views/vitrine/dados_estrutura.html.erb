@@ -1,0 +1,32 @@
+<%# titulo: Árvore e histórico | grupo: Dados | ordem: 40 %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::TreeViewComponent", "Plano de contas com <details>: recuo, contagem e valor. Teclado: ↑ ↓ andam, → abre, ← fecha/sobe.",
+        uso: 'render Ss::TreeViewComponent.new(label:, nodes: [{ label:, value:, count:, open: true, children: [...] }])' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::TreeViewComponent.new(label: "Plano de contas", nodes: [
+            { label: "Receitas", value: "R$ 52.400,00", count: 3, open: true, children: [
+              { label: "Vendas à vista", value: "R$ 31.200,00", url: "#" },
+              { label: "Vendas a prazo", value: "R$ 18.900,00", url: "#" },
+              { label: "Outras receitas", value: "R$ 2.300,00" }] },
+            { label: "Despesas", value: "R$ 38.150,00", count: 9, open: true, children: [
+              { label: "Pessoal", value: "R$ 21.000,00", count: 3, children: [
+                { label: "Salários", value: "R$ 16.000,00" }, { label: "Encargos", value: "R$ 4.200,00" }, { label: "Benefícios", value: "R$ 800,00" }] },
+              { label: "Ocupação", value: "R$ 8.600,00", count: 3, children: [
+                { label: "Aluguel", value: "R$ 6.000,00" }, { label: "Energia", value: "R$ 1.900,00" }, { label: "Água", value: "R$ 700,00" }] },
+              { label: "Marketing", value: "R$ 3.550,00" }, { label: "Impostos", value: "R$ 5.000,00" }] },
+            { label: "Investimentos", value: "R$ 6.000,00", count: 1, children: [{ label: "Equipamentos", value: "R$ 6.000,00" }] }]) %>
+    </div>
+  <% end %>
+  <%= demo "Ss::AuditTrailComponent", "Quem mudou o quê e quando; o trecho alterado aparece riscado em vermelho e novo em verde.",
+        uso: 'render Ss::AuditTrailComponent.new(entries: [{ who:, at:, action:, changes: [{ field:, from:, to: }] }])' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::AuditTrailComponent.new(entries: [
+            { who: "Ana Souza", at: Time.zone.local(2026, 11, 4, 10, 42), action: "alterou o pedido 1042",
+              changes: [{ field: "Valor", from: "R$ 1.250,00", to: "R$ 1.320,00" }, { field: "Entrega", from: "Retirar na loja", to: "Entregar no endereço do cliente" }] },
+            { who: "Bruno Lima", at: Time.zone.local(2026, 11, 3, 16, 5), action: "mudou a situação",
+              changes: [{ field: "Situação", from: "Em aberto", to: "Aprovado" }], note: "Aprovado na alçada do gerente." },
+            { who: "Carla Mendes", at: Time.zone.local(2026, 11, 2, 9, 30), action: "cadastrou o cliente",
+              changes: [{ field: "Telefone", from: nil, to: "(11) 98888-1234" }, { field: "Limite", from: "R$ 5.000,00", to: "R$ 8.000,00" }] }]) %>
+    </div>
+  <% end %>
+</div>

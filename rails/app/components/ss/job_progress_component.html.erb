@@ -1,0 +1,22 @@
+<%= tag.div(**root_attrs(id: id, class: classes("ss-card", "ss-job"), data: in_view_data(state: state), "aria-live": "polite", "aria-busy": (%i[queued running].include?(state) ? "true" : "false"))) do %>
+  <div class="ss-job-head">
+    <b><%= title %></b>
+    <span class="ss-status" data-tone="<%= tone %>"><%= state_label %><% if state == :running && determinate? %> · <span class="num"><%= pct %>%</span><% end %></span>
+  </div>
+  <% unless state == :failed %>
+    <div class="ss-job-bar<%= " is-indet" unless determinate? %>" role="progressbar" aria-label="<%= title %>" aria-valuemin="0" aria-valuemax="100"<% if determinate? %> aria-valuenow="<%= pct %>"<% end %>>
+      <i style="width:<%= determinate? ? pct : 100 %>%"></i>
+    </div>
+  <% end %>
+  <% if steps.any? %>
+    <ol class="ss-job-steps">
+      <% steps.each_with_index do |s, i| %><li class="<%= step_state(i) %>"><%= s %></li><% end %>
+    </ol>
+  <% end %>
+  <% if detail && state != :failed %><p class="ss-job-detail"><%= detail %></p><% end %>
+  <% if state == :done && result_url %><a class="ss-btn ss-btn-outline ss-btn-sm" href="<%= result_url %>"><%= result_label %></a><% end %>
+  <% if state == :failed %>
+    <p class="ss-job-error"><%= error || "Algo deu errado." %></p>
+    <% if retry_url %><%= button_to "Tentar de novo", retry_url, method: :post, class: "ss-btn ss-btn-outline ss-btn-sm" %><% end %>
+  <% end %>
+<% end %>

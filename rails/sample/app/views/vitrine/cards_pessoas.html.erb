@@ -1,0 +1,39 @@
+<%# titulo: Tarefas, IA, pontos e pessoas | grupo: Cards | ordem: 30 %>
+<%= demo "Ss::AiInsightCardComponent", "O diferencial da suíte: selo IA, borda viva na cor da marca (para com menos movimento), evidências recolhíveis, Aplicar/Ignorar e o estado pensando.",
+      uso: 'render Ss::AiInsightCardComponent.new(title:, sources: [...], confidence:, apply: { label:, url:, method: :post }, dismiss: { url: }) do … texto … end' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.25rem;align-items:start">
+    <%= render Ss::AiInsightCardComponent.new(title: "Mercado subiu 18% em outubro", confidence: "alta", when_text: "hoje, 08:12",
+          sources: [{ label: "42 lançamentos em Mercado", url: "#", detail: "out/2026" }, { label: "Média dos últimos 6 meses", detail: "R$ 760,00" }, { label: "Fatura do cartão Nubank", url: "#", detail: "fechou 28/10" }],
+          apply: { label: "Criar meta de R$ 900", url: vitrine_path("cards_pessoas"), method: :get }, dismiss: { url: vitrine_path("cards_pessoas"), method: :get }) do %>
+      Você gastou <b>R$ 897,40</b> com mercado, R$ 137 acima da sua média. Quase metade veio de compras pequenas no fim de semana. Uma meta mensal de <b>R$ 900</b> mantém o ritmo sem apertar.
+    <% end %>
+    <%= render Ss::AiInsightCardComponent.new(thinking: true) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::StatusTabCardComponent", "Aba de situação com recorte em S, avatares e progresso, ícone em losango, título, subtítulo e menu ⋮.",
+      uso: 'render Ss::StatusTabCardComponent.new(status: "Concluída", tone: :success, title:, subtitle:, progress: 1.0, people: [...]) do … itens do menu … end' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.25rem">
+    <%= render Ss::StatusTabCardComponent.new(status: "Concluída", tone: :success, title: "Web design", subtitle: "Projeto do cliente", progress: 1.0, people: ["Ana Souza", "Bruno Lima", "Carla Mendes", "Duda Reis"], url: "#") do %>
+      <a href="#">Abrir</a><a href="#">Duplicar</a><hr><button class="is-danger" type="button">Excluir</button>
+    <% end %>
+    <%= render Ss::StatusTabCardComponent.new(status: "Recusada", tone: :info, title: "Programa família", subtitle: "Tarefa da família", progress: 0, people: ["Elis Prado", "Fábio Cruz"]) %>
+    <%= render Ss::StatusTabCardComponent.new(status: "Rodando", tone: :accent, title: "Pesquisa de mercado", subtitle: "Tarefa da empresa", progress: 0.72, people: ["Gabi Nunes", "Hugo Melo", "Iara Luz"]) do %>
+      <a href="#">Abrir</a>
+    <% end %>
+  </div>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1.25rem;align-items:start">
+  <%= demo "Ss::LevelCardComponent", "Pontos grandes, nível em selo, barra até o próximo e “gasto → +pontos”.", uso: 'render Ss::LevelCardComponent.new(points: 4860, level: 3, next_at: 6000, items: [{ label:, spent:, points: }])' do %>
+    <%= render Ss::LevelCardComponent.new(points: 4860, level: 3, next_at: 6000, next_label: "nível 4", items: [
+          { label: "Uber", spent: "R$ 8,60", points: 24 }, { label: "Livraria Cultura", spent: "R$ 90,00", points: 280 },
+          { label: "Café Aroma", spent: "R$ 8,40", points: 6 }, { label: "Mercado Bom Preço", spent: "R$ 4,20", points: 3 }]) %>
+  <% end %>
+  <%= demo "Ss::PersonCardComponent", "Avatar, nome, papel, métricas e a equipe em avatares empilhados.", uso: 'render Ss::PersonCardComponent.new(name:, role:, status: "ok", metrics: [["Vendido", "R$ 48 mil"]], team: [...]) do … ações … end' do %>
+    <%= render Ss::PersonCardComponent.new(name: "Ana Souza", role: "Vendedora · Zona Sul", status: "ok", url: "#",
+          metrics: [["Vendido", "R$ 48,3 mil"], ["Pedidos", "214"], ["Meta", "92%"]], team: ["Bruno Lima", "Carla Mendes", "Duda Reis", "Elis Prado", "Fábio Cruz", "Gabi Nunes"], team_label: "Carteira com") do %>
+      <a class="ss-btn ss-btn-outline ss-btn-sm" href="#">Mensagem</a><a class="ss-btn ss-btn-primary ss-btn-sm" href="#">Ver carteira</a>
+    <% end %>
+  <% end %>
+</div>

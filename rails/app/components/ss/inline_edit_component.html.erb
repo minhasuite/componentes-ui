@@ -1,0 +1,17 @@
+<%= tag.div(class: classes("ss-inline-edit"), **root_attrs(data: { controller: "ss-inline-edit", ss_inline_edit_remote_value: url.present? })) do %>
+  <button type="button" class="ss-inline-edit-view" data-ss-inline-edit-target="view" data-action="ss-inline-edit#edit" aria-label="Editar <%= label %>: <%= value %>">
+    <span data-ss-inline-edit-target="text"><%= value %></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4 20 4-1 11-11-3-3L5 16zM14 6l3 3"/></svg>
+  </button>
+  <% field = capture do %>
+    <input type="<%= type %>" name="<%= name %>" value="<%= value %>" class="ss-input" aria-label="<%= label %>"
+           data-ss-inline-edit-target="input" data-action="keydown->ss-inline-edit#key blur->ss-inline-edit#blur">
+    <small class="ss-inline-edit-hint">Enter salva · Esc cancela</small>
+  <% end %>
+  <% if url %>
+    <%= form_with url: url, method: method_name, class: "ss-inline-edit-form", hidden: true,
+          data: { ss_inline_edit_target: "form", action: "submit->ss-inline-edit#submit turbo:submit-end->ss-inline-edit#done" } do %><%= field %><% end %>
+  <% else %>
+    <form class="ss-inline-edit-form" hidden data-ss-inline-edit-target="form" data-action="submit->ss-inline-edit#submit"><%= field %></form>
+  <% end %>
+<% end %>
