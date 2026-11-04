@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'ss_async.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Tela com título grande que encolhe ao rolar: monta um `CustomScrollView`
 /// com o [SsSliverHeader] e os seus [slivers]. Vai no `body` do Scaffold
@@ -102,7 +103,7 @@ class SsSliverHeader extends StatelessWidget {
           ((ModalRoute.of(context)?.canPop ?? false)
               ? SsHeaderAction(
                   icon: Icons.arrow_back_rounded,
-                  tooltip: 'Voltar',
+                  tooltip: SsStrings.of(context).back,
                   onPressed: () => Navigator.maybePop(context),
                 )
               : null),

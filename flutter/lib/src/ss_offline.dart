@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Faixa fina no topo de [child]: desce com mola quando [offline] vira
 /// `true` ("Sem conexão — mostrando o que já foi baixado") e, quando a rede
@@ -60,7 +61,7 @@ class _SsOfflineBannerState extends State<SsOfflineBanner> with SingleTickerProv
     final c = SsColors.of(context);
     final off = widget.offline;
     final fg = off ? c.aquecText : c.successText;
-    final texto = off ? 'Sem conexão — mostrando o que já foi baixado' : 'De volta online';
+    final texto = off ? SsStrings.of(context).offlineBanner : SsStrings.of(context).backOnline;
     return AnimatedBuilder(
       animation: _c,
       builder: (context, child) {

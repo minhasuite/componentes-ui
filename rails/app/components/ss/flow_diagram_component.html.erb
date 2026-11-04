@@ -1,0 +1,16 @@
+<%= tag.div(**root_attrs(class: classes("ss-flow", ("is-static" unless animate?)), role: "img", aria: { label: aria_label })) do %>
+  <svg class="ss-flow-links" viewBox="0 0 <%= W %> <%= H %>" aria-hidden="true" focusable="false">
+    <% links.each do |l| %>
+      <g class="ss-flow-link<%= " is-on" unless l.power.zero? %>" style="--c: <%= l.color %>">
+        <line x1="<%= l.x1 %>" y1="<%= l.y1 %>" x2="<%= l.x2 %>" y2="<%= l.y2 %>"/>
+        <% unless l.power.zero? %><%= dots(l) %><%= arrow(l) %><% end %>
+      </g>
+    <% end %>
+  </svg>
+  <% nodes.each_value do |n| %>
+    <div class="ss-flow-node<%= " is-center" if n.r == R_CENTER %>" data-kind="<%= n.kind %>" style="<%= pos_style(n) %>" aria-hidden="true">
+      <span class="ss-flow-disc"><%= node_icon(n) %><% if n.value %><b class="num"><%= n.value %></b><% end %></span>
+      <span class="ss-flow-label"><%= [n.label, n.caption].compact.join(" · ") %></span>
+    </div>
+  <% end %>
+<% end %>

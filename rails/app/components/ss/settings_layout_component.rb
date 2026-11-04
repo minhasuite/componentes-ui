@@ -48,10 +48,10 @@ module Ss
 
     renders_many :sections, Section
 
-    def initialize(title: nil, nav_label: "Seções", **opts)
+    def initialize(title: nil, nav_label: nil, **opts)
       super(**opts)
       @title = title
-      @nav_label = nav_label
+      @nav_label = nav_label || ss_t("settings_layout.nav", default: "Seções")
     end
 
     def icon(svg)

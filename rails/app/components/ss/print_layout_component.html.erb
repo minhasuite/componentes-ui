@@ -9,13 +9,13 @@
     </div>
     <div class="ss-print-doc">
       <p class="ss-print-title"><%= @title %></p>
-      <% if @number %><p class="num">Nº <%= @number %></p><% end %>
+      <% if @number %><p class="num"><%= ss_t("print_layout.number", default: "Nº %{number}", number: @number) %></p><% end %>
       <% if @date %><p class="num"><%= @date %></p><% end %>
     </div>
   </header>
   <% if @customer %>
     <section class="ss-print-party">
-      <p class="ss-kicker"><%= @customer[:label] || "Cliente" %></p>
+      <p class="ss-kicker"><%= @customer[:label] || ss_t("print_layout.customer", default: "Cliente") %></p>
       <strong><%= @customer[:name] %></strong>
       <% Array(@customer[:lines]).each do |l| %><span><%= l %></span><% end %>
     </section>

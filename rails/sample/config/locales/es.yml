@@ -1,0 +1,8 @@
+# Vitrine: o mínimo do Rails em espanhol (os produtos usam o rails-i18n).
+es:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: no puede estar en blanco
+      invalid: no es válido
+      too_long: es demasiado largo (máximo %{count} caracteres)

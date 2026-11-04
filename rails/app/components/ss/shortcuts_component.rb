@@ -4,10 +4,10 @@ module Ss
   #   render Ss::ShortcutsComponent.new(groups: [{ title: "Ir para", items: [{ keys: "g p", label: "Pedidos", url: pedidos_path }] },
   #                                              { title: "Nesta tela", items: [{ keys: "/", label: "Buscar" }] }])
   class ShortcutsComponent < BaseComponent
-    def initialize(groups:, title: "Atalhos de teclado", **opts)
+    def initialize(groups:, title: nil, **opts)
       super(**opts)
       @groups = groups
-      @title = title
+      @title = title || ss_t("shortcuts.title", default: "Atalhos de teclado")
     end
 
     def bindings = @groups.flat_map { |g| g[:items].select { _1[:url] }.map { |i| { keys: i[:keys], url: i[:url] } } }
@@ -20,7 +20,7 @@ module Ss
           content,
           tag.dialog(class: "ss-dialog ss-sc-dialog", "aria-labelledby": "#{did}-t", data: { ss_shortcuts_target: "dialog" }) do
             safe_join([
-              tag.div(class: "ss-sc-head") { safe_join([tag.h2(@title, id: "#{did}-t"), tag.button("×", type: "button", class: "ss-sc-close", "aria-label": "Fechar", data: { action: "ss-shortcuts#close" })]) },
+              tag.div(class: "ss-sc-head") { safe_join([tag.h2(@title, id: "#{did}-t"), tag.button("×", type: "button", class: "ss-sc-close", "aria-label": ss_t("common.close", default: "Fechar"), data: { action: "ss-shortcuts#close" })]) },
               tag.div(class: "ss-sc-body") { safe_join(@groups.map { group(_1) }) },
               tag.p(safe_join(["Aperte ", tag.kbd("?", class: "ss-kbd"), " em qualquer tela para ver esta lista."]), class: "ss-sc-foot")
             ])
@@ -39,7 +39,7 @@ module Ss
 
     def keys(k)
       parts = k.to_s.split(" ")
-      safe_join(parts.each_with_index.flat_map { |p, i| [(tag.span("depois", class: "ss-sc-then") if i.positive?), tag.kbd(p, class: "ss-kbd")].compact })
+      safe_join(parts.each_with_index.flat_map { |p, i| [(tag.span(ss_t("shortcuts.then", default: "depois"), class: "ss-sc-then") if i.positive?), tag.kbd(p, class: "ss-kbd")].compact })
     end
   end
 end

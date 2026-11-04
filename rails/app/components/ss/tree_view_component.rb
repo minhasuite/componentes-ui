@@ -4,10 +4,10 @@ module Ss
   #   render Ss::TreeViewComponent.new(label: "Plano de contas", nodes: [
   #     { label: "Receitas", value: "R$ 12.400,00", count: 3, open: true, children: [{ label: "Vendas", value: "R$ 9.000,00", url: "…" }] }])
   class TreeViewComponent < BaseComponent
-    def initialize(nodes:, label: "Árvore", **opts)
+    def initialize(nodes:, label: nil, **opts)
       super(**opts)
       @nodes = nodes
-      @label = label
+      @label = label || ss_t("tree_view.label", default: "Árvore")
     end
 
     def call
@@ -39,7 +39,7 @@ module Ss
     def row(n)
       safe_join([
         tag.span(n[:label], class: "ss-tree-label"),
-        (tag.small(n[:count], class: "ss-tree-count num", "aria-label": "#{n[:count]} itens") if n[:count]),
+        (tag.small(n[:count], class: "ss-tree-count num", "aria-label": ss_t("tree_view.count", count: n[:count].to_i, default: { one: "%{count} item", other: "%{count} itens" })) if n[:count]),
         (tag.span(n[:value], class: "ss-tree-value num") if n[:value])
       ].compact)
     end

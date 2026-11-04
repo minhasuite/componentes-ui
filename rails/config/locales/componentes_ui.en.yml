@@ -1,0 +1,505 @@
+# Textos da gem componentes_ui (Lista Clara) em inglês. Mesmas chaves do pt-BR.
+en:
+  componentes_ui:
+    agenda:
+      label: Schedule
+      now: Now, %{time}
+    ai_insight:
+      apply: Apply
+      badge: AI
+      confidence: Confidence
+      dismiss: Dismiss
+      sources: Where this comes from
+      thinking: Analyzing your data…
+    app_shell:
+      badge:
+        one: "%{count} new"
+        other: "%{count} new"
+      collapse: Collapse menu
+      expand: Expand menu
+      menu: Main menu
+      open: Open menu
+      search: Search…
+      tenant: Company
+    audit_trail:
+      empty: empty
+      label: Change history
+      to: to
+    block_list:
+      delete: Delete
+      duplicate: Duplicate
+      enabled: 'Enabled: %{title}'
+      list: Blocks
+      more: More options
+      move_down: Move down
+      move_up: Move up
+      moved: Moved to position %{n}
+    boarding_pass:
+      progress: Trip %{pct}% complete
+    breadcrumbs:
+      label: You are here
+    camera_tile:
+      age_d: "%{n} d ago"
+      age_h: "%{n} h ago"
+      age_min: "%{n} min ago"
+      age_s: "%{n} s ago"
+      error: Couldn't load the image
+      live: LIVE
+      loading: Loading image
+      offline: Camera offline
+      retry: Try again
+    chart:
+      keys_hint: "%{title}. Use the arrow keys to see each point."
+      period: Period
+      role: chart
+      value: Value
+    clock:
+      date: "%{weekday}, %{month} %{day}"
+    code_keypad:
+      backspace: Delete
+      count: "%{n} digits"
+      digits: Digits entered
+      error: Wrong code
+      keys: Keypad
+      label: Code keypad
+      submit: Confirm
+      success: Done
+    combobox:
+      create: Create “%{q}”
+      empty: Nothing found
+      hint: Type to search
+      placeholder: Type to search…
+    command_palette:
+      anywhere: from any screen
+      close: close
+      empty: Nothing found
+      label: Quick search
+      navigate: navigate
+      open: open
+      placeholder: Search…
+    common:
+      back: Back
+      cancel: Cancel
+      close: Close
+      copied: Copied!
+      copy: Copy
+      loading: Loading…
+      more_actions: More actions
+      retry: Try again
+      save: Save
+    compare_table:
+      included: Included
+      not_included: Not included
+      recommended: Recommended
+    confirm_danger:
+      confirm: Delete forever
+      text: This can't be undone.
+      title: Delete?
+      trigger: Delete
+      type: Type %{name} to confirm
+    confirm_dialog:
+      cancel: Cancel
+      ok: Confirm
+      title: Are you sure?
+    countdown:
+      aria: "%{left} of %{total}"
+    d_pad:
+      back: Back
+      channel: CH
+      channel_down: Previous channel
+      channel_up: Next channel
+      down: Down
+      home: Home
+      left: Left
+      menu: Menu
+      mute: Mute
+      ok: OK
+      remote: Remote control
+      right: Right
+      up: Up
+      volume: VOL
+      volume_down: Volume down
+      volume_up: Volume up
+    data_table:
+      bulk_actions: Bulk actions
+      choose_columns: Choose columns
+      clear_selection: Clear selection
+      columns: Columns
+      comfortable: Comfortable
+      compact: Compact
+      density: Row density
+      details: Details
+      empty: Nothing here yet.
+      items:
+        one: "%{count} item"
+        other: "%{count} items"
+      next_page: Next page
+      pagination: Pagination
+      prev_page: Previous page
+      select_all: Select all rows
+      select_row: Select row %{row}
+      selected: selected
+      show_details: Show details
+      visible_columns: Visible columns
+    date:
+      formats:
+        date: "%m/%d/%Y"
+        day_month: "%m/%d"
+        day_month_time: "%m/%d %H:%M"
+        time: "%H:%M"
+      months:
+      - January
+      - February
+      - March
+      - April
+      - May
+      - June
+      - July
+      - August
+      - September
+      - October
+      - November
+      - December
+      months_short:
+      - Jan
+      - Feb
+      - Mar
+      - Apr
+      - May
+      - Jun
+      - Jul
+      - Aug
+      - Sep
+      - Oct
+      - Nov
+      - Dec
+      weekdays:
+      - Sunday
+      - Monday
+      - Tuesday
+      - Wednesday
+      - Thursday
+      - Friday
+      - Saturday
+      weekdays_narrow:
+      - S
+      - M
+      - T
+      - W
+      - T
+      - F
+      - S
+      weekdays_short:
+      - Sun
+      - Mon
+      - Tue
+      - Wed
+      - Thu
+      - Fri
+      - Sat
+    date_range:
+      from: From
+      legend: Period
+      shortcuts:
+        7d: 7 days
+        last_month: Last month
+        month: This month
+        today: Today
+      shortcuts_label: Period shortcuts
+      to: To
+    device_tile:
+      details: Open %{name} details
+      error: No response
+      locked: No permission
+      pending: Sending…
+      turn_off: Turn off %{name}
+      turn_on: Turn on %{name}
+      unavailable: Unavailable
+    file_drop:
+      any_type: Any file type
+      hint: Drag here or click to choose
+      label: Files
+      remove: Remove %{name}
+      types: 'Types: %{types}'
+    filter_bar:
+      active: Active filters
+      add: Filter
+      clear: Clear filters
+      placeholder: Search
+      remove: 'Remove filter %{filter}: %{value}'
+      views: Saved views
+    form:
+      required: required
+      required_error: Please fill in this field.
+      submit: Save
+      submitting: Saving…
+    gantt:
+      bar_sr: "%{label}, from %{from} to %{to}, %{pct}% done"
+      bar_title: "%{label}: %{from} to %{to}, %{pct}%"
+      label: Timeline
+    heat:
+      label: Consistency
+    icon_picker:
+      empty: No icons matching “%{q}”
+      label: Icon
+      none: No icon
+      search: Search icons
+    inline_edit:
+      edit: 'Edit %{label}: %{value}'
+      hint: Enter saves · Esc cancels
+    job_progress:
+      error: Something went wrong.
+      result: Open result
+      states:
+        done: Done
+        failed: Failed
+        queued: Queued
+        running: Running
+    kpi_strip:
+      bad: " (bad)"
+      delta: Change %{delta}%{sense}
+      good: " (good)"
+      label: Indicators
+    level_card:
+      caption: How you earned
+      earned: Earned
+      level: level
+      next_level: next level
+      points: points
+      remaining: "%{n} to go for %{target}"
+      spent: Spent
+      to_next: To the next level
+      transaction: Transaction
+    locale_picker:
+      label: Language
+    logbook:
+      empty: Nothing logged yet
+      end: Start of the log
+      error: Couldn't load more.
+      label: Event log
+      load_more: Load more
+      loading: Loading log
+      loading_more: Loading…
+      retry: Try again
+      today: Today
+      yesterday: Yesterday
+    media_player:
+      buffering: Loading
+      idle: Nothing playing
+      next: Next
+      pause: Pause
+      play: Play
+      previous: Previous
+      progress: Position
+      unavailable: Unavailable
+      volume: Volume
+    mic_button:
+      error: Microphone error, tap to try again
+      idle: Speak
+      listening: Listening, tap to stop
+      processing: Processing
+    money:
+      format: "%u%n"
+    notice_card:
+      dismiss: Dismiss
+    number:
+      delimiter: ","
+      separator: "."
+    otp:
+      digit: Digit %{n} of %{total}
+      label: Verification code
+    page:
+      back: Back
+    pagination:
+      label: Pagination
+      next: Next page
+      page: Page %{page}
+      previous: Previous page
+      total:
+        one: "%{count} item"
+        other: "%{count} items"
+    palette_families:
+      frias: Cool
+      natureza: Nature
+      pastel: Pastel
+      profundas: Deep
+      quentes: Warm
+      vivas: Vivid
+    palettes:
+      algodao-doce: Cotton candy
+      ambar: Amber
+      ameixa: Plum
+      ardosia: Slate
+      artico: Arctic
+      cafe: Coffee
+      cereja: Cherry
+      coral: Coral
+      eucalipto: Eucalyptus
+      floresta: Forest
+      laranja: Orange
+      lavanda: Lavender
+      marple: Marple
+      meia-noite: Midnight
+      menta: Mint
+      neon-pop: Neon pop
+      oceano: Ocean
+      oliva: Olive
+      pessego: Peach
+      por-do-sol: Sunset
+      safira: Sapphire
+      salvia: Sage
+      terracota: Terracotta
+      tokyo-night: Tokyo Night
+      turquesa: Turquoise
+      vinho: Wine
+      violet-dusk: Violet dusk
+      violeta: Violet
+    person_card:
+      team: Team
+    price_board:
+      buy: Buy
+      delta: Change
+      item: Item
+      sell: Sell
+    pricing:
+      featured: Most popular
+      monthly: Monthly
+      per_month: "/mo"
+      per_year: "/yr"
+      period: Billing period
+      yearly: Yearly
+    print_layout:
+      customer: Customer
+      number: No. %{number}
+    qr_card:
+      code: Pix copy and paste
+      expired: Code expired. Generate a new one.
+      hint: Open your bank app, choose Pix and scan the code.
+      qr: Payment QR code
+      title: Pay with Pix
+      valid_for: Valid for
+    review_card:
+      rating: Rated %{rating} out of 5
+    scan_radar:
+      empty: Nothing found
+      found: "%{n} found"
+      found_one: 1 found
+      retry: Search again
+      searching: Searching…
+    settings_layout:
+      nav: Sections
+    shortcuts:
+      then: then
+      title: Keyboard shortcuts
+    split_allocator:
+      legend: Split
+    split_view:
+      empty: Choose an item from the list.
+      list: List
+    state_bands:
+      empty: No changes in this period
+      no_data: no readings
+      role: state band
+    status_tab_card:
+      progress: Progress
+    stepper_input:
+      less: Decrease
+      more: Increase
+    sticky_action_bar:
+      confirm: You have unsaved changes. Leave anyway?
+      message: Unsaved changes
+      region: Form actions
+    swatch_picker:
+      custom: Custom
+      legend: Color
+      pick: Pick another color
+    switch:
+      turn_off: Turn off
+      turn_on: Turn on
+    tabs:
+      label: Tabs
+    tag_input:
+      chosen: "%{label} chosen"
+      placeholder: Type and press Enter
+      remove: Remove %{tag}
+    theme_switcher:
+      label: Appearance
+      palette: Palette
+      themes:
+        dark: Dark
+        light: Light
+        oled: OLED
+        system: Auto
+    thermostat:
+      cooling: Cooling
+      current: Now
+      heating: Heating
+      idle: At target
+      label: Temperature
+      less: Decrease
+      mode_auto: Auto
+      mode_cool: Cool
+      mode_heat: Heat
+      mode_off: 'Off'
+      modes: Mode
+      more: Increase
+      'off': 'Off'
+      pending: Sending…
+    time_series_chart:
+      empty: No readings in this period
+      keys_hint: "%{title}. Arrow keys move through time; + zooms in, 0 resets."
+      last: latest
+      legend: Series
+      loading: Loading chart
+      max: maximum
+      min: minimum
+      no_value: "—"
+      reset: Show all
+      role: chart
+      until: to
+    timeline:
+      current: now
+      done: done
+      label: Timeline
+    toast:
+      close: Close notice
+      undo: Undo
+    tour:
+      count: "%{n} of %{total}"
+      done: Finish
+      next: Next
+      skip: Skip
+    tree_view:
+      count:
+        one: "%{count} item"
+        other: "%{count} items"
+      label: Tree
+    weather_card:
+      clear: Clear sky
+      clear_night: Clear night
+      cloudy: Cloudy
+      fog: Fog
+      forecast: Forecast
+      humidity: Humidity
+      max: Max
+      min: Min
+      partly_cloudy: Partly cloudy
+      rain: Rain
+      snow: Snow
+      storm: Storm
+      wind: Windy
+      wind_label: Wind
+    weekday_picker:
+      every_day: Every day
+      legend: Days of the week
+      shortcuts: Shortcuts
+      weekdays: Weekdays
+      weekend: Weekend
+    whats_new:
+      new: new
+      title: What's new
+      unseen: ", %{count} unseen"
+    wizard:
+      next: Next
+      step: 'Step %{n}: %{title}'
+      submit: Finish

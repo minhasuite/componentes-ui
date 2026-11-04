@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_list.dart';
+import 'ss_strings.dart';
 
 /// Um comando da [showSsCommandPalette]: o que aparece ([icon], [label]),
 /// palavras extras que também acham ([keywords]), o grupo do cabeçalho e o
@@ -26,14 +27,14 @@ Future<void> showSsCommandPalette(
   BuildContext context, {
   required List<SsCommand> commands,
   List<SsCommand> recent = const [],
-  String hint = 'Buscar ação ou tela',
+  String? hint,
   String initialQuery = '',
 }) {
   final rapido = reduceMotion(context);
   return showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
-    barrierLabel: 'Fechar',
+    barrierLabel: SsStrings.of(context).close,
     barrierColor: Colors.black.withValues(alpha: .45),
     transitionDuration: rapido ? Duration.zero : const Duration(milliseconds: 280),
     pageBuilder: (ctx, _, _) => SafeArea(
@@ -78,13 +79,15 @@ class SsCommandPalette extends StatefulWidget {
     required this.commands,
     required this.onSelected,
     this.recent = const [],
-    this.hint = 'Buscar ação ou tela',
+    this.hint,
     this.initialQuery = '',
   });
 
   final List<SsCommand> commands;
   final List<SsCommand> recent;
-  final String hint;
+
+  /// Padrão: [SsStrings.commandHint].
+  final String? hint;
   final String initialQuery;
   final ValueChanged<SsCommand> onSelected;
 
@@ -141,7 +144,7 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
 
     final linhas = <Widget>[];
     if (!buscando && widget.recent.isNotEmpty) {
-      linhas.add(const SsGroupHeader('Recentes'));
+      linhas.add(SsGroupHeader(SsStrings.of(context).recent));
       for (final cmd in lista) {
         linhas.add(_linha(cmd, false));
       }
@@ -196,14 +199,14 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
                         focusedBorder: InputBorder.none,
                         filled: false,
                         contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                        hintText: widget.hint,
+                        hintText: widget.hint ?? SsStrings.of(context).commandHint,
                         hintStyle: TextStyle(color: c.muted, fontSize: AppType.md, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
                   if (_ctrl.text.isNotEmpty)
                     IconButton(
-                      tooltip: 'Limpar',
+                      tooltip: SsStrings.of(context).clear,
                       icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
                       onPressed: () => setState(_ctrl.clear),
                     ),
@@ -216,7 +219,7 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
                   ? Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Nada encontrado para “${_ctrl.text.trim()}”',
+                        SsStrings.of(context).nothingFoundFor(_ctrl.text.trim()),
                         textAlign: TextAlign.center,
                         style: TextStyle(color: c.muted, fontSize: AppType.sub),
                       ),

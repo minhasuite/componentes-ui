@@ -5,6 +5,7 @@ import 'illustrations.dart';
 import 'motion.dart';
 import 'ss_button.dart';
 import 'ss_progress.dart';
+import 'ss_strings.dart';
 
 /// Uma página do [SsOnboarding]: [illustration] (qualquer widget) ou, sem
 /// ela, a [EmptyIllustration] com [icon]. [action] fica embaixo do texto
@@ -33,17 +34,19 @@ class SsOnboarding extends StatefulWidget {
     super.key,
     required this.pages,
     required this.onDone,
-    this.doneLabel = 'Começar',
-    this.nextLabel = 'Continuar',
-    this.skipLabel = 'Pular',
+    this.doneLabel,
+    this.nextLabel,
+    this.skipLabel,
     this.initialPage = 0,
   });
 
   final List<SsOnboardingPage> pages;
   final VoidCallback onDone;
-  final String doneLabel;
-  final String nextLabel;
-  final String skipLabel;
+
+  /// Padrões: [SsStrings.start], [SsStrings.next] e [SsStrings.skip].
+  final String? doneLabel;
+  final String? nextLabel;
+  final String? skipLabel;
   final int initialPage;
 
   @override
@@ -86,7 +89,7 @@ class _SsOnboardingState extends State<SsOnboarding> {
                 duration: SsMotion.fast,
                 child: _last
                     ? const SizedBox.shrink()
-                    : TextButton(onPressed: widget.onDone, child: Text(widget.skipLabel)),
+                    : TextButton(onPressed: widget.onDone, child: Text(widget.skipLabel ?? SsStrings.of(context).skip)),
               ),
             ),
           ),
@@ -129,7 +132,7 @@ class _SsOnboardingState extends State<SsOnboarding> {
             ),
           ),
           Semantics(
-            label: 'Página ${_i + 1} de ${widget.pages.length}',
+            label: SsStrings.of(context).pageOf(_i + 1, widget.pages.length),
             child: ExcludeSemantics(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -152,7 +155,12 @@ class _SsOnboardingState extends State<SsOnboarding> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-            child: SsButton(label: _last ? widget.doneLabel : widget.nextLabel, onPressed: _next),
+            child: SsButton(
+              label: _last
+                  ? widget.doneLabel ?? SsStrings.of(context).start
+                  : widget.nextLabel ?? SsStrings.of(context).next,
+              onPressed: _next,
+            ),
           ),
         ],
       ),
@@ -173,9 +181,10 @@ class SsChecklistItem {
 /// (com animação) quando [SsChecklistItem.done] vira verdadeiro. Quando o
 /// último é feito, solta confete e oferece fechar ([onDismiss]).
 class SsChecklistCard extends StatefulWidget {
-  const SsChecklistCard({super.key, this.title = 'Primeiros passos', required this.items, this.onDismiss});
+  const SsChecklistCard({super.key, this.title, required this.items, this.onDismiss});
 
-  final String title;
+  /// Padrão: [SsStrings.firstSteps].
+  final String? title;
   final List<SsChecklistItem> items;
   final VoidCallback? onDismiss;
 
@@ -203,6 +212,7 @@ class _SsChecklistCardState extends State<SsChecklistCard> {
     final feitos = widget.items.where((e) => e.done).length;
     final total = widget.items.length;
     final pronto = _all(widget.items);
+    final s = SsStrings.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       decoration: BoxDecoration(
@@ -218,12 +228,12 @@ class _SsChecklistCardState extends State<SsChecklistCard> {
             children: [
               Expanded(
                 child: Text(
-                  widget.title,
+                  widget.title ?? s.firstSteps,
                   style: TextStyle(color: c.ink, fontSize: AppType.md, fontWeight: FontWeight.w800),
                 ),
               ),
               Text(
-                '$feitos de $total',
+                s.countOf(feitos, total),
                 style: AppTheme.number(context, size: AppType.sub, color: pronto ? c.successText : c.muted),
               ),
             ],
@@ -246,12 +256,11 @@ class _SsChecklistCardState extends State<SsChecklistCard> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Tudo pronto!',
+                              s.allDone,
                               style: TextStyle(color: c.successText, fontWeight: FontWeight.w800),
                             ),
                           ),
-                          if (widget.onDismiss != null)
-                            TextButton(onPressed: widget.onDismiss, child: const Text('Fechar')),
+                          if (widget.onDismiss != null) TextButton(onPressed: widget.onDismiss, child: Text(s.close)),
                         ],
                       ),
                     ),

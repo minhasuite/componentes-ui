@@ -11,13 +11,13 @@ module Ss
       info: %(<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".18"/><path d="M12 11v6m0-9.5v.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>)
     }.freeze
 
-    def initialize(message:, tone: nil, undo_url: nil, undo_method: :post, undo_label: "Desfazer", duration: 5, dismissible: true, sticky: false, **opts)
+    def initialize(message:, tone: nil, undo_url: nil, undo_method: :post, undo_label: nil, duration: 5, dismissible: true, sticky: false, **opts)
       super(**opts)
       @message = message
       @tone = tone&.to_sym
       @undo_url = undo_url
       @undo_method = undo_method
-      @undo_label = undo_label
+      @undo_label = undo_label || ss_t("toast.undo", default: "Desfazer")
       @duration = duration
       @dismissible = dismissible
       @sticky = sticky
@@ -32,7 +32,7 @@ module Ss
           (@undo_url ? tag.span(@duration, class: "ss-toast-timer num", "aria-hidden": true, data: { ss_toast_target: "timer" }) : ICONS[@tone || :info].html_safe),
           tag.span(@message, class: "ss-toast-msg"),
           undo,
-          (tag.button("×", type: "button", class: "ss-toast-close", "aria-label": "Fechar aviso", data: { action: "ss-toast#close" }) if @dismissible)
+          (tag.button("×", type: "button", class: "ss-toast-close", "aria-label": ss_t("toast.close", default: "Fechar aviso"), data: { action: "ss-toast#close" }) if @dismissible)
         ].compact)
       end
     end

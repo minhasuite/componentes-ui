@@ -33,7 +33,7 @@ module Ss
 
     def head(p)
       tag.th(scope: "col", class: ("is-rec" if p[:recommended])) do
-        safe_join([(tag.span("Recomendado", class: "ss-compare-t-tag") if p[:recommended]), tag.b(p[:name]), (tag.small(p[:price], class: "num") if p[:price])].compact)
+        safe_join([(tag.span(ss_t("compare_table.recommended", default: "Recomendado"), class: "ss-compare-t-tag") if p[:recommended]), tag.b(p[:name]), (tag.small(p[:price], class: "num") if p[:price])].compact)
       end
     end
 
@@ -45,8 +45,8 @@ module Ss
 
     def value(v)
       case v
-      when true then tag.span(safe_join([YES.html_safe, tag.span("Incluído", class: "ss-sr")]), class: "ss-compare-yes")
-      when false, nil then tag.span(safe_join([tag.span("—", "aria-hidden": true), tag.span("Não incluído", class: "ss-sr")]), class: "ss-compare-no")
+      when true then tag.span(safe_join([YES.html_safe, tag.span(ss_t("compare_table.included", default: "Incluído"), class: "ss-sr")]), class: "ss-compare-yes")
+      when false, nil then tag.span(safe_join([tag.span("—", "aria-hidden": true), tag.span(ss_t("compare_table.not_included", default: "Não incluído"), class: "ss-sr")]), class: "ss-compare-no")
       else tag.span(v, class: "num")
       end
     end

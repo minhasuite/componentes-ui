@@ -1,6 +1,6 @@
 <%= render Ss::TicketCardComponent.new(css: classes("ss-pass"), **root_attrs(data: in_view_data)) do |t| %>
   <div class="ss-pass-route">
-    <svg class="ss-pass-arc" viewBox="0 0 300 92" role="img" aria-label="Viagem <%= (progress * 100).round %>% concluída">
+    <svg class="ss-pass-arc" viewBox="0 0 300 92" role="img" aria-label="<%= ss_t("boarding_pass.progress", default: "Viagem %{pct}% concluída", pct: (progress * 100).round) %>">
       <path class="ss-pass-path" d="<%= arc_d %>"/>
       <path class="ss-pass-done" d="<%= arc_d %>" pathLength="100" style="stroke-dasharray:<%= (progress * 100).round(2) %> 100"/>
       <circle class="ss-pass-end" cx="<%= P0[0] %>" cy="<%= P0[1] %>" r="5"/>

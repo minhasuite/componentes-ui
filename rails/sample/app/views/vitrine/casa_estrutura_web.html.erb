@@ -1,0 +1,85 @@
+<%# titulo: Página, confirmação, paginação e paleta | grupo: Casa e automação | ordem: 50 %>
+<%# Peças de estrutura do web (v0.10) para a migração do minha-automacao. Os textos dos
+    componentes seguem o idioma (PT/EN/ES no topo); os dados de exemplo ficam em pt. %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% pagina = (params[:p] || 4).to_i %>
+
+<% if params[:feito].present? %>
+  <div class="ss-card ss-card-pad" role="status" style="margin-bottom:16px">Confirmado: <b><%= params[:feito] %></b> (o formulário só foi enviado depois do OK).</div>
+<% end %>
+
+<%= demo "Ss::PageComponent(back:, badge)", "Cabeçalho com o link de voltar antes do título e um selo ao lado dele (with_badge). O texto do voltar vem do idioma; back_label: troca.",
+         uso: 'render Ss::PageComponent.new(title: "Sala de estar", subtitle: "…", back: comodos_path) { |p| p.with_badge { tag.span("Online", class: "ss-badge ss-badge-accent") }; p.with_actions { … } }' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::PageComponent.new(title: "Sala de estar", subtitle: "6 dispositivos · 2 cenas", back: vitrine_path("casa_estrutura_web")) do |p| %>
+      <% p.with_badge do %><span class="ss-badge ss-badge-accent">Online</span><% end %>
+      <% p.with_actions do %>
+        <button type="button" class="ss-btn ss-btn-outline">Editar</button>
+        <button type="button" class="ss-btn ss-btn-primary"><%= ico.("M12 5v14M5 12h14") %>Dispositivo</button>
+      <% end %>
+      <p style="color:var(--muted)">Corpo da tela.</p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::ConfirmDialogComponent", "Renderizado uma vez no layout (esta vitrine já tem): vira o confirm do Turbo, e todo data-turbo-confirm abre a caixa da suíte em vez do confirm() do navegador. Título, botão e tom por chamada: data-turbo-confirm-title, -button e -tone.",
+         uso: 'render Ss::ConfirmDialogComponent.new(id: "confirmar")  # no layout · form_with url:, data: { turbo_confirm: "Excluir a cena?", turbo_confirm_tone: "danger", turbo_confirm_button: "Excluir" }' do %>
+  <div style="display:flex;flex-wrap:wrap;gap:12px">
+    <%= form_with url: vitrine_path("casa_estrutura_web"), method: :get, data: { turbo_confirm: "A cena Cinema vai rodar agora em 4 dispositivos." } do %>
+      <input type="hidden" name="feito" value="rodar cena">
+      <button class="ss-btn ss-btn-outline" id="vt-confirm-padrao">Rodar cena</button>
+    <% end %>
+    <%= form_with url: vitrine_path("casa_estrutura_web"), method: :get,
+                  data: { turbo_confirm: "O alarme deixa de avisar até você ligar de novo.", turbo_confirm_title: "Desligar o alarme?", turbo_confirm_button: "Desligar", turbo_confirm_tone: "warn" } do %>
+      <input type="hidden" name="feito" value="desligar alarme">
+      <button class="ss-btn ss-btn-outline" id="vt-confirm-aviso">Desligar alarme</button>
+    <% end %>
+    <%= form_with url: vitrine_path("casa_estrutura_web"), method: :get,
+                  data: { turbo_confirm: "A cena e os 3 agendamentos dela somem. Isso não pode ser desfeito.", turbo_confirm_title: "Excluir a cena?", turbo_confirm_button: "Excluir", turbo_confirm_tone: "danger" } do %>
+      <input type="hidden" name="feito" value="excluir cena">
+      <button class="ss-btn ss-btn-danger" id="vt-confirm-perigo">Excluir cena</button>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::PaginationComponent", "Anterior, números com reticências e próxima, no visual do pager da tabela; o anel desliza para a página atual. url: recebe a página; sem ele, troca o ?page= da query.",
+         uso: 'render Ss::PaginationComponent.new(page: @pagy.page, pages: @pagy.pages, total: @pagy.count, url: ->(p) { dispositivos_path(page: p) })' do %>
+  <div class="ss-card ss-card-pad">
+    <p style="color:var(--muted)">Página <b class="num"><%= pagina %></b> de 12.</p>
+    <%= render Ss::PaginationComponent.new(page: pagina, pages: 12, total: 230, url: ->(n) { vitrine_path("casa_estrutura_web", p: n) }) %>
+    <%= render Ss::PaginationComponent.new(page: 1, pages: 3, url: ->(n) { vitrine_path("casa_estrutura_web", p: n) }) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::CommandPaletteComponent", "Ctrl+K (⌘K) abre esta paleta (com duas de mesmo atalho, abre a 1ª da página; a busca do topo abre a da vitrine). Ignora acento (\"iluminacao\" acha \"Iluminação\"), destaca com <mark>, ↑/↓ e Enter navegam, Esc fecha. src: traz resultados do servidor.",
+         uso: 'render Ss::CommandPaletteComponent.new(id: "busca", placeholder: "Buscar…", groups: [{ title: "Cômodos", items: [{ label: "Sala", url: sala_path, icon: svg, hint: "6 dispositivos" }] }], shortcut: "k", src: busca_path)' do %>
+  <p style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="ss-btn ss-btn-primary" data-ss-command-open="vt-casa-busca"><%= ico.("M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5") %>Abrir a paleta</button>
+    <span style="color:var(--muted)">ou <kbd class="ss-kbd">Ctrl</kbd> <kbd class="ss-kbd">K</kbd></span>
+  </p>
+  <% here = vitrine_path("casa_estrutura_web") %>
+  <%= render Ss::CommandPaletteComponent.new(id: "vt-casa-busca", placeholder: "Buscar cômodo, dispositivo ou ação…", groups: [
+        { title: "Cômodos", items: [
+          { label: "Sala de estar", url: "#{here}?p=1", icon: ico.("M3 11l9-7 9 7v9H3z"), hint: "6 dispositivos" },
+          { label: "Cozinha", url: "#{here}?p=2", icon: ico.("M3 11l9-7 9 7v9H3z"), hint: "4 dispositivos" },
+          { label: "Área de serviço", url: "#{here}?p=3", icon: ico.("M3 11l9-7 9 7v9H3z"), hint: "2 dispositivos" } ] },
+        { title: "Dispositivos", items: [
+          { label: "Iluminação da varanda", url: "#{here}?p=4", icon: ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11v2h6v-2a6 6 0 0 0-3-11z"), hint: "Ligada" },
+          { label: "Ar-condicionado do quarto", url: "#{here}?p=5", icon: ico.("M4 6h16v8H4zM8 18l-1 2M16 18l1 2M12 18v2"), hint: "22 °C" },
+          { label: "Câmera do portão", url: "#{here}?p=6", icon: ico.("M3 7h12v10H3zM15 10l6-3v10l-6-3"), hint: "Gravando" } ] },
+        { title: "Ações", items: [
+          { label: "Ligar cena Cinema", url: "#{here}?feito=cena+cinema", icon: ico.("M5 4l14 8-14 8z"), hint: "Cena" },
+          { label: "Armar o alarme", url: "#{here}?feito=armar+alarme", icon: ico.("M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"), hint: "Segurança" } ] }
+      ]) %>
+<% end %>
+
+<%= demo "Ss::SwatchPickerComponent(free: true)", "A ficha arco-íris abre o seletor de cor do navegador; o radio dela leva o hex escolhido. Valor salvo fora das opções já vem marcado nela.",
+         uso: 'render Ss::SwatchPickerComponent.new(name: "comodo[cor]", options: CORES, selected: @comodo.cor, free: true)' do %>
+  <div style="display:flex;gap:28px;flex-wrap:wrap">
+    <%= render Ss::SwatchPickerComponent.new(name: "vt_cor_livre", free: true, selected: "azul", options: [
+          { value: "violeta", label: "Violeta", color: "#5a45e8" }, { value: "azul", label: "Azul", color: "#2f6fdb" },
+          { value: "verde", label: "Verde", color: "#0b7a53" }, { value: "laranja", label: "Laranja", color: "#d9661f" }]) %>
+    <%= render Ss::SwatchPickerComponent.new(name: "vt_cor_livre2", free: true, selected: "#e0457b", options: [
+          { value: "violeta", label: "Violeta", color: "#5a45e8" }, { value: "verde", label: "Verde", color: "#0b7a53" }]) %>
+  </div>
+<% end %>

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssFormat } from "componentes_ui/controllers/ss_intl"
 
 // Tour guiado (Ss::TourComponent): escurece a tela com recorte no alvo
 // [data-tour-step="<target>"], balão com passo n/total; lembra que viu no navegador.
@@ -7,7 +8,10 @@ import { Controller } from "@hotwired/stimulus"
 // alvo ao outro com mola enquanto a página rola, em vez de "perseguir" a rolagem.
 export default class extends Controller {
   static targets = ["layer", "hole", "pop", "count", "title", "text", "next", "back", "skip"]
-  static values = { key: String, steps: Array, autostart: Boolean }
+  static values = { key: String, steps: Array, autostart: Boolean,
+                    // Textos do componente (I18n do Rails).
+                    countLabel: { type: String, default: "%{n} de %{total}" }, nextLabel: { type: String, default: "Próximo" },
+                    doneLabel: { type: String, default: "Concluir" } }
 
   connect() {
     this.onResize = () => this.position()
@@ -42,11 +46,11 @@ export default class extends Controller {
     this.target = document.querySelector(`[data-tour-step="${step.target}"]`)
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
     this.target.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" })
-    this.countTarget.textContent = `${i + 1} de ${this.steps.length}`
+    this.countTarget.textContent = ssFormat(this.countLabelValue, { n: i + 1, total: this.steps.length })
     this.titleTarget.textContent = step.title || ""
     this.textTarget.textContent = step.text || ""
     this.backTarget.hidden = i === 0
-    this.nextTarget.textContent = i === this.steps.length - 1 ? "Concluir" : "Próximo"
+    this.nextTarget.textContent = i === this.steps.length - 1 ? this.doneLabelValue : this.nextLabelValue
     this.skipTarget.hidden = i === this.steps.length - 1
     this.position()
     setTimeout(() => this.position(), reduce ? 0 : 350)

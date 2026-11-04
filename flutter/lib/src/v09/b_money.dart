@@ -9,6 +9,7 @@ import '../ss_badge.dart';
 import '../ss_list.dart';
 import '../ss_progress.dart';
 import '../ss_stat.dart';
+import '../ss_strings.dart';
 
 /// Uma linha do [SsLevelCard]: onde gastou, quanto e quantos pontos ganhou.
 class SsLevelEntry {
@@ -31,7 +32,7 @@ class SsLevelCard extends StatelessWidget {
     this.progress = 0,
     this.pointsToNext,
     this.entries = const [],
-    this.title = 'Seus pontos',
+    this.title,
   });
 
   final int points;
@@ -42,21 +43,16 @@ class SsLevelCard extends StatelessWidget {
   final double progress;
   final int? pointsToNext;
   final List<SsLevelEntry> entries;
-  final String title;
 
-  static String _milhar(int n) {
-    final s = n.abs().toString();
-    final b = StringBuffer(n < 0 ? '-' : '');
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) b.write('.');
-      b.write(s[i]);
-    }
-    return b.toString();
-  }
+  /// Padrão: [SsStrings.yourPoints].
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    final f = SsFormats.of(context);
+    String mil(int n) => f.integer(n);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -73,7 +69,7 @@ class SsLevelCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  title ?? s.yourPoints,
                   style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -82,17 +78,17 @@ class SsLevelCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Semantics(
-            label: '${_milhar(points)} pontos',
+            label: s.pointsCount(mil(points)),
             excludeSemantics: true,
             // Conta quando o card entra na tela (não ao montar, fora dela).
             child: SsTweenInView(
               end: points.toDouble(),
               builder: (context, v, _) => Text.rich(
                 TextSpan(
-                  text: _milhar(v.round()),
+                  text: mil(v.round()),
                   children: [
                     TextSpan(
-                      text: ' pts',
+                      text: s.pointsShort,
                       style: AppTheme.number(context, size: AppType.md, color: c.muted),
                     ),
                   ],
@@ -109,7 +105,7 @@ class SsLevelCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    pointsToNext == null ? 'Rumo a $nextLevel' : 'Faltam ${_milhar(pointsToNext!)} para $nextLevel',
+                    pointsToNext == null ? s.towardsLevel(nextLevel!) : s.pointsToLevel(mil(pointsToNext!), nextLevel!),
                     style: TextStyle(color: c.ink2, fontSize: AppType.meta, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -128,7 +124,7 @@ class SsLevelCard extends StatelessWidget {
               SsInViewReveal(
                 index: i,
                 child: Semantics(
-                  label: '${entries[i].title}: gastou ${money(entries[i].cents)}, ganhou ${entries[i].points} pontos',
+                  label: s.spentEarned(entries[i].title, money(entries[i].cents, f), entries[i].points),
                   excludeSemantics: true,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -148,7 +144,7 @@ class SsLevelCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                money(entries[i].cents),
+                                money(entries[i].cents, f),
                                 style: AppTheme.number(context, size: AppType.meta, color: c.muted),
                               ),
                             ],
@@ -157,7 +153,7 @@ class SsLevelCard extends StatelessWidget {
                         Icon(Icons.arrow_forward_rounded, size: 16, color: c.muted2),
                         const SizedBox(width: 8),
                         Text(
-                          '+${_milhar(entries[i].points)}',
+                          '+${mil(entries[i].points)}',
                           style: AppTheme.number(context, size: AppType.body, color: c.successText),
                         ),
                       ],
@@ -206,22 +202,18 @@ class SsPriceRow {
 /// destacada ([highlighted]). Tocar numa linha chama [onTap]. Preço e
 /// variação que mudam rolam na vertical (para cima quando subiram).
 class SsPriceBoard extends StatelessWidget {
-  const SsPriceBoard({
-    super.key,
-    required this.rows,
-    this.highlighted,
-    this.onTap,
-    this.buyLabel = 'Compra',
-    this.sellLabel = 'Venda',
-  });
+  const SsPriceBoard({super.key, required this.rows, this.highlighted, this.onTap, this.buyLabel, this.sellLabel});
 
   final List<SsPriceRow> rows;
   final int? highlighted;
   final ValueChanged<int>? onTap;
-  final String buyLabel, sellLabel;
 
-  static String pct(double v) {
-    final s = v.abs().toStringAsFixed(2).replaceAll('.', ',');
+  /// Padrões: [SsStrings.buy] e [SsStrings.sell].
+  final String? buyLabel, sellLabel;
+
+  /// Sem [formats], com vírgula decimal.
+  static String pct(double v, [SsFormats? formats]) {
+    final s = v.abs().toStringAsFixed(2).replaceAll('.', (formats ?? SsFormats.brl).decimalSeparator);
     return '${v > 0 ? '+' : (v < 0 ? '-' : '')}$s%';
   }
 
@@ -229,6 +221,7 @@ class SsPriceBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final cab = TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w800, letterSpacing: .8);
+    final s = SsStrings.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -236,14 +229,14 @@ class SsPriceBoard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
           child: Row(
             children: [
-              Expanded(child: Text('ATIVO', style: cab)),
+              Expanded(child: Text(s.asset, style: cab)),
               SizedBox(
                 width: 80,
-                child: Text(buyLabel.toUpperCase(), textAlign: TextAlign.right, style: cab),
+                child: Text((buyLabel ?? s.buy).toUpperCase(), textAlign: TextAlign.right, style: cab),
               ),
               SizedBox(
                 width: 80,
-                child: Text(sellLabel.toUpperCase(), textAlign: TextAlign.right, style: cab),
+                child: Text((sellLabel ?? s.sell).toUpperCase(), textAlign: TextAlign.right, style: cab),
               ),
             ],
           ),
@@ -259,12 +252,14 @@ class SsPriceBoard extends StatelessWidget {
     final ch = r.change;
     final bom = ch == null || ch == 0 ? null : (ch > 0) == r.goodWhenUp;
     final corCh = bom == null ? c.muted : (bom ? c.successText : c.dangerText);
+    final s = SsStrings.of(context);
+    final f = SsFormats.of(context);
     return Semantics(
       button: onTap != null,
       selected: on,
       label:
-          '${r.name}: $buyLabel ${r.buy}, $sellLabel ${r.sell}'
-          '${ch == null ? '' : ', variação ${pct(ch)}'}',
+          '${r.name}: ${buyLabel ?? s.buy} ${r.buy}, ${sellLabel ?? s.sell} ${r.sell}'
+          '${ch == null ? '' : s.changeOf(pct(ch, f))}',
       excludeSemantics: true,
       child: SsPressable(
         onTap: onTap == null ? null : () => onTap!(i),
@@ -315,7 +310,7 @@ class SsPriceBoard extends StatelessWidget {
                             child: SsRollSwitcher(
                               value: ch,
                               child: Text(
-                                pct(ch),
+                                pct(ch, f),
                                 maxLines: 1,
                                 style: AppTheme.number(context, size: AppType.meta, color: corCh),
                               ),

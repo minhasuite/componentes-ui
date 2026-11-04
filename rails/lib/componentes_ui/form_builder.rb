@@ -68,9 +68,10 @@ module ComponentesUi
       ss_radio_buttons(method, collection.map { |o| [o.public_send(text_method), o.public_send(value_method)] }, **opts)
     end
 
-    # Botão de enviar primário; o texto padrão é "Salvar".
-    def ss_submit(value = "Salvar", css: nil, **opts)
-      submit(value, { class: ["ss-btn ss-btn-primary", css].compact.join(" "), data: { turbo_submits_with: "Salvando…" } }.deep_merge(opts))
+    # Botão de enviar primário; o texto padrão é "Salvar" (componentes_ui.form.submit).
+    def ss_submit(value = nil, css: nil, **opts)
+      value ||= ss_t("form.submit", default: "Salvar")
+      submit(value, { class: ["ss-btn ss-btn-primary", css].compact.join(" "), data: { turbo_submits_with: ss_t("form.submitting", default: "Salvando…") } }.deep_merge(opts))
     end
 
     private
@@ -116,7 +117,7 @@ module ComponentesUi
     end
 
     def ss_error(method, errs)
-      msg = errs.any? ? errs.map { |m| m.to_s.upcase_first }.uniq.to_sentence : ("Preencha este campo." if ss_required?(method))
+      msg = errs.any? ? errs.map { |m| m.to_s.upcase_first }.uniq.to_sentence : (ss_t("form.required_error", default: "Preencha este campo.") if ss_required?(method))
       @template.tag.small(msg, class: "ss-field-error", id: "#{field_id(method)}_error") if msg
     end
 
@@ -145,8 +146,11 @@ module ComponentesUi
     end
 
     def ss_req(method)
-      @template.tag.abbr("*", class: "ss-req", title: "obrigatório") if ss_required?(method)
+      @template.tag.abbr("*", class: "ss-req", title: ss_t("form.required", default: "obrigatório")) if ss_required?(method)
     end
+
+    # Texto da gem (componentes_ui.*), com o pt-BR de reserva.
+    def ss_t(key, **opts) = I18n.t("componentes_ui.#{key}", **opts)
 
     def ss_human(method)
       object&.class.respond_to?(:human_attribute_name) ? object.class.human_attribute_name(method) : method.to_s.humanize

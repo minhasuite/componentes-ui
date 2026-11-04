@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'ss_button.dart';
 import 'ss_sheet.dart';
+import 'ss_strings.dart';
 
 /// Abre a folha "chegou no limite do plano" ([SsPlanLimit]). "Ver planos"
 /// fecha a folha e chama [onUpgrade]; "Agora não" só fecha. Com
@@ -13,7 +14,7 @@ Future<void> showSsPlanLimit(
   required String title,
   required String message,
   required VoidCallback onUpgrade,
-  String upgradeLabel = 'Ver planos',
+  String? upgradeLabel,
   String? secondaryLabel,
   VoidCallback? onSecondary,
 }) => showSsSheet<void>(
@@ -35,7 +36,7 @@ class SsPlanLimit extends StatelessWidget {
     required this.title,
     required this.message,
     required this.onUpgrade,
-    this.upgradeLabel = 'Ver planos',
+    this.upgradeLabel,
     this.secondaryLabel,
     this.onSecondary,
   });
@@ -43,7 +44,9 @@ class SsPlanLimit extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback onUpgrade;
-  final String upgradeLabel;
+
+  /// Padrão: [SsStrings.seePlans].
+  final String? upgradeLabel;
   final String? secondaryLabel;
   final VoidCallback? onSecondary;
 
@@ -72,7 +75,7 @@ class SsPlanLimit extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         SsButton(
-          label: upgradeLabel,
+          label: upgradeLabel ?? SsStrings.of(context).seePlans,
           icon: Icons.workspace_premium_outlined,
           onPressed: () {
             Navigator.maybePop(context);
@@ -85,7 +88,9 @@ class SsPlanLimit extends StatelessWidget {
             Navigator.maybePop(context);
             onSecondary?.call();
           },
-          child: Text(onSecondary == null ? 'Agora não' : secondaryLabel ?? 'Agora não'),
+          child: Text(
+            onSecondary == null ? SsStrings.of(context).notNow : secondaryLabel ?? SsStrings.of(context).notNow,
+          ),
         ),
       ],
     );
@@ -125,13 +130,15 @@ class SsPlanLocked extends StatelessWidget {
     required this.feature,
     required this.text,
     required this.onUpgrade,
-    this.upgradeLabel = 'Ver planos',
+    this.upgradeLabel,
   });
 
   final String feature;
   final String text;
   final VoidCallback onUpgrade;
-  final String upgradeLabel;
+
+  /// Padrão: [SsStrings.seePlans].
+  final String? upgradeLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +166,7 @@ class SsPlanLocked extends StatelessWidget {
                       style: TextStyle(color: c.ink, fontSize: AppType.md, fontWeight: FontWeight.w800),
                     ),
                     Text(
-                      'Disponível em plano pago',
+                      SsStrings.of(context).paidPlanOnly,
                       style: TextStyle(color: c.accentText, fontSize: AppType.meta, fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -173,7 +180,12 @@ class SsPlanLocked extends StatelessWidget {
             style: TextStyle(color: c.ink2, fontSize: AppType.sub, height: 1.45),
           ),
           const SizedBox(height: 12),
-          SsButton(label: upgradeLabel, small: true, expand: false, onPressed: onUpgrade),
+          SsButton(
+            label: upgradeLabel ?? SsStrings.of(context).seePlans,
+            small: true,
+            expand: false,
+            onPressed: onUpgrade,
+          ),
         ],
       ),
     );
@@ -184,11 +196,13 @@ class SsPlanLocked extends StatelessWidget {
 /// (aquecimento) quando falta 1 e erro quando acabou. Com [limit] acima de 10,
 /// barra contínua no lugar dos gomos.
 class SsQuota extends StatelessWidget {
-  const SsQuota({super.key, required this.used, required this.limit, this.label = 'este mês'});
+  const SsQuota({super.key, required this.used, required this.limit, this.label});
 
   final int used;
   final int limit;
-  final String label;
+
+  /// Período depois do "2 de 3". Padrão: [SsStrings.thisMonth].
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -199,9 +213,10 @@ class SsQuota extends StatelessWidget {
         : resta == 1
         ? (AppColors.aquecFg, c.aquecText, Icons.warning_amber_rounded)
         : (c.accent, c.muted, null);
-    final frase = '${used.clamp(0, limit)} de $limit $label';
+    final s = SsStrings.of(context);
+    final frase = s.quotaUsed(used.clamp(0, limit), limit, label ?? s.thisMonth);
     return Semantics(
-      label: resta <= 0 ? '$frase, limite atingido' : frase,
+      label: resta <= 0 ? s.limitReached(frase) : frase,
       child: ExcludeSemantics(
         child: Row(
           mainAxisSize: MainAxisSize.min,

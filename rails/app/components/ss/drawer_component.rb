@@ -10,13 +10,13 @@ module Ss
   class DrawerComponent < BaseComponent
     renders_one :footer
 
-    def initialize(id: "ss-drawer", title: nil, frame_id: nil, open: false, close_label: "Fechar", width: nil, **opts)
+    def initialize(id: "ss-drawer", title: nil, frame_id: nil, open: false, close_label: nil, width: nil, **opts)
       super(**opts)
       @id = id
       @title = title
       @frame_id = frame_id
       @open = open
-      @close_label = close_label
+      @close_label = close_label || ss_t("common.close", default: "Fechar")
       @width = width
     end
   end

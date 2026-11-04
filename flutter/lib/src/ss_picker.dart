@@ -8,6 +8,7 @@ import 'ss_controls.dart';
 import 'ss_error_view.dart';
 import 'ss_list.dart';
 import 'ss_sheet.dart';
+import 'ss_strings.dart';
 
 const _com = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
 const _sem = 'aaaaaeeeeiiiiooooouuuucn';
@@ -33,8 +34,8 @@ Future<T?> showSsPicker<T>(
   List<T>? items,
   String Function(T item)? labelOf,
   Widget Function(BuildContext context, T item)? itemBuilder,
-  String emptyText = 'Nada encontrado',
-  String hint = 'Buscar',
+  String? emptyText,
+  String? hint,
   String initialQuery = '',
 }) => showModalBottomSheet<T>(
   context: context,
@@ -67,8 +68,8 @@ class SsPickerSheet<T> extends StatefulWidget {
     this.items,
     this.labelOf,
     this.itemBuilder,
-    this.emptyText = 'Nada encontrado',
-    this.hint = 'Buscar',
+    this.emptyText,
+    this.hint,
     this.initialQuery = '',
   }) : assert(load != null || items != null, 'Passe load ou items');
 
@@ -78,8 +79,12 @@ class SsPickerSheet<T> extends StatefulWidget {
   final List<T>? items;
   final String Function(T item)? labelOf;
   final Widget Function(BuildContext context, T item)? itemBuilder;
-  final String emptyText;
-  final String hint;
+
+  /// Padrão: [SsStrings.nothingFound].
+  final String? emptyText;
+
+  /// Padrão: [SsStrings.search].
+  final String? hint;
 
   /// Busca já preenchida ao abrir (o texto que a pessoa digitou no campo).
   final String initialQuery;
@@ -158,13 +163,13 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
     if (_loading && _result.isEmpty) {
       body = const Center(child: CircularProgressIndicator());
     } else if (_error != null) {
-      body = SsErrorView(message: 'Não deu para carregar.', onRetry: _fetch);
+      body = SsErrorView(message: SsStrings.of(context).loadFailed, onRetry: _fetch);
     } else if (_result.isEmpty) {
       body = Center(
         child: Semantics(
           liveRegion: true,
           child: Text(
-            widget.emptyText,
+            widget.emptyText ?? SsStrings.of(context).nothingFound,
             style: TextStyle(color: c.muted, fontSize: AppType.body),
           ),
         ),
@@ -203,7 +208,7 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SsSearchField(
                 controller: _ctrl,
-                hint: widget.hint,
+                hint: widget.hint ?? SsStrings.of(context).search,
                 onChanged: _onQuery,
                 autofocus: widget.load != null,
               ),

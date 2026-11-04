@@ -27,14 +27,14 @@ module Ss
             safe_join([
               tag.span(@status, class: "ss-tabcard-tab"),
               (tag.span(class: "ss-avatars") { safe_join(@people.first(3).map { ss_avatar(_1, size: 30) } + (@people.size > 3 ? [tag.span("+#{@people.size - 3}", class: "ss-avatar more", style: "--s:30px")] : [])) } if @people.any?),
-              (tag.span(class: "ss-tabcard-progress") { safe_join([tag.i(tag.b(style: "width:#{pct}%"), role: "progressbar", "aria-valuenow": pct, "aria-valuemin": 0, "aria-valuemax": 100, "aria-label": "Progresso"), tag.span("#{pct}%", class: "num")]) } if pct)
+              (tag.span(class: "ss-tabcard-progress") { safe_join([tag.i(tag.b(style: "width:#{pct}%"), role: "progressbar", "aria-valuenow": pct, "aria-valuemin": 0, "aria-valuemax": 100, "aria-label": ss_t("status_tab_card.progress", default: "Progresso")), tag.span("#{pct}%", class: "num")]) } if pct)
             ].compact)
           end,
           tag.div(class: "ss-tabcard-body") do
             safe_join([
               tag.span((@icon || ICON).html_safe, class: "ss-tabcard-icon"),
               tag.div(class: "ss-tabcard-text") { safe_join([tag.h3(@url ? link_to(@title, @url) : @title), (tag.p(@subtitle) if @subtitle)].compact) },
-              (tag.details(class: "ss-menu") { safe_join([tag.summary("⋮", "aria-label": "Mais ações"), tag.div(content)]) } if content.present?)
+              (tag.details(class: "ss-menu") { safe_join([tag.summary("⋮", "aria-label": ss_t("common.more_actions", default: "Mais ações")), tag.div(content)]) } if content.present?)
             ].compact)
           end
         ])

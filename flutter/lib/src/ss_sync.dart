@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Estado de sincronização de quem salva primeiro no aparelho e envia depois.
 enum SsSyncState { synced, pending, sending, failed, offline }
@@ -18,20 +19,24 @@ class SsSyncStatus extends StatelessWidget {
   final int pendingCount;
   final VoidCallback? onTap;
 
-  /// Texto da pílula (público para teste e leitor de tela).
-  static String label(SsSyncState s, int n) => switch (s) {
-    SsSyncState.synced => 'Tudo salvo',
-    SsSyncState.pending => n == 1 ? '1 a enviar' : '$n a enviar',
-    SsSyncState.sending => 'Enviando…',
-    SsSyncState.failed => 'Falhou · Tentar de novo',
-    SsSyncState.offline => n > 0 ? 'Sem conexão · $n a enviar' : 'Sem conexão',
-  };
+  /// Texto da pílula (público para teste e leitor de tela). Sem [strings],
+  /// em português.
+  static String label(SsSyncState s, int n, [SsStrings? strings]) {
+    final t = strings ?? SsStrings.pt;
+    return switch (s) {
+      SsSyncState.synced => t.syncAllSaved,
+      SsSyncState.pending => t.syncPending(n),
+      SsSyncState.sending => t.syncSending,
+      SsSyncState.failed => t.syncFailed,
+      SsSyncState.offline => n > 0 ? t.syncOfflinePending(n) : t.offline,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final (cor, texto) = _cores(c, state);
-    final t = label(state, pendingCount);
+    final t = label(state, pendingCount, SsStrings.of(context));
     return Semantics(
       liveRegion: true,
       button: onTap != null,
@@ -175,12 +180,13 @@ class _SsSyncDotState extends State<SsSyncDot> {
       SsSyncState.failed => Icon(Icons.error_rounded, key: const ValueKey('erro'), size: 14, color: cor),
     };
     final visivel = widget.state != SsSyncState.synced || _mostraOk;
+    final s = SsStrings.of(context);
     final rotulo = switch (widget.state) {
-      SsSyncState.synced => 'Salvo',
-      SsSyncState.sending => 'Enviando',
-      SsSyncState.pending => 'Aguardando envio',
-      SsSyncState.offline => 'Sem conexão',
-      SsSyncState.failed => 'Falhou ao enviar',
+      SsSyncState.synced => s.saved,
+      SsSyncState.sending => s.chatSending,
+      SsSyncState.pending => s.waitingToSend,
+      SsSyncState.offline => s.offline,
+      SsSyncState.failed => s.sendFailed,
     };
     final d = reduceMotion(context) ? Duration.zero : SsMotion.base;
     return Semantics(

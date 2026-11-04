@@ -1,0 +1,44 @@
+<% if loading? %>
+  <%= tag.figure(**root_attrs(class: classes("ss-tc", "is-loading"), "aria-busy": "true")) do %>
+    <figcaption class="<%= show_title? ? "ss-tc-title" : "ss-sr" %>"><%= title %></figcaption>
+    <div class="ss-tc-skel" style="--h:<%= height %>px" role="status"><span class="ss-sr"><%= text(:loading, "Carregando gráfico") %></span></div>
+    <div class="ss-tc-skel-legend" aria-hidden="true"><i></i><i></i></div>
+  <% end %>
+<% elsif empty? %>
+  <%= tag.figure(**root_attrs(class: classes("ss-tc", "is-empty"))) do %>
+    <figcaption class="<%= show_title? ? "ss-tc-title" : "ss-sr" %>"><%= title %></figcaption>
+    <div class="ss-tc-empty" style="--h:<%= height %>px">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p><%= text(:empty, "Sem leituras neste período") %></p>
+    </div>
+  <% end %>
+<% else %>
+  <%= tag.figure(**root_attrs(class: classes("ss-tc", ("is-zoomed" if zoomed?)), data: controller_data)) do %>
+    <figcaption class="<%= show_title? ? "ss-tc-title" : "ss-sr" %>"><%= title %></figcaption>
+    <div class="ss-tc-stage" data-ss-time-chart-target="stage"
+         data-action="pointermove->ss-time-chart#move pointerdown->ss-time-chart#down pointerup->ss-time-chart#up pointercancel->ss-time-chart#leave pointerleave->ss-time-chart#leave dblclick->ss-time-chart#dblclick">
+      <div class="ss-tc-plot" style="--h:<%= height %>px" tabindex="0" role="group" aria-roledescription="<%= text(:role, "gráfico") %>"
+           aria-label="<%= text(:keys_hint, "%{title}. Setas andam no tempo; + aproxima, 0 volta.", title: title) %>" aria-describedby="<%= "#{uid}-sum" %>"
+           data-ss-time-chart-target="plot" data-action="keydown->ss-time-chart#key blur->ss-time-chart#leave">
+        <svg class="ss-tc-svg" data-ss-time-chart-target="svg" aria-hidden="true"></svg>
+        <button type="button" class="ss-tc-reset" data-ss-time-chart-target="reset" data-action="ss-time-chart#resetZoom"<%= " hidden" unless zoomed? %>>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><%= text(:reset, "Ver tudo") %>
+        </button>
+      </div>
+      <% if bands? %><div class="ss-tc-bands"><%= render bands_component %></div><% end %>
+      <div class="ss-tc-axis num" data-ss-time-chart-target="axis" aria-hidden="true"></div>
+      <span class="ss-tc-cursor" data-ss-time-chart-target="cursor" hidden></span>
+      <span class="ss-tc-brush" data-ss-time-chart-target="brush" hidden></span>
+      <div class="ss-tc-tip" data-ss-time-chart-target="tip" hidden></div>
+    </div>
+    <% if legend? %>
+      <ul class="ss-tc-legend" aria-label="<%= text(:legend, "Séries") %>">
+        <% series.each_with_index do |s, i| %>
+          <li><button type="button" aria-pressed="true" style="--c:<%= color(i) %>" data-index="<%= i %>" data-action="ss-time-chart#toggle" data-ss-time-chart-target="key"><%= s[:name] %><% if s[:unit] %> <small><%= s[:unit] %></small><% end %></button></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <p class="ss-sr" id="<%= "#{uid}-sum" %>"><%= summary %></p>
+    <p class="ss-sr" aria-live="polite" data-ss-time-chart-target="live"></p>
+  <% end %>
+<% end %>

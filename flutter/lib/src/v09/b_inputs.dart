@@ -10,6 +10,7 @@ import '../app_theme.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../ss_list.dart';
+import '../ss_strings.dart';
 
 // ---------------------------------------------------------------------------
 // SsSplitSlider
@@ -149,7 +150,11 @@ class _SsSplitSliderState extends State<SsSplitSlider> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.locked ? 'Total' : (diff == 0 ? 'Fechou o total' : (diff > 0 ? 'Falta' : 'Passou')),
+                    widget.locked
+                        ? SsStrings.of(context).total
+                        : (diff == 0
+                              ? SsStrings.of(context).totalClosed
+                              : (diff > 0 ? SsStrings.of(context).missing : SsStrings.of(context).over)),
                     style: TextStyle(
                       color: !widget.locked && diff != 0 ? c.dangerText : c.muted,
                       fontSize: AppType.sub,
@@ -158,7 +163,9 @@ class _SsSplitSliderState extends State<SsSplitSlider> {
                   ),
                 ),
                 Text(
-                  widget.locked || diff == 0 ? money(widget.total) : money(diff.abs()),
+                  widget.locked || diff == 0
+                      ? money(widget.total, SsFormats.of(context))
+                      : money(diff.abs(), SsFormats.of(context)),
                   style: AppTheme.number(
                     context,
                     size: AppType.body,
@@ -216,7 +223,7 @@ class _SplitRow extends StatelessWidget {
               ),
             ),
             Text(
-              money(cents),
+              money(cents, SsFormats.of(context)),
               style: AppTheme.number(context, size: AppType.md, weight: FontWeight.w500, color: c.ink),
             ),
           ],
@@ -224,10 +231,10 @@ class _SplitRow extends StatelessWidget {
         const SizedBox(height: 8),
         Semantics(
           slider: true,
-          label: 'Parte de $name',
-          value: money(cents),
-          increasedValue: money(math.min(total, cents + step)),
-          decreasedValue: money(math.max(0, cents - step)),
+          label: SsStrings.of(context).shareOf(name),
+          value: money(cents, SsFormats.of(context)),
+          increasedValue: money(math.min(total, cents + step), SsFormats.of(context)),
+          decreasedValue: money(math.max(0, cents - step), SsFormats.of(context)),
           onIncrease: () => onChanged(cents + step),
           onDecrease: () => onChanged(cents - step),
           child: LayoutBuilder(
@@ -368,7 +375,9 @@ class SsVerticalSlider extends StatefulWidget {
 class _SsVerticalSliderState extends State<SsVerticalSlider> {
   bool _focus = false;
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
 
   void _set(double v) {
     final s = widget.step <= 0 ? v : (v / widget.step).round() * widget.step;
@@ -386,6 +395,7 @@ class _SsVerticalSliderState extends State<SsVerticalSlider> {
 
   @override
   Widget build(BuildContext context) {
+    _formats = SsFormats.of(context);
     final c = SsColors.of(context);
     final cor = widget.color ?? c.accent;
     final span = widget.max - widget.min;
@@ -535,7 +545,9 @@ class SsDial extends StatefulWidget {
 }
 
 class _SsDialState extends State<SsDial> {
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
 
   double get _f {
     final span = widget.max - widget.min;
@@ -561,6 +573,7 @@ class _SsDialState extends State<SsDial> {
 
   @override
   Widget build(BuildContext context) {
+    _formats = SsFormats.of(context);
     final c = SsColors.of(context);
     final enabled = widget.onChanged != null;
     return Semantics(
@@ -731,7 +744,7 @@ class SsHoldToConfirm extends StatefulWidget {
     required this.label,
     required this.onConfirmed,
     this.icon = Icons.touch_app_outlined,
-    this.doneLabel = 'Confirmado',
+    this.doneLabel,
     this.duration = const Duration(milliseconds: 1200),
     this.danger = false,
   });
@@ -739,7 +752,9 @@ class SsHoldToConfirm extends StatefulWidget {
   final String label;
   final VoidCallback? onConfirmed;
   final IconData icon;
-  final String doneLabel;
+
+  /// Padrão: [SsStrings.confirmed] (segurar) ou [SsStrings.done] (arrastar).
+  final String? doneLabel;
   final Duration duration;
 
   /// Vermelho de erro (exclusão).
@@ -814,8 +829,8 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
     return Semantics(
       button: true,
       enabled: enabled,
-      label: _ok ? widget.doneLabel : widget.label,
-      hint: 'segure para confirmar',
+      label: _ok ? widget.doneLabel ?? SsStrings.of(context).confirmed : widget.label,
+      hint: SsStrings.of(context).holdToConfirm,
       liveRegion: true,
       onTap: enabled && !_ok ? () => _c.value = 1 : null,
       excludeSemantics: true,
@@ -858,7 +873,7 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
                           child: conteudo(
                             AppColors.onDark,
                             _ok ? Icons.check_rounded : widget.icon,
-                            _ok ? widget.doneLabel : widget.label,
+                            _ok ? widget.doneLabel ?? SsStrings.of(context).confirmed : widget.label,
                           ),
                         ),
                       ),
@@ -898,14 +913,16 @@ class SsSwipeToConfirm extends StatefulWidget {
     super.key,
     required this.label,
     required this.onConfirm,
-    this.doneLabel = 'Pronto',
+    this.doneLabel,
     this.icon = Icons.arrow_forward_rounded,
     this.done = false,
   });
 
   final String label;
   final Future<void> Function()? onConfirm;
-  final String doneLabel;
+
+  /// Padrão: [SsStrings.confirmed] (segurar) ou [SsStrings.done] (arrastar).
+  final String? doneLabel;
   final IconData icon;
 
   /// Já começa concluído (restaurar a tela depois de pago).
@@ -958,8 +975,8 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
     return Semantics(
       button: true,
       enabled: enabled,
-      label: done ? widget.doneLabel : widget.label,
-      hint: done ? null : 'arraste até o fim para confirmar',
+      label: done ? widget.doneLabel ?? SsStrings.of(context).done : widget.label,
+      hint: done ? null : SsStrings.of(context).slideToConfirm,
       liveRegion: true,
       onTap: enabled && _fase == _SwipeFase.idle ? _confirm : null,
       excludeSemantics: true,
@@ -1024,7 +1041,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                           child: Opacity(
                             opacity: done ? 1 : (1 - p * 1.4).clamp(0.0, 1.0),
                             child: Text(
-                              done ? widget.doneLabel : widget.label,
+                              done ? widget.doneLabel ?? SsStrings.of(context).done : widget.label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1137,9 +1154,9 @@ class _SsMorphButtonState extends State<SsMorphButton> {
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
     final rotulo = switch (_fase) {
       _MorphFase.idle => widget.label,
-      _MorphFase.running => '${widget.label}: carregando',
-      _MorphFase.ok => '${widget.label}: concluído',
-      _MorphFase.erro => '${widget.label}: falhou',
+      _MorphFase.running => SsStrings.of(context).stateLoading(widget.label),
+      _MorphFase.ok => SsStrings.of(context).stateDone(widget.label),
+      _MorphFase.erro => SsStrings.of(context).stateFailed(widget.label),
     };
     return Semantics(
       button: true,

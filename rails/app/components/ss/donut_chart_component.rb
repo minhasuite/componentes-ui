@@ -46,6 +46,6 @@ module Ss
       "#{len.round(3)} #{(100 - len).round(3)}"
     end
 
-    def pct_text(pct) = "#{pct.round(pct < 10 ? 1 : 0).to_s.tr(".", ",")}%"
+    def pct_text(pct) = "#{ss_number(pct, precision: pct < 10 && pct.round(1) % 1 != 0 ? 1 : 0)}%"
   end
 end

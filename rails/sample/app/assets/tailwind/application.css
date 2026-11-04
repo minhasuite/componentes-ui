@@ -10,6 +10,10 @@
 .vt-side a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 .vt-main { padding: 28px clamp(16px, 4vw, 48px) 80px; min-width: 0; }
 .vt-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+/* Troca de idioma da vitrine (?locale=): segmented compacto no topo. */
+.vt-idioma { width: 8.5rem; height: 36px; flex: none; }
+.vt-idioma > a { display: grid; place-items: center; font-size: .75rem; font-weight: 700; color: var(--muted); text-decoration: none; }
+.vt-idioma > a[aria-current="true"] { color: var(--accent); }
 .vt-demo { margin: 28px 0 8px; }
 .vt-demo > h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
 .vt-demo > p { color: var(--muted); font-size: 13px; margin-bottom: 12px; }

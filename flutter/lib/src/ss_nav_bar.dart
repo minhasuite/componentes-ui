@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Uma aba da [SsNavBar].
 class SsNavItem {
@@ -286,7 +287,7 @@ class _Tab extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '${item.label}, aba ${index + 1} de $count',
+      label: SsStrings.of(context).tabOf(item.label, index + 1, count),
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,

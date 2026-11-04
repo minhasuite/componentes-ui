@@ -1,0 +1,22 @@
+<%= tag.fieldset(class: classes("ss-weekday"), id:, disabled: disabled?, **root_attrs(data: { controller: "ss-weekday" })) do %>
+  <legend class="<%= @hide_legend ? 'ss-sr' : 'ss-label' %>"><%= legend %></legend>
+  <input type="hidden" name="<%= field_name %>" value="">
+  <div class="ss-weekday-days">
+    <% order.each do |i| %>
+      <% d = day(i) %>
+      <label class="ss-weekday-day" title="<%= d[:name] %>">
+        <input type="checkbox" name="<%= field_name %>" value="<%= d[:value] %>" aria-label="<%= d[:name] %>" <% if d[:checked] %>checked<% end %>
+               data-ss-weekday-target="day" data-action="change->ss-weekday#sync">
+        <span aria-hidden="true"><%= d[:letter] %></span>
+      </label>
+    <% end %>
+  </div>
+  <% if shortcuts? %>
+    <div class="ss-weekday-shortcuts" role="group" aria-label="<%= tx(:shortcuts, "Atalhos") %>" data-ss-weekday-target="shortcuts" hidden>
+      <% shortcut_list.each do |text, vals| %>
+        <% pressed = vals.sort == values.select { |v| day(values.index(v))[:checked] }.sort %>
+        <button type="button" aria-pressed="<%= pressed %>" data-days="<%= vals.join(',') %>" data-action="ss-weekday#apply"><%= text %></button>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

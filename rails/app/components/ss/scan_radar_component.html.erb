@@ -1,0 +1,20 @@
+<%= tag.div(**root_attrs(class: classes("ss-radar"), style: "--size: #{size}px", data: { state: state })) do %>
+  <div class="ss-radar-field">
+    <span class="ss-radar-grid" aria-hidden="true"></span>
+    <% if state == :searching %><span class="ss-radar-wave" aria-hidden="true"></span><span class="ss-radar-wave" style="--n: 1" aria-hidden="true"></span><span class="ss-radar-wave" style="--n: 2" aria-hidden="true"></span><span class="ss-radar-sweep" aria-hidden="true"></span><% end %>
+    <span class="ss-radar-core" aria-hidden="true"><%= icon %></span>
+    <% if items.any? %>
+      <ul class="ss-radar-items">
+        <% items.first(6).each_with_index do |it, i| %>
+          <li style="<%= chip_style(i) %>">
+            <%= content_tag(it[:url] ? :a : :span, class: "ss-radar-chip", href: it[:url]) do %><%= (it[:icon] || Ss::CasaIcons.svg(:puzzle)).to_s.html_safe %><span><%= it[:label] %></span><% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+  <p class="ss-radar-status" role="status"><%= status_text %></p>
+  <% if state == :empty && retry_url %>
+    <%= button_to retry_url, method: :post, class: "ss-btn ss-btn-ghost ss-btn-sm", form_class: "ss-radar-form" do %><%= Ss::CasaIcons.svg(:refresh) %><%= label(:retry) %><% end %>
+  <% end %>
+<% end %>

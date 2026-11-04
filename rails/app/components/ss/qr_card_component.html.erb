@@ -3,14 +3,14 @@
     <h3><%= title %></h3>
     <% if amount %><%= ss_amount(amount) %><% end %>
   </header>
-  <div class="ss-qr-box" role="img" aria-label="QR Code para pagamento"><%= qr %></div>
+  <div class="ss-qr-box" role="img" aria-label="<%= ss_t("qr_card.qr", default: "QR Code para pagamento") %>"><%= qr %></div>
   <% if expires_at %>
-    <p class="ss-qrcard-timer" aria-live="off"><span class="ss-qrcard-valid">Vale por <b class="num" data-ss-countdown-target="clock"><%= mmss %></b></span><span class="ss-qrcard-expired" role="status">Código expirado. Gere outro.</span></p>
+    <p class="ss-qrcard-timer" aria-live="off"><span class="ss-qrcard-valid"><%= ss_t("qr_card.valid_for", default: "Vale por") %> <b class="num" data-ss-countdown-target="clock"><%= mmss %></b></span><span class="ss-qrcard-expired" role="status"><%= ss_t("qr_card.expired", default: "Código expirado. Gere outro.") %></span></p>
   <% end %>
-  <div class="ss-qrcard-code" data-controller="ss-copy" data-ss-copy-text-value="<%= code %>">
-    <label class="ss-sr" for="<%= uid %>">Pix copia e cola</label>
+  <div class="ss-qrcard-code" data-controller="ss-copy" data-ss-copy-text-value="<%= code %>" data-ss-copy-done-value="<%= ss_t("common.copied", default: "Copiado!") %>">
+    <label class="ss-sr" for="<%= uid %>"><%= ss_t("qr_card.code", default: "Pix copia e cola") %></label>
     <input id="<%= uid %>" class="num" value="<%= code %>" readonly data-action="focus->ss-copy#select">
-    <button type="button" class="ss-btn ss-btn-primary ss-btn-sm" data-action="ss-copy#copy" data-ss-copy-target="button"><%= COPY.html_safe %><span data-ss-copy-target="label">Copiar</span></button>
+    <button type="button" class="ss-btn ss-btn-primary ss-btn-sm" data-action="ss-copy#copy" data-ss-copy-target="button"><%= COPY.html_safe %><span data-ss-copy-target="label"><%= ss_t("common.copy", default: "Copiar") %></span></button>
   </div>
   <% if hint %><p class="ss-qrcard-hint"><%= hint %></p><% end %>
 <% end %>

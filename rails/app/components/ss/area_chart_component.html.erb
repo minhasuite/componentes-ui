@@ -1,6 +1,6 @@
 <%= tag.figure(**root_attrs(class: classes("ss-area"), data: { controller: "ss-chart", ss_chart_points_value: data_points, ss_chart_index_value: active, ss_chart_w_value: W, ss_chart_h_value: H })) do %>
   <figcaption class="<%= show_title? ? "ss-area-title" : "ss-sr" %>"><%= title %></figcaption>
-  <div class="ss-area-plot" tabindex="0" role="group" aria-roledescription="gráfico" aria-label="<%= title %>. Use as setas para ver cada ponto." data-ss-chart-target="plot"
+  <div class="ss-area-plot" tabindex="0" role="group" aria-roledescription="<%= ss_t("chart.role", default: "gráfico") %>" aria-label="<%= ss_t("chart.keys_hint", default: "%{title}. Use as setas para ver cada ponto.", title: title) %>" data-ss-chart-target="plot"
        data-action="pointermove->ss-chart#move pointerdown->ss-chart#move keydown->ss-chart#key">
     <svg viewBox="0 0 <%= W %> <%= H %>" aria-hidden="true">
       <defs>
@@ -26,7 +26,7 @@
   <p class="ss-sr" aria-live="polite" data-ss-chart-target="live"></p>
   <table class="ss-sr">
     <caption><%= title %></caption>
-    <thead><tr><th scope="col">Período</th><th scope="col">Valor</th></tr></thead>
+    <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><th scope="col"><%= ss_t("chart.value", default: "Valor") %></th></tr></thead>
     <tbody><% points.each do |(label, v)| %><tr><th scope="row"><%= label %></th><td><%= fmt(v) %></td></tr><% end %></tbody>
   </table>
 <% end %>

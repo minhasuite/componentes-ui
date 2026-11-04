@@ -1,0 +1,25 @@
+<%= tag.dialog(**dialog_attrs) do %>
+  <input type="search" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="<%= id %>-list"
+         aria-label="<%= label %>" placeholder="<%= placeholder %>" autocomplete="off" spellcheck="false"
+         data-ss-command-target="input" data-action="input->ss-command#filter">
+  <div class="ss-command-list" id="<%= id %>-list" role="listbox" aria-label="<%= label %>" data-ss-command-target="list" data-action="click->ss-command#picked mousemove->ss-command#hover">
+    <% groups.each_with_index do |g, gi| %>
+      <div class="ss-command-group" role="group"<% if g[:title] %> aria-labelledby="<%= id %>-g<%= gi %>"<% end %> data-ss-command-target="group">
+        <% if g[:title] %><p class="ss-command-group-title" id="<%= id %>-g<%= gi %>"><%= g[:title] %></p><% end %>
+        <% Array(g[:items]).each_with_index do |it, ii| %>
+          <%= tag.a(**item_attrs(it, gi, ii)) do %>
+            <%= icon(it[:icon]) %><span data-ss-command-label><%= it[:label] %></span><% if it[:hint] %><small><%= it[:hint] %></small><% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+    <% if @src %><div class="ss-command-group" role="group" data-ss-command-target="remote"></div><% end %>
+    <p class="ss-command-empty" hidden data-ss-command-target="empty"><%= empty %></p>
+  </div>
+  <p class="ss-command-foot" aria-hidden="true">
+    <span><kbd class="ss-kbd">↑</kbd><kbd class="ss-kbd">↓</kbd> <%= ss_t("command_palette.navigate", default: "navegar") %></span>
+    <span><kbd class="ss-kbd">Enter</kbd> <%= ss_t("command_palette.open", default: "abrir") %></span>
+    <span><kbd class="ss-kbd">Esc</kbd> <%= ss_t("command_palette.close", default: "fechar") %></span>
+    <% if shortcut_hint %><span class="ss-command-foot-k"><kbd class="ss-kbd"><%= shortcut_hint %></kbd> <%= ss_t("command_palette.anywhere", default: "de qualquer tela") %></span><% end %>
+  </p>
+<% end %>

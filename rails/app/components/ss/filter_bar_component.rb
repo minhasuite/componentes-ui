@@ -10,12 +10,12 @@ module Ss
   class FilterBarComponent < BaseComponent
     IGNORE = %w[page sort dir].freeze
 
-    def initialize(views: [], filters: [], search: :q, placeholder: "Buscar", url: nil, params: nil, **opts)
+    def initialize(views: [], filters: [], search: :q, placeholder: nil, url: nil, params: nil, **opts)
       super(**opts)
       @views = views
       @filters = filters
       @search = search&.to_s
-      @placeholder = placeholder
+      @placeholder = placeholder || ss_t("filter_bar.placeholder", default: "Buscar")
       @url = url
       @params = params
     end

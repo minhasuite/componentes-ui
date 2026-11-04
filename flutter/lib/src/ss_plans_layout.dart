@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'ss_strings.dart';
 
 // Tela de planos padrão da suíte. Arquivo idêntico em todos os apps: só usa o
 // ColorScheme, então não depende dos tokens de cada um. Ao mudar aqui, copie
@@ -81,7 +82,7 @@ class SsPlansView extends StatelessWidget {
     this.onYearly,
     this.yearlySavings = 0,
     this.highlightCompare,
-    this.compareNames = const ['Grátis', 'Pro', 'Max'],
+    this.compareNames,
     this.footnote,
     this.onRestore,
     this.onManage,
@@ -113,7 +114,7 @@ class SsPlansView extends StatelessWidget {
   final String? highlightCompare;
 
   /// Cabeçalho das colunas do comparativo (ex.: "Basic" no lugar de "Grátis").
-  final List<String> compareNames;
+  final List<String>? compareNames;
   final String? footnote;
   final VoidCallback? onRestore;
   final VoidCallback? onManage;
@@ -124,6 +125,7 @@ class SsPlansView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
+    final str = SsStrings.of(context);
     final tierColor = ssTierColor(context, currentTier);
     return Stack(
       children: [
@@ -137,7 +139,7 @@ class SsPlansView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'SEU PLANO',
+                    str.yourPlan,
                     style: TextStyle(
                       color: s.onSurfaceVariant,
                       fontSize: 12,
@@ -181,8 +183,11 @@ class SsPlansView extends StatelessWidget {
                 width: double.infinity,
                 child: SegmentedButton<bool>(
                   segments: [
-                    const ButtonSegment(value: false, label: Text('Mensal')),
-                    ButtonSegment(value: true, label: Text(yearlySavings > 0 ? 'Anual · −$yearlySavings%' : 'Anual')),
+                    ButtonSegment(value: false, label: Text(str.monthly)),
+                    ButtonSegment(
+                      value: true,
+                      label: Text(yearlySavings > 0 ? str.yearlySavings(yearlySavings) : str.yearly),
+                    ),
                   ],
                   selected: {yearly!},
                   showSelectedIcon: false,
@@ -202,7 +207,7 @@ class SsPlansView extends StatelessWidget {
                   names: compareNames,
                 ),
                 icon: const Icon(Icons.table_chart_outlined),
-                label: const Text('Comparar os planos'),
+                label: Text(str.comparePlans),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -222,13 +227,13 @@ class SsPlansView extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onRestore,
                       icon: const Icon(Icons.restore),
-                      label: const Text('Restaurar compras'),
+                      label: Text(str.restorePurchases),
                     ),
                   if (onManage != null)
                     TextButton.icon(
                       onPressed: onManage,
                       icon: const Icon(Icons.open_in_new),
-                      label: const Text('Gerenciar assinatura'),
+                      label: Text(str.manageSubscription),
                     ),
                 ],
               ),
@@ -236,15 +241,15 @@ class SsPlansView extends StatelessWidget {
           ],
         ),
         if (busy)
-          const Positioned.fill(
+          Positioned.fill(
             child: ColoredBox(
               color: Colors.black54,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 14),
-                  Text('Confirmando sua assinatura…', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 14),
+                  Text(str.confirmingSubscription, style: const TextStyle(color: Colors.white, fontSize: 14)),
                 ],
               ),
             ),
@@ -265,7 +270,7 @@ class SsPlanCard extends StatelessWidget {
     final o = offer;
     final color = ssTierColor(context, o.tier);
     final max = o.tier == SsTier.max;
-    final badge = o.badge ?? (max && !o.current ? 'Mais completo' : null);
+    final badge = o.badge ?? (max && !o.current ? SsStrings.of(context).mostComplete : null);
     return _box(
       context,
       border: max || o.current ? color : null,
@@ -325,7 +330,7 @@ class SsPlanCard extends StatelessWidget {
                   Icon(Icons.check_circle, color: color, size: 19),
                   const SizedBox(width: 8),
                   Text(
-                    'Seu plano atual',
+                    SsStrings.of(context).currentPlan,
                     style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -371,7 +376,7 @@ Future<void> showSsPlanCompare(
   List<SsPlanCompareRow> rows, {
   SsTier current = SsTier.free,
   String? highlight,
-  List<String> names = const ['Grátis', 'Pro', 'Max'],
+  List<String>? names,
 }) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
@@ -388,22 +393,20 @@ Future<void> showSsPlanCompare(
 );
 
 class SsPlanCompareTable extends StatelessWidget {
-  const SsPlanCompareTable(
-    this.rows, {
-    super.key,
-    this.current = SsTier.free,
-    this.highlight,
-    this.names = const ['Grátis', 'Pro', 'Max'],
-  });
+  const SsPlanCompareTable(this.rows, {super.key, this.current = SsTier.free, this.highlight, this.names});
 
   final List<SsPlanCompareRow> rows;
   final SsTier current;
   final String? highlight;
-  final List<String> names;
+
+  /// Padrão: [SsStrings.planNames].
+  final List<String>? names;
 
   @override
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
+    final str = SsStrings.of(context);
+    final names = this.names ?? str.planNames;
     Widget cell(String t, SsTier tier, {bool head = false}) {
       final on = tier == current;
       final color = head || on ? ssTierColor(context, tier) : (t == '—' ? s.onSurfaceVariant : s.onSurface);
@@ -424,7 +427,7 @@ class SsPlanCompareTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Comparar os planos',
+          str.comparePlans,
           style: TextStyle(color: s.onSurface, fontSize: 18, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 12),

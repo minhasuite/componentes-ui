@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.9.0
+      ref: v0.10.0
 ```
 
 ```dart
@@ -75,7 +75,7 @@ docker run --rm -v "$PWD":/app -v flutter_pub:/root/.pub-cache -v "$K":/k:ro -w 
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.9.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.0"
 ```
 
 ```css
@@ -299,6 +299,54 @@ passa ~12% do ponto e assenta. "Reduzir movimento" do sistema desliga tudo.
 - Vitrines: seção "Movimento" no Flutter; páginas "Movimento: toque e seleção"
   e "Movimento: entrada, números e camadas" no Rails.
 
+### Idioma (pt/en/es)
+
+Os textos das peças Flutter (botões, dicas, leitor de tela, tempo relativo, meses e
+dias da semana) vêm de `SsStrings`, com `SsStrings.pt` (padrão), `.en` e `.es`. O app
+multilíngue registra o delegate junto com os do Material:
+`localizationsDelegates: [SsStrings.delegate, GlobalMaterialLocalizations.delegate, …]`.
+Sem o delegate, vale o idioma do `Localizations` (pt, en ou es); app sem idioma
+configurado continua em português. Para trocar textos soltos:
+`SsStringsDelegate(apply: (s) => s.copyWith(cancel: 'Dismiss'))` no lugar do delegate,
+ou `SsStringsScope.override(apply: …, child: …)` num trecho da árvore. Rótulo passado
+ao widget (`confirmLabel:`, `hint:`…) sempre ganha. Funções sem contexto aceitam o
+idioma: `timeAgo(d, strings: SsStrings.of(context))`, `ssMonthName(m, s)`,
+`SsValidators.required(v, s)`. Moeda e separadores são à parte (`SsFormats`, padrão
+real em pt-BR): `SsFormatsScope(formats: SsFormats.usd, child: …)`.
+
+## v0.10: casa e automação, idioma pt/en/es
+
+Peças para migrar o minha-automacao (plano em `../docs/MIGRACAO-minha-automacao.md`),
+com o mesmo nome e os mesmos estados nos dois lados. Vitrine Rails: grupo "Casa e
+automação"; vitrine Flutter: seção "Casa e automação (v0.10)".
+
+| Peça | Flutter | Rails |
+|---|---|---|
+| Tile de dispositivo | `SsDeviceTile` | `Ss::DeviceTileComponent` |
+| Slider (trilha brilho/kelvin/matiz, variante "fill") | `SsSlider` | `Ss::RangeComponent(track:, submit: :release)` |
+| Termostato | `SsThermostat` | `Ss::ThermostatComponent` |
+| Switch avulso (checkbox ou `button_to`) | `SsSwitch` | `Ss::SwitchComponent` |
+| Teclado de código | `SsCodeKeypad` | `Ss::CodeKeypadComponent` |
+| Campo −/+ | `SsStepper` | `Ss::StepperInputComponent` |
+| Dias da semana | `SsWeekdayPicker` | `Ss::WeekdayPickerComponent` |
+| Gráfico no tempo (cursor, 2 unidades, zoom no web) | `SsTimeChart` | `Ss::TimeSeriesChartComponent` |
+| Faixas de estado | `SsStateBands` | `Ss::StateBandsComponent` |
+| Logbook por dia | `SsLogbook` | `Ss::LogbookComponent` |
+| Tabela de dados | `SsDataTable` | `Ss::DataTableComponent` |
+| Câmera, player, aviso com ações, microfone | `SsCameraTile`, `SsMediaPlayer`, `SsNoticeCard`, `SsMicButton` | `Ss::CameraTileComponent`, `MediaPlayerComponent`, `NoticeCardComponent`, `MicButtonComponent` |
+| Tela de bloqueio | `SsLockScreen` | — |
+| Fluxo de energia, controle remoto, clima, relógio, radar | `SsFlowDiagram`, `SsDPad`, `SsWeatherCard`, `SsClock`, `SsScanRadar` | `Ss::FlowDiagramComponent`, `DPadComponent`, `WeatherCardComponent`, `ClockComponent`, `ScanRadarComponent` |
+| Ícone, idioma, blocos, grupo recolhível | `SsIconPicker`, `SsLocalePicker`, `SsBlockList`, `SsCollapsible` | `Ss::IconPickerComponent`, `LocalePickerComponent`, `BlockListComponent`, `CollapsibleComponent` |
+| Página com voltar/badge, confirmação global, paginação, paleta Ctrl+K, cor livre | (já havia) | `PageComponent(back:)`, `ConfirmDialogComponent`, `PaginationComponent`, `CommandPaletteComponent`, `SwatchPickerComponent(free:)` |
+
+**Idioma.** Rails: `config/locales/componentes_ui.{pt-BR,en,es}.yml` (o engine
+carrega), `ss_t`, `ss_number`, `ss_money`, `ss_date`; JS usa `Intl` com o `lang` da
+página (`ss_intl.js`); moeda em `ComponentesUi.config.currency` (padrão BRL).
+Flutter: `SsStrings` (veja "Idioma (pt/en/es)" acima) e `SsFormats` para moeda.
+
+**Tokens.** `--accent-solid` / `SsColors.accentSolid` (destaque sólido com 4,5:1 para
+texto branco, gerado por paleta); sucesso e perigo do claro mais escuros (AA).
+
 ## Verificar
 
 ```bash
@@ -321,6 +369,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.10.0` (04/11/2026): peças de casa e automação (tabela da seção "v0.10"), idioma pt/en/es nos dois lados, `--accent-solid`, sucesso/perigo AA. Nada quebra: parâmetros de texto que tinham padrão em português ficaram opcionais (passar String continua valendo); no web, o checkbox e o switch ligado usam `--accent-solid`.
 - `v0.9.0` (04/11/2026): paletas, OLED, 58 peças Flutter e 60 componentes Rails (`Ss::*Component` + Stimulus + `ss_form_with`), vitrines Flutter e Rails (seção "v0.9"), movimento com a mola do menu do app em tudo e 28 paletas geradas de `paletas/paletas.json` para os dois lados. A gem passa a depender do `view_component`. Nada quebra da v0.8; no web o `.ss-check` passa a ser desenhado pelo CSS e quatro paletas antigas mudam um pouco de cor (alinhadas ao Flutter).
 - `v0.8.0` (02/11/2026): parâmetros que as migrações pediram. `SsListItem(trailing:, dimmed:, onLongPress:, maxLines:)`, `SsTextField(helperText:, minLines:)`, `showSsPrompt(allowEmpty:, maxLines:, maxLength:, message:)`, `SsSearchField(debounce:, suffix:)`, `SsDateField(initialDate:, validator:, showShortcuts:)`, `ssRunBlocking(onCancel:)`, `SsUnsavedGuard(isDirty:)`, `SsSegmented(icons:, disabled:)`, `SsFilterChip(icon:)`, `SsSwitchRow(icon:)`, `SsBadge(icon:)`, `SsCard(tint:)`, `SsMenuAction(checked:, subtitle:)`, `SsOverflowMenu(icon:)`, `SsEmptyState(art:)`, `SsProgress(null)` (indeterminado), `SsChatInput(enabled:, leading:)`, `SsOnboardingPage(action:)`, `showSsPlanLimit(secondaryLabel:, onSecondary:)`, `showSsPicker(initialQuery:)`, `SsCountdownRing(format:, onDark:)` e `SsCountdownRing.mmss`, `SsColors.series` (a 1ª cor é a marca do produto; `AppColors.series[0]` segue violeta). Só Flutter. Nada quebra da v0.7.
 - `v0.7.0` (02/11/2026): o que a migração de gestor, compras, viagens, cultivo e financeiro pediu. Novos `SsAsyncSliver` (o `SsAsyncBody` como sliver, para o `SsScreenHeader`), `SsFit`/`SsFitTitle`/`SsButtonPair` (valor e título que encolhem; dois botões que empilham com fonte grande), `SsSectionHeader` (título de bloco com explicação e ação) e `SsValueTile` (linha com nome em 2 linhas e valor que encolhe ou desce). `SsNetImage(provider:)` aceita o provider do app (cache em disco). Correções: o título grande do `SsScreenHeader` cresce com a fonte (estourava em 1,6×) e `SkeletonList`/`SkeletonBox` param com "reduzir movimento". Só Flutter. Nada quebra da v0.6.

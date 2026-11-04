@@ -5,14 +5,14 @@ module Ss
   #     metrics: [["Vendido", "R$ 48 mil"], ["Pedidos", "214"]], team: ["Bruno", "Caio", "Duda"], url: vendedor_path(v))
   class PersonCardComponent < BaseComponent
     include InView
-    def initialize(name:, role: nil, status: nil, metrics: [], team: [], team_label: "Equipe", url: nil, **opts)
+    def initialize(name:, role: nil, status: nil, metrics: [], team: [], team_label: nil, url: nil, **opts)
       super(**opts)
       @name = name
       @role = role
       @status = status
       @metrics = metrics
       @team = team
-      @team_label = team_label
+      @team_label = team_label || ss_t("person_card.team", default: "Equipe")
       @url = url
     end
 

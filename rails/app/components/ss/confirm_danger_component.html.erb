@@ -6,12 +6,12 @@
       <div class="ss-dialog-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></div>
       <h2 id="<%= uid %>-t"><%= title %></h2>
       <p><%= text %></p>
-      <label class="ss-confirm-label" for="<%= uid %>-i">Digite <b><%= name %></b> para confirmar</label>
+      <label class="ss-confirm-label" for="<%= uid %>-i"><%= type_to_confirm %></label>
       <input id="<%= uid %>-i" class="ss-input" autocomplete="off" spellcheck="false" data-ss-confirm-target="input" data-action="input->ss-confirm#check keydown.enter->ss-confirm#guard">
     </div>
     <%= form_with url: url, method: @http_method, class: "ss-dialog-actions" do %>
       <button type="submit" class="ss-btn ss-btn-primary" disabled data-ss-confirm-target="submit"><%= confirm_label %></button>
-      <button type="button" class="ss-btn ss-btn-ghost" data-action="ss-confirm#close">Cancelar</button>
+      <button type="button" class="ss-btn ss-btn-ghost" data-action="ss-confirm#close"><%= cancel_label %></button>
     <% end %>
   </dialog>
 <% end %>

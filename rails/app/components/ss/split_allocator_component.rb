@@ -7,16 +7,16 @@ module Ss
   class SplitAllocatorComponent < BaseComponent
     attr_reader :name, :items, :total, :legend
 
-    def initialize(name:, items:, total: nil, legend: "Divisão", **rest)
+    def initialize(name:, items:, total: nil, legend: nil, currency: nil, **rest)
       super(**rest)
-      @name, @total, @legend = name, total, legend
+      @name, @total, @legend = name, total, legend || ss_t("split_allocator.legend", default: "Divisão")
+      @currency = currency || ss_currency
       @items = normalize(items.map { |i| i.to_h.transform_keys(&:to_sym) })
     end
 
-    def money(cents)
-      reais = (cents.to_i / 100).to_s.reverse.scan(/\d{1,3}/).join(".").reverse
-      "R$ #{reais},#{format("%02d", cents.to_i % 100)}"
-    end
+    # Centavos → dinheiro no idioma da página e na moeda (currency: ou a da config).
+    def money(cents) = ss_money(cents.to_i / 100.0, currency: @currency)
+    attr_reader :currency
 
     def part_value(pct) = total ? (total * pct / 100.0).round : nil
 

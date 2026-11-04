@@ -34,7 +34,7 @@ module Ss
     def fmt(v)
       return @format.call(v) if @format
 
-      number_with_delimiter(v.round(v % 1 == 0 ? 0 : 2), delimiter: ".", separator: ",")
+      ss_number(v, precision: v % 1 == 0 ? 0 : 2)
     end
 
     def range

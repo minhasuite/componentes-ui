@@ -14,7 +14,9 @@ Regras de acessibilidade (falha se quebrar):
   accentLight e accentHoverLight ≥ 4,5:1 sobre o branco e as páginas claras;
   accentDark ≥ 4,5:1 sobre a página e a superfície escuras (Flutter, Rails e OLED);
   o --grad do Rails (botão primário, texto branco) ≥ 4,5:1 em todas as paradas;
-  soft claro é um tom bem claro e soft escuro um tom bem escuro.
+  soft claro é um tom bem claro e soft escuro um tom bem escuro;
+  accent sólido (--accent-solid / SsBrand.accentSolid*: preenchimento de checkbox,
+  rádio, switch e botão sólido) com texto branco ≥ 4,5:1, no claro e no escuro.
 Só avisa: accent sobre o próprio soft (selo) abaixo de 4,5 e brandTo sob texto branco abaixo de 3.
 """
 import json
@@ -41,6 +43,8 @@ FUNDOS_ESCUROS = {
 CAMPOS = ["stops", "accentLight", "accentHoverLight", "accentSoftLight", "accentDark", "accentSoftDark",
           "brandFrom", "brandTo", "brandDeep"]
 HEX = re.compile(r"^#[0-9a-f]{6}$")
+# Opcionais no JSON: sem eles, o accent sólido sai de accent_solido().
+CAMPOS_OPCIONAIS = ["accentSolidLight", "accentSolidDark"]
 
 
 # ── cor ────────────────────────────────────────────────────────────────────
@@ -88,7 +92,27 @@ def carregar():
                 p[k] = [s.lower() for s in v]
             else:
                 p[k] = v.lower()
+        for k in CAMPOS_OPCIONAIS:
+            if k in p:
+                p[k] = p[k].lower()
     return familias, paletas
+
+
+def accent_solido(p):
+    """Accent sólido (fundo com texto branco ≥ 4,5:1): claro = accentLight (já passa
+    4,5:1 com o branco); escuro = accentDark puxado para o accentLight até o branco
+    passar 4,5:1 (o accentDark sozinho é claro demais para texto branco).
+    O JSON pode fixar accentSolidLight / accentSolidDark."""
+    claro = p.get("accentSolidLight", p["accentLight"])
+    escuro = p.get("accentSolidDark")
+    if not escuro:
+        escuro = p["accentLight"]
+        for i in range(21):
+            c = mistura(p["accentDark"], p["accentLight"], i / 20)
+            if contraste(c, "#ffffff") >= 4.5:
+                escuro = c
+                break
+    return claro, escuro
 
 
 def grad_rails(p):
@@ -126,7 +150,7 @@ def conferir(familias, paletas):
             erros.append(f"{n}: família {p.get('familia')!r} fora de \"familias\"")
         if len(p["stops"]) != 4:
             erros.append(f"{n}: stops precisa de 4 cores")
-        for k in CAMPOS:
+        for k in CAMPOS + [k for k in CAMPOS_OPCIONAIS if k in p]:
             for v in (p[k] if k == "stops" else [p[k]]):
                 if not HEX.match(v):
                     erros.append(f"{n}: {k} {v!r} não é #rrggbb")
@@ -148,6 +172,9 @@ def conferir(familias, paletas):
             c = contraste(s, "#ffffff")
             if c < 4.5:
                 erros.append(f"{n}: parada {s} do --grad com texto branco = {c:.2f} (< 4,5)")
+        for nome, c in zip(("claro", "escuro"), accent_solido(p)):
+            if (r := contraste(c, "#ffffff")) < 4.5:
+                erros.append(f"{n}: accent sólido {nome} {c} com texto branco = {r:.2f} (< 4,5)")
         if luminancia(p["accentSoftLight"]) < 0.75:
             erros.append(f"{n}: accentSoftLight {p['accentSoftLight']} escuro demais para um tom suave")
         if luminancia(p["accentSoftDark"]) > 0.05:
@@ -177,6 +204,9 @@ def dart_g(familias, paletas):
         out.append(f"const _{p['dartName']} = SsBrand(")
         for k in CAMPOS[1:]:
             out.append(f"  {k}: {cor(p[k])},")
+        solido_claro, solido_escuro = accent_solido(p)
+        out.append(f"  accentSolidLight: {cor(solido_claro)},")
+        out.append(f"  accentSolidDark: {cor(solido_escuro)},")
         # A padrão deriva as paradas da marca (como a marca de um produto); se o JSON
         # pedir outras, elas entram.
         if not p.get("padrao") or p["stops"] != derivados(p):
@@ -228,7 +258,8 @@ def css(familias, paletas):
            "   e o ComponentesUi::PALETAS). Importado por v09_fundacao.css.",
            "   Cada paleta: claro em :root[data-palette=x]; escuro em [data-theme=dark] e na preferência do",
            "   sistema. Accent claro ≥ 4,5:1 sobre branco e página; accent escuro ≥ 4,5:1 sobre a página",
-           "   escura; --grad (botão primário) ≥ 4,5:1 com texto branco. Os 4 tons crus ficam em --p1…--p4",
+           "   escura; --grad (botão primário) e --accent-solid (checkbox, rádio, switch) ≥ 4,5:1 com texto",
+           "   branco. Os 4 tons crus ficam em --p1…--p4",
            "   (usados pelo .ss-swatch e pelo seletor de paleta). Sem data-palette vale a padrão (engine.css). */",
            "",
            f"/* {padrao['nome']} (padrão): só ganha o gradiente de 4 paradas. */",
@@ -243,6 +274,7 @@ def css(familias, paletas):
         g = grad_rails(p)
         out += [f':root[data-palette="{p["slug"]}"] {{',
                 f"  --accent: {p['accentLight']}; --accent-hover: {p['accentHoverLight']}; --accent-soft: {p['accentSoftLight']};",
+                f"  --accent-solid: {accent_solido(p)[0]};",
                 f"  --grad: linear-gradient(135deg, {g[0]} 0%, {g[1]} 55%, {g[2]} 100%);",
                 f"  --grad-soft: linear-gradient(135deg, {rgba(p['brandTo'], '.10')}, {rgba(s(p)[2], '.10')});",
                 f"  --grad-4: {g4(p)};",
@@ -253,7 +285,7 @@ def css(familias, paletas):
     def escuro(p):
         g = grad_rails(p)
         return (f"--accent: {p['accentDark']}; --accent-hover: {mistura(p['accentDark'], '#ffffff', .2)}; "
-                f"--accent-soft: {p['accentSoftDark']}; --glow: {rgba(p['brandFrom'], '.16')};\n"
+                f"--accent-soft: {p['accentSoftDark']}; --accent-solid: {accent_solido(p)[1]}; --glow: {rgba(p['brandFrom'], '.16')};\n"
                 f"    --grad: linear-gradient(135deg, {g[0]} 0%, {g[1]} 55%, {g[2]} 100%); "
                 f"--shadow-hover: 0 0 0 1px {rgba(p['accentDark'], '.26')}, 0 20px 44px -18px {rgba(p['brandTo'], '.5')};")
 

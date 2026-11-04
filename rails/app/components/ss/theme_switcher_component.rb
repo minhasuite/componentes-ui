@@ -12,29 +12,33 @@ module Ss
     PALETTES = ComponentesUi::PALETAS.to_h { |slug, nome|
       [slug == ComponentesUi::PALETA_PADRAO ? "none" : slug, [nome, slug]]
     }.freeze
+    # [valor, rótulo pt-BR de reserva, oled]; o texto sai de componentes_ui.theme_switcher.themes.*.
     THEMES = [["system", "Auto", nil], ["light", "Claro", nil], ["dark", "Escuro", false], ["dark", "OLED", true]].freeze
     GROUP_FROM = 9
 
-    def initialize(palettes: PALETTES.keys, oled: true, compact: false, group: nil, label: "Aparência", **opts)
+    def initialize(palettes: PALETTES.keys, oled: true, compact: false, group: nil, label: nil, **opts)
       super(**opts)
       keys = palettes ? Array(palettes).map { |k| k.to_s == ComponentesUi::PALETA_PADRAO ? "none" : k.to_s } : []
       @palettes = PALETTES.slice(*keys)
       @oled = oled
       @compact = compact
       @group = group.nil? ? (!compact && @palettes.size >= GROUP_FROM) : group
-      @label = label
+      @label = label || ss_t("theme_switcher.label", default: "Aparência")
     end
 
-    def themes = @oled ? THEMES : THEMES.first(3)
+    def themes
+      list = @oled ? THEMES : THEMES.first(3)
+      list.map { |value, text, oled| [value, ss_t("theme_switcher.themes.#{oled ? "oled" : value}", default: text), oled] }
+    end
 
     # [[família ou nil, [[chave, nome, slug], …]], …]
     def palette_groups
-      items = @palettes.map { |key, (name, slug)| [key, name, slug] }
+      items = @palettes.map { |key, (_name, slug)| [key, ss_palette_name(slug), slug] }
       return [[nil, items]] unless @group
       items.group_by { |(_, _, slug)| ComponentesUi::PALETA_FAMILIA[slug] }
            .sort_by { |fam, _| ComponentesUi::PALETA_FAMILIAS.index(fam) || 99 }
     end
 
-    def default_name = @palettes.values.first&.first
+    def default_name = (slug = @palettes.values.first&.last) && ss_palette_name(slug)
   end
 end

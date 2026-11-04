@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_list.dart' show SsAvatarStack;
+import '../ss_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Mosaico
@@ -478,7 +479,7 @@ class SsBoardingPass extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Semantics(
-            label: 'Voo de $fromCode para $toCode, ${(progress * 100).round()}% do trajeto',
+            label: SsStrings.of(context).flightLabel(fromCode, toCode, (progress * 100).round()),
             excludeSemantics: true,
             child: SizedBox(
               height: 64,
@@ -554,7 +555,7 @@ class SsBoardingPass extends StatelessWidget {
           ? null
           : Semantics(
               button: true,
-              label: 'Mostrar QR do embarque',
+              label: SsStrings.of(context).showBoardingQr,
               excludeSemantics: true,
               child: SsPressable(
                 onTap: onQr,
@@ -828,7 +829,7 @@ class SsStatusTabCard extends StatelessWidget {
                       ),
                       if (onMenu != null)
                         IconButton(
-                          tooltip: 'Mais opções',
+                          tooltip: SsStrings.of(context).moreOptions,
                           onPressed: onMenu,
                           icon: Icon(Icons.more_vert_rounded, color: c.ink),
                         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Dica dispensável: entra suave e, no ×, encolhe e some; só então chama
 /// [onDismiss]. Quem lembra que foi fechada é o app (grave pelo [id] e não
@@ -114,7 +115,7 @@ class _SsTipState extends State<SsTip> with SingleTickerProviderStateMixin {
                 ),
               ),
               IconButton(
-                tooltip: 'Dispensar dica',
+                tooltip: SsStrings.of(context).dismissTip,
                 onPressed: _fechar,
                 icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
               ),

@@ -1,0 +1,22 @@
+<%= tag.figure(**root_attrs(class: classes("ss-cam"), style: "aspect-ratio: #{aspect_css}",
+                            data: controller_data, role: "group", aria: { label: aria_label })) do %>
+  <div class="ss-cam-frame">
+    <% if frame? %><%= frame %><% elsif image_url %><img src="<%= image_url %>" alt="" loading="lazy" decoding="async"><% end %>
+    <span class="ss-cam-skel" aria-hidden="true"></span>
+  </div>
+  <figcaption class="ss-cam-top">
+    <% if url %><a class="ss-cam-title" href="<%= url %>"><%= title %></a><% else %><span class="ss-cam-title"><%= title %></span><% end %>
+    <span class="ss-cam-live"><i aria-hidden="true"></i><%= label(:live) %></span>
+  </figcaption>
+  <% if age_text %><span class="ss-cam-age"><%= icon(:clock) %><span data-ss-camera-target="age"><%= age_text %></span></span><% end %>
+  <div class="ss-cam-fail" role="status">
+    <span class="ss-cam-fail-off"><%= icon(:camera_off) %><b><%= label(:offline) %></b></span>
+    <span class="ss-cam-fail-err"><%= icon(:broken) %><b><%= label(:error) %></b></span>
+    <% if retry_url %>
+      <%= button_to retry_url, method: :post, class: "ss-cam-retry", form_class: "ss-cam-retry-form" do %><%= icon(:refresh) %><%= label(:retry) %><% end %>
+    <% elsif retry? %>
+      <button type="button" class="ss-cam-retry" data-action="ss-camera#retry"><%= icon(:refresh) %><%= label(:retry) %></button>
+    <% end %>
+  </div>
+  <% if actions? %><div class="ss-cam-actions"><% actions.each do |a| %><%= a %><% end %></div><% end %>
+<% end %>

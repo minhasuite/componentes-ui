@@ -1,4 +1,4 @@
-<%= tag.fieldset(class: classes("ss-allot"), **root_attrs(data: { controller: "ss-split", ss_split_total_value: total })) do %>
+<%= tag.fieldset(class: classes("ss-allot"), **root_attrs(data: { controller: "ss-split", ss_split_total_value: total, ss_split_currency_value: currency })) do %>
   <legend class="ss-label"><%= legend %></legend>
   <div class="ss-allot-bar" aria-hidden="true">
     <% items.each_with_index do |it, i| %><i data-ss-split-target="seg" style="--i:<%= i %>;width:<%= it[:value] %>%"></i><% end %>

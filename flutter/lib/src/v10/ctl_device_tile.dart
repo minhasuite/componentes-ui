@@ -1,0 +1,337 @@
+import 'package:flutter/material.dart';
+
+import '../app_theme.dart';
+import '../motion.dart';
+import '../ss_strings.dart';
+import '../ss_fields.dart' show SsSwitch;
+import 'ctl_comum.dart';
+
+/// Situação do aparelho além de ligado/desligado.
+enum SsDeviceStatus {
+  /// Normal: responde a comandos.
+  ready,
+
+  /// Sem sinal: apagado, borda tracejada e "Indisponível".
+  unavailable,
+
+  /// Comando em andamento: anel girando no ícone e a chave travada.
+  pending,
+
+  /// O último comando falhou: borda e texto de erro.
+  error,
+
+  /// Sem permissão para comandar: cadeado no lugar da chave.
+  locked,
+}
+
+/// Tile de aparelho da casa (luz, tomada, portão, sensor): ícone, nome e o
+/// estado em texto ("Ligada · 80%"). Tocar abre os detalhes ([onTap]); com
+/// [onToggle], ganha a chave de liga/desliga rápida à direita. [footer] fica
+/// embaixo, na largura toda (um [SsSlider] ou chips).
+///
+/// Ligado ([on]), o tile tinge com [color] (padrão: a cor da marca), o ícone
+/// fica cheio e ganha um brilho na mesma cor. [wide] deita o tile (ícone, texto
+/// e chave numa linha); o padrão é o compacto (ícone e chave em cima, texto
+/// embaixo), para grades de 2 colunas no celular.
+class SsDeviceTile extends StatelessWidget {
+  const SsDeviceTile({
+    super.key,
+    required this.icon,
+    required this.name,
+    this.state,
+    this.on = false,
+    this.status = SsDeviceStatus.ready,
+    this.color,
+    this.onTap,
+    this.onToggle,
+    this.footer,
+    this.wide = false,
+    this.errorText,
+    this.unavailableLabel,
+    this.pendingLabel,
+    this.errorLabel,
+    this.lockedLabel,
+    this.turnOnLabel,
+    this.turnOffLabel,
+    this.detailsLabel,
+  });
+
+  final IconData icon;
+  final String name;
+
+  /// Texto do estado ("Ligada · 80%", "21,5 °C"). Indisponível, mostra
+  /// [unavailableLabel] no lugar.
+  final String? state;
+  final bool on;
+  final SsDeviceStatus status;
+
+  /// Cor de ligado (tom do aparelho). Padrão: a cor da marca.
+  final Color? color;
+
+  /// Abre os detalhes do aparelho.
+  final VoidCallback? onTap;
+
+  /// Chave rápida: recebe o estado pedido. Sem ela, não há chave.
+  final ValueChanged<bool>? onToggle;
+  final Widget? footer;
+  final bool wide;
+
+  /// Mensagem do erro (padrão: [errorLabel]).
+  final String? errorText;
+
+  /// Textos (padrão: os do [SsStrings] do idioma).
+  final String? unavailableLabel, pendingLabel, errorLabel, lockedLabel;
+  final String? turnOnLabel, turnOffLabel, detailsLabel;
+
+  bool get _available => status != SsDeviceStatus.unavailable;
+  bool get _lit => on && _available;
+
+  /// Texto que aparece embaixo do nome no estado atual (textos de [strings],
+  /// padrão: pt).
+  String stateLine([SsStrings? strings]) {
+    final s = strings ?? SsStrings.pt;
+    return switch (status) {
+      SsDeviceStatus.unavailable => unavailableLabel ?? s.unavailable,
+      SsDeviceStatus.error => errorText ?? errorLabel ?? s.deviceNoResponse,
+      SsDeviceStatus.pending => [?state, pendingLabel ?? s.sending].join(' · '),
+      _ => state ?? '',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final tone = color ?? c.accent;
+    final reduce = reduceMotion(context);
+    final dur = reduce ? Duration.zero : SsMotion.base;
+    const radius = AppRadius.card;
+    final erro = status == SsDeviceStatus.error;
+
+    final bg = !_available
+        ? c.field
+        : _lit
+        ? Color.alphaBlend(tone.withValues(alpha: c.isDark ? .16 : .10), c.surface)
+        : c.surface;
+    final border = erro
+        ? c.danger.withValues(alpha: .6)
+        : _lit
+        ? Color.alphaBlend(tone.withValues(alpha: .38), c.surface)
+        : c.line;
+
+    final s = SsStrings.of(context);
+    final texto = stateLine(s);
+    final corEstado = erro
+        ? c.dangerText
+        : !_available
+        ? c.muted
+        : (_lit ? c.ink2 : c.muted);
+
+    final nome = Text(
+      name,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        color: _available ? c.ink : c.ink2,
+        fontSize: AppType.set,
+        height: 1.25,
+      ),
+    );
+    final estado = Row(
+      children: [
+        if (erro) ...[Icon(Icons.error_outline_rounded, size: 14, color: c.dangerText), const SizedBox(width: 4)],
+        Flexible(
+          child: AnimatedSwitcher(
+            duration: dur,
+            child: Text(
+              texto,
+              key: ValueKey(texto),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: corEstado, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
+    );
+    // O texto vai no rótulo do tile (Semantics abaixo): aqui fica fora da árvore.
+    final textos = ExcludeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [nome, const SizedBox(height: 2), estado],
+      ),
+    );
+
+    final bolha = _Icone(
+      icon: icon,
+      tone: tone,
+      lit: _lit,
+      available: _available,
+      pending: status == SsDeviceStatus.pending,
+    );
+    final fim = _trailing(context, c);
+
+    final corpo = wide
+        ? Row(
+            children: [
+              bolha,
+              const SizedBox(width: 12),
+              Expanded(child: textos),
+              if (fim != null) ...[const SizedBox(width: 8), fim],
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [bolha, const Spacer(), ?fim]),
+              const SizedBox(height: 10),
+              textos,
+            ],
+          );
+
+    final semantica = '$name: $texto';
+    Widget tile = AnimatedContainer(
+      duration: dur,
+      curve: Curves.easeOut,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(radius),
+        border: _available ? Border.all(color: border, width: _lit || erro ? 1.4 : 1) : null,
+        boxShadow: _lit
+            ? [
+                BoxShadow(
+                  color: tone.withValues(alpha: c.isDark ? .32 : .22),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                  spreadRadius: -8,
+                ),
+              ]
+            : (_available ? AppShadows.card : null),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            button: onTap != null,
+            label: semantica,
+            hint: onTap != null ? detailsLabel ?? s.openDetails : null,
+            onTap: onTap,
+            container: true,
+            child: corpo,
+          ),
+          if (footer != null) ...[const SizedBox(height: 12), footer!],
+        ],
+      ),
+    );
+    if (!_available) {
+      tile = CustomPaint(
+        foregroundPainter: CtlDashedBorder(color: c.muted2, radius: radius),
+        child: tile,
+      );
+    }
+    final clicavel = onTap == null ? tile : SsPressable(scale: .98, onTap: onTap, child: tile);
+    return AnimatedOpacity(opacity: _available ? 1 : .72, duration: dur, child: clicavel);
+  }
+
+  Widget? _trailing(BuildContext context, SsColors c) {
+    final s = SsStrings.of(context);
+    if (status == SsDeviceStatus.locked) {
+      return Semantics(
+        label: lockedLabel ?? s.noPermission,
+        child: SizedBox(width: 48, height: 48, child: Icon(Icons.lock_outline_rounded, color: c.muted, size: 20)),
+      );
+    }
+    if (onToggle == null) return null;
+    final pode = status == SsDeviceStatus.ready || status == SsDeviceStatus.error;
+    final acao = on ? turnOffLabel ?? s.turnOff : turnOnLabel ?? s.turnOn;
+    return Tooltip(
+      message: acao,
+      child: Semantics(
+        label: '$acao $name',
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 56),
+          child: Center(
+            child: Opacity(
+              opacity: pode ? 1 : .5,
+              child: SsSwitch(value: on, activeColor: color, onChanged: pode && _available ? onToggle : null),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bolha do ícone: cheia na cor (com brilho) quando ligado; anel girando
+/// enquanto o comando corre.
+class _Icone extends StatelessWidget {
+  const _Icone({
+    required this.icon,
+    required this.tone,
+    required this.lit,
+    required this.available,
+    required this.pending,
+  });
+
+  final IconData icon;
+  final Color tone;
+  final bool lit, available, pending;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
+    const tam = 44.0;
+    final bolha = AnimatedContainer(
+      duration: dur,
+      width: tam,
+      height: tam,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: lit ? null : (available ? c.field : c.surface),
+        gradient: lit
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color.lerp(tone, Colors.white, .18)!, tone],
+              )
+            : null,
+        boxShadow: lit
+            ? [
+                BoxShadow(
+                  color: tone.withValues(alpha: .55),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                  spreadRadius: -6,
+                ),
+              ]
+            : null,
+      ),
+      child: Icon(icon, size: 22, color: lit ? Colors.white : (available ? c.ink2 : c.muted)),
+    );
+    if (!pending) return bolha;
+    return SizedBox(
+      width: tam + 8,
+      height: tam + 8,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          bolha,
+          SizedBox.expand(
+            child: CircularProgressIndicator(
+              // Com menos movimento, o anel fica parado (meio cheio).
+              value: reduceMotion(context) ? .3 : null,
+              strokeWidth: 2.4,
+              color: tone,
+              backgroundColor: Colors.transparent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

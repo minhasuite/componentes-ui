@@ -6,24 +6,11 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'format.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
-const _meses = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
-
-/// "Outubro 2026".
-String ssMonthName(DateTime m) => '${_meses[m.month - 1]} ${m.year}';
+/// "Outubro 2026". Sem [strings], em português; nos widgets, passe
+/// `SsStrings.of(context)`.
+String ssMonthName(DateTime m, [SsStrings? strings]) => (strings ?? SsStrings.pt).monthTitle(m);
 
 DateTime _mes(DateTime d) => DateTime(d.year, d.month);
 DateTime _dia(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -70,10 +57,11 @@ class _SsMonthSwitcherState extends State<SsMonthSwitcher> {
     final depois = DateTime(m.year, m.month + 1);
     final hoje = _mes(DateTime.now());
     final atual = ValueKey(m);
+    final s = SsStrings.of(context);
     return Row(
       children: [
         IconButton(
-          tooltip: 'Mês anterior',
+          tooltip: s.previousMonth,
           onPressed: _pode(antes) ? () => _ir(antes) : null,
           icon: const Icon(Icons.chevron_left_rounded),
         ),
@@ -81,7 +69,7 @@ class _SsMonthSwitcherState extends State<SsMonthSwitcher> {
           child: Semantics(
             button: m != hoje,
             liveRegion: true,
-            hint: m != hoje ? 'Voltar ao mês atual' : null,
+            hint: m != hoje ? s.backToCurrentMonth : null,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: m != hoje && _pode(hoje) ? () => _ir(hoje) : null,
@@ -108,7 +96,7 @@ class _SsMonthSwitcherState extends State<SsMonthSwitcher> {
                     child: Center(
                       key: atual,
                       child: Text(
-                        ssMonthName(m),
+                        ssMonthName(m, s),
                         style: TextStyle(fontSize: AppType.md, fontWeight: FontWeight.w800, color: c.ink),
                       ),
                     ),
@@ -119,7 +107,7 @@ class _SsMonthSwitcherState extends State<SsMonthSwitcher> {
           ),
         ),
         IconButton(
-          tooltip: 'Próximo mês',
+          tooltip: s.nextMonth,
           onPressed: _pode(depois) ? () => _ir(depois) : null,
           icon: const Icon(Icons.chevron_right_rounded),
         ),
@@ -164,11 +152,10 @@ class SsMonthGrid extends StatelessWidget {
   final DateTime? today;
   final ValueChanged<DateTime>? onMonthChanged;
 
-  static const _semana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     final m = _mes(month);
     final hoje = _dia(today ?? DateTime.now());
     final sel = selected == null ? null : _dia(selected!);
@@ -237,7 +224,7 @@ class SsMonthGrid extends StatelessWidget {
       return Semantics(
         button: true,
         selected: eSel,
-        label: '${date(d)}${eHoje ? ', hoje' : ''}${pontos.isEmpty ? '' : ', ${pontos.length} marcador(es)'}',
+        label: '${s.formatDate(d)}${eHoje ? s.todaySuffix : ''}${pontos.isEmpty ? '' : s.markersCount(pontos.length)}',
         excludeSemantics: true,
         child: InkResponse(
           radius: 22,
@@ -264,11 +251,11 @@ class SsMonthGrid extends StatelessWidget {
         children: [
           Row(
             children: [
-              for (final s in _semana)
+              for (final w in s.weekdayInitials)
                 Expanded(
                   child: ExcludeSemantics(
                     child: Text(
-                      s,
+                      w,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: AppType.micro, fontWeight: FontWeight.w700, color: c.muted),
                     ),
@@ -327,6 +314,7 @@ class _SsHeatCalendarState extends State<SsHeatCalendar> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     final vals = {for (final e in widget.values.entries) _dia(e.key): e.value};
     final max = vals.values.fold<double>(0, math.max);
     final m = widget.month;
@@ -365,6 +353,7 @@ class _SsHeatCalendarState extends State<SsHeatCalendar> {
                               max,
                               lado,
                               fmt,
+                              s,
                             ),
                           ),
                       ],
@@ -381,7 +370,7 @@ class _SsHeatCalendarState extends State<SsHeatCalendar> {
               child: Semantics(
                 liveRegion: true,
                 child: Text(
-                  _sel == null ? '' : '${date(_sel)}: ${vals[_sel] == null ? 'nada' : fmt(vals[_sel]!)}',
+                  _sel == null ? '' : '${s.formatDate(_sel!)}: ${vals[_sel] == null ? s.nothing : fmt(vals[_sel]!)}',
                   style: AppTheme.number(context, size: AppType.meta, color: c.ink2),
                 ),
               ),
@@ -402,6 +391,7 @@ class _SsHeatCalendarState extends State<SsHeatCalendar> {
     double max,
     double lado,
     String Function(double) fmt,
+    SsStrings s,
   ) {
     if (d.isBefore(ini) || d.isAfter(fim)) return SizedBox.square(dimension: lado);
     final v = vals[d];
@@ -409,7 +399,7 @@ class _SsHeatCalendarState extends State<SsHeatCalendar> {
     return Semantics(
       button: true,
       selected: eSel,
-      label: '${date(d)}: ${v == null ? 'nada' : fmt(v)}',
+      label: '${s.formatDate(d)}: ${v == null ? s.nothing : fmt(v)}',
       excludeSemantics: true,
       child: GestureDetector(
         onTap: () {
@@ -438,11 +428,12 @@ class SsHeatLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final s = TextStyle(fontSize: AppType.micro, color: c.muted, fontWeight: FontWeight.w600);
+    final t = SsStrings.of(context);
     return ExcludeSemantics(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('menos', style: s),
+          Text(t.less, style: s),
           for (var n = 0; n < 5; n++)
             Container(
               width: 10,
@@ -451,7 +442,7 @@ class SsHeatLegend extends StatelessWidget {
               decoration: BoxDecoration(color: _nivel(c, n), borderRadius: BorderRadius.circular(2.5)),
             ),
           const SizedBox(width: 4),
-          Text('mais', style: s),
+          Text(t.more, style: s),
         ],
       ),
     );

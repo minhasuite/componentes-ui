@@ -1,0 +1,64 @@
+<% body = capture do %>
+  <% days.each do |day, items| %>
+    <section class="ss-lb-day" data-day="<%= day.iso8601 %>">
+      <h3 class="ss-lb-head" data-day="<%= day.iso8601 %>"><%= day_label(day) %></h3>
+      <% items.each_with_index do |e, i| %>
+        <article class="ss-lb-item" data-tone="<%= tone(e) %>" style="--i:<%= [i, 8].min %>">
+          <time class="ss-lb-time num" datetime="<%= e[:at].iso8601 %>"><%= time_of(e) %></time>
+          <span class="ss-lb-ico"><%= icon(e) %></span>
+          <div class="ss-lb-body">
+            <p class="ss-lb-title">
+              <% if e[:href] %><%= link_to e[:title], e[:href], class: "ss-lb-link", data: { turbo_frame: "_top" } %><% else %><span><%= e[:title] %></span><% end %>
+              <% if e[:state].present? %><span class="ss-lb-state"><%= e[:state] %></span><% end %>
+            </p>
+            <% if e[:detail].present? %><p class="ss-lb-detail"><%= e[:detail] %></p><% end %>
+          </div>
+        </article>
+      <% end %>
+    </section>
+  <% end %>
+  <% if more_url %>
+    <% if lazy? %>
+      <%= tag.turbo_frame(id: next_frame_id, src: more_url, loading: "lazy", class: "ss-lb-more", data: { ss_logbook_target: "more" }) do %>
+        <p class="ss-lb-foot" role="status"><span class="ss-lb-spin" aria-hidden="true"></span><%= text(:loading_more, "Carregando…") %></p>
+      <% end %>
+    <% else %>
+      <%= tag.turbo_frame(id: next_frame_id, class: "ss-lb-more", data: { ss_logbook_target: "more" }) do %>
+        <p class="ss-lb-foot">
+          <%= link_to more_url, class: "ss-btn ss-btn-ghost ss-btn-sm", data: { turbo_frame: next_frame_id, action: "ss-logbook#loading" } do %>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><%= text(:load_more, "Carregar mais") %>
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="ss-lb-foot is-end">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg><%= text(:end, "Início do registro") %>
+    </p>
+  <% end %>
+<% end %>
+<% if frame %>
+  <%= tag.turbo_frame(id: frame) { body } %>
+<% elsif loading? %>
+  <%= tag.div(**root_attrs(class: classes("ss-lb", "is-loading"), "aria-busy": "true", "aria-label": label)) do %>
+    <span class="ss-sr" role="status"><%= text(:loading, "Carregando registro") %></span>
+    <% 6.times do |i| %>
+      <div class="ss-lb-item ss-lb-ghost" aria-hidden="true" style="--i:<%= i %>"><i class="ss-lb-time"></i><i class="ss-lb-ico"></i><span><i></i><i></i></span></div>
+    <% end %>
+  <% end %>
+<% elsif empty? && error %>
+  <%= tag.div(**root_attrs(class: classes("ss-lb", "is-error"), role: "alert")) do %>
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M8.5 8.6A5 5 0 0 0 7 18h10.5M20 16.4A4 4 0 0 0 17 9h-1A6 6 0 0 0 10.7 5"/></svg>
+    <p><%= error %></p>
+    <% if retry_url %><%= link_to text(:retry, "Tentar de novo"), retry_url, class: "ss-btn ss-btn-ghost" %><% end %>
+  <% end %>
+<% elsif empty? %>
+  <%= render Ss::EmptyStateComponent.new(title: text(:empty, "Nada registrado ainda"), text: @texts[:empty_text], compact: true, **root_attrs) %>
+<% else %>
+  <%= tag.div(**root_attrs(class: classes("ss-lb"), role: "feed", "aria-busy": "false", "aria-label": label,
+                           data: { controller: "ss-logbook", ss_logbook_error_value: (error || text(:error, "Não deu para carregar mais.")),
+                                   ss_logbook_retry_value: text(:retry, "Tentar de novo"), ss_logbook_loading_value: text(:loading_more, "Carregando…") })) do %>
+    <%= body %>
+    <% if error %><p class="ss-lb-foot is-error" role="alert"><%= error %><% if retry_url %> <%= link_to text(:retry, "Tentar de novo"), retry_url, class: "ss-btn ss-btn-ghost ss-btn-sm" %><% end %></p><% end %>
+  <% end %>
+<% end %>

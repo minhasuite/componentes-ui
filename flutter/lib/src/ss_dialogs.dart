@@ -5,6 +5,7 @@ import 'motion_view.dart';
 import 'ss_button.dart';
 import 'ss_list.dart';
 import 'ss_sheet.dart';
+import 'ss_strings.dart';
 
 /// Pergunta sim/não e devolve `true` só se confirmou. Botões empilhados na
 /// largura toda; [danger] pinta a confirmação de vermelho.
@@ -12,8 +13,8 @@ Future<bool> showSsConfirm(
   BuildContext context, {
   required String title,
   String? message,
-  String confirmLabel = 'Confirmar',
-  String cancelLabel = 'Cancelar',
+  String? confirmLabel,
+  String? cancelLabel,
   bool danger = false,
   IconData? icon,
 }) async =>
@@ -37,9 +38,9 @@ Future<bool> showSsConfirmIrreversible(
   BuildContext context, {
   required String title,
   String? message,
-  String word = 'APAGAR',
-  String confirmLabel = 'Confirmar',
-  String cancelLabel = 'Cancelar',
+  String? word,
+  String? confirmLabel,
+  String? cancelLabel,
 }) async =>
     await showDialog<bool>(
       context: context,
@@ -51,7 +52,7 @@ Future<bool> showSsConfirmIrreversible(
         cancelLabel: cancelLabel,
         danger: true,
         icon: Icons.warning_amber_rounded,
-        word: word,
+        word: word ?? SsStrings.of(context).irreversibleWord,
       ),
     ) ??
     false;
@@ -63,8 +64,8 @@ class SsConfirmDialog extends StatefulWidget {
     super.key,
     required this.title,
     this.message,
-    this.confirmLabel = 'Confirmar',
-    this.cancelLabel = 'Cancelar',
+    this.confirmLabel,
+    this.cancelLabel,
     this.danger = false,
     this.icon,
     this.word,
@@ -72,8 +73,12 @@ class SsConfirmDialog extends StatefulWidget {
 
   final String title;
   final String? message;
-  final String confirmLabel;
-  final String cancelLabel;
+
+  /// Padrão: [SsStrings.confirm].
+  final String? confirmLabel;
+
+  /// Padrão: [SsStrings.cancel].
+  final String? cancelLabel;
   final bool danger;
   final IconData? icon;
 
@@ -120,7 +125,7 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
               controller: _texto,
               autofocus: true,
               textCapitalization: TextCapitalization.characters,
-              decoration: InputDecoration(labelText: 'Digite $word para confirmar'),
+              decoration: InputDecoration(labelText: SsStrings.of(context).typeToConfirm(word)),
               onChanged: (_) => setState(() {}),
             ),
           ],
@@ -128,8 +133,8 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
       ),
       actions: [
         _Empilhados(
-          confirmLabel: widget.confirmLabel,
-          cancelLabel: widget.cancelLabel,
+          confirmLabel: widget.confirmLabel ?? SsStrings.of(context).confirm,
+          cancelLabel: widget.cancelLabel ?? SsStrings.of(context).cancel,
           danger: widget.danger,
           onConfirm: liberado ? () => Navigator.pop(context, true) : null,
           onCancel: () => Navigator.pop(context, false),
@@ -146,12 +151,12 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
 Future<String?> showSsPrompt(
   BuildContext context, {
   required String title,
-  String label = 'Nome',
+  String? label,
   String initial = '',
   String? hint,
   String? Function(String value)? validator,
   TextInputType keyboardType = TextInputType.text,
-  String confirmLabel = 'Salvar',
+  String? confirmLabel,
   bool allowEmpty = false,
   int maxLines = 1,
   int? maxLength,
@@ -181,24 +186,28 @@ class SsPromptDialog extends StatefulWidget {
   const SsPromptDialog({
     super.key,
     required this.title,
-    this.label = 'Nome',
+    this.label,
     this.initial = '',
     this.hint,
     this.validator,
     this.keyboardType = TextInputType.text,
-    this.confirmLabel = 'Salvar',
+    this.confirmLabel,
     this.maxLines = 1,
     this.maxLength,
     this.message,
   });
 
   final String title;
-  final String label;
+
+  /// Padrão: [SsStrings.name].
+  final String? label;
   final String initial;
   final String? hint;
   final String? Function(String value)? validator;
   final TextInputType keyboardType;
-  final String confirmLabel;
+
+  /// Padrão: [SsStrings.save].
+  final String? confirmLabel;
   final int maxLines;
   final int? maxLength;
   final String? message;
@@ -247,7 +256,7 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
             maxLines: widget.maxLines,
             minLines: 1,
             maxLength: widget.maxLength,
-            decoration: InputDecoration(labelText: widget.label, hintText: widget.hint),
+            decoration: InputDecoration(labelText: widget.label ?? SsStrings.of(context).name, hintText: widget.hint),
             validator: widget.validator == null ? null : (v) => widget.validator!((v ?? '').trim()),
             onFieldSubmitted: widget.maxLines > 1 ? null : (_) => _salvar(),
           ),
@@ -256,8 +265,8 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
     ),
     actions: [
       _Empilhados(
-        confirmLabel: widget.confirmLabel,
-        cancelLabel: 'Cancelar',
+        confirmLabel: widget.confirmLabel ?? SsStrings.of(context).save,
+        cancelLabel: SsStrings.of(context).cancel,
         onConfirm: _salvar,
         onCancel: () => Navigator.pop(context),
       ),
@@ -273,7 +282,7 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
 Future<T> ssRunBlocking<T>(
   BuildContext context,
   Future<T> Function() task, {
-  String label = 'Um instante…',
+  String? label,
   VoidCallback? onCancel,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
@@ -299,9 +308,10 @@ Future<T> ssRunBlocking<T>(
 
 /// O cartão de espera do [ssRunBlocking] (público para o catálogo).
 class SsBlockingIndicator extends StatefulWidget {
-  const SsBlockingIndicator({super.key, this.label = 'Um instante…', this.onCancel});
+  const SsBlockingIndicator({super.key, this.label, this.onCancel});
 
-  final String label;
+  /// Padrão: [SsStrings.pleaseWait].
+  final String? label;
   final VoidCallback? onCancel;
 
   @override
@@ -314,10 +324,11 @@ class _SsBlockingIndicatorState extends State<SsBlockingIndicator> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     return Center(
       child: Semantics(
         liveRegion: true,
-        label: _cancelado ? 'Cancelando…' : widget.label,
+        label: _cancelado ? s.cancelling : widget.label ?? s.pleaseWait,
         child: Material(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppRadius.card),
@@ -333,7 +344,7 @@ class _SsBlockingIndicatorState extends State<SsBlockingIndicator> {
                     const SizedBox(width: 14),
                     Flexible(
                       child: Text(
-                        _cancelado ? 'Cancelando…' : widget.label,
+                        _cancelado ? s.cancelling : widget.label ?? s.pleaseWait,
                         style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
                       ),
                     ),
@@ -348,7 +359,7 @@ class _SsBlockingIndicatorState extends State<SsBlockingIndicator> {
                             setState(() => _cancelado = true);
                             widget.onCancel!();
                           },
-                    child: const Text('Cancelar'),
+                    child: Text(s.cancel),
                   ),
                 ],
               ],
@@ -377,12 +388,13 @@ class SsUnsavedGuard extends StatelessWidget {
       if (didPop) return;
       final navigator = Navigator.of(context);
       if (!dirty && !(isDirty?.call() ?? false)) return navigator.pop();
+      final s = SsStrings.of(context);
       final ok = await showSsConfirm(
         context,
-        title: 'Descartar as alterações?',
-        message: 'O que você mudou aqui ainda não foi salvo.',
-        confirmLabel: 'Descartar',
-        cancelLabel: 'Continuar editando',
+        title: s.discardTitle,
+        message: s.discardMessage,
+        confirmLabel: s.discard,
+        cancelLabel: s.keepEditing,
         danger: true,
       );
       if (ok) navigator.pop();
@@ -396,10 +408,10 @@ enum SsImageSource { camera, gallery, remove }
 
 /// Folha "Câmera / Galeria (/ Remover)". Devolve `null` se fechou sem
 /// escolher.
-Future<SsImageSource?> showSsImageSource(BuildContext context, {bool allowRemove = false, String title = 'Foto'}) =>
+Future<SsImageSource?> showSsImageSource(BuildContext context, {bool allowRemove = false, String? title}) =>
     showSsSheet<SsImageSource>(
       context,
-      title: title,
+      title: title ?? SsStrings.of(context).photo,
       child: SsImageSourcePicker(allowRemove: allowRemove),
     );
 
@@ -413,24 +425,25 @@ class SsImageSourcePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void escolher(SsImageSource s) => Navigator.pop(context, s);
+    final t = SsStrings.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SsListItem(
           icon: Icons.photo_camera_outlined,
-          title: 'Tirar foto',
-          subtitle: 'Abre a câmera',
+          title: t.takePhoto,
+          subtitle: t.opensCamera,
           onTap: () => escolher(SsImageSource.camera),
         ),
         SsListItem(
           icon: Icons.photo_library_outlined,
-          title: 'Escolher da galeria',
+          title: t.chooseFromGallery,
           onTap: () => escolher(SsImageSource.gallery),
         ),
         if (allowRemove)
           SsListItem(
             icon: Icons.delete_outline,
-            title: 'Remover foto',
+            title: t.removePhoto,
             tone: AppColors.danger,
             onTap: () => escolher(SsImageSource.remove),
           ),

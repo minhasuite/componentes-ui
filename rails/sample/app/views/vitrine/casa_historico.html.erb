@@ -1,0 +1,178 @@
+<%# titulo: Histórico e logbook | grupo: Casa e automação | ordem: 20 %>
+<%
+  # Dados de exemplo: leituras desiguais (4 a 40 min entre elas) nas últimas 48 h,
+  # luz e porta que ligam/abrem, um aspirador com 4 estados e eventos em 3 dias.
+  agora = Time.current.change(sec: 0)
+  ini48 = agora - 48.hours
+  # Janela pedida pelo zoom (Turbo): ?from=&to= em ISO 8601.
+  janela_de = (Time.zone.parse(params[:from].to_s) rescue nil) || ini48
+  janela_ate = (Time.zone.parse(params[:to].to_s) rescue nil) || agora
+  janela_de, janela_ate = ini48, agora if janela_ate <= janela_de
+  zoom = janela_de > ini48 + 1.minute || janela_ate < agora - 1.minute
+
+  leituras = lambda do |seed, base, amp, ruido, de, ate, buraco: nil|
+    rnd = Random.new(seed)
+    # Mais fino quando a janela é curta (o "servidor" manda leituras de 1 a 3 min).
+    passo = (ate - de) < 8.hours ? [1, 3] : [4, 36]
+    t = de
+    out = []
+    while t < ate
+      h = t.hour + t.min / 60.0
+      ciclo = Math.sin((h - 9) / 24.0 * 2 * Math::PI)
+      v = base + amp * ciclo + (rnd.rand - 0.5) * ruido * 2
+      out << [t, (buraco && t.between?(buraco, buraco + 70.minutes)) ? nil : v.round(2)]
+      t += (passo[0] + rnd.rand(passo[1] - passo[0] + 1)).minutes
+    end
+    out
+  end
+
+  alterna = lambda do |seed, a, b, la, lb|
+    rnd = Random.new(seed)
+    t = ini48
+    on = false
+    segs = []
+    while t < agora
+      fim = [t + (on ? 20 + rnd.rand(160) : 60 + rnd.rand(360)).minutes, agora].min
+      segs << { from: t, to: fim, state: on ? a : b, label: on ? la : lb }
+      t = fim
+      on = !on
+    end
+    segs
+  end
+
+  ini24 = agora - 24.hours
+  h = ->(x) { ini24 + (x * 60).round.minutes }
+  luz = { label: "Luz da sala", current: "Desligada", segments: alterna.(4, "on", "off", "Ligada", "Desligada") }
+  porta = { label: "Porta da frente", current: "Fechada", segments: alterna.(5, "open", "closed", "Aberta", "Fechada") }
+  aspirador = { label: "Aspirador", current: "Na base", segments: [
+    { from: ini48, to: h.(9), state: "docked", label: "Na base" }, { from: h.(9), to: h.(10.2), state: "cleaning", label: "Limpando" },
+    { from: h.(10.2), to: h.(10.5), state: "returning", label: "Voltando" }, { from: h.(10.5), to: h.(18), state: "docked", label: "Na base" },
+    { from: h.(18), to: h.(18.4), state: "error", label: "Preso" }, { from: h.(18.4), to: agora, state: "docked", label: "Na base" }] }
+  tons_aspirador = { "docked" => :neutral, "cleaning" => :success, "returning" => :info }
+
+  clima = [
+    { name: "Sala", unit: "°C", decimals: 1, points: leituras.(1, 23, 2.6, 0.4, janela_de, janela_ate) },
+    { name: "Quarto", unit: "°C", decimals: 1, points: leituras.(2, 21.5, 1.8, 0.4, janela_de, janela_ate, buraco: agora - 28.hours) },
+    { name: "Umidade da sala", unit: "%", decimals: 0, points: leituras.(3, 62, -9, 2, janela_de, janela_ate) }
+  ]
+
+  modelos = [
+    ["Luz da sala ligada", "pela automação Pôr do sol", "light", :accent, "Ligada"],
+    ["Porta da frente aberta", "Ana", "door", :warn, "Aberta"],
+    ["Alarme armado", "modo Noite · pelo app", "lock", :success, nil],
+    ["Aspirador preso", "perto do sofá", "alert", :danger, "Erro"],
+    ["Temperatura acima de 28 °C", "Quarto", "thermo", :warn, nil],
+    ["Movimento no corredor", nil, "motion", :info, nil],
+    ["Cena Cinema", "Bruno", "power", :neutral, nil]
+  ]
+  # Página n do logbook: 4 eventos por página, do mais novo para o mais velho (3 dias).
+  eventos = lambda do |pagina|
+    (0...12).map do |k|
+      m = modelos[k % modelos.size]
+      { at: agora - (k * 6.2).hours - (k * 17 % 50).minutes,
+        title: m[0], detail: m[1], icon: m[2], tone: m[3], state: m[4], href: (k.even? ? "#evento-#{k}" : nil) }
+    end.sort_by { -_1[:at].to_i }.each_slice(4).to_a[pagina - 1] || []
+  end
+  pg = params[:pg].to_i
+%>
+<% if pg > 1 || params[:pg] == "erro" %>
+  <%# Página seguinte do logbook (pedida pelo turbo-frame do rodapé). "erro" responde sem o frame. %>
+  <% if params[:pg] == "erro" %>
+    <p>Página sem o frame (o logbook mostra o erro).</p>
+  <% else %>
+    <%= render Ss::LogbookComponent.new(entries: eventos.(pg), frame: request.headers["Turbo-Frame"],
+          more_url: (vitrine_path("casa_historico", pg: pg + 1) if pg < 3), lazy: false) %>
+  <% end %>
+<% else %>
+
+<%= demo "Ss::TimeSeriesChartComponent", "Séries com instantes reais e desiguais; °C à esquerda e % à direita; faixas de estado embaixo, sob o mesmo cursor. Passe o mouse (ou toque) para ver os valores; arraste com o mouse para aproximar (o servidor manda leituras mais finas pelo Turbo); duplo clique ou “Ver tudo” volta. A legenda liga e desliga. Com foco: ← → andam, + aproxima, 0 volta.",
+      uso: 'render Ss::TimeSeriesChartComponent.new(title:, series: [{ name:, unit:, decimals:, points: [[t, v], …] }], from:, to:, bands: [{ label:, segments: [{ from:, to:, state:, label: }] }], zoom_url:)' do %>
+  <div class="ss-card ss-card-pad">
+    <%= turbo_frame_tag "tc-demo" do %>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;margin-bottom:.75rem">
+        <b>Clima e casa</b>
+        <span class="ss-badge num"><%= zoom ? "#{ss_date(janela_de, :day_month_time)} – #{ss_date(janela_ate, :day_month_time)}" : "48 h" %></span>
+      </div>
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Clima e casa nas últimas 48 horas", from: janela_de, to: janela_ate, series: clima,
+            bands: [luz, porta], zoom_url: vitrine_path("casa_historico"), reset_url: vitrine_path("casa_historico"), zoomed: zoom, id: "tc-principal") %>
+    <% end %>
+  </div>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Uma série em área", "mode: :area. Sem legenda (uma série só)." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Temperatura da sala", mode: :area, height: 180,
+            series: [{ name: "Sala", unit: "°C", decimals: 1, points: leituras.(1, 23, 2.6, 0.4, agora - 24.hours, agora) }]) %>
+    </div>
+  <% end %>
+  <%= demo "Degrau (valores discretos)", "mode: :step: o valor vale até a próxima leitura (nível, modo, potência por faixa)." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Nível da caixa d’água", mode: :step, height: 180, from: agora - 24.hours, to: agora,
+            series: [{ name: "Nível", unit: "%", points: [80, 80, 65, 40, 40, 100, 90, 75, 70].each_with_index.map { |v, i| [agora - (24 - i * 3).hours - (i * 7 % 50).minutes, v] } }]) %>
+    </div>
+  <% end %>
+  <%= demo "Carregando", "loading: true: esqueleto na altura final (nada pula quando os dados chegam)." do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::TimeSeriesChartComponent.new(title: "Energia", loading: true, height: 180) %></div>
+  <% end %>
+  <%= demo "Vazio", "Sem leituras no período." do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::TimeSeriesChartComponent.new(title: "Energia", height: 180, series: [{ name: "Consumo", unit: "W", points: [] }]) %></div>
+  <% end %>
+  <%= demo "Em inglês", "locale: \"en\" (o padrão é o lang da página): 3:00 PM, 1,234.5." do %>
+    <div class="ss-card ss-card-pad" lang="en">
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Power", height: 180, mode: :area, locale: :en,
+            series: [{ name: "Power", unit: "W", decimals: 0, points: leituras.(9, 1400, 900, 120, agora - 6.hours, agora) }]) %>
+    </div>
+  <% end %>
+</div>
+
+<%= demo "Ss::StateBandsComponent", "Faixas de estado no mesmo intervalo, com o eixo do tempo. Passe o mouse ou toque num trecho; com foco na faixa, ← → andam pelos trechos. Cor por estado: ligado/aberto na marca, desligado/fechado no neutro, erro no perigo e tones: do app.",
+      uso: 'render Ss::StateBandsComponent.new(title:, from:, to:, tones: { "cleaning" => :success }, rows: [{ label:, current:, segments: [{ from:, to:, state:, label: }] }])' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::StateBandsComponent.new(title: "Luz, porta e aspirador", from: ini48, to: agora, rows: [luz, porta, aspirador], tones: tons_aspirador) %>
+  </div>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Uma linha, nome longo", "O nome corta com reticências (o title mostra inteiro)." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::StateBandsComponent.new(from: ini24, to: agora, rows: [luz.merge(label: "Luz pendente da mesa de jantar (sala de estar, térreo)")]) %>
+    </div>
+  <% end %>
+  <%= demo "Nome em cima", "label_position: :top: a faixa ocupa a largura toda (alinha com o gráfico)." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::StateBandsComponent.new(from: ini24, to: agora, rows: [luz, aspirador], tones: tons_aspirador, label_position: :top) %>
+    </div>
+  <% end %>
+  <%= demo "Vazio", nil do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::StateBandsComponent.new(rows: []) %></div>
+  <% end %>
+</div>
+
+<%= demo "Ss::LogbookComponent", "Eventos por dia com o cabeçalho que gruda (“Hoje”, “Ontem”, a data). “Carregar mais” busca a página seguinte num turbo-frame (?pg=2, ?pg=3); o dia que continua não repete o cabeçalho. lazy: true (padrão) carrega sozinho ao aparecer.",
+      uso: 'render Ss::LogbookComponent.new(entries: [{ at:, title:, detail:, icon: "door", tone: :warn, state:, href: }], more_url:, lazy: false) · página seguinte: frame: request.headers["Turbo-Frame"]' do %>
+  <div class="ss-card" style="max-height:30rem;overflow:auto;padding:0">
+    <%= render Ss::LogbookComponent.new(entries: eventos.(1), more_url: vitrine_path("casa_historico", pg: 2), lazy: false, id: "lb-principal") %>
+  </div>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Erro ao carregar mais", "A página seguinte falhou (aqui, a resposta vem sem o frame): o rodapé mostra o erro e “Tentar de novo”." do %>
+    <div class="ss-card" style="padding:0">
+      <%= render Ss::LogbookComponent.new(entries: eventos.(3).first(2), more_url: vitrine_path("casa_historico", pg: "erro"), lazy: false) %>
+    </div>
+  <% end %>
+  <%= demo "Fim", "Sem more_url: “Início do registro”." do %>
+    <div class="ss-card" style="padding:0"><%= render Ss::LogbookComponent.new(entries: eventos.(3).last(2)) %></div>
+  <% end %>
+  <%= demo "Carregando", "loading: true." do %>
+    <div class="ss-card" style="padding:0"><%= render Ss::LogbookComponent.new(entries: [], loading: true) %></div>
+  <% end %>
+  <%= demo "Vazio e erro", "Sem eventos; error: com retry_url:." do %>
+    <div class="ss-card" style="padding:0">
+      <%= render Ss::LogbookComponent.new(entries: []) %>
+      <%= render Ss::LogbookComponent.new(entries: [], error: "Não deu para abrir o registro.", retry_url: vitrine_path("casa_historico")) %>
+    </div>
+  <% end %>
+</div>
+<% end %>

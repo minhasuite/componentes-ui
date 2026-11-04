@@ -14,7 +14,7 @@
   <% tabs.reject(&:link?).each do |t| %>
     <div class="ss-tab-panel" role="tabpanel" id="<%= t.key %>" aria-labelledby="<%= t.key %>-tab" tabindex="0" <%= "hidden" unless t.selected %> data-ss-tabs-target="panel">
       <% if t.frame_src %>
-        <turbo-frame id="<%= t.key %>-frame" src="<%= t.frame_src %>" loading="lazy"><div class="ss-tab-loading" aria-busy="true">Carregando…</div></turbo-frame>
+        <turbo-frame id="<%= t.key %>-frame" src="<%= t.frame_src %>" loading="lazy"><div class="ss-tab-loading" aria-busy="true"><%= ss_t("common.loading", default: "Carregando…") %></div></turbo-frame>
       <% else %>
         <%= t %>
       <% end %>

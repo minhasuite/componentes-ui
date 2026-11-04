@@ -12,7 +12,7 @@ module Ss
 
     attr_reader :title, :sources, :apply, :dismiss, :confidence, :when_text
 
-    def initialize(title: nil, text: nil, sources: [], apply: nil, dismiss: nil, thinking: false, confidence: nil, when_text: nil, thinking_text: "Analisando seus dados…", **opts)
+    def initialize(title: nil, text: nil, sources: [], apply: nil, dismiss: nil, thinking: false, confidence: nil, when_text: nil, thinking_text: nil, **opts)
       super(**opts)
       @title = title
       @text = text
@@ -22,7 +22,7 @@ module Ss
       @thinking = thinking
       @confidence = confidence
       @when_text = when_text
-      @thinking_text = thinking_text
+      @thinking_text = thinking_text || ss_t("ai_insight.thinking", default: "Analisando seus dados…")
     end
 
     def thinking? = @thinking

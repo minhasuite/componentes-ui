@@ -1,11 +1,36 @@
-<%= tag.div(class: classes("ss-field", "ss-range-field"), **root_attrs(data: { controller: "ss-range", ss_range_format_value: fmt })) do %>
-  <div class="ss-range-head">
-    <label for="<%= id %>"><%= label %></label>
-    <output for="<%= id %>" class="ss-range-out num" data-ss-range-target="out"><%= text %></output>
-  </div>
-  <input type="range" id="<%= id %>" name="<%= name %>" class="ss-range" min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= value %>"
-         style="--p:<%= pct %>%" aria-valuetext="<%= text %>" <% if ticks %>list="<%= id %>-ticks"<% end %>
-         data-ss-range-target="input" data-action="input->ss-range#update">
+<% input = capture do %>
+  <input type="range" id="<%= id %>" name="<%= name %>" class="<%= input_classes %>" min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= value %>"
+         style="<%= plain? ? "--p:#{pct}%" : style %>" aria-valuetext="<%= text %>" <% if ticks %>list="<%= id %>-ticks"<% end %> <% if disabled? %>disabled<% end %>
+         <% if fill? %>aria-label="<%= label %>"<% end %>
+         data-ss-range-target="input" data-action="input->ss-range#update<% unless plain? %> change->ss-range#commit<% end %>">
+<% end %>
+<%= tag.div(class: classes("ss-field", "ss-range-field", ("is-fill" if fill?)), **root_attrs(data: controller_data)) do %>
+  <% if fill? %>
+    <div class="ss-range-fillbox" style="--p:<%= pct %>%" data-ss-range-target="box">
+      <%= input %>
+      <%# O texto vai duas vezes: em tinta por baixo e em branco recortado na parte cheia (lê bem dos dois lados). %>
+      <% 2.times do |i| %>
+        <span class="ss-range-fill-text<%= ' is-on' if i == 1 %>" aria-hidden="true">
+          <% if icon %><%= icon.html_safe %><% end %>
+          <b><%= label %></b>
+          <% if i.zero? %><output for="<%= id %>" class="ss-range-out num" data-ss-range-target="out"><%= text %></output><% else %><span class="ss-range-out num" data-ss-range-target="out"><%= text %></span><% end %>
+        </span>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="ss-range-head<%= ' ss-sr' if hide_label? %>">
+      <label for="<%= id %>"><%= label %></label>
+      <output for="<%= id %>" class="ss-range-out num" data-ss-range-target="out"><%= text %></output>
+    </div>
+    <% if plain? %>
+      <%= input %>
+    <% else %>
+      <div class="ss-range-track" style="--pn:<%= (pct / 100.0).round(4) %>" data-ss-range-target="box">
+        <%= input %>
+        <% if bubble? %><span class="ss-range-bubble num" aria-hidden="true" data-ss-range-target="bubble"><%= text %></span><% end %>
+      </div>
+    <% end %>
+  <% end %>
   <% if ticks %>
     <datalist id="<%= id %>-ticks"><% ticks.each do |t| %><option value="<%= t %>"></option><% end %></datalist>
     <div class="ss-range-ticks" aria-hidden="true">

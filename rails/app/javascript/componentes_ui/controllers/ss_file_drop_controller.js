@@ -1,9 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssFormat, ssNumber } from "componentes_ui/controllers/ss_intl"
 
 // Arrastar e soltar: põe os arquivos no <input type=file>, mostra prévia, tamanho e progresso.
 // Com Active Storage (data-direct-upload-url), a barra segue os eventos direct-upload:*.
 export default class extends Controller {
   static targets = ["zone", "input", "list"]
+  // Texto do botão de tirar (I18n do componente); %{name} = nome do arquivo.
+  static values = { removeLabel: { type: String, default: "Remover %{name}" } }
 
   connect() {
     this.onUpload = this.upload.bind(this)
@@ -57,7 +60,7 @@ export default class extends Controller {
       const fill = document.createElement("span"); fill.className = "ss-progress-bar"; fill.style.width = "0%"; bar.append(fill)
       main.append(name, size, bar)
       const rm = document.createElement("button")
-      rm.type = "button"; rm.className = "ss-file-remove"; rm.textContent = "×"; rm.setAttribute("aria-label", `Remover ${f.name}`)
+      rm.type = "button"; rm.className = "ss-file-remove"; rm.textContent = "×"; rm.setAttribute("aria-label", ssFormat(this.removeLabelValue, { name: f.name }))
       rm.addEventListener("click", () => this.remove(i))
       li.append(thumb, main, rm)
       return li
@@ -87,7 +90,7 @@ export default class extends Controller {
 
   size(b) {
     if (b < 1024) return `${b} B`
-    if (b < 1048576) return `${(b / 1024).toFixed(0)} KB`
-    return `${(b / 1048576).toFixed(1).replace(".", ",")} MB`
+    if (b < 1048576) return `${ssNumber(Math.round(b / 1024))} KB`
+    return `${ssNumber(b / 1048576, 1)} MB`
   }
 }

@@ -1,10 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssFormat, ssLang } from "componentes_ui/controllers/ss_intl"
 
 // Combobox: busca no servidor (url, GET ?q=, JSON ou HTML) ou local (options = JSON [{id,label,hint}]).
 // Teclado: ↑ ↓ movem, Enter escolhe, Esc fecha. aria-activedescendant aponta a opção ativa.
 export default class extends Controller {
   static targets = ["input", "list", "hidden", "created"]
-  static values = { url: String, options: Array, create: Boolean, debounce: { type: Number, default: 250 }, min: { type: Number, default: 1 } }
+  static values = { url: String, options: Array, create: Boolean, debounce: { type: Number, default: 250 }, min: { type: Number, default: 1 },
+                    // Textos vindos do componente (I18n do Rails); %{q} = o que foi digitado.
+                    createLabel: { type: String, default: "Criar “%{q}”" }, emptyLabel: { type: String, default: "Nada encontrado" },
+                    hintLabel: { type: String, default: "Digite para buscar" } }
 
   connect() { this.active = -1; this.seq = 0; if (this.hiddenTarget.value) this.chosen = this.inputTarget.value.trim() }
   disconnect() { clearTimeout(this.timer); this.abort?.abort() }
@@ -59,15 +63,15 @@ export default class extends Controller {
   decorate(q) {
     const base = this.inputTarget.id
     let opts = [...this.listTarget.querySelectorAll('[role="option"]')]
-    if (this.createValue && q && !opts.some((o) => (o.dataset.label || "").toLowerCase() === q.toLowerCase())) {
+    if (this.createValue && q && !opts.some((o) => (o.dataset.label || "").toLocaleLowerCase(ssLang()) === q.toLocaleLowerCase(ssLang()))) {
       const li = document.createElement("li")
       li.setAttribute("role", "option"); li.dataset.create = q; li.className = "is-create"
-      li.textContent = `Criar “${q}”`
+      li.textContent = ssFormat(this.createLabelValue, { q })
       this.listTarget.append(li)
       opts = [...opts, li]
     }
     if (!opts.length) {
-      const li = document.createElement("li"); li.className = "ss-combobox-empty"; li.textContent = q ? "Nada encontrado" : "Digite para buscar"
+      const li = document.createElement("li"); li.className = "ss-combobox-empty"; li.textContent = q ? this.emptyLabelValue : this.hintLabelValue
       this.listTarget.append(li)
     }
     opts.forEach((o, i) => { o.id = `${base}-opt-${i}`; o.setAttribute("aria-selected", "false") })

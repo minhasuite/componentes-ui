@@ -7,12 +7,12 @@
   <% if @palettes.any? %>
     <div class="ss-theme-palettes">
       <% unless @compact %>
-        <div class="ss-theme-pal-head"><span>Paleta</span><strong data-ss-theme-target="name" aria-live="polite"><%= default_name %></strong></div>
+        <div class="ss-theme-pal-head"><span><%= ss_t("theme_switcher.palette", default: "Paleta") %></span><strong data-ss-theme-target="name" aria-live="polite"><%= default_name %></strong></div>
       <% end %>
-      <div class="ss-theme-pal-grid<%= " is-grouped" if @group %>" role="group" aria-label="Paleta" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value=".ss-pal-chip">
+      <div class="ss-theme-pal-grid<%= " is-grouped" if @group %>" role="group" aria-label="<%= ss_t("theme_switcher.palette", default: "Paleta") %>" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value=".ss-pal-chip">
         <% palette_groups.each do |familia, items| %>
           <div class="ss-theme-pal-row">
-            <% if familia %><span class="ss-theme-pal-fam"><%= familia %></span><% end %>
+            <% if familia %><span class="ss-theme-pal-fam"><%= ss_palette_family(familia) %></span><% end %>
             <div class="ss-theme-pal-chips">
               <% items.each do |key, name, slug| %>
                 <button type="button" class="ss-pal-chip" data-swatch="<%= slug %>" aria-pressed="false" aria-label="<%= name %>" title="<%= name %>" data-action="ss-theme#set" data-ss-theme-palette-param="<%= key %>"><span aria-hidden="true"></span></button>

@@ -6,10 +6,10 @@ module Ss
   #       changes: [{ field: "Valor", from: "R$ 1.250,00", to: "R$ 1.320,00" }] }])
   class AuditTrailComponent < BaseComponent
     include InView
-    def initialize(entries:, label: "Histórico de alterações", **opts)
+    def initialize(entries:, label: nil, **opts)
       super(**opts)
       @entries = entries
-      @label = label
+      @label = label || ss_t("audit_trail.label", default: "Histórico de alterações")
     end
 
     # Divide de/para em [prefixo comum, trecho diferente, sufixo comum] por palavra.
@@ -50,15 +50,16 @@ module Ss
     def time(at)
       return tag.small(at.to_s) unless at.respond_to?(:strftime)
 
-      tag.time(at.strftime("%d/%m %H:%M"), datetime: at.iso8601, class: "num")
+      tag.time(ss_date(at, :day_month_time), datetime: at.iso8601, class: "num")
     end
 
     def change(c)
       (fa, fb) = self.class.diff(c[:from], c[:to])
-      from = c[:from].blank? ? tag.span("vazio", class: "ss-audit-none") : tag.span(class: "ss-audit-from") { safe_join([fa[0], tag.del(fa[1]), fa[2]]) }
-      to = c[:to].blank? ? tag.span("vazio", class: "ss-audit-none") : tag.span(class: "ss-audit-to") { safe_join([fb[0], tag.ins(fb[1]), fb[2]]) }
+      empty = ss_t("audit_trail.empty", default: "vazio")
+      from = c[:from].blank? ? tag.span(empty, class: "ss-audit-none") : tag.span(class: "ss-audit-from") { safe_join([fa[0], tag.del(fa[1]), fa[2]]) }
+      to = c[:to].blank? ? tag.span(empty, class: "ss-audit-none") : tag.span(class: "ss-audit-to") { safe_join([fb[0], tag.ins(fb[1]), fb[2]]) }
       tag.div(class: "ss-audit-change") do
-        safe_join([tag.dt(c[:field]), tag.dd { safe_join([from, tag.span(" → ", class: "ss-audit-arrow", "aria-label": "para"), to]) }])
+        safe_join([tag.dt(c[:field]), tag.dd { safe_join([from, tag.span(" → ", class: "ss-audit-arrow", "aria-label": ss_t("audit_trail.to", default: "para")), to]) }])
       end
     end
   end

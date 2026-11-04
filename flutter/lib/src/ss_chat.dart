@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Situação de uma mensagem da pessoa no [SsChatBubble].
 enum SsChatStatus { sending, sent, failed }
@@ -115,15 +116,25 @@ class _Status extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     return switch (s) {
-      SsChatStatus.sending => Icon(Icons.schedule_rounded, size: 13, color: c.muted, semanticLabel: 'Enviando'),
-      SsChatStatus.sent => Icon(Icons.check_rounded, size: 14, color: c.muted, semanticLabel: 'Enviada'),
+      SsChatStatus.sending => Icon(
+        Icons.schedule_rounded,
+        size: 13,
+        color: c.muted,
+        semanticLabel: SsStrings.of(context).chatSending,
+      ),
+      SsChatStatus.sent => Icon(
+        Icons.check_rounded,
+        size: 14,
+        color: c.muted,
+        semanticLabel: SsStrings.of(context).chatSent,
+      ),
       SsChatStatus.failed => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
           const SizedBox(width: 3),
           Text(
-            'Não enviada',
+            SsStrings.of(context).chatNotSent,
             style: TextStyle(color: c.dangerText, fontSize: AppType.label, fontWeight: FontWeight.w700),
           ),
         ],
@@ -206,7 +217,7 @@ class _SsThinkingState extends State<SsThinking> with SingleTickerProviderStateM
     final c = SsColors.of(context);
     return Semantics(
       liveRegion: true,
-      label: widget.text ?? 'Pensando',
+      label: widget.text ?? SsStrings.of(context).chatThinking,
       child: ExcludeSemantics(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -283,7 +294,7 @@ class SsChatInput extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onSend,
-    this.hint = 'Escreva uma mensagem',
+    this.hint,
     this.sending = false,
     this.enabled = true,
     this.leading,
@@ -291,7 +302,9 @@ class SsChatInput extends StatelessWidget {
 
   final TextEditingController controller;
   final ValueChanged<String> onSend;
-  final String hint;
+
+  /// Padrão: [SsStrings.chatHint].
+  final String? hint;
   final bool sending;
   final bool enabled;
   final Widget? leading;
@@ -324,7 +337,7 @@ class SsChatInput extends StatelessWidget {
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _enviar(),
                 decoration: InputDecoration(
-                  hintText: hint,
+                  hintText: hint ?? SsStrings.of(context).chatHint,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -346,7 +359,7 @@ class SsChatInput extends StatelessWidget {
                 return Semantics(
                   button: true,
                   enabled: pode,
-                  label: 'Enviar',
+                  label: SsStrings.of(context).send,
                   child: ExcludeSemantics(
                     child: AnimatedScale(
                       scale: pode || reduceMotion(context) ? 1 : .9,

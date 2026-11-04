@@ -8,14 +8,15 @@ module Ss
 
     attr_reader :title, :amount, :code, :expires_at, :hint
 
-    def initialize(code:, title: "Pague com Pix", amount: nil, qr: nil, expires_at: nil, hint: "Abra o app do banco, escolha Pix e leia o código.", **opts)
+    def initialize(code:, title: nil, amount: nil, qr: nil, expires_at: nil, hint: nil, **opts)
       super(**opts)
       @code = code
-      @title = title
+      @title = title || ss_t("qr_card.title", default: "Pague com Pix")
       @amount = amount
       @qr = qr
       @expires_at = expires_at
-      @hint = hint
+      # hint: false tira a dica.
+      @hint = hint.nil? ? ss_t("qr_card.hint", default: "Abra o app do banco, escolha Pix e leia o código.") : hint.presence
     end
 
     def qr = content.presence || @qr

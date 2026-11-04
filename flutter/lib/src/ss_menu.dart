@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Uma ação do [SsOverflowMenu]. [destructive] pinta de vermelho (excluir);
 /// [checked] põe um ✓ no fim (ordem, filtro ativo); [subtitle] é uma linha menor.
@@ -29,15 +30,12 @@ class SsMenuAction {
 /// dela com tooltip; sem ações, não mostra nada. O menu abre da âncora e as
 /// linhas descem em cascata com mola.
 class SsOverflowMenu extends StatelessWidget {
-  const SsOverflowMenu({
-    super.key,
-    required this.items,
-    this.tooltip = 'Mais opções',
-    this.icon = Icons.more_vert_rounded,
-  });
+  const SsOverflowMenu({super.key, required this.items, this.tooltip, this.icon = Icons.more_vert_rounded});
 
   final List<SsMenuAction> items;
-  final String tooltip;
+
+  /// Padrão: [SsStrings.moreOptions].
+  final String? tooltip;
 
   /// Ícone do botão (ex.: `Icons.sort_rounded` num menu de ordem).
   final IconData icon;
@@ -55,7 +53,7 @@ class SsOverflowMenu extends StatelessWidget {
       );
     }
     return PopupMenuButton<int>(
-      tooltip: tooltip,
+      tooltip: tooltip ?? SsStrings.of(context).moreOptions,
       icon: Icon(icon),
       position: PopupMenuPosition.under,
       color: c.surface,
@@ -119,7 +117,7 @@ class SsMenuActionRow extends StatelessWidget {
         ),
         if (action.checked) ...[
           const SizedBox(width: 12),
-          Icon(Icons.check_rounded, size: 20, color: c.accentText, semanticLabel: 'marcado'),
+          Icon(Icons.check_rounded, size: 20, color: c.accentText, semanticLabel: SsStrings.of(context).checked),
         ],
       ],
     );

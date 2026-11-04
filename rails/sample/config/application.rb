@@ -36,6 +36,10 @@ module Sample
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
+    # Vitrine em pt-BR por padrão; ?locale=en|es|pt-BR troca (ApplicationController).
+    config.i18n.default_locale = :"pt-BR"
+    config.i18n.available_locales = [:"pt-BR", :en, :es]
+
     # Don't generate system test files.
     config.generators.system_tests = nil
   end

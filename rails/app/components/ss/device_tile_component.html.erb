@@ -1,0 +1,16 @@
+<%= tag.div(class: root_classes, style: ("--tone: #{tone_css}" if tone_css),
+            **root_attrs(data: { status: status }, aria: { busy: ("true" if status == :pending) }.compact)) do %>
+  <div class="ss-device-main">
+    <span class="ss-device-ico" aria-hidden="true"><%= icon %><i class="ss-device-spin"></i></span>
+    <%= content_tag(url ? :a : :div, class: "ss-device-text", href: url, title: (details_label if url)) do %>
+      <span class="ss-device-name"><%= name %></span>
+      <span class="ss-device-state" data-pending="<%= label(:pending) %>" data-error="<%= error_text || label(:error) %>"><%= state_line %></span>
+    <% end %>
+    <% if status == :locked %>
+      <span class="ss-device-end"><span class="ss-device-lock" role="img" aria-label="<%= label(:locked) %>" title="<%= label(:locked) %>"><%= lock_icon %></span></span>
+    <% elsif toggle? %>
+      <span class="ss-device-end"><%= render switch %></span>
+    <% end %>
+  </div>
+  <% if footer? %><div class="ss-device-foot"><%= footer %></div><% end %>
+<% end %>

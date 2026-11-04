@@ -21,7 +21,7 @@ module Ss
     attr_reader :columns, :id, :caption
 
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
-                   row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: "Nada por aqui ainda.",
+                   row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
                    max_height: nil, show_caption: false, tools: true, **opts)
       super(**opts)
       @rows = rows.to_a
@@ -36,7 +36,8 @@ module Ss
       @density = density.to_s == "compact" ? "compact" : "comfortable"
       @pagination = pagination
       @params = params
-      @empty = empty
+      @empty = empty || ss_t("data_table.empty", default: "Nada por aqui ainda.")
+      @currency = currency
       @max_height = max_height
       @show_caption = show_caption
       @tools = tools
@@ -85,8 +86,8 @@ module Ss
       v = value_of(row, col.key)
       case col.format
       when :money then v.nil? ? "—" : ss_amount(v.is_a?(Numeric) ? brl(v) : v.to_s)
-      when :date then v.respond_to?(:strftime) ? tag.time(v.strftime("%d/%m/%Y"), datetime: v.to_date.iso8601) : v.to_s
-      when :number then v.is_a?(Numeric) ? number_with_delimiter(v, delimiter: ".", separator: ",") : v.to_s
+      when :date then v.respond_to?(:strftime) ? tag.time(ss_date(v), datetime: v.to_date.iso8601) : v.to_s
+      when :number then v.is_a?(Numeric) ? ss_number(v, precision: v.is_a?(Integer) ? 0 : decimals_of(v)) : v.to_s
       else v.to_s
       end
     end
@@ -130,7 +131,17 @@ module Ss
       "?#{merged.to_query}"
     end
 
-    def brl(v) = number_to_currency(v, unit: "R$ ", separator: ",", delimiter: ".", format: "%u%n", negative_format: "−%u%n")
+    # Dinheiro no idioma da página e na moeda (currency: ou ComponentesUi.config.currency).
+    def brl(v) = ss_money(v, currency: @currency, minus: "−")
+
+    # Casas decimais de um número não inteiro (até 6): 2.5 → 1, 1234.56 → 2.
+    def decimals_of(v)
+      s = v.to_f.round(6).to_s
+      s.include?("e") ? 2 : [s.split(".").last.sub(/0+\z/, "").size, 0].max
+    end
+
+    # Texto da tabela (componentes_ui.data_table.*), com o pt-BR de reserva.
+    def tt(key, **opts) = ss_t("data_table.#{key}", **opts)
 
     # Bloco vindo do ERB do app: captura no template que o escreveu.
     def capture_block(block, *args)

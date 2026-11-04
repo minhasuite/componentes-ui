@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssLang } from "componentes_ui/controllers/ss_intl"
 
 // Exclusão confirmada (Ss::ConfirmDangerComponent): o botão só libera quando o
 // texto digitado é igual ao nome (sem diferença de maiúsculas e espaços nas pontas).
@@ -15,7 +16,8 @@ export default class extends Controller {
   close() { this.dialogTarget.close() }
 
   check() {
-    const ok = this.inputTarget.value.trim().toLocaleLowerCase("pt-BR") === this.nameValue.trim().toLocaleLowerCase("pt-BR")
+    const lang = ssLang()
+    const ok = this.inputTarget.value.trim().toLocaleLowerCase(lang) === this.nameValue.trim().toLocaleLowerCase(lang)
     this.submitTarget.disabled = !ok
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../motion.dart';
 import '../ss_nav_bar.dart' show SsNavItem;
+import '../ss_strings.dart';
 
 /// Abas com um traço embaixo que viaja como **minhoca** até a aba escolhida:
 /// a ponta da frente dispara, a de trás vem ~90 ms depois com mola, então no
@@ -550,7 +551,7 @@ class SsBellDot extends StatefulWidget {
     this.icon = Icons.notifications_none_rounded,
     this.showCount = false,
     this.color,
-    this.tooltip = 'Notificações',
+    this.tooltip,
   });
 
   final int count;
@@ -560,7 +561,9 @@ class SsBellDot extends StatefulWidget {
 
   /// Cor do ícone (sem ela, a do tema; num cabeçalho escuro, passe uma clara).
   final Color? color;
-  final String tooltip;
+
+  /// Padrão: [SsStrings.notifications].
+  final String? tooltip;
 
   @override
   State<SsBellDot> createState() => _SsBellDotState();
@@ -591,14 +594,16 @@ class _SsBellDotState extends State<SsBellDot> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final has = widget.count > 0;
-    final label = has ? '${widget.tooltip}: ${widget.count} nova${widget.count == 1 ? '' : 's'}' : widget.tooltip;
+    final s = SsStrings.of(context);
+    final tooltip = widget.tooltip ?? s.notifications;
+    final label = has ? s.newCount(tooltip, widget.count) : tooltip;
     final txt = widget.count > 99 ? '99+' : '${widget.count}';
     return Semantics(
       button: true,
       label: label,
       excludeSemantics: true,
       child: Tooltip(
-        message: widget.tooltip,
+        message: tooltip,
         child: InkResponse(
           onTap: widget.onTap,
           radius: 24,
@@ -839,20 +844,16 @@ class _SsCountTabsState extends State<SsCountTabs> {
 /// ([SsWormProgress]): a cabeça dispara com mola levando uma faísca e o corpo
 /// alcança. O número novo pula (0,6 → 1,15 → 1) e solta um anel ([SsRipple]).
 class SsStepTopBar extends StatelessWidget {
-  const SsStepTopBar({
-    super.key,
-    required this.step,
-    required this.total,
-    this.onCancel,
-    this.onBack,
-    this.cancelLabel = 'Cancelar',
-  }) : assert(step >= 1 && step <= total);
+  const SsStepTopBar({super.key, required this.step, required this.total, this.onCancel, this.onBack, this.cancelLabel})
+    : assert(step >= 1 && step <= total);
 
   final int step;
   final int total;
   final VoidCallback? onCancel;
   final VoidCallback? onBack;
-  final String cancelLabel;
+
+  /// Padrão: [SsStrings.cancel].
+  final String? cancelLabel;
 
   /// Pulo do número novo: 0,6 → 1,15 (rápido) → 1 (com mola).
   static final _popPasso = TweenSequence<double>([
@@ -864,6 +865,7 @@ class SsStepTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.worm;
+    final s = SsStrings.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -874,14 +876,14 @@ class SsStepTopBar extends StatelessWidget {
             children: [
               if (onBack != null)
                 IconButton(
-                  tooltip: 'Voltar',
+                  tooltip: s.back,
                   onPressed: onBack,
                   icon: Icon(Icons.arrow_back_rounded, color: c.ink),
                 )
               else
                 const SizedBox(width: 16),
               Semantics(
-                label: 'Passo $step de $total',
+                label: s.stepOf(step, total),
                 excludeSemantics: true,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -924,7 +926,7 @@ class SsStepTopBar extends StatelessWidget {
                   onPressed: onCancel,
                   icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
                   label: Text(
-                    cancelLabel.toUpperCase(),
+                    (cancelLabel ?? s.cancel).toUpperCase(),
                     style: TextStyle(
                       color: c.muted,
                       fontSize: AppType.meta,

@@ -2,10 +2,10 @@ module Ss
   # Migalhas: onde a pessoa está. O último item é a página atual (sem link).
   #   render Ss::BreadcrumbsComponent.new(items: [["Início", root_path], ["Pedidos", pedidos_path], ["Pedido 1042"]])
   class BreadcrumbsComponent < BaseComponent
-    def initialize(items:, label: "Você está em", **opts)
+    def initialize(items:, label: nil, **opts)
       super(**opts)
       @items = items.map { |i| i.is_a?(Hash) ? [i[:label], i[:href]] : Array(i) }
-      @label = label
+      @label = label || ss_t("breadcrumbs.label", default: "Você está em")
     end
 
     def call

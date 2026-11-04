@@ -7,11 +7,15 @@ module Ss
   class FileDropComponent < BaseComponent
     attr_reader :name, :label, :hint, :accept, :multiple, :direct_upload_url, :id
 
-    def initialize(name:, label: "Arquivos", hint: "Arraste aqui ou clique para escolher", accept: nil, multiple: true,
+    def initialize(name:, label: nil, hint: nil, accept: nil, multiple: true,
                    direct_upload_url: nil, id: nil, **rest)
       super(**rest)
       @name, @label, @hint, @accept, @multiple, @direct_upload_url = name, label, hint, accept, multiple, direct_upload_url
+      @label ||= ss_t("file_drop.label", default: "Arquivos")
+      @hint ||= ss_t("file_drop.hint", default: "Arraste aqui ou clique para escolher")
       @id = id || "ss-drop-#{SecureRandom.hex(3)}"
     end
+
+    def types_text = accept ? ss_t("file_drop.types", default: "Tipos: %{types}", types: accept) : ss_t("file_drop.any_type", default: "Qualquer tipo de arquivo")
   end
 end

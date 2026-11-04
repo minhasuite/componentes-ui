@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
 import '../motion.dart';
+import '../ss_strings.dart';
 
 /// Um botão do [SsAttachBar].
 class SsAttachItem {
@@ -192,7 +193,7 @@ class _SsSnapCarouselState extends State<SsSnapCarousel> {
                 );
               },
               child: Semantics(
-                label: 'Item ${i + 1} de ${widget.itemCount}',
+                label: SsStrings.of(context).itemOf(i + 1, widget.itemCount),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: widget.itemBuilder(context, i),
@@ -209,7 +210,7 @@ class _SsSnapCarouselState extends State<SsSnapCarousel> {
             decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.pill)),
             child: Text(
               '${_atual + 1}/${widget.itemCount}',
-              semanticsLabel: '${_atual + 1} de ${widget.itemCount}',
+              semanticsLabel: SsStrings.of(context).nOfTotal(_atual + 1, widget.itemCount),
               style: AppTheme.number(context, size: AppType.meta, color: c.ink2),
             ),
           ),
@@ -354,7 +355,7 @@ class _SsThumbRailState extends State<SsThumbRail> {
       width: math.max(48, widget.thumbSize + 8),
       child: Column(
         children: [
-          _seta(Icons.keyboard_arrow_up_rounded, _podeSubir, -1, 'Miniaturas anteriores'),
+          _seta(Icons.keyboard_arrow_up_rounded, _podeSubir, -1, SsStrings.of(context).previousThumbs),
           Expanded(
             child: ListView.separated(
               controller: _s,
@@ -367,7 +368,7 @@ class _SsThumbRailState extends State<SsThumbRail> {
                   child: Semantics(
                     button: true,
                     selected: on,
-                    label: 'Imagem ${i + 1} de ${widget.count}',
+                    label: SsStrings.of(context).imageOf(i + 1, widget.count),
                     child: SsPressable(
                       onTap: () {
                         if (!on) widget.onSelect(i);
@@ -397,7 +398,7 @@ class _SsThumbRailState extends State<SsThumbRail> {
               },
             ),
           ),
-          _seta(Icons.keyboard_arrow_down_rounded, _podeDescer, 1, 'Próximas miniaturas'),
+          _seta(Icons.keyboard_arrow_down_rounded, _podeDescer, 1, SsStrings.of(context).nextThumbs),
         ],
       ),
     );

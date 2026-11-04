@@ -14,20 +14,26 @@ import 'ss_list.dart';
 import 'ss_picker.dart';
 import 'ss_sheet.dart';
 import 'ss_stat.dart';
+import 'ss_strings.dart';
 
-/// Validadores prontos (mensagens pt-BR) para os campos `Ss*`.
+/// Validadores prontos para os campos `Ss*`. As mensagens saem em português;
+/// para outro idioma, passe [SsStrings] (ex.:
+/// `validator: (v) => SsValidators.required(v, SsStrings.of(context))`).
 abstract final class SsValidators {
   /// Vazio (nulo ou texto em branco) → "Campo obrigatório". Serve para texto e escolha.
-  static String? required(Object? v) => v == null || (v is String && v.trim().isEmpty) ? 'Campo obrigatório' : null;
+  static String? required(Object? v, [SsStrings? strings]) =>
+      v == null || (v is String && v.trim().isEmpty) ? (strings ?? SsStrings.pt).requiredField : null;
 
   /// Para o [SsMoneyField]: precisa de valor maior que zero.
-  static String? money(int? cents) => cents == null || cents <= 0 ? 'Informe um valor' : null;
+  static String? money(int? cents, [SsStrings? strings]) =>
+      cents == null || cents <= 0 ? (strings ?? SsStrings.pt).enterAmount : null;
 
   /// Número inteiro entre [min] e [max] (inclusive).
-  static FormFieldValidator<String> intRange(int min, int max) => (v) {
+  static FormFieldValidator<String> intRange(int min, int max, [SsStrings? strings]) => (v) {
+    final s = strings ?? SsStrings.pt;
     final n = int.tryParse(v?.trim() ?? '');
-    if (n == null) return 'Informe um número';
-    return n < min || n > max ? 'Use um número de $min a $max' : null;
+    if (n == null) return s.enterNumber;
+    return n < min || n > max ? s.numberRange(min, max) : null;
   };
 }
 
@@ -291,7 +297,8 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
 }
 
 /// Dinheiro em centavos: digita só números e o valor cresce da direita
-/// (0,00 → 0,05 → 0,50 → 5,00), em DM Mono com "R$" na frente.
+/// (0,00 → 0,05 → 0,50 → 5,00), em DM Mono com "R$" na frente. Moeda e
+/// separadores vêm de [SsFormats.of] (padrão: real).
 /// [keypad] troca o teclado do sistema pelo [showSsAmountKeypad].
 class SsMoneyField extends StatefulWidget {
   const SsMoneyField({
@@ -300,7 +307,7 @@ class SsMoneyField extends StatefulWidget {
     required this.cents,
     required this.onChanged,
     this.validator,
-    this.hint = '0,00',
+    this.hint,
     this.keypad = false,
     this.enabled = true,
   });
@@ -311,7 +318,9 @@ class SsMoneyField extends StatefulWidget {
 
   /// Recebe os centavos (ex.: [SsValidators.money]).
   final String? Function(int? cents)? validator;
-  final String hint;
+
+  /// Padrão: zero no formato da moeda ("0,00").
+  final String? hint;
   final bool keypad;
   final bool enabled;
 
@@ -319,15 +328,18 @@ class SsMoneyField extends StatefulWidget {
   State<SsMoneyField> createState() => _SsMoneyFieldState();
 }
 
-String _semRs(int? cents) => cents == null ? '' : money(cents).replaceFirst(r'R$ ', '');
+String _semRs(int? cents, SsFormats f) => cents == null ? '' : f.amount(cents);
 
 /// Só dígitos; os 2 últimos são centavos. Até 11 dígitos (R$ 999.999.999,99).
 class _CentavosFormatter extends TextInputFormatter {
+  _CentavosFormatter(this.f);
+  final SsFormats f;
+
   @override
   TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue value) {
     final d = value.text.replaceAll(RegExp(r'\D'), '');
     if (d.length > 11) return old;
-    final t = d.isEmpty ? '' : _semRs(int.parse(d));
+    final t = d.isEmpty ? '' : _semRs(int.parse(d), f);
     return TextEditingValue(
       text: t,
       selection: TextSelection.collapsed(offset: t.length),
@@ -336,12 +348,13 @@ class _CentavosFormatter extends TextInputFormatter {
 }
 
 class _SsMoneyFieldState extends State<SsMoneyField> {
-  late final _ctrl = TextEditingController(text: _semRs(widget.cents));
+  late final _ctrl = TextEditingController(text: _semRs(widget.cents, SsFormats.of(context)));
 
   @override
   void didUpdateWidget(SsMoneyField old) {
     super.didUpdateWidget(old);
-    if (widget.cents != parseMoney(_ctrl.text)) _ctrl.text = _semRs(widget.cents);
+    final f = SsFormats.of(context);
+    if (widget.cents != parseMoney(_ctrl.text, f)) _ctrl.text = _semRs(widget.cents, f);
   }
 
   @override
@@ -351,37 +364,39 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
   }
 
   Future<void> _abrir() async {
-    final v = await showSsAmountKeypad(context, initial: widget.cents, title: widget.label ?? 'Valor');
-    if (v == null) return;
-    _ctrl.text = _semRs(v);
+    final v = await showSsAmountKeypad(context, initial: widget.cents, title: widget.label);
+    if (v == null || !mounted) return;
+    _ctrl.text = _semRs(v, SsFormats.of(context));
     widget.onChanged(v);
   }
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final f = SsFormats.of(context);
     return SsTextField(
       label: widget.label,
       controller: _ctrl,
-      hint: widget.hint,
-      prefixText: r'R$ ',
+      hint: widget.hint ?? f.amount(0),
+      prefixText: f.symbolAfter ? null : f.prefix,
+      suffixText: f.symbolAfter ? f.suffix : null,
       enabled: widget.enabled,
       readOnly: widget.keypad,
       onTap: widget.keypad ? _abrir : null,
       keyboardType: TextInputType.number,
-      inputFormatters: [_CentavosFormatter()],
+      inputFormatters: [_CentavosFormatter(f)],
       style: AppTheme.number(context, size: AppType.md, color: c.ink),
-      validator: widget.validator == null ? null : (s) => widget.validator!(parseMoney(s ?? '')),
-      onChanged: (s) => widget.onChanged(parseMoney(s)),
+      validator: widget.validator == null ? null : (s) => widget.validator!(parseMoney(s ?? '', f)),
+      onChanged: (s) => widget.onChanged(parseMoney(s, f)),
     );
   }
 }
 
 /// Abre a folha com o valor grande (DM Mono) e um teclado 3×4 próprio
 /// (1–9, 00, 0, ⌫; segurar ⌫ zera). Devolve os centavos, ou nulo se fechar.
-Future<int?> showSsAmountKeypad(BuildContext context, {int? initial, String title = 'Valor'}) => showSsSheet<int>(
+Future<int?> showSsAmountKeypad(BuildContext context, {int? initial, String? title}) => showSsSheet<int>(
   context,
-  title: title,
+  title: title ?? SsStrings.of(context).amount,
   child: SsAmountKeypad(initial: initial),
 );
 
@@ -410,12 +425,13 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     Widget tecla(String k) => Expanded(
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Semantics(
           button: true,
-          label: k == '⌫' ? 'Apagar (segure para zerar)' : k,
+          label: k == '⌫' ? s.backspaceHold : k,
           excludeSemantics: true,
           child: GestureDetector(
             onLongPress: k == '⌫' ? () => setState(() => _c = 0) : null,
@@ -439,7 +455,7 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(liveRegion: true, child: Center(child: SsAmount(money(_c), size: 44))),
+        Semantics(liveRegion: true, child: Center(child: SsAmount(money(_c, SsFormats.of(context)), size: 44))),
         const SizedBox(height: 14),
         for (final linha in const [
           ['1', '2', '3'],
@@ -450,7 +466,7 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
           Row(children: [for (final k in linha) tecla(k)]),
         const SizedBox(height: 12),
         SsButton(
-          label: 'Confirmar',
+          label: s.confirm,
           icon: Icons.check_rounded,
           onPressed: () => widget.onConfirm != null ? widget.onConfirm!(_c) : Navigator.pop(context, _c),
         ),
@@ -503,8 +519,10 @@ class SsDateField extends StatelessWidget {
   final bool showShortcuts;
   final bool _hora;
 
-  /// Os 3 atalhos a partir de [today]: (rótulo, dia).
-  static List<(String, DateTime)> shortcuts(DateTime today) {
+  /// Os 3 atalhos a partir de [today]: (rótulo, dia). Sem [strings], em
+  /// português.
+  static List<(String, DateTime)> shortcuts(DateTime today, [SsStrings? strings]) {
+    final s = strings ?? SsStrings.pt;
     final d = DateUtils.dateOnly(today);
     final amanha = DateTime(d.year, d.month, d.day + 1);
     final sexta = amanha.weekday < DateTime.friday;
@@ -513,7 +531,11 @@ class SsDateField extends StatelessWidget {
       amanha.month,
       amanha.day + (sexta ? DateTime.friday - amanha.weekday : 8 - amanha.weekday),
     );
-    return [('Hoje', d), ('Amanhã', amanha), ('${sexta ? 'Sex' : 'Seg'} ${two(util.day)}/${two(util.month)}', util)];
+    return [
+      (s.today, d),
+      (s.tomorrow, amanha),
+      ('${s.weekdaysShort[util.weekday - 1]} ${s.formatDayMonth(util)}', util),
+    ];
   }
 
   bool _noIntervalo(DateTime d) =>
@@ -534,7 +556,7 @@ class SsDateField extends StatelessWidget {
       initialDate: inicial,
       firstDate: first,
       lastDate: last,
-      locale: const Locale('pt', 'BR'),
+      locale: SsStrings.of(context).locale,
     );
     if (d != null) onChanged(_comHora(d));
   }
@@ -552,12 +574,13 @@ class SsDateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     final atalhos = showShortcuts
-        ? shortcuts(DateTime.now()).where((a) => _noIntervalo(a.$2)).toList()
+        ? shortcuts(DateTime.now(), s).where((a) => _noIntervalo(a.$2)).toList()
         : <(String, DateTime)>[];
     final v = value;
     final outra = v != null && !atalhos.any((a) => DateUtils.isSameDay(a.$2, v));
-    final rotulo = showShortcuts ? 'Outra…' : 'Escolher data';
+    final rotulo = showShortcuts ? s.otherDate : s.pickDate;
     final campo = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -574,16 +597,16 @@ class SsDateField extends StatelessWidget {
                 selected: v != null && DateUtils.isSameDay(dia, v),
                 onTap: () => onChanged(_comHora(dia)),
               ),
-            SsFilterChip(outra ? date(v) : rotulo, selected: outra, onTap: () => _outra(context)),
+            SsFilterChip(outra ? s.formatDate(v) : rotulo, selected: outra, onTap: () => _outra(context)),
             if (_hora)
               SsFilterChip(
-                v == null ? 'Hora' : '${two(v.hour)}:${two(v.minute)}',
+                v == null ? s.time : '${two(v.hour)}:${two(v.minute)}',
                 selected: v != null,
                 onTap: () => _horario(context),
               ),
             if (clearable && v != null)
               IconButton(
-                tooltip: 'Limpar data',
+                tooltip: s.clearDate,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
                 onPressed: () => onChanged(null),
@@ -632,7 +655,7 @@ class SsChoiceField<T> extends StatelessWidget {
     required this.value,
     required this.options,
     required this.onChanged,
-    this.hint = 'Escolher',
+    this.hint,
     this.icon,
     this.validator,
     this.enabled = true,
@@ -644,7 +667,9 @@ class SsChoiceField<T> extends StatelessWidget {
   /// Valor → texto, na ordem em que aparecem.
   final Map<T, String> options;
   final ValueChanged<T> onChanged;
-  final String hint;
+
+  /// Padrão: [SsStrings.choose].
+  final String? hint;
   final IconData? icon;
   final FormFieldValidator<T>? validator;
   final bool enabled;
@@ -652,7 +677,7 @@ class SsChoiceField<T> extends StatelessWidget {
   Future<void> _abrir(BuildContext context, FormFieldState<T> field) async {
     final r = await showSsSheet<(T,)>(
       context,
-      title: label ?? hint,
+      title: label ?? hint ?? SsStrings.of(context).choose,
       child: SsChoiceList<T>(options: options, selected: value),
     );
     if (r == null) return;
@@ -663,6 +688,7 @@ class SsChoiceField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final hint = this.hint ?? SsStrings.of(context).choose;
     // Chave pelo valor: o estado do campo acompanha o valor que vem de fora.
     return FormField<T>(
       key: ValueKey(value),
@@ -759,7 +785,7 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
-              'Nada encontrado',
+              SsStrings.of(context).nothingFound,
               textAlign: TextAlign.center,
               style: TextStyle(color: c.muted),
             ),
@@ -1115,7 +1141,7 @@ class SsTimeField extends StatelessWidget {
     this.label,
     required this.value,
     required this.onChanged,
-    this.hint = 'Sem horário',
+    this.hint,
     this.clearable = false,
     this.enabled = true,
   });
@@ -1123,7 +1149,9 @@ class SsTimeField extends StatelessWidget {
   final String? label;
   final TimeOfDay? value;
   final ValueChanged<TimeOfDay?> onChanged;
-  final String hint;
+
+  /// Padrão: [SsStrings.noTime].
+  final String? hint;
   final bool clearable;
   final bool enabled;
 
@@ -1144,6 +1172,7 @@ class SsTimeField extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final texto = value == null ? null : format(value!);
+    final hint = this.hint ?? SsStrings.of(context).noTime;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1179,7 +1208,7 @@ class SsTimeField extends StatelessWidget {
                   ),
                   if (clearable && value != null && enabled)
                     IconButton(
-                      tooltip: 'Limpar horário',
+                      tooltip: SsStrings.of(context).clearTime,
                       onPressed: () => onChanged(null),
                       icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
                     )

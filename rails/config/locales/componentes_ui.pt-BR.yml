@@ -1,0 +1,507 @@
+# Textos da gem componentes_ui (Lista Clara) em pt-BR. Mesmas chaves em .en.yml e .es.yml
+# (o teste sample/test/components/i18n_test.rb confere). O app pode sobrescrever qualquer
+# chave no locale dele. No código, o default: de cada chamada repete o texto pt-BR.
+pt-BR:
+  componentes_ui:
+    agenda:
+      label: Agenda
+      now: Agora, %{time}
+    ai_insight:
+      apply: Aplicar
+      badge: IA
+      confidence: Confiança
+      dismiss: Ignorar
+      sources: De onde vem isso
+      thinking: Analisando seus dados…
+    app_shell:
+      badge:
+        one: "%{count} novo"
+        other: "%{count} novos"
+      collapse: Recolher menu
+      expand: Expandir menu
+      menu: Menu principal
+      open: Abrir menu
+      search: Buscar…
+      tenant: Empresa
+    audit_trail:
+      empty: vazio
+      label: Histórico de alterações
+      to: para
+    block_list:
+      delete: Excluir
+      duplicate: Duplicar
+      enabled: 'Ativo: %{title}'
+      list: Blocos
+      more: Mais opções
+      move_down: Mover para baixo
+      move_up: Mover para cima
+      moved: Movido para a posição %{n}
+    boarding_pass:
+      progress: Viagem %{pct}% concluída
+    breadcrumbs:
+      label: Você está em
+    camera_tile:
+      age_d: há %{n} d
+      age_h: há %{n} h
+      age_min: há %{n} min
+      age_s: há %{n} s
+      error: Não deu para carregar a imagem
+      live: AO VIVO
+      loading: Carregando imagem
+      offline: Câmera offline
+      retry: Tentar de novo
+    chart:
+      keys_hint: "%{title}. Use as setas para ver cada ponto."
+      period: Período
+      role: gráfico
+      value: Valor
+    clock:
+      date: "%{weekday}, %{day} de %{month}"
+    code_keypad:
+      backspace: Apagar
+      count: "%{n} dígitos"
+      digits: Dígitos digitados
+      error: Código incorreto
+      keys: Teclado
+      label: Teclado de código
+      submit: Confirmar
+      success: Pronto
+    combobox:
+      create: Criar “%{q}”
+      empty: Nada encontrado
+      hint: Digite para buscar
+      placeholder: Digite para buscar…
+    command_palette:
+      anywhere: de qualquer tela
+      close: fechar
+      empty: Nada encontrado
+      label: Busca rápida
+      navigate: navegar
+      open: abrir
+      placeholder: Buscar…
+    common:
+      back: Voltar
+      cancel: Cancelar
+      close: Fechar
+      copied: Copiado!
+      copy: Copiar
+      loading: Carregando…
+      more_actions: Mais ações
+      retry: Tentar de novo
+      save: Salvar
+    compare_table:
+      included: Incluído
+      not_included: Não incluído
+      recommended: Recomendado
+    confirm_danger:
+      confirm: Excluir para sempre
+      text: Isso não pode ser desfeito.
+      title: Excluir?
+      trigger: Excluir
+      type: Digite %{name} para confirmar
+    confirm_dialog:
+      cancel: Voltar
+      ok: Confirmar
+      title: Tem certeza?
+    countdown:
+      aria: "%{left} de %{total}"
+    d_pad:
+      back: Voltar
+      channel: CH
+      channel_down: Canal anterior
+      channel_up: Próximo canal
+      down: Baixo
+      home: Início
+      left: Esquerda
+      menu: Menu
+      mute: Sem som
+      ok: OK
+      remote: Controle remoto
+      right: Direita
+      up: Cima
+      volume: VOL
+      volume_down: Diminuir volume
+      volume_up: Aumentar volume
+    data_table:
+      bulk_actions: Ações em massa
+      choose_columns: Escolher colunas
+      clear_selection: Limpar seleção
+      columns: Colunas
+      comfortable: Confortável
+      compact: Compacta
+      density: Densidade das linhas
+      details: Detalhes
+      empty: Nada por aqui ainda.
+      items:
+        one: "%{count} item"
+        other: "%{count} itens"
+      next_page: Próxima página
+      pagination: Paginação
+      prev_page: Página anterior
+      select_all: Selecionar todas as linhas
+      select_row: Selecionar linha %{row}
+      selected: selecionados
+      show_details: Ver detalhes
+      visible_columns: Colunas visíveis
+    date:
+      formats:
+        date: "%d/%m/%Y"
+        day_month: "%d/%m"
+        day_month_time: "%d/%m %H:%M"
+        time: "%H:%M"
+      months:
+      - janeiro
+      - fevereiro
+      - março
+      - abril
+      - maio
+      - junho
+      - julho
+      - agosto
+      - setembro
+      - outubro
+      - novembro
+      - dezembro
+      months_short:
+      - jan
+      - fev
+      - mar
+      - abr
+      - mai
+      - jun
+      - jul
+      - ago
+      - set
+      - out
+      - nov
+      - dez
+      weekdays:
+      - domingo
+      - segunda-feira
+      - terça-feira
+      - quarta-feira
+      - quinta-feira
+      - sexta-feira
+      - sábado
+      weekdays_narrow:
+      - D
+      - S
+      - T
+      - Q
+      - Q
+      - S
+      - S
+      weekdays_short:
+      - dom
+      - seg
+      - ter
+      - qua
+      - qui
+      - sex
+      - sáb
+    date_range:
+      from: De
+      legend: Período
+      shortcuts:
+        7d: 7 dias
+        last_month: Mês passado
+        month: Este mês
+        today: Hoje
+      shortcuts_label: Atalhos de período
+      to: Até
+    device_tile:
+      details: Abrir detalhes de %{name}
+      error: Não respondeu
+      locked: Sem permissão
+      pending: Enviando…
+      turn_off: Desligar %{name}
+      turn_on: Ligar %{name}
+      unavailable: Indisponível
+    file_drop:
+      any_type: Qualquer tipo de arquivo
+      hint: Arraste aqui ou clique para escolher
+      label: Arquivos
+      remove: Remover %{name}
+      types: 'Tipos: %{types}'
+    filter_bar:
+      active: Filtros ativos
+      add: Filtro
+      clear: Limpar filtros
+      placeholder: Buscar
+      remove: 'Tirar o filtro %{filter}: %{value}'
+      views: Visões salvas
+    form:
+      required: obrigatório
+      required_error: Preencha este campo.
+      submit: Salvar
+      submitting: Salvando…
+    gantt:
+      bar_sr: "%{label}, de %{from} a %{to}, %{pct}% feito"
+      bar_title: "%{label}: %{from} a %{to}, %{pct}%"
+      label: Cronograma
+    heat:
+      label: Constância
+    icon_picker:
+      empty: Nenhum ícone com “%{q}”
+      label: Ícone
+      none: Sem ícone
+      search: Buscar ícone
+    inline_edit:
+      edit: 'Editar %{label}: %{value}'
+      hint: Enter salva · Esc cancela
+    job_progress:
+      error: Algo deu errado.
+      result: Abrir resultado
+      states:
+        done: Concluído
+        failed: Falhou
+        queued: Na fila
+        running: Rodando
+    kpi_strip:
+      bad: " (ruim)"
+      delta: Variação %{delta}%{sense}
+      good: " (bom)"
+      label: Indicadores
+    level_card:
+      caption: Como você ganhou
+      earned: Ganhou
+      level: nível
+      next_level: próximo nível
+      points: pontos
+      remaining: Faltam %{n} para o %{target}
+      spent: Gasto
+      to_next: Até o próximo nível
+      transaction: Transação
+    locale_picker:
+      label: Idioma
+    logbook:
+      empty: Nada registrado ainda
+      end: Início do registro
+      error: Não deu para carregar mais.
+      label: Registro de eventos
+      load_more: Carregar mais
+      loading: Carregando registro
+      loading_more: Carregando…
+      retry: Tentar de novo
+      today: Hoje
+      yesterday: Ontem
+    media_player:
+      buffering: Carregando
+      idle: Nada tocando
+      next: Próxima
+      pause: Pausar
+      play: Tocar
+      previous: Anterior
+      progress: Posição
+      unavailable: Indisponível
+      volume: Volume
+    mic_button:
+      error: Erro no microfone, toque para tentar de novo
+      idle: Falar
+      listening: Ouvindo, toque para parar
+      processing: Processando
+    money:
+      format: "%u %n"
+    notice_card:
+      dismiss: Dispensar
+    number:
+      delimiter: "."
+      separator: ","
+    otp:
+      digit: Dígito %{n} de %{total}
+      label: Código de verificação
+    page:
+      back: Voltar
+    pagination:
+      label: Paginação
+      next: Próxima página
+      page: Página %{page}
+      previous: Página anterior
+      total:
+        one: "%{count} item"
+        other: "%{count} itens"
+    palette_families:
+      frias: Frias
+      natureza: Natureza
+      pastel: Pastel
+      profundas: Profundas
+      quentes: Quentes
+      vivas: Vivas
+    palettes:
+      algodao-doce: Algodão-doce
+      ambar: Âmbar
+      ameixa: Ameixa
+      ardosia: Ardósia
+      artico: Ártico
+      cafe: Café
+      cereja: Cereja
+      coral: Coral
+      eucalipto: Eucalipto
+      floresta: Floresta
+      laranja: Laranja
+      lavanda: Lavanda
+      marple: Marple
+      meia-noite: Meia-noite
+      menta: Menta
+      neon-pop: Neon pop
+      oceano: Oceano
+      oliva: Oliva
+      pessego: Pêssego
+      por-do-sol: Pôr do sol
+      safira: Safira
+      salvia: Sálvia
+      terracota: Terracota
+      tokyo-night: Noite de Tóquio
+      turquesa: Turquesa
+      vinho: Vinho
+      violet-dusk: Crepúsculo
+      violeta: Violeta
+    person_card:
+      team: Equipe
+    price_board:
+      buy: Compra
+      delta: Variação
+      item: Item
+      sell: Venda
+    pricing:
+      featured: Mais escolhido
+      monthly: Mensal
+      per_month: "/mês"
+      per_year: "/ano"
+      period: Período de cobrança
+      yearly: Anual
+    print_layout:
+      customer: Cliente
+      number: Nº %{number}
+    qr_card:
+      code: Pix copia e cola
+      expired: Código expirado. Gere outro.
+      hint: Abra o app do banco, escolha Pix e leia o código.
+      qr: QR Code para pagamento
+      title: Pague com Pix
+      valid_for: Vale por
+    review_card:
+      rating: Nota %{rating} de 5
+    scan_radar:
+      empty: Nada encontrado
+      found: "%{n} encontrados"
+      found_one: 1 encontrado
+      retry: Procurar de novo
+      searching: Procurando…
+    settings_layout:
+      nav: Seções
+    shortcuts:
+      then: depois
+      title: Atalhos de teclado
+    split_allocator:
+      legend: Divisão
+    split_view:
+      empty: Escolha um item da lista.
+      list: Lista
+    state_bands:
+      empty: Nenhuma mudança neste período
+      no_data: sem leituras
+      role: faixa de estado
+    status_tab_card:
+      progress: Progresso
+    stepper_input:
+      less: Diminuir
+      more: Aumentar
+    sticky_action_bar:
+      confirm: Há alterações não salvas. Sair mesmo assim?
+      message: Alterações não salvas
+      region: Ações do formulário
+    swatch_picker:
+      custom: Personalizada
+      legend: Cor
+      pick: Escolher outra cor
+    switch:
+      turn_off: Desligar
+      turn_on: Ligar
+    tabs:
+      label: Abas
+    tag_input:
+      chosen: "%{label} escolhidas"
+      placeholder: Digite e tecle Enter
+      remove: Remover %{tag}
+    theme_switcher:
+      label: Aparência
+      palette: Paleta
+      themes:
+        dark: Escuro
+        light: Claro
+        oled: OLED
+        system: Auto
+    thermostat:
+      cooling: Resfriando
+      current: Agora
+      heating: Aquecendo
+      idle: No alvo
+      label: Temperatura
+      less: Diminuir
+      mode_auto: Auto
+      mode_cool: Resfriar
+      mode_heat: Aquecer
+      mode_off: Desligado
+      modes: Modo
+      more: Aumentar
+      'off': Desligado
+      pending: Enviando…
+    time_series_chart:
+      empty: Sem leituras neste período
+      keys_hint: "%{title}. Setas andam no tempo; + aproxima, 0 volta."
+      last: último
+      legend: Séries
+      loading: Carregando gráfico
+      max: máximo
+      min: mínimo
+      no_value: "—"
+      reset: Ver tudo
+      role: gráfico
+      until: a
+    timeline:
+      current: agora
+      done: feito
+      label: Linha do tempo
+    toast:
+      close: Fechar aviso
+      undo: Desfazer
+    tour:
+      count: "%{n} de %{total}"
+      done: Concluir
+      next: Próximo
+      skip: Pular
+    tree_view:
+      count:
+        one: "%{count} item"
+        other: "%{count} itens"
+      label: Árvore
+    weather_card:
+      clear: Céu limpo
+      clear_night: Noite limpa
+      cloudy: Nublado
+      fog: Neblina
+      forecast: Previsão
+      humidity: Umidade
+      max: Máx
+      min: Mín
+      partly_cloudy: Parcialmente nublado
+      rain: Chuva
+      snow: Neve
+      storm: Tempestade
+      wind: Ventania
+      wind_label: Vento
+    weekday_picker:
+      every_day: Todos os dias
+      legend: Dias da semana
+      shortcuts: Atalhos
+      weekdays: Dias úteis
+      weekend: Fim de semana
+    whats_new:
+      new: novo
+      title: Novidades
+      unseen: ", %{count} não vistas"
+    wizard:
+      next: Avançar
+      step: 'Passo %{n}: %{title}'
+      submit: Concluir

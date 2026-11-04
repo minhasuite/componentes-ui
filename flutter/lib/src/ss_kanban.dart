@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Uma coluna do [SsKanban]: [id] estável, [title], os [items] na ordem e a
 /// cor da bolinha do cabeçalho (sem ela, a da marca).
@@ -146,7 +147,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
           children: [
             Semantics(
               header: true,
-              label: '${col.title}, $n ${n == 1 ? 'card' : 'cards'}',
+              label: SsStrings.of(context).cardsCount(col.title, n),
               excludeSemantics: true,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 14, 12, 8),

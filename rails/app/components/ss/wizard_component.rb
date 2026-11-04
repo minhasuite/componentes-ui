@@ -22,9 +22,10 @@ module Ss
 
     attr_reader :draft_key, :submit_label
 
-    def initialize(draft_key: nil, submit_label: "Concluir", **rest)
+    def initialize(draft_key: nil, submit_label: nil, **rest)
       super(**rest)
-      @draft_key, @submit_label = draft_key, submit_label
+      @draft_key = draft_key
+      @submit_label = submit_label || ss_t("wizard.submit", default: "Concluir")
     end
   end
 end

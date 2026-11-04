@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ss_strings.dart';
 
 // Tela de entrada padrão da suíte (o modelo é o login do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
@@ -139,7 +140,7 @@ class SsGoogleButton extends StatelessWidget {
     final s = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(14);
     return Tooltip(
-      message: 'Entrar com Google',
+      message: SsStrings.of(context).signInWithGoogle,
       child: Material(
         color: s.surface,
         borderRadius: radius,

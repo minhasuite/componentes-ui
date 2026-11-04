@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Pílula escura (igual nos dois temas) com ícone, texto curto e uma ação
 /// ("Desfazer") na cor da marca. Use [showSsToast]; o widget é público para o
@@ -151,7 +152,7 @@ void showSsToast(
 Future<bool> showSsUndo(
   BuildContext context,
   String message, {
-  String label = 'Desfazer',
+  String? label,
   IconData? icon = Icons.delete_outline,
   Duration duration = const Duration(seconds: 5),
   double bottom = 104,
@@ -161,7 +162,7 @@ Future<bool> showSsUndo(
     context,
     message,
     icon: icon,
-    actionLabel: label,
+    actionLabel: label ?? SsStrings.of(context).undo,
     onAction: () {},
     duration: duration,
     bottom: bottom,

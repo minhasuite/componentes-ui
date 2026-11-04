@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'ss_button.dart';
+import 'ss_strings.dart';
 
 /// View de erro padronizada (ícone + mensagem + "Tentar de novo" opcional).
 /// Substitui os ~7 `_Retry`/`_ErrorView` duplicados.
@@ -30,7 +31,7 @@ class SsErrorView extends StatelessWidget {
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               SsButton(
-                label: 'Tentar de novo',
+                label: SsStrings.of(context).retry,
                 icon: Icons.refresh,
                 variant: SsButtonVariant.ghost,
                 expand: false,

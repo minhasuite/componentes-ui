@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'ss_fields.dart' show SsSwitch;
+import 'ss_strings.dart';
 
 // Aba "Mais" padrão da suíte (o modelo é o menu do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
@@ -110,6 +111,7 @@ class _SsMenuViewState extends State<SsMenuView> {
   @override
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
+    final str = SsStrings.of(context);
     final w = widget;
     final q = _query.trim().toLowerCase();
 
@@ -120,13 +122,13 @@ class _SsMenuViewState extends State<SsMenuView> {
         textInputAction: TextInputAction.search,
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
-          hintText: 'Buscar no menu',
+          hintText: str.searchMenu,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: q.isEmpty
               ? null
               : IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Limpar busca',
+                  tooltip: str.clearSearch,
                   onPressed: () {
                     _search.clear();
                     setState(() => _query = '');
@@ -146,7 +148,7 @@ class _SsMenuViewState extends State<SsMenuView> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Nada encontrado para "${_query.trim()}".',
+              str.menuNothingFound(_query.trim()),
               textAlign: TextAlign.center,
               style: TextStyle(color: s.onSurfaceVariant),
             ),
@@ -226,7 +228,7 @@ class _SsMenuViewState extends State<SsMenuView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Planos e assinatura',
+                        str.plansAndSubscription,
                         style: TextStyle(fontWeight: FontWeight.w700, color: s.onSurface),
                       ),
                       if (w.planLabel != null)
@@ -246,16 +248,16 @@ class _SsMenuViewState extends State<SsMenuView> {
               children: [for (final i in sec.items) SsMenuRow(i), ...sec.extra],
             ),
         SsMenuGroup(
-          title: 'Aparência e sobre',
+          title: str.appearanceAndAbout,
           open: false,
           children: [
             _SsMenuCard(
               padding: const EdgeInsets.all(12),
               child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.system, label: Text('Sistema')),
-                  ButtonSegment(value: ThemeMode.light, label: Text('Claro')),
-                  ButtonSegment(value: ThemeMode.dark, label: Text('Escuro')),
+                segments: [
+                  ButtonSegment(value: ThemeMode.system, label: Text(str.themeSystem)),
+                  ButtonSegment(value: ThemeMode.light, label: Text(str.themeLight)),
+                  ButtonSegment(value: ThemeMode.dark, label: Text(str.themeDark)),
                 ],
                 selected: {w.themeMode},
                 onSelectionChanged: (v) => w.onThemeMode(v.first),
@@ -271,7 +273,7 @@ class _SsMenuViewState extends State<SsMenuView> {
           child: FilledButton.icon(
             onPressed: w.onDeleteAccount,
             icon: const Icon(Icons.delete_forever_outlined),
-            label: const Text('Excluir minha conta'),
+            label: Text(str.deleteMyAccount),
             style: FilledButton.styleFrom(
               backgroundColor: s.error,
               foregroundColor: s.onError,
@@ -286,7 +288,7 @@ class _SsMenuViewState extends State<SsMenuView> {
           child: OutlinedButton.icon(
             onPressed: w.onLogout,
             icon: const Icon(Icons.logout),
-            label: const Text('Sair'),
+            label: Text(str.signOut),
             style: OutlinedButton.styleFrom(
               foregroundColor: s.onSurface,
               side: BorderSide(color: s.outlineVariant),

@@ -5,7 +5,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg><%= @back_label %>
     </button>
     <turbo-frame id="<%= @frame_id %>" data-ss-split-view-target="frame">
-      <% if detail? && detail.to_s.strip.present? %><%= detail %><% else %><div class="ss-split-empty"><%= empty? ? empty : "Escolha um item da lista." %></div><% end %>
+      <% if detail? && detail.to_s.strip.present? %><%= detail %><% else %><div class="ss-split-empty"><%= empty? ? empty : ss_t("split_view.empty", default: "Escolha um item da lista.") %></div><% end %>
     </turbo-frame>
   </section>
 <% end %>

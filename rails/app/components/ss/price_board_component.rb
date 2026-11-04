@@ -4,11 +4,11 @@ module Ss
   #   render Ss::PriceBoardComponent.new(caption: "Metais", head: %w[Metal Compra Venda],
   #     rows: [{ name: "Ouro", icon: svg_ou_iniciais, buy: "R$ 48,96", sell: "R$ 44,70", delta: "+1,2%", good: true, highlight: true }])
   class PriceBoardComponent < BaseComponent
-    def initialize(rows:, caption:, head: %w[Item Compra Venda], show_caption: false, **opts)
+    def initialize(rows:, caption:, head: nil, show_caption: false, **opts)
       super(**opts)
       @rows = rows
       @caption = caption
-      @head = head
+      @head = head || [ss_t("price_board.item", default: "Item"), ss_t("price_board.buy", default: "Compra"), ss_t("price_board.sell", default: "Venda")]
       @show_caption = show_caption
     end
 
@@ -18,7 +18,7 @@ module Ss
           safe_join([
             tag.caption(@caption, class: @show_caption ? "ss-dt-caption" : "ss-sr"),
             tag.thead(tag.tr(safe_join([tag.th(@head[0], scope: "col"), tag.th(@head[1], scope: "col", class: "r"), tag.th(@head[2], scope: "col", class: "r"),
-                                        (tag.th(tag.span("Variação", class: "ss-sr"), scope: "col", class: "r") if @rows.any? { _1[:delta] })].compact))),
+                                        (tag.th(tag.span(ss_t("price_board.delta", default: "Variação"), class: "ss-sr"), scope: "col", class: "r") if @rows.any? { _1[:delta] })].compact))),
             tag.tbody(safe_join(@rows.map { row(_1) }))
           ])
         end

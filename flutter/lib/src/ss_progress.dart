@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Barra de progresso do design system: 100% é sucesso (verde). Cresce de 0
 /// quando entra na tela; mudar o valor anima do atual até o novo.
@@ -31,7 +32,7 @@ class SsProgress extends StatelessWidget {
     final c = SsColors.of(context);
     if (value == null) {
       return Semantics(
-        label: 'Carregando',
+        label: SsStrings.of(context).loading,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.pill),
           child: LinearProgressIndicator(
@@ -69,7 +70,7 @@ class SsProgress extends StatelessWidget {
     );
     final pct = '${(v * 100).round()}%';
     return Semantics(
-      value: v > 1 ? '$pct, estourou' : pct,
+      value: v > 1 ? SsStrings.of(context).progressOver(pct) : pct,
       child: markerLabel == null || marker == null
           ? bar
           : Column(

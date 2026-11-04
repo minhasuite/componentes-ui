@@ -7,6 +7,7 @@ import '../motion.dart';
 import '../ss_button.dart';
 import 'a_cards.dart' show SsShape, SsShapeIcon;
 import 'a_fundacao.dart' show SsGlow;
+import '../ss_strings.dart';
 
 /// Abertura do app: título enorme com **uma palavra destacada** na cor da
 /// marca, ornamento de anéis em linha no canto, texto curto e a ação com
@@ -112,23 +113,19 @@ class SsHeroSplash extends StatelessWidget {
 
 /// Botão hexagonal na cor da marca com seta e brilho (ação do herói).
 class SsHexButton extends StatelessWidget {
-  const SsHexButton({
-    super.key,
-    this.onTap,
-    this.icon = Icons.arrow_forward_rounded,
-    this.label = 'Começar',
-    this.size = 72,
-  });
+  const SsHexButton({super.key, this.onTap, this.icon = Icons.arrow_forward_rounded, this.label, this.size = 72});
 
   final VoidCallback? onTap;
   final IconData icon;
-  final String label;
+
+  /// Rótulo falado. Padrão: [SsStrings.start].
+  final String? label;
   final double size;
 
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: label,
+    label: label ?? SsStrings.of(context).start,
     excludeSemantics: true,
     child: SsGlow(
       spread: 26,

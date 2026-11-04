@@ -9,6 +9,12 @@
 @import "./v09_feedback.css";
 @import "./v09_cards.css";
 @import "./v09_acabamento.css";
+/* v0.10: peças da migração do minha-automacao. */
+@import "./v10_controles.css";
+@import "./v10_dados.css";
+@import "./v10_casa.css";
+@import "./v10_estrutura.css";
+@import "./v10_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -36,12 +42,15 @@
 
 :root {
   --accent: #5a45e8; --accent-hover: #4a37d1; --accent-soft: #eeebff;
+  /* Accent sólido: fundo com texto/ícone branco ≥ 4,5:1 (checkbox, switch, botão sólido).
+     No escuro o --accent é claro demais para o branco; as paletas trazem o delas (paletas.css). */
+  --accent-solid: #5a45e8;
   --grad: linear-gradient(135deg, #5a45e8 0%, #7b5cff 52%, #3b82f6 100%);
   --grad-soft: linear-gradient(135deg, rgba(90, 69, 232, .10), rgba(59, 130, 246, .08));
   --ink: #1e1a38; --ink-2: #3f3a5c; --muted: #6e6a88; --line: #e8e5f4;
   --surface: #ffffff; --field: #f6f5fb; --page: #f6f5fb; --head: #faf9fe;
   --side: #17132e; --side-ink: #e9e6f7;
-  --success: #0f8a5f; --success-soft: #e3f6ee; --danger: #c43d4f; --danger-soft: #fbe9ec;
+  --success: #0b7a53; --success-soft: #e3f6ee; --danger: #b8324a; --danger-soft: #fbe9ec;
   --warn: #9a6200; --warn-soft: #fdf1d9;
   --r-card: 20px; --r-field: 12px;
   --shadow-card: 0 1px 2px rgba(30, 26, 56, .04), 0 8px 24px -12px rgba(30, 26, 56, .12);
@@ -53,7 +62,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --accent: #8f80ff; --accent-hover: #a596ff; --accent-soft: #241f45;
+    --accent: #8f80ff; --accent-hover: #a596ff; --accent-soft: #241f45; --accent-solid: #6d5cf6;
     --ink: #e7e4f6; --ink-2: #c9c5e0; --muted: #9a96b8; --line: #2a2745;
     --surface: #16142a; --field: #1d1a35; --page: #0e0d16; --head: #1a1832;
     --side: #0a0912; --side-ink: #d9d5ec;
@@ -68,7 +77,7 @@
 }
 
 [data-theme="dark"] {
-  --accent: #8f80ff; --accent-hover: #a596ff; --accent-soft: #241f45;
+  --accent: #8f80ff; --accent-hover: #a596ff; --accent-soft: #241f45; --accent-solid: #6d5cf6;
   --ink: #e7e4f6; --ink-2: #c9c5e0; --muted: #9a96b8; --line: #2a2745;
   --surface: #16142a; --field: #1d1a35; --page: #0e0d16; --head: #1a1832;
   --side: #0a0912; --side-ink: #d9d5ec;
@@ -154,7 +163,7 @@
   :is(.ss-check, .ss-option-card) > input[type="radio"] { border-radius: 50%; }
   .ss-check > input:is([type="checkbox"], [type="radio"]) { position: relative; }
   :is(.ss-check, .ss-option-card) > input[type="checkbox"] { --ss-fill: -4%; /* abaixo de 0: nem o fio da borda do círculo aparece */
-    background: radial-gradient(circle, var(--accent) var(--ss-fill), var(--surface) calc(var(--ss-fill) + .6px)) border-box;
+    background: radial-gradient(circle, var(--accent-solid) var(--ss-fill), var(--surface) calc(var(--ss-fill) + .6px)) border-box;
     transition: border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .16s ease-in .06s; }
   :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked { --ss-fill: 100%;
     transition: border-color .12s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .46s var(--ss-bounce) 80ms; }
@@ -177,6 +186,8 @@
     content: ""; position: absolute; inset: -2px; border-radius: 50%; pointer-events: none; box-shadow: inset 0 0 0 2px var(--accent); opacity: 0; }
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):checked { border-color: var(--accent); }
+  /* Caixa marcada: preenchida com o accent sólido (o ✓ branco passa 4,5:1 também no escuro). */
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked { border-color: var(--accent-solid); }
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):active { scale: .86; transition: scale 80ms ease-out, border-color .2s; }
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):disabled { opacity: .5; cursor: not-allowed; }
   /* A troca feita pela pessoa (uma vez). */
@@ -707,7 +718,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
      --ss-pour) e "derrama" no sentido do movimento; ao desligar, escoa de volta. */
   .ss-switch-row input { appearance: none; position: relative; isolation: isolate; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; cursor: pointer;
                          --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
-                         background: radial-gradient(circle at 14px 50%, var(--accent) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
+                         background: radial-gradient(circle at 14px 50%, var(--accent-solid) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
                          transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
   .ss-switch-row input:checked { --ss-pour: 40px; --sw-halo: color-mix(in srgb, var(--accent) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
   /* Bolinha presa pelas bordas: a da frente corre (rápida) e a de trás vem depois com a mola;

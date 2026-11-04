@@ -1,19 +1,19 @@
 <%= tag.div(**root_attrs(class: classes("ss-pricing"), data: in_view_data)) do %>
   <% if any_yearly? %>
-    <div class="ss-seg ss-pricing-toggle" role="radiogroup" aria-label="Período de cobrança">
-      <label><input type="radio" name="<%= uid %>" value="monthly" <%= "checked" unless yearly? %>>Mensal</label>
-      <label><input type="radio" name="<%= uid %>" value="yearly" <%= "checked" if yearly? %>>Anual<% if yearly_badge %> <span class="ss-pricing-save"><%= yearly_badge %></span><% end %></label>
+    <div class="ss-seg ss-pricing-toggle" role="radiogroup" aria-label="<%= ss_t("pricing.period", default: "Período de cobrança") %>">
+      <label><input type="radio" name="<%= uid %>" value="monthly" <%= "checked" unless yearly? %>><%= ss_t("pricing.monthly", default: "Mensal") %></label>
+      <label><input type="radio" name="<%= uid %>" value="yearly" <%= "checked" if yearly? %>><%= ss_t("pricing.yearly", default: "Anual") %><% if yearly_badge %> <span class="ss-pricing-save"><%= yearly_badge %></span><% end %></label>
     </div>
   <% end %>
   <div class="ss-pricing-grid" role="list">
     <% plans.each_with_index do |p, i| %>
       <article class="ss-card ss-pricing-plan<%= " ss-card-grad is-featured" if p[:featured] %>" role="listitem" style="--i:<%= i %>">
-        <% if p[:featured] %><span class="ss-seal ss-pricing-seal"><%= p[:featured_label] || "Mais escolhido" %></span><% end %>
+        <% if p[:featured] %><span class="ss-seal ss-pricing-seal"><%= p[:featured_label] || ss_t("pricing.featured", default: "Mais escolhido") %></span><% end %>
         <h3><%= p[:name] %></h3>
         <% if p[:description] %><p class="ss-pricing-desc"><%= p[:description] %></p><% end %>
-        <div class="ss-pricing-price is-monthly"><%= ss_amount(p[:monthly]) %><small>/mês</small></div>
+        <div class="ss-pricing-price is-monthly"><%= ss_amount(p[:monthly]) %><small><%= ss_t("pricing.per_month", default: "/mês") %></small></div>
         <% if p[:yearly] %>
-          <div class="ss-pricing-price is-yearly"><%= ss_amount(p[:yearly]) %><small>/ano</small></div>
+          <div class="ss-pricing-price is-yearly"><%= ss_amount(p[:yearly]) %><small><%= ss_t("pricing.per_year", default: "/ano") %></small></div>
           <% if p[:yearly_note] %><p class="ss-pricing-note is-yearly"><%= p[:yearly_note] %></p><% end %>
         <% end %>
         <% if p[:monthly_note] %><p class="ss-pricing-note is-monthly"><%= p[:monthly_note] %></p><% end %>

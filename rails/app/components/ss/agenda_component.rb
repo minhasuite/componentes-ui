@@ -10,14 +10,14 @@ module Ss
 
     attr_reader :days, :from, :to
 
-    def initialize(events:, days: [Date.current], from: 8, to: 20, now: Time.current, label: "Agenda", hour_height: 64, **opts)
+    def initialize(events:, days: [Date.current], from: 8, to: 20, now: Time.current, label: nil, hour_height: 64, **opts)
       super(**opts)
       @events = events
       @days = Array(days)
       @from = from
       @to = to
       @now = now
-      @label = label
+      @label = label || ss_t("agenda.label", default: "Agenda")
       @hour_height = hour_height
     end
 
@@ -68,8 +68,11 @@ module Ss
       m.between?(0, total_min) ? pct(m) : nil
     end
 
-    def hhmm(t) = t.strftime("%H:%M")
-    def day_label(d) = "#{WEEKDAYS[d.wday]} #{d.day}"
+    def hhmm(t) = ss_date(t, :time)
+    # Dias da semana do idioma (WEEKDAYS fica como o pt-BR, por compatibilidade).
+    def weekdays = @weekdays ||= ss_weekdays
+    def day_label(d) = "#{weekdays[d.wday]} #{d.day}"
+    def now_text = ss_t("agenda.now", default: "Agora, %{time}", time: hhmm(@now))
     def today?(d) = @now && d == @now.to_date
     attr_reader :label, :hour_height
 

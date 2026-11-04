@@ -1,0 +1,17 @@
+<%= tag.div(**root_attrs(class: classes("ss-dpad", ("is-disabled" if disabled?)), role: "group", tabindex: 0,
+                         aria: { label: label(:remote), disabled: (disabled? || nil) }, data: root_data)) do %>
+  <div class="ss-dpad-row">
+    <% if volume? %>
+      <div class="ss-dpad-rocker"><%= key(:volume_up, "is-rock") %><span aria-hidden="true"><%= label(:volume) %></span><%= key(:volume_down, "is-rock") %></div>
+    <% end %>
+    <div class="ss-dpad-cross">
+      <%= key(:up, "is-up") %><%= key(:left, "is-left") %><%= key(:ok, "is-ok") %><%= key(:right, "is-right") %><%= key(:down, "is-down") %>
+    </div>
+    <% if channel? %>
+      <div class="ss-dpad-rocker"><%= key(:channel_up, "is-rock") %><span aria-hidden="true"><%= label(:channel) %></span><%= key(:channel_down, "is-rock") %></div>
+    <% end %>
+  </div>
+  <div class="ss-dpad-row is-nav">
+    <%= key(:back, "is-round") %><%= key(:home, "is-round") %><%= key(:menu, "is-round") %><% if mute? %><%= key(:mute, "is-round") %><% end %>
+  </div>
+<% end %>

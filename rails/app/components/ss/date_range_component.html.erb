@@ -1,18 +1,18 @@
 <%= tag.fieldset(class: classes("ss-date-range"), **root_attrs(data: { controller: "ss-date-range" })) do %>
   <legend class="ss-label"><%= legend %></legend>
-  <div class="ss-date-chips" role="group" aria-label="Atalhos de período" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value="button">
+  <div class="ss-date-chips" role="group" aria-label="<%= ss_t("date_range.shortcuts_label", default: "Atalhos de período") %>" data-controller="ss-indicator" data-ss-indicator-kind-value="ring" data-ss-indicator-selector-value="button">
     <% shortcuts.each do |k| %>
-      <button type="button" aria-pressed="false" data-action="ss-date-range#pick" data-ss-date-range-range-param="<%= k %>"><%= Ss::DateRangeComponent::SHORTCUTS.fetch(k) %></button>
+      <button type="button" aria-pressed="false" data-action="ss-date-range#pick" data-ss-date-range-range-param="<%= k %>"><%= shortcut_label(k) %></button>
     <% end %>
   </div>
   <div class="ss-date-range-fields">
     <div class="ss-field">
-      <label for="<%= id %>-de">De</label>
+      <label for="<%= id %>-de"><%= ss_t("date_range.from", default: "De") %></label>
       <input type="date" id="<%= id %>-de" name="<%= from_name %>" value="<%= from %>" class="ss-input num" data-ss-date-range-target="from" data-action="change->ss-date-range#sync">
     </div>
     <span class="ss-date-range-sep" aria-hidden="true">→</span>
     <div class="ss-field">
-      <label for="<%= id %>-ate">Até</label>
+      <label for="<%= id %>-ate"><%= ss_t("date_range.to", default: "Até") %></label>
       <input type="date" id="<%= id %>-ate" name="<%= to_name %>" value="<%= to %>" class="ss-input num" data-ss-date-range-target="to" data-action="change->ss-date-range#sync">
     </div>
   </div>

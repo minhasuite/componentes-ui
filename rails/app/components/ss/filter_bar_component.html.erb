@@ -1,6 +1,6 @@
 <%= tag.div(**root_attrs(class: classes("ss-filterbar"))) do %>
   <% if views.any? %>
-    <nav class="ss-fb-views" aria-label="Visões salvas" data-controller="ss-indicator" data-ss-indicator-kind-value="line"
+    <nav class="ss-fb-views" aria-label="<%= ss_t("filter_bar.views", default: "Visões salvas") %>" data-controller="ss-indicator" data-ss-indicator-kind-value="line"
          data-ss-indicator-selector-value=".ss-fb-view" data-ss-indicator-key-value="fb-views">
       <% views.each do |v| %>
         <%= link_to view_href(v), class: "ss-fb-view", "aria-current": (view_current?(v) ? "page" : nil) do %><%= v[:label] %><% if v[:count] %><small class="num"><%= v[:count] %></small><% end %><% end %>
@@ -15,14 +15,14 @@
         <% hidden_params.each do |k, v| %><input type="hidden" name="<%= k %>" value="<%= v %>"><% end %>
       </form>
     <% end %>
-    <ul class="ss-fb-chips" aria-label="Filtros ativos">
+    <ul class="ss-fb-chips" aria-label="<%= ss_t("filter_bar.active", default: "Filtros ativos") %>">
       <% active.each do |f| %>
-        <li class="ss-fb-chip"><span><%= f[:label] %>: <b><%= f[:value_label] %></b></span><a href="<%= remove_href(f[:param]) %>" aria-label="Tirar o filtro <%= f[:label] %>: <%= f[:value_label] %>">×</a></li>
+        <li class="ss-fb-chip"><span><%= f[:label] %>: <b><%= f[:value_label] %></b></span><a href="<%= remove_href(f[:param]) %>" aria-label="<%= ss_t("filter_bar.remove", default: "Tirar o filtro %{filter}: %{value}", filter: f[:label], value: f[:value_label]) %>">×</a></li>
       <% end %>
     </ul>
     <% if filters.any? %>
       <details class="ss-menu ss-fb-add">
-        <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Filtro</summary>
+        <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><%= ss_t("filter_bar.add", default: "Filtro") %></summary>
         <div>
           <% filters.each do |f| %>
             <p class="ss-fb-group"><%= f[:label] %></p>
@@ -33,6 +33,6 @@
         </div>
       </details>
     <% end %>
-    <% if active.any? || query.present? %><a class="ss-fb-clear" href="<%= clear_href %>">Limpar filtros</a><% end %>
+    <% if active.any? || query.present? %><a class="ss-fb-clear" href="<%= clear_href %>"><%= ss_t("filter_bar.clear", default: "Limpar filtros") %></a><% end %>
   </div>
 <% end %>

@@ -1,10 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssFormat, ssLang } from "componentes_ui/controllers/ss_intl"
 
 // Etiquetas: Enter ou vírgula vira chip, Backspace no vazio apaga a última; hidden = lista com vírgula.
 // Movimento: a nova entra crescendo com mola (.is-new no CSS); a removida encolhe e fecha o
 // espaço (WAAPI) antes de sair do DOM. Já sai da lista (hidden) na hora.
 export default class extends Controller {
   static targets = ["list", "input", "hidden"]
+  // Texto do botão de tirar (I18n do componente); %{tag} = a etiqueta.
+  static values = { removeLabel: { type: String, default: "Remover %{tag}" } }
 
   get values() { return [...this.listTarget.querySelectorAll(".ss-tag:not(.is-leaving) > span")].map((s) => s.textContent) }
 
@@ -34,11 +37,11 @@ export default class extends Controller {
 
   add(raw) {
     const text = raw.trim()
-    if (!text || this.values.some((v) => v.toLowerCase() === text.toLowerCase())) return
+    if (!text || this.values.some((v) => v.toLocaleLowerCase(ssLang()) === text.toLocaleLowerCase(ssLang()))) return
     const li = document.createElement("li"); li.className = "ss-tag is-new"
     const span = document.createElement("span"); span.textContent = text
     const btn = document.createElement("button")
-    btn.type = "button"; btn.textContent = "×"; btn.setAttribute("aria-label", `Remover ${text}`); btn.dataset.action = "ss-tags#remove"
+    btn.type = "button"; btn.textContent = "×"; btn.setAttribute("aria-label", ssFormat(this.removeLabelValue, { tag: text })); btn.dataset.action = "ss-tags#remove"
     li.append(span, btn)
     this.listTarget.append(li)
   }

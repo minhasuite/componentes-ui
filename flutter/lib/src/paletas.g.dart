@@ -11,6 +11,8 @@ const _violeta = SsBrand(
   brandFrom: Color(0xFF7B5CFF),
   brandTo: Color(0xFF5A45E8),
   brandDeep: Color(0xFF3B2BB0),
+  accentSolidLight: Color(0xFF5A45E8),
+  accentSolidDark: Color(0xFF6D5CF6),
 );
 
 const _tokyoNight = SsBrand(
@@ -22,6 +24,8 @@ const _tokyoNight = SsBrand(
   brandFrom: Color(0xFFC724B1),
   brandTo: Color(0xFF5B2A86),
   brandDeep: Color(0xFF130F40),
+  accentSolidLight: Color(0xFFB01E9C),
+  accentSolidDark: Color(0xFFC436AE),
   stops: [Color(0xFF130F40), Color(0xFF5B2A86), Color(0xFFC724B1), Color(0xFFFF7EE3)],
 );
 
@@ -34,6 +38,8 @@ const _safira = SsBrand(
   brandFrom: Color(0xFF3D6DF2),
   brandTo: Color(0xFF1E3FAE),
   brandDeep: Color(0xFF0A1650),
+  accentSolidLight: Color(0xFF1F45C2),
+  accentSolidDark: Color(0xFF4A6CDA),
   stops: [Color(0xFF0A1650), Color(0xFF1E3FAE), Color(0xFF3D6DF2), Color(0xFFB6C9FF)],
 );
 
@@ -46,6 +52,8 @@ const _meiaNoite = SsBrand(
   brandFrom: Color(0xFF3C55A8),
   brandTo: Color(0xFF1D2A62),
   brandDeep: Color(0xFF05070F),
+  accentSolidLight: Color(0xFF2F4590),
+  accentSolidDark: Color(0xFF5D71B6),
   stops: [Color(0xFF05070F), Color(0xFF141D45), Color(0xFF2F4590), Color(0xFF8C9FE0)],
 );
 
@@ -58,6 +66,8 @@ const _vinho = SsBrand(
   brandFrom: Color(0xFFA8325A),
   brandTo: Color(0xFF6B1131),
   brandDeep: Color(0xFF2A0614),
+  accentSolidLight: Color(0xFF8A1840),
+  accentSolidDark: Color(0xFFBD5276),
   stops: [Color(0xFF2A0614), Color(0xFF6B1131), Color(0xFFA8325A), Color(0xFFE8B4C4)],
 );
 
@@ -70,6 +80,8 @@ const _ameixa = SsBrand(
   brandFrom: Color(0xFF9A4FB0),
   brandTo: Color(0xFF5E2470),
   brandDeep: Color(0xFF2A0F33),
+  accentSolidLight: Color(0xFF6E2C84),
+  accentSolidDark: Color(0xFF9B5EAF),
   stops: [Color(0xFF2A0F33), Color(0xFF5E2470), Color(0xFF9A4FB0), Color(0xFFE2C6EC)],
 );
 
@@ -82,6 +94,8 @@ const _ardosia = SsBrand(
   brandFrom: Color(0xFF6B7C94),
   brandTo: Color(0xFF3D4A5C),
   brandDeep: Color(0xFF1A2028),
+  accentSolidLight: Color(0xFF46566C),
+  accentSolidDark: Color(0xFF647389),
   stops: [Color(0xFF1A2028), Color(0xFF3D4A5C), Color(0xFF7A8AA0), Color(0xFFD5DDE7)],
 );
 
@@ -94,6 +108,8 @@ const _neonPop = SsBrand(
   brandFrom: Color(0xFFDA0090),
   brandTo: Color(0xFF2C0E63),
   brandDeep: Color(0xFF12002E),
+  accentSolidLight: Color(0xFFC4007F),
+  accentSolidDark: Color(0xFFD92095),
   stops: [Color(0xFF12002E), Color(0xFF2C0E63), Color(0xFFDA0090), Color(0xFFF2CB30)],
 );
 
@@ -106,6 +122,8 @@ const _cereja = SsBrand(
   brandFrom: Color(0xFFE0193F),
   brandTo: Color(0xFFA3001F),
   brandDeep: Color(0xFF4A0012),
+  accentSolidLight: Color(0xFFB8002A),
+  accentSolidDark: Color(0xFFD83757),
   stops: [Color(0xFF4A0012), Color(0xFFA3001F), Color(0xFFE0193F), Color(0xFFFF9AAA)],
 );
 
@@ -118,6 +136,8 @@ const _coral = SsBrand(
   brandFrom: Color(0xFFFF6F5E),
   brandTo: Color(0xFFC8423B),
   brandDeep: Color(0xFF5A1A1A),
+  accentSolidLight: Color(0xFFC23B33),
+  accentSolidDark: Color(0xFFCB483F),
   stops: [Color(0xFF5A1A1A), Color(0xFFD8504A), Color(0xFFFF8A70), Color(0xFFFFD6C7)],
 );
 
@@ -130,6 +150,8 @@ const _laranja = SsBrand(
   brandFrom: Color(0xFFF97316),
   brandTo: Color(0xFFC2410C),
   brandDeep: Color(0xFF4D1A00),
+  accentSolidLight: Color(0xFFB83D0B),
+  accentSolidDark: Color(0xFFC54E15),
   stops: [Color(0xFF4D1A00), Color(0xFFC2410C), Color(0xFFF97316), Color(0xFFFED7AA)],
 );
 
@@ -142,6 +164,8 @@ const _turquesa = SsBrand(
   brandFrom: Color(0xFF00B3B8),
   brandTo: Color(0xFF00838F),
   brandDeep: Color(0xFF003B46),
+  accentSolidLight: Color(0xFF00707A),
+  accentSolidDark: Color(0xFF097F88),
   stops: [Color(0xFF003B46), Color(0xFF00838F), Color(0xFF00C2C7), Color(0xFFA6F4F0)],
 );
 
@@ -154,6 +178,8 @@ const _marple = SsBrand(
   brandFrom: Color(0xFFFF6766),
   brandTo: Color(0xFFCA2851),
   brandDeep: Color(0xFF7A1530),
+  accentSolidLight: Color(0xFFC42550),
+  accentSolidDark: Color(0xFFD33A5A),
   stops: [Color(0xFFCA2851), Color(0xFFFF6766), Color(0xFFFFB173), Color(0xFFFFE3B3)],
 );
 
@@ -166,6 +192,8 @@ const _terracota = SsBrand(
   brandFrom: Color(0xFFD9734E),
   brandTo: Color(0xFFA0442A),
   brandDeep: Color(0xFF4A1D12),
+  accentSolidLight: Color(0xFFA3401F),
+  accentSolidDark: Color(0xFFBA5937),
   stops: [Color(0xFF4A1D12), Color(0xFFA0442A), Color(0xFFD9734E), Color(0xFFF3C9A8)],
 );
 
@@ -178,6 +206,8 @@ const _porDoSol = SsBrand(
   brandFrom: Color(0xFFF26B4F),
   brandTo: Color(0xFFB8336A),
   brandDeep: Color(0xFF3D1452),
+  accentSolidLight: Color(0xFFB02F62),
+  accentSolidDark: Color(0xFFC84A69),
   stops: [Color(0xFF3D1452), Color(0xFFB8336A), Color(0xFFF26B4F), Color(0xFFFFC46B)],
 );
 
@@ -190,6 +220,8 @@ const _ambar = SsBrand(
   brandFrom: Color(0xFFE08A10),
   brandTo: Color(0xFFB35C00),
   brandDeep: Color(0xFF4A2600),
+  accentSolidLight: Color(0xFF9C4F00),
+  accentSolidDark: Color(0xFFAB5F0C),
   stops: [Color(0xFF4A2600), Color(0xFFB35C00), Color(0xFFF29E1F), Color(0xFFFFE08A)],
 );
 
@@ -202,6 +234,8 @@ const _cafe = SsBrand(
   brandFrom: Color(0xFFB08463),
   brandTo: Color(0xFF6F4A33),
   brandDeep: Color(0xFF2B1A12),
+  accentSolidLight: Color(0xFF7A4F33),
+  accentSolidDark: Color(0xFF966C4E),
   stops: [Color(0xFF2B1A12), Color(0xFF6F4A33), Color(0xFFB08463), Color(0xFFEAD7C3)],
 );
 
@@ -214,6 +248,8 @@ const _violetDusk = SsBrand(
   brandFrom: Color(0xFFB86A93),
   brandTo: Color(0xFF935073),
   brandDeep: Color(0xFF502D55),
+  accentSolidLight: Color(0xFF8A4A6C),
+  accentSolidDark: Color(0xFFA26284),
   stops: [Color(0xFF502D55), Color(0xFF935073), Color(0xFFF6DBC0), Color(0xFFF8F4E9)],
 );
 
@@ -226,6 +262,8 @@ const _lavanda = SsBrand(
   brandFrom: Color(0xFF9D88D6),
   brandTo: Color(0xFF7462B0),
   brandDeep: Color(0xFF4B3F72),
+  accentSolidLight: Color(0xFF6A55A8),
+  accentSolidDark: Color(0xFF7C68B7),
   stops: [Color(0xFF4B3F72), Color(0xFF8E7CC3), Color(0xFFC3B5EA), Color(0xFFF1ECFB)],
 );
 
@@ -238,6 +276,8 @@ const _pessego = SsBrand(
   brandFrom: Color(0xFFE8916B),
   brandTo: Color(0xFFB85A35),
   brandDeep: Color(0xFF7A3F2A),
+  accentSolidLight: Color(0xFFA84F2A),
+  accentSolidDark: Color(0xFFB55E38),
   stops: [Color(0xFF7A3F2A), Color(0xFFE8916B), Color(0xFFFFC3A1), Color(0xFFFFF0E6)],
 );
 
@@ -250,6 +290,8 @@ const _algodaoDoce = SsBrand(
   brandFrom: Color(0xFFE88BC4),
   brandTo: Color(0xFFB0478F),
   brandDeep: Color(0xFF5C2E6E),
+  accentSolidLight: Color(0xFFA8327A),
+  accentSolidDark: Color(0xFFBB4E90),
   stops: [Color(0xFF6A3F8A), Color(0xFFE88BC4), Color(0xFFF7C4E0), Color(0xFFC9E6FF)],
 );
 
@@ -262,6 +304,8 @@ const _oceano = SsBrand(
   brandFrom: Color(0xFF2A9FD6),
   brandTo: Color(0xFF0B5C9E),
   brandDeep: Color(0xFF06204A),
+  accentSolidLight: Color(0xFF0B63A8),
+  accentSolidDark: Color(0xFF237BBA),
   stops: [Color(0xFF06204A), Color(0xFF0B5C9E), Color(0xFF2A9FD6), Color(0xFFA8E3F5)],
 );
 
@@ -274,6 +318,8 @@ const _artico = SsBrand(
   brandFrom: Color(0xFF5FA5CC),
   brandTo: Color(0xFF3D7EA6),
   brandDeep: Color(0xFF14324A),
+  accentSolidLight: Color(0xFF2F6F96),
+  accentSolidDark: Color(0xFF3A799F),
   stops: [Color(0xFF14324A), Color(0xFF3D7EA6), Color(0xFF8FC7E3), Color(0xFFE8F6FB)],
 );
 
@@ -286,6 +332,8 @@ const _menta = SsBrand(
   brandFrom: Color(0xFF2FB894),
   brandTo: Color(0xFF138A72),
   brandDeep: Color(0xFF0C3B33),
+  accentSolidLight: Color(0xFF0F7562),
+  accentSolidDark: Color(0xFF1B8470),
   stops: [Color(0xFF0C3B33), Color(0xFF138A72), Color(0xFF4FD1B0), Color(0xFFC9F5E8)],
 );
 
@@ -298,6 +346,8 @@ const _eucalipto = SsBrand(
   brandFrom: Color(0xFF8FBBA6),
   brandTo: Color(0xFF4C7A66),
   brandDeep: Color(0xFF233B32),
+  accentSolidLight: Color(0xFF3F6B58),
+  accentSolidDark: Color(0xFF537F6C),
   stops: [Color(0xFF233B32), Color(0xFF4C7A66), Color(0xFF8FBBA6), Color(0xFFDDEEE3)],
 );
 
@@ -310,6 +360,8 @@ const _floresta = SsBrand(
   brandFrom: Color(0xFF4A9A5C),
   brandTo: Color(0xFF1F5C36),
   brandDeep: Color(0xFF0F2A1A),
+  accentSolidLight: Color(0xFF23663C),
+  accentSolidDark: Color(0xFF3A8051),
   stops: [Color(0xFF0F2A1A), Color(0xFF1F5C36), Color(0xFF4A9A5C), Color(0xFFBFE3B4)],
 );
 
@@ -322,6 +374,8 @@ const _oliva = SsBrand(
   brandFrom: Color(0xFF9A8F36),
   brandTo: Color(0xFF6B6420),
   brandDeep: Color(0xFF33300F),
+  accentSolidLight: Color(0xFF625B1B),
+  accentSolidDark: Color(0xFF7D752F),
   stops: [Color(0xFF33300F), Color(0xFF6B6420), Color(0xFFB0A346), Color(0xFFEFE9BF)],
 );
 
@@ -334,6 +388,8 @@ const _salvia = SsBrand(
   brandFrom: Color(0xFF8A9A72),
   brandTo: Color(0xFF6E7D5C),
   brandDeep: Color(0xFF343B2C),
+  accentSolidLight: Color(0xFF566645),
+  accentSolidDark: Color(0xFF697956),
   stops: [Color(0xFF343B2C), Color(0xFF6E7D5C), Color(0xFFAAB894), Color(0xFFEDF1E4)],
 );
 

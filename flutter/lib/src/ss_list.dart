@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Item de lista: ícone num quadrado no tom da categoria (14%), título e
 /// subtítulo, e o valor à direita em DM Mono. Sem [tone], usa a cor da marca.
@@ -214,7 +215,7 @@ class SsAvatar extends StatelessWidget {
       );
     }
     return Semantics(
-      label: n > 0 ? '$name, $n não lidas' : name,
+      label: n > 0 ? SsStrings.of(context).unreadCount(name, n) : name,
       child: SizedBox.square(
         dimension: size,
         child: Stack(
@@ -273,14 +274,7 @@ class SsAvatar extends StatelessWidget {
 /// Avatares sobrepostos (−8) com "+N" no fim quando passa de [max]. Com
 /// [onAdd], um botão "+" fecha a fileira (convidar, dividir com mais alguém).
 class SsAvatarStack extends StatelessWidget {
-  const SsAvatarStack(
-    this.names, {
-    super.key,
-    this.max = 3,
-    this.size = 34,
-    this.onAdd,
-    this.addLabel = 'Adicionar pessoa',
-  });
+  const SsAvatarStack(this.names, {super.key, this.max = 3, this.size = 34, this.onAdd, this.addLabel});
 
   final List<String> names;
   final int max;
@@ -289,8 +283,8 @@ class SsAvatarStack extends StatelessWidget {
   /// Toque no "+" do fim. Nulo: sem botão.
   final VoidCallback? onAdd;
 
-  /// Rótulo do "+" para o leitor de tela.
-  final String addLabel;
+  /// Rótulo do "+" para o leitor de tela. Padrão: [SsStrings.addPerson].
+  final String? addLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -341,7 +335,7 @@ class SsAvatarStack extends StatelessWidget {
               height: height,
               child: Semantics(
                 button: true,
-                label: addLabel,
+                label: addLabel ?? SsStrings.of(context).addPerson,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Meia-lua com faixas ([bands]: `(até, rótulo, cor)`, em ordem, a última até
 /// 1) e um ponto que vai com mola até [value] (0 a 1). A faixa do valor fica
@@ -27,12 +28,18 @@ class SsGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
     final faixas =
-        bands ?? [(1 / 3, 'barato', AppColors.success), (2 / 3, 'normal', c.muted2), (1.0, 'caro', AppColors.danger)];
+        bands ??
+        [
+          (1 / 3, s.gaugeCheap, AppColors.success),
+          (2 / 3, s.gaugeNormal, c.muted2),
+          (1.0, s.gaugeExpensive, AppColors.danger),
+        ];
     final v = value.clamp(0.0, 1.0);
     final (_, rotulo, cor) = bandOf(v, faixas);
     return Semantics(
-      label: '${label ?? 'Medidor'}: $rotulo, ${(v * 100).round()}%',
+      label: '${label ?? s.gauge}: $rotulo, ${(v * 100).round()}%',
       excludeSemantics: center == null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -148,7 +155,7 @@ class SsCountdownRing extends StatelessWidget {
     super.key,
     required this.total,
     required this.left,
-    this.label = 'dias',
+    this.label,
     this.size = 104,
     this.format,
     this.onDark = false,
@@ -156,7 +163,9 @@ class SsCountdownRing extends StatelessWidget {
 
   final int total;
   final int left;
-  final String label;
+
+  /// Padrão: [SsStrings.days].
+  final String? label;
   final double size;
   final String Function(int left)? format;
   final bool onDark;
@@ -181,8 +190,10 @@ class SsCountdownRing extends StatelessWidget {
         ? c.aquecText
         : c.ink;
     final numero = format?.call(resta) ?? '$resta';
+    final s = SsStrings.of(context);
+    final label = this.label ?? s.days;
     return Semantics(
-      label: format == null ? 'Faltam $resta de $total $label' : 'Faltam $numero $label',
+      label: format == null ? s.remainingOf(resta, total, label) : s.remaining(numero, label),
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: size,

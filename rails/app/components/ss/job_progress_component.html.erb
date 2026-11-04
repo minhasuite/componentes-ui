@@ -16,7 +16,7 @@
   <% if detail && state != :failed %><p class="ss-job-detail"><%= detail %></p><% end %>
   <% if state == :done && result_url %><a class="ss-btn ss-btn-outline ss-btn-sm" href="<%= result_url %>"><%= result_label %></a><% end %>
   <% if state == :failed %>
-    <p class="ss-job-error"><%= error || "Algo deu errado." %></p>
-    <% if retry_url %><%= button_to "Tentar de novo", retry_url, method: :post, class: "ss-btn ss-btn-outline ss-btn-sm" %><% end %>
+    <p class="ss-job-error"><%= error || ss_t("job_progress.error", default: "Algo deu errado.") %></p>
+    <% if retry_url %><%= button_to ss_t("common.retry", default: "Tentar de novo"), retry_url, method: :post, class: "ss-btn ss-btn-outline ss-btn-sm" %><% end %>
   <% end %>
 <% end %>

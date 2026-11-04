@@ -44,9 +44,19 @@ class AFormBuilderTest < ComponentTest
     c = Cliente.new(nome: "")
     c.valid?
     render_form(c) { |f| f.ss_text_field(:nome, help: "Como aparece no pedido") }
-    assert_selector ".ss-field.is-invalid .ss-field-error#cliente_nome_error", text: "Can't be blank"
+    # A vitrine é pt-BR (errors.messages em config/locales/pt-BR.yml).
+    assert_selector ".ss-field.is-invalid .ss-field-error#cliente_nome_error", text: "Não pode ficar em branco"
     assert_selector "input#cliente_nome[aria-invalid=true][aria-describedby='cliente_nome_help cliente_nome_error']"
     assert_no_selector ".field_with_errors"
+  end
+
+  test "textos do builder seguem o idioma (en)" do
+    I18n.with_locale(:en) do
+      render_form(Cliente.new) { |f| f.ss_text_field(:nome) + f.ss_submit }
+    end
+    assert_selector "small.ss-field-error", text: "Please fill in this field."
+    assert_selector "abbr.ss-req[title=required]"
+    assert_selector "input[type=submit][value=Save][data-turbo-submits-with='Saving…']"
   end
 
   test "prefixo, sufixo e contador" do

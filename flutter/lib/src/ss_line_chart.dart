@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'format.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Uma série do [SsLineChart]: os valores (um por rótulo), o nome que vai no
 /// balão e a cor (sem cor: a paleta da suíte, começando na marca).
@@ -30,7 +31,7 @@ class SsLineChart extends StatefulWidget {
     required this.series,
     required this.labels,
     this.target,
-    this.targetLabel = 'meta',
+    this.targetLabel,
     this.format,
     this.height = 180,
   });
@@ -40,7 +41,9 @@ class SsLineChart extends StatefulWidget {
   /// Um por ponto (datas: "01/10"). Só alguns aparecem no eixo; todos no balão.
   final List<String> labels;
   final double? target;
-  final String targetLabel;
+
+  /// Padrão: [SsStrings.target].
+  final String? targetLabel;
 
   /// Texto de um valor (padrão: [qty]).
   final String Function(double value)? format;
@@ -60,7 +63,9 @@ class _SsLineChartState extends State<SsLineChart> {
 
   int get _n => widget.labels.length;
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
 
   void _scrub(double dx, double width) {
     if (_n < 2) return;
@@ -87,13 +92,14 @@ class _SsLineChartState extends State<SsLineChart> {
       lo -= 1;
     }
     final primeira = widget.series.first.values;
+    final s = SsStrings.of(context);
+    _formats = SsFormats.of(context);
     final resumo = primeira.isEmpty
-        ? 'sem dados'
-        : 'mínimo ${_fmt(primeira.reduce(math.min))}, máximo ${_fmt(primeira.reduce(math.max))}, '
-              'último ${_fmt(primeira.last)}';
+        ? s.noData
+        : s.chartSummary(_fmt(primeira.reduce(math.min)), _fmt(primeira.reduce(math.max)), _fmt(primeira.last));
 
     return Semantics(
-      label: 'Gráfico${widget.series.first.name == null ? '' : ' de ${widget.series.first.name}'}: $resumo',
+      label: '${s.chartOf(widget.series.first.name)}: $resumo',
       excludeSemantics: true,
       child: SizedBox(
         height: widget.height,
@@ -123,7 +129,7 @@ class _SsLineChartState extends State<SsLineChart> {
                           lo: lo,
                           hi: hi,
                           target: widget.target,
-                          targetLabel: widget.targetLabel,
+                          targetLabel: widget.targetLabel ?? s.target,
                           t: t,
                           sel: sel,
                           format: _fmt,

@@ -11,12 +11,17 @@ import 'safe_list_padding.dart';
 import 'skeleton.dart';
 import 'ss_aurora.dart';
 import 'ss_error_view.dart';
+import 'ss_strings.dart';
 
-const _semRede = 'Sem conexão. Confira a internet e tente de novo.';
-const _erroGenerico = 'Algo deu errado. Tente de novo.';
-
-String _mensagem(Object e, bool Function(Object)? isOffline, String Function(Object)? errorMessage) =>
-    (isOffline?.call(e) ?? false) ? _semRede : (errorMessage?.call(e) ?? _erroGenerico);
+String _mensagem(
+  BuildContext context,
+  Object e,
+  bool Function(Object)? isOffline,
+  String Function(Object)? errorMessage,
+) {
+  final s = SsStrings.of(context);
+  return (isOffline?.call(e) ?? false) ? s.offlineError : (errorMessage?.call(e) ?? s.genericError);
+}
 
 /// Fio de 2 px no topo enquanto revalida com o dado anterior na tela.
 Widget _fio() => const Positioned(
@@ -77,7 +82,7 @@ class SsAsyncBody<T> extends StatelessWidget {
       );
     }
     if (value.hasError) {
-      return SsErrorView(message: _mensagem(value.error!, isOffline, errorMessage), onRetry: onRetry);
+      return SsErrorView(message: _mensagem(context, value.error!, isOffline, errorMessage), onRetry: onRetry);
     }
     return loading ?? const SkeletonList();
   }
@@ -128,11 +133,11 @@ class SsInlineAsync<T> extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  _mensagem(value.error!, isOffline, errorMessage),
+                  _mensagem(context, value.error!, isOffline, errorMessage),
                   style: TextStyle(color: c.ink2, fontSize: AppType.sub),
                 ),
               ),
-              if (onRetry != null) TextButton(onPressed: onRetry, child: const Text('Tentar de novo')),
+              if (onRetry != null) TextButton(onPressed: onRetry, child: Text(SsStrings.of(context).retry)),
             ],
           ),
         ),
@@ -307,18 +312,18 @@ class SsLoadMore extends StatelessWidget {
     final Widget w;
     if (loading) {
       w = Semantics(
-        label: 'Carregando mais',
+        label: SsStrings.of(context).loadingMore,
         child: const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.4)),
       );
     } else if (hasMore) {
       w = TextButton.icon(
         onPressed: onLoadMore,
         icon: const Icon(Icons.expand_more_rounded),
-        label: const Text('Carregar mais'),
+        label: Text(SsStrings.of(context).loadMore),
       );
     } else {
       w = Text(
-        'Fim da lista',
+        SsStrings.of(context).endOfList,
         style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
       );
     }

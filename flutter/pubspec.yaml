@@ -1,7 +1,7 @@
 name: componentes_ui
 description: Design system "Lista Clara" da MinhaSuite (tema, tokens e componentes Ss*).
 publish_to: "none"
-version: 0.9.0
+version: 0.10.0
 
 environment:
   sdk: ^3.12.0
@@ -17,6 +17,9 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # Testes de idioma (SsStrings em en/es com os textos do Material).
+  flutter_localizations:
     sdk: flutter
   flutter_lints: ^6.0.0
 

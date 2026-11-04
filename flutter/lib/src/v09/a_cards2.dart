@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_stat.dart' show SsAmount;
+import '../ss_strings.dart';
 
 // ---------------------------------------------------------------------------
 // Cartão de saldo
@@ -20,7 +21,7 @@ class SsWalletCard extends StatelessWidget {
   const SsWalletCard({
     super.key,
     required this.amount,
-    this.label = 'Saldo total',
+    this.label,
     this.holder,
     this.number,
     this.network,
@@ -31,7 +32,9 @@ class SsWalletCard extends StatelessWidget {
 
   /// Valor já formatado ("R$ 10.000,00"); os centavos saem menores.
   final String amount;
-  final String label;
+
+  /// Padrão: [SsStrings.totalBalance].
+  final String? label;
   final String? holder;
 
   /// Final do cartão ("•••• 4086").
@@ -46,6 +49,7 @@ class SsWalletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final label = this.label ?? SsStrings.of(context).totalBalance;
     final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 160);
     final radius = BorderRadius.circular(AppRadius.cardActive);
     const muted = AppColors.onDarkSoft;
@@ -325,7 +329,7 @@ class _SsCardStackState extends State<SsCardStack> with SingleTickerProviderStat
     final h = widget.cardHeight;
     return Semantics(
       button: true,
-      label: _open ? 'Fechar cartões' : 'Abrir $n cartões',
+      label: _open ? SsStrings.of(context).closeCards : SsStrings.of(context).openCards(n),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _toggle,
@@ -382,7 +386,7 @@ class SsPopOutCard extends StatelessWidget {
     this.popOut = 44,
     this.tone,
     this.actionIcon = Icons.add_rounded,
-    this.actionLabel = 'Adicionar',
+    this.actionLabel,
   });
 
   /// Imagem recortada (fundo transparente fica melhor); o app passa o widget.
@@ -400,7 +404,9 @@ class SsPopOutCard extends StatelessWidget {
   /// Cor do fundo do card (tonal); sem ela, a superfície.
   final Color? tone;
   final IconData actionIcon;
-  final String actionLabel;
+
+  /// Padrão: [SsStrings.add].
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -448,7 +454,7 @@ class SsPopOutCard extends StatelessWidget {
                     if (onAdd != null)
                       Semantics(
                         button: true,
-                        label: actionLabel,
+                        label: actionLabel ?? SsStrings.of(context).add,
                         excludeSemantics: true,
                         child: SsPressable(
                           onTap: onAdd,
@@ -791,7 +797,7 @@ class SsRecurringCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Semantics(
-                  label: done ? 'Feito' : 'Pendente',
+                  label: done ? SsStrings.of(context).taskDone : SsStrings.of(context).taskPending,
                   excludeSemantics: true,
                   child: AnimatedContainer(
                     duration: dur,
@@ -852,7 +858,7 @@ class SsRecurringCard extends StatelessWidget {
                 ),
                 if (onMenu != null)
                   IconButton(
-                    tooltip: 'Mais opções',
+                    tooltip: SsStrings.of(context).moreOptions,
                     onPressed: onMenu,
                     icon: Icon(Icons.more_horiz_rounded, color: c.muted),
                   ),

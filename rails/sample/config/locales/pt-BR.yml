@@ -1,0 +1,9 @@
+# Vitrine: o mínimo do Rails em pt-BR (os produtos usam o rails-i18n). Os textos dos
+# componentes vêm da gem (config/locales/componentes_ui.*.yml).
+pt-BR:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: não pode ficar em branco
+      invalid: não é válido
+      too_long: é longo demais (máximo %{count} caracteres)

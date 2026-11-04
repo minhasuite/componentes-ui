@@ -1,9 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssMoney } from "componentes_ui/controllers/ss_intl"
 
 // Divisão que soma 100%: mexer num slider redistribui o resto nos outros, na proporção deles.
 export default class extends Controller {
   static targets = ["slider", "out", "seg"]
-  static values = { total: Number }
+  // currency: moeda do componente; o valor sai no idioma do <html lang>.
+  static values = { total: Number, currency: { type: String, default: "BRL" } }
 
   connect() { this.exact = this.sliderTargets.map((s) => Number(s.value)) }
 
@@ -26,7 +28,6 @@ export default class extends Controller {
   }
 
   render(vals) {
-    const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
     vals.forEach((v, n) => {
       const s = this.sliderTargets[n]
       s.value = v; s.style.setProperty("--p", `${v}%`); s.setAttribute("aria-valuetext", `${v}%`)
@@ -35,7 +36,7 @@ export default class extends Controller {
       if (out) {
         out.querySelector("b").textContent = `${v}%`
         const small = out.querySelector("small")
-        if (small && this.totalValue) small.textContent = brl.format(Math.round((this.totalValue * v) / 100) / 100)
+        if (small && this.totalValue) small.textContent = ssMoney(Math.round((this.totalValue * v) / 100) / 100, this.currencyValue)
       }
     })
     this.dispatch("change", { detail: { values: vals } })

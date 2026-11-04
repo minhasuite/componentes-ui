@@ -2,7 +2,7 @@
   <div class="ss-gantt" style="--days:<%= days %>;--rows:<%= tasks.size %>">
     <span class="ss-gantt-corner" aria-hidden="true"></span>
     <% dates.each_with_index do |d, i| %>
-      <span class="ss-gantt-day<%= " is-today" if d == today %><%= " is-weekend" if d.saturday? || d.sunday? %>" style="grid-column:<%= i + 2 %>" aria-hidden="true"><small><%= WD[d.wday] %></small><b class="num"><%= d.day %></b></span>
+      <span class="ss-gantt-day<%= " is-today" if d == today %><%= " is-weekend" if d.saturday? || d.sunday? %>" style="grid-column:<%= i + 2 %>" aria-hidden="true"><small><%= wd(d) %></small><b class="num"><%= d.day %></b></span>
     <% end %>
     <div class="ss-gantt-grid" aria-hidden="true"></div>
     <% if today_col %><div class="ss-gantt-today" style="grid-column:<%= today_col %>" aria-hidden="true"></div><% end %>
@@ -10,9 +10,9 @@
       <span class="ss-gantt-label" style="grid-row:<%= r + 2 %>"><%= t[:label] %></span>
       <% if visible?(t) %>
         <% a, b = span_for(t) %>
-        <div class="ss-gantt-bar" data-tone="<%= t[:tone] || "accent" %>" style="grid-row:<%= r + 2 %>;grid-column:<%= a %> / <%= b %>;--p:<%= pct(t) %>%" title="<%= t[:label] %>: <%= dm(t[:from]) %> a <%= dm(t[:to]) %>, <%= pct(t) %>%">
+        <div class="ss-gantt-bar" data-tone="<%= t[:tone] || "accent" %>" style="grid-row:<%= r + 2 %>;grid-column:<%= a %> / <%= b %>;--p:<%= pct(t) %>%" title="<%= bar_title(t) %>">
           <span class="num"><%= pct(t) %>%</span>
-          <span class="ss-sr"><%= t[:label] %>, de <%= dm(t[:from]) %> a <%= dm(t[:to]) %>, <%= pct(t) %>% feito</span>
+          <span class="ss-sr"><%= bar_sr(t) %></span>
         </div>
       <% end %>
     <% end %>

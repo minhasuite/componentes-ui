@@ -1,14 +1,104 @@
 require "erb"
 require "date"
+require "i18n"
 
 module ComponentesUi
   # Helpers de view para as peças que precisam de conta (pontos, matiz).
   # Entram em todas as views do app (ver Engine). Mesma conta do Flutter.
   module Helpers
-    # "R$ 1.234,56" → R$ 1.234<small>,56</small> dentro de .ss-amount.
+    # Símbolo de cada moeda (ISO 4217). Fora do mapa, sai o próprio código ("CHF 10,00").
+    CURRENCY_SYMBOLS = {
+      "BRL" => "R$", "USD" => "US$", "EUR" => "€", "GBP" => "£", "ARS" => "$", "CLP" => "$", "COP" => "$",
+      "MXN" => "$", "UYU" => "$U", "PYG" => "₲", "PEN" => "S/", "BOB" => "Bs", "CAD" => "CA$", "JPY" => "¥"
+    }.freeze
+
+    # ── i18n (v0.10) ──────────────────────────────────────────────────
+    # Texto da gem: I18n.t("componentes_ui.<key>"). Quem chama passa sempre
+    # default: com o texto pt-BR, para o app sem os YAML da gem continuar igual.
+    #   ss_t("toast.undo", default: "Desfazer")
+    def ss_t(key, **opts)
+      I18n.t("componentes_ui.#{key}", **opts)
+    rescue I18n::InvalidLocale
+      # Fora do Rails (teste puro) o I18n pode não ter locale nenhum carregado.
+      opts[:default].is_a?(String) ? I18n.interpolate(opts[:default], opts.except(:default, :locale)) : opts[:default]
+    end
+
+    # Idioma dos números e do dinheiro: ComponentesUi.config.locale ou o da página.
+    def ss_number_locale
+      (ComponentesUi.config.locale if ComponentesUi.respond_to?(:config)) || I18n.locale
+    end
+
+    # Moeda ISO dos helpers de dinheiro (padrão BRL).
+    def ss_currency
+      (ComponentesUi.config.currency if ComponentesUi.respond_to?(:config)) || "BRL"
+    end
+
+    def ss_currency_symbol(currency = nil)
+      code = (currency || ss_currency).to_s.upcase
+      CURRENCY_SYMBOLS.fetch(code, code)
+    end
+
+    # Idioma em BCP 47 para o Intl do navegador ("pt-BR", "en", "es").
+    def ss_intl_locale = ss_number_locale.to_s.tr("_", "-")
+
+    # Número no formato do idioma: ss_number(1234.5, precision: 2) → "1.234,50" (pt/es) ou "1,234.50" (en).
+    def ss_number(value, precision: 0, locale: nil)
+      loc = locale || ss_number_locale
+      sep = ss_t("number.separator", locale: loc, default: ",")
+      del = ss_t("number.delimiter", locale: loc, default: ".")
+      v = value.to_f
+      str = format("%.#{precision.to_i}f", v.abs)
+      int, dec = str.split(".")
+      int = int.gsub(/(\d)(?=(\d{3})+\z)/, "\\1#{del}")
+      neg = v.negative? && str.to_f != 0
+      "#{"-" if neg}#{int}#{"#{sep}#{dec}" if dec}"
+    end
+
+    # Dinheiro no formato do idioma e na moeda da config:
+    #   ss_money(1234.5) → "R$ 1.234,50" (pt-BR), "R$1,234.50" (en), "1.234,50 R$" (es).
+    # minus: o sinal do negativo ("-" ou o "−" tipográfico).
+    def ss_money(value, currency: nil, precision: 2, locale: nil, minus: "-")
+      loc = locale || ss_number_locale
+      pattern = ss_t("money.format", locale: loc, default: "%u %n")
+      v = value.to_f
+      text = pattern.sub("%u", ss_currency_symbol(currency)).sub("%n", ss_number(v.abs, precision:, locale: loc))
+      v.negative? && v.round(precision) != 0 ? "#{minus}#{text}" : text
+    end
+
+    # Data no formato curto do idioma (strftime dos YAML da gem):
+    #   ss_date(d) → "31/10/2026" | ss_date(d, :day_month) → "31/10" | :day_month_time | :time
+    def ss_date(value, format = :date)
+      defaults = { date: "%d/%m/%Y", day_month: "%d/%m", day_month_time: "%d/%m %H:%M", time: "%H:%M" }
+      value.strftime(ss_t("date.formats.#{format}", default: defaults.fetch(format)))
+    end
+
+    # Nomes de dia e mês do idioma (arrays dos YAML), 0 = domingo / 0 = janeiro.
+    WEEKDAYS_PT = %w[dom seg ter qua qui sex sáb].freeze
+    WEEKDAYS_LONG_PT = %w[domingo segunda-feira terça-feira quarta-feira quinta-feira sexta-feira sábado].freeze
+    MONTHS_PT = %w[janeiro fevereiro março abril maio junho julho agosto setembro outubro novembro dezembro].freeze
+    MONTHS_SHORT_PT = %w[jan fev mar abr mai jun jul ago set out nov dez].freeze
+
+    # (default: com array no I18n é lista de alternativas, por isso o || depois.)
+    def ss_weekdays(long: false) = ss_t("date.#{long ? "weekdays" : "weekdays_short"}", default: nil) || (long ? WEEKDAYS_LONG_PT : WEEKDAYS_PT)
+    def ss_months(short: false) = ss_t("date.#{short ? "months_short" : "months"}", default: nil) || (short ? MONTHS_SHORT_PT : MONTHS_PT)
+
+    # Nome da paleta e da família no idioma da página (paletas.rb tem o pt-BR, gerado).
+    def ss_palette_name(slug)
+      pt = ComponentesUi::PALETAS[slug.to_s] if defined?(ComponentesUi::PALETAS)
+      ss_t("palettes.#{slug}", default: pt || slug.to_s)
+    end
+
+    def ss_palette_family(name)
+      ss_t("palette_families.#{name.to_s.downcase.unicode_normalize(:nfkd).gsub(/[^a-z]/, "")}", default: name.to_s)
+    end
+
+    # "R$ 1.234,56" → R$ 1.234<small>,56</small> dentro de .ss-amount. Os centavos
+    # saem pelo separador decimal do idioma ("$1,234.56" → <small>.56</small>), e o
+    # símbolo depois do número também vale ("1.234,56 R$").
     def ss_amount(text, css: nil)
-      main, cents = text.to_s.match(/\A(.*?)(,\d{2})?\z/m).captures
-      inner = "#{ERB::Util.h(main)}#{"<small>#{ERB::Util.h(cents)}</small>" if cents}"
+      sep = Regexp.escape(ss_t("number.separator", locale: ss_number_locale, default: ","))
+      main, cents, tail = text.to_s.match(/\A(.*?)(#{sep}\d{2})?(\s*[^\d\s][^\d]*)?\z/m).captures
+      inner = cents ? "#{ERB::Util.h(main)}<small>#{ERB::Util.h(cents)}</small>#{ERB::Util.h(tail)}" : ERB::Util.h(text.to_s)
       %(<span class="#{["ss-amount", css].compact.join(" ")}">#{inner}</span>).html_safe
     end
 
@@ -94,19 +184,20 @@ module ComponentesUi
       n = [total, 60].min
       lit = total == n ? left : (left * n.to_f / total).round
       small = label ? %(<small>#{ERB::Util.h(label)}</small>) : ""
-      aria = ERB::Util.h([left, label].compact.join(" ") + " de #{total}")
+      aria = ERB::Util.h(ss_t("countdown.aria", default: "%{left} de %{total}", left: [left, label].compact.join(" "), total:))
       %(<div class="ss-countdown" style="--n:#{n};--left:#{lit}" role="img" aria-label="#{aria}"><b>#{left}</b>#{small}</div>).html_safe
     end
 
     # Grade de constância: values_by_date = { Date|"aaaa-mm-dd" => número }.
     # Colunas = semanas (dom..sáb), a última termina hoje. Nível 0–4 pelo quartil
     # do valor entre os dias com valor (0 = nada; o maior = 4).
-    def ss_heat(values_by_date, weeks: 12, today: Date.today, label: "Constância")
+    def ss_heat(values_by_date, weeks: 12, today: Date.today, label: nil)
+      label ||= ss_t("heat.label", default: "Constância")
       vals = values_by_date.to_h.each_with_object({}) { |(k, v), h| h[k.is_a?(Date) ? k : Date.parse(k.to_s)] = v.to_f }
       start = today - today.wday - (weeks - 1) * 7
       cells = (start..today).map do |d|
         v = vals[d].to_f
-        %(<i data-level="#{ss_heat_level(v, vals.values)}" title="#{d.strftime("%d/%m")}: #{v % 1 == 0 ? v.to_i : v}"></i>)
+        %(<i data-level="#{ss_heat_level(v, vals.values)}" title="#{ss_date(d, :day_month)}: #{v % 1 == 0 ? v.to_i : v}"></i>)
       end.join
       %(<div class="ss-heat" role="img" aria-label="#{ERB::Util.h(label)}">#{cells}</div>).html_safe
     end

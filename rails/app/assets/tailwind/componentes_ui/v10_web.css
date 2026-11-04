@@ -1,0 +1,40 @@
+/* v0.10 (web): página com voltar/selo, confirmação global, paginação, paleta Ctrl+K e cor livre. */
+
+@layer components {
+  /* Ss::PageComponent(back:) e with_badge. */
+  .ss-page-back { display: inline-flex; align-items: center; gap: .35rem; justify-self: start; min-height: 2.75rem; margin: -.6rem 0 -.4rem; padding-right: .75rem;
+                  font-size: .875rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .ss-page-back svg { width: 1rem; height: 1rem; transition: translate .3s var(--ss-bounce); }
+  .ss-page-back:hover { color: var(--accent); }
+  .ss-page-back:hover svg { translate: -3px 0; }
+  .ss-page-titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; min-width: 0; }
+  .ss-page-titlerow .ss-page-title { min-width: 0; overflow-wrap: anywhere; text-wrap: balance; }
+
+  /* Ss::PaginationComponent: o pager da tabela solto, com respiro em cima. */
+  .ss-pagination { margin-top: 1rem; }
+
+  /* Ss::SwatchPickerComponent(free: true): ficha arco-íris até escolher; depois, a cor. */
+  .ss-swatch-picker-item.is-free .ss-swatch-picker-dot {
+    background: conic-gradient(from 90deg, #ff5f6d, #ffc371, #f7f06d, #47d78a, #3fb5ff, #8f7dff, #ff6fd8, #ff5f6d); }
+  .ss-swatch-picker-item.is-free.is-set .ss-swatch-picker-dot { background: var(--c); }
+  .ss-swatch-picker-item.is-free:not(:has(:checked))::after { content: "+"; position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+    color: #fff; font: 800 1.15rem/1 var(--font-sans); text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
+  .ss-swatch-picker-color { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; cursor: pointer; border-radius: 50%; }
+}
+
+/* Paleta (Ss::CommandPaletteComponent): grupos e rodapé de teclas. Fora das camadas, como o .ss-command. */
+.ss-command-group-title { padding: .55rem .85rem .25rem; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ss-command-group[hidden] { display: none; }
+.ss-command-item[hidden] { display: none; }
+.ss-command-foot { display: flex; flex-wrap: wrap; gap: .4rem 1rem; padding: .6rem 1rem; border-top: 1px solid var(--line); font-size: .75rem; color: var(--muted); }
+.ss-command-foot span { display: inline-flex; align-items: center; gap: .25rem; }
+@media (max-width: 640px) { .ss-command-foot-k { display: none !important; } }
+
+/* Confirmação (Ss::ConfirmDialogComponent): o ícone do tom; aviso em amarelo, perigo no .is-danger. */
+.ss-confirm-dialog { width: min(25rem, calc(100vw - 2rem)); padding: 0; }
+.ss-confirm-dialog .ss-dialog-actions { grid-template-columns: 1fr; }
+.ss-confirm-dialog-ico { display: none; }
+.ss-confirm-dialog:not(.is-warn, .is-danger) .ss-confirm-dialog-ico[data-tone="default"],
+.ss-confirm-dialog.is-warn .ss-confirm-dialog-ico[data-tone="warn"],
+.ss-confirm-dialog.is-danger .ss-confirm-dialog-ico[data-tone="danger"] { display: contents; }
+.ss-dialog.is-warn .ss-dialog-icon { background: var(--warn-soft); color: var(--warn); }

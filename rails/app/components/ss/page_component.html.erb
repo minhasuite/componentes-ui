@@ -2,7 +2,12 @@
   <header class="ss-page-head">
     <div class="ss-page-titles">
       <% if @crumbs.present? %><%= render Ss::BreadcrumbsComponent.new(items: @crumbs) %><% end %>
-      <h1 class="ss-page-title"><%= @title %></h1>
+      <% if @back %><%= link_to @back, class: "ss-page-back" do %><%= BACK.html_safe %><span><%= back_label %></span><% end %><% end %>
+      <% if badge? %>
+        <div class="ss-page-titlerow"><h1 class="ss-page-title"><%= @title %></h1><%= badge %></div>
+      <% else %>
+        <h1 class="ss-page-title"><%= @title %></h1>
+      <% end %>
       <% if @subtitle %><p class="ss-page-sub"><%= @subtitle %></p><% end %>
     </div>
     <% if actions? %><div class="ss-page-actions"><%= actions %></div><% end %>

@@ -2,7 +2,7 @@
   <% if week? %>
     <div class="ss-agenda-head" aria-hidden="true">
       <span></span>
-      <% days.each do |d| %><span class="<%= "is-today" if today?(d) %>"><small><%= WEEKDAYS[d.wday] %></small><b class="num"><%= d.day %></b></span><% end %>
+      <% days.each do |d| %><span class="<%= "is-today" if today?(d) %>"><small><%= weekdays[d.wday] %></small><b class="num"><%= d.day %></b></span><% end %>
     </div>
   <% end %>
   <div class="ss-agenda-body">
@@ -22,7 +22,7 @@
               </li>
             <% end %>
           </ul>
-          <% if (nt = now_top(d)) %><div class="ss-agenda-now" style="top:<%= nt %>%"><span class="ss-sr">Agora, <%= hhmm(@now) %></span></div><% end %>
+          <% if (nt = now_top(d)) %><div class="ss-agenda-now" style="top:<%= nt %>%"><span class="ss-sr"><%= now_text %></span></div><% end %>
         </div>
       <% end %>
     </div>

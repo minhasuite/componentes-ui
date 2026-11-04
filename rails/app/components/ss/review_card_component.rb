@@ -15,7 +15,7 @@ module Ss
     def call
       tag.figure(**root_attrs(class: classes("ss-card", "ss-review"), data: in_view_data)) do
         safe_join([
-          tag.span(class: "ss-stars", style: "--v:#{@rating}", role: "img", "aria-label": "Nota #{@rating.to_s.sub(/\.0\z/, "").tr(".", ",")} de 5"),
+          tag.span(class: "ss-stars", style: "--v:#{@rating}", role: "img", "aria-label": ss_t("review_card.rating", default: "Nota %{rating} de 5", rating: ss_number(@rating, precision: @rating.to_f % 1 == 0 ? 0 : 1))),
           tag.blockquote(tag.p(@text)),
           tag.figcaption do
             safe_join([ss_avatar(@name, size: 38), tag.span { safe_join([tag.b(@name), (tag.small([@role, @date].compact.join(" · ")) if @role || @date)].compact) }])

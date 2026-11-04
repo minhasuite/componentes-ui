@@ -1,0 +1,61 @@
+// Idioma dos controllers da gem (v0.10). Não é controller (não termina em _controller):
+// o eagerLoadControllersFrom não registra, mas o pin_all_from publica, então os
+// controllers importam daqui:
+//   import { ssLang, ssNumber, ssMoney } from "componentes_ui/controllers/ss_intl"
+//
+// Textos: nenhum controller tem texto fixo; o componente manda o texto já traduzido
+// em data-*-value (Rails I18n). Números, dinheiro e datas: Intl com o <html lang>
+// da página, pt-BR de reserva.
+
+const FALLBACK = "pt-BR"
+
+// Idioma da página ("pt-BR", "en", "es"…); inválido ou vazio → pt-BR.
+export function ssLang() {
+  const lang = document.documentElement.lang || FALLBACK
+  try { return Intl.NumberFormat.supportedLocalesOf([lang]).length ? lang : FALLBACK } catch { return FALLBACK }
+}
+
+// 1234.5 → "1.234,5" (pt/es) ou "1,234.5" (en), com `decimals` casas fixas.
+export function ssNumber(value, decimals = 0, lang = ssLang()) {
+  return new Intl.NumberFormat(lang, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value)
+}
+
+// Dinheiro na moeda do componente (padrão BRL): "R$ 1.234,50", "R$1,234.50", "1234,50 R$".
+export function ssMoney(value, currency = "BRL", lang = ssLang(), decimals = 2) {
+  try {
+    return new Intl.NumberFormat(lang, { style: "currency", currency: currency || "BRL", minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value)
+  } catch {
+    return new Intl.NumberFormat(FALLBACK, { style: "currency", currency: "BRL" }).format(value)
+  }
+}
+
+// Separadores do idioma: { decimal: ",", group: "." }.
+export function ssSeparators(lang = ssLang()) {
+  const parts = new Intl.NumberFormat(lang).formatToParts(12345.6)
+  return { decimal: parts.find((p) => p.type === "decimal")?.value || ",", group: parts.find((p) => p.type === "group")?.value || "." }
+}
+
+// Texto com número no formato do idioma → Number ("R$ 1.234,50" → 1234.5). NaN se não há número.
+export function ssParseNumber(text, lang = ssLang()) {
+  const { decimal, group } = ssSeparators(lang)
+  const t = String(text).replace(/\u2212/g, "-")
+  const m = t.match(/\d[\d\s.,\u00a0\u202f]*/)
+  if (!m) return NaN
+  const raw = m[0].replace(/[\s\u00a0\u202f]/g, "").replace(/[.,]$/, "")
+  const n = parseFloat(raw.split(group).join("").replace(decimal, "."))
+  return t.slice(0, m.index).includes("-") ? -n : n
+}
+
+// Separa os centavos para o <small>: "R$ 1.234,56" → ["R$ 1.234", ",56", ""];
+// "1.234,56 R$" → ["1.234", ",56", " R$"]. Sem centavos: [texto, "", ""].
+export function ssSplitCents(text, lang = ssLang()) {
+  const { decimal } = ssSeparators(lang)
+  const i = text.lastIndexOf(decimal)
+  if (i < 0 || !/^\d{2}/.test(text.slice(i + 1))) return [text, "", ""]
+  return [text.slice(0, i), text.slice(i, i + 3), text.slice(i + 3)]
+}
+
+// Texto com %{nome} → valor: ssFormat("Remover %{name}", { name: "x" }).
+export function ssFormat(template, vars = {}) {
+  return String(template ?? "").replace(/%\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : ""))
+}

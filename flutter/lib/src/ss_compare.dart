@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'ss_strings.dart';
 
 /// Comparador antes/depois (foto da planta, do treino): [before] à esquerda
 /// da alça, [after] à direita; arraste ou toque para mover. Ocupa o espaço
@@ -11,15 +12,17 @@ class SsCompare extends StatefulWidget {
     super.key,
     required this.before,
     required this.after,
-    this.beforeLabel = 'Antes',
-    this.afterLabel = 'Depois',
+    this.beforeLabel,
+    this.afterLabel,
     this.initial = .5,
   });
 
   final Widget before;
   final Widget after;
-  final String beforeLabel;
-  final String afterLabel;
+
+  /// Padrões: [SsStrings.before] e [SsStrings.after].
+  final String? beforeLabel;
+  final String? afterLabel;
   final double initial;
 
   @override
@@ -35,13 +38,16 @@ class _SsCompareState extends State<SsCompare> {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     String pct(double t) => '${(t.clamp(0.0, 1.0) * 100).round()}%';
+    final s = SsStrings.of(context);
+    final antes = widget.beforeLabel ?? s.before;
+    final depois = widget.afterLabel ?? s.after;
     return LayoutBuilder(
       builder: (context, box) {
         final w = box.maxWidth;
         final x = _t * w;
         return Semantics(
           slider: true,
-          label: 'Comparar ${widget.beforeLabel} e ${widget.afterLabel}',
+          label: s.compareLabel(antes, depois),
           value: pct(_t),
           increasedValue: pct(_t + .1),
           decreasedValue: pct(_t - .1),
@@ -96,8 +102,8 @@ class _SsCompareState extends State<SsCompare> {
                       ),
                     ),
                   ),
-                  Positioned(left: 10, top: 10, child: _Rotulo(widget.beforeLabel)),
-                  Positioned(right: 10, top: 10, child: _Rotulo(widget.afterLabel)),
+                  Positioned(left: 10, top: 10, child: _Rotulo(antes)),
+                  Positioned(right: 10, top: 10, child: _Rotulo(depois)),
                 ],
               ),
             ),

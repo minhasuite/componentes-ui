@@ -1,10 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssFormat } from "componentes_ui/controllers/ss_intl"
 
 // Edição no lugar: clicar no valor mostra o campo; Enter salva (form com Turbo), Esc cancela,
 // sair do campo salva se mudou. Sem url (remote=false) só troca o texto e dispara ss-inline-edit:save.
 export default class extends Controller {
   static targets = ["view", "text", "form", "input"]
-  static values = { remote: Boolean }
+  // editLabel: texto do botão vindo do I18n do componente ("Editar %{label}: %{value}").
+  static values = { remote: Boolean, editLabel: { type: String, default: "Editar %{label}: %{value}" } }
 
   edit() {
     this.original = this.inputTarget.value
@@ -53,7 +55,7 @@ export default class extends Controller {
   apply(value) {
     this.textTarget.textContent = value
     const label = this.inputTarget.getAttribute("aria-label")
-    this.viewTarget.setAttribute("aria-label", `Editar ${label}: ${value}`)
+    this.viewTarget.setAttribute("aria-label", ssFormat(this.editLabelValue, { label, value }))
     this.original = value
     this.close()
   }

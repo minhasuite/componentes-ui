@@ -1,0 +1,210 @@
+<%# titulo: Mídia, avisos e status | grupo: Casa e automação | ordem: 30 %>
+<%# Peças de mídia e status da casa (v0.10) para a migração do minha-automacao. Os comandos
+    (button_to) desta página não vão ao servidor: o script do fim segura o envio e, quando a
+    URL tem ?…, recarrega a vitrine com o estado novo (como o Turbo Stream do app faria). %>
+<%
+  cena = <<~SVG
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e8ba8"/><stop offset="1" stop-color="#a9b9c6"/></linearGradient></defs>
+    <rect width="320" height="180" fill="url(#c)"/><rect y="112" width="320" height="68" fill="#5c6b57"/><rect x="38" y="54" width="122" height="65" fill="#d9cbb4"/>
+    <path d="M26 58 99 22l74 36z" fill="#8a4b3c"/><rect x="83" y="83" width="29" height="36" fill="#5b4636"/><rect x="198" y="94" width="96" height="29" rx="6" fill="#2f3a4a"/></svg>
+  SVG
+  frame = "data:image/svg+xml;base64,#{Base64.strict_encode64(cena)}"
+  ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="#{d}"/></svg>).html_safe }
+  player = (params[:player] || "playing").to_sym
+  radar = (params[:radar] || "searching").to_sym
+  casa = { id: :casa, kind: :home, label: "Casa", value: "2,4 kW" }
+  solar = { id: :solar, kind: :solar, label: "Solar", value: "3,8 kW" }
+  rede = { id: :rede, kind: :grid, label: "Rede", value: "1,4 kW" }
+  bat = { id: :bat, kind: :battery, label: "Bateria", value: "1,4 kW", caption: "72%" }
+  carro = { id: :carro, kind: :custom, label: "Carro", value: "0 kW", icon: ico.("M5 17h14M6 17l1.5-6h9L18 17M8 17v2m8-2v2M9 11l1-3h4l1 3") }
+  achados = [{ label: "Lâmpada sala", icon: ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") },
+             { label: "Tomada TV", icon: ico.("M7 3v5M17 3v5M5 8h14v4a7 7 0 0 1-14 0zM12 19v2") },
+             { label: "Sensor porta", icon: ico.("M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M4 21h16M14 12h.01") },
+             { label: "Câmera garagem", icon: ico.("M3 7h12v10H3zM15 10l6-3v10l-6-3") }]
+%>
+<div data-vt-midia>
+
+<%= demo "Ss::CameraTileComponent", "Quadro (imagem ou o <video> WebRTC do app no slot frame), título, AO VIVO, idade do quadro parado e ações por cima. O estado fica em data-state: o JS do app troca sem render (o botão abaixo simula a conexão). A idade anda sozinha.",
+      uso: 'render Ss::CameraTileComponent.new(title:, state: :stale, image_url:, age: 12, retry_url:) { |t| t.with_frame { tag.video(...) }; t.with_action { ... } }' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem">
+    <%= render Ss::CameraTileComponent.new(title: "Garagem", image_url: frame, age: 2, id: "vt-cam-live") do |t| %>
+      <% t.with_action { tag.button(ico.("M4 9v6h4l5 4V5L8 9z M17 9l5 6m0-6-5 6"), type: "button", aria: { label: "Áudio" }, title: "Áudio") } %>
+      <% t.with_action { tag.button(ico.("M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"), type: "button", aria: { label: "Tela cheia" }, title: "Tela cheia") } %>
+    <% end %>
+    <%= render Ss::CameraTileComponent.new(title: "Quintal", state: :stale, image_url: frame, age: 12) %>
+    <%= render Ss::CameraTileComponent.new(title: "Entrada", state: :loading, id: "vt-cam-conn", image_url: frame) %>
+    <%= render Ss::CameraTileComponent.new(title: "Portão", state: :offline, retry_button: true, image_url: frame, id: "vt-cam-off") %>
+    <%= render Ss::CameraTileComponent.new(title: "Cozinha", state: :error, retry_url: vitrine_path("casa_midia")) %>
+  </div>
+  <p style="margin-top:.75rem"><button type="button" class="ss-btn ss-btn-ghost ss-btn-sm" data-vt-connect>Conectar “Entrada” (loading → live em 1,2 s)</button></p>
+<% end %>
+
+<%= demo "Ss::MediaPlayerComponent", "Capa, título, anterior/tocar/próxima (button_to para as URLs do app), progresso com tempos (anda sozinho tocando), volume que manda ao soltar e a fonte. Estados: idle, playing, paused, buffering, unavailable.",
+      uso: 'render Ss::MediaPlayerComponent.new(title:, subtitle:, art_url:, state: :playing, position: 97, duration: 212, volume: 0.45, source:, play_url:, pause_url:, previous_url:, next_url:, volume_url:, seek_url:)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem;align-items:start">
+    <%= render Ss::MediaPlayerComponent.new(title: "Águas de Março", subtitle: "Elis Regina & Tom Jobim", source: "Spotify · Sala de estar",
+          state: player, position: 97, duration: 212, volume: 0.45,
+          play_url: vitrine_path("casa_midia", player: :playing), pause_url: vitrine_path("casa_midia", player: :paused),
+          previous_url: vitrine_path("casa_midia", player: :buffering), next_url: vitrine_path("casa_midia", player: :buffering),
+          volume_url: vitrine_path("casa_midia"), seek_url: vitrine_path("casa_midia")) %>
+    <%= render Ss::MediaPlayerComponent.new(title: "Rádio Eldorado", source: "Echo · Cozinha", state: :buffering, play_url: "#") %>
+    <%= render Ss::MediaPlayerComponent.new(source: "Sonos · Varanda", state: :idle, play_url: "#") %>
+    <%= render Ss::MediaPlayerComponent.new(source: "TV do quarto", state: :unavailable, volume: 0.2) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::NoticeCardComponent", "Ícone, título, texto, tom (info, warn, critical, success), hora e N ações (a 1ª cheia, as outras fantasma), mais o dispensar (button_to com dismiss_url, ou dismissible: true que só tira da tela).",
+      uso: 'render Ss::NoticeCardComponent.new(title:, text:, tone: :warn, time: "14:32", actions: [{ label:, url: }, { label:, url:, method: :delete }], dismiss_url:)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:.75rem">
+    <%= render Ss::NoticeCardComponent.new(title: "Atualização disponível", text: "O hub tem uma versão nova do firmware.", tone: :info, time: "09:10",
+          actions: [{ label: "Atualizar", url: "#" }, { label: "Depois", url: "#" }], dismissible: true) %>
+    <%= render Ss::NoticeCardComponent.new(title: "Porta da frente aberta", text: "Está aberta há 10 minutos.", tone: :warn, time: "14:32",
+          actions: [{ label: "Trancar", url: "#" }, { label: "Ignorar", url: "#" }], dismissible: true) %>
+    <%= render Ss::NoticeCardComponent.new(title: "Vazamento na lavanderia", text: "O sensor de água detectou umidade.", tone: :critical, time: "agora",
+          actions: [{ label: "Fechar registro", url: "#" }, { label: "Ligar para alguém", url: "#" }, { label: "Silenciar", url: "#" }], dismissible: true) %>
+    <%= render Ss::NoticeCardComponent.new(title: "Backup concluído", text: "Tudo salvo às 03:00.", tone: :success, time: "03:00") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::MicButtonComponent", "Ouvindo, os anéis crescem com o nível do áudio (0..1) que o app manda (evento ss-mic:level ou setLevel); processando, um arco gira; erro fica vermelho. Toque o primeiro: usa o seu microfone (getUserMedia, só nesta vitrine).",
+      uso: 'render Ss::MicButtonComponent.new(state: :idle)  ·  el.dispatchEvent(new CustomEvent("ss-mic:level", { detail: 0.6 }))  ·  el.dataset.ssMicStateValue = "processing"' do %>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1.5rem">
+    <div style="display:grid;justify-items:center;gap:.25rem"><%= render Ss::MicButtonComponent.new(id: "vt-mic") %><small class="text-muted" id="vt-mic-txt">toque para falar</small></div>
+    <div style="display:grid;justify-items:center;gap:.25rem"><%= render Ss::MicButtonComponent.new(state: :listening, level: 0.2, size: 56, id: "vt-mic-sim") %><small class="text-muted">simulado</small></div>
+    <%= render Ss::MicButtonComponent.new(state: :listening, level: 0.9, size: 56) %>
+    <%= render Ss::MicButtonComponent.new(state: :processing, size: 56) %>
+    <%= render Ss::MicButtonComponent.new(state: :error, size: 56) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::FlowDiagramComponent", "Casa no centro e até 4 nós em volta. Os pontos correm no sentido da energia, mais rápido quanto maior a potência (é o único laço contínuo: para com animate: false e com reduzir movimento, quando vira seta parada).",
+      uso: 'render Ss::FlowDiagramComponent.new(center: { id: :casa, kind: :home, label:, value: }, around: [{ id: :solar, kind: :solar, … }], links: [{ from: :solar, to: :casa, power: 3800 }])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1rem">
+    <div><p class="ss-kicker">importando da rede</p><%= render Ss::FlowDiagramComponent.new(center: casa, around: [solar, rede, bat], links: [{ from: :rede, to: :casa, power: 2400 }, { from: :solar, to: :casa, power: 0 }, { from: :bat, to: :casa, power: 0 }]) %></div>
+    <div><p class="ss-kicker">exportando o excedente</p><%= render Ss::FlowDiagramComponent.new(center: casa, around: [solar, rede, bat], links: [{ from: :solar, to: :casa, power: 3800 }, { from: :casa, to: :rede, power: 1400 }, { from: :bat, to: :casa, power: 0 }]) %></div>
+    <div><p class="ss-kicker">bateria carregando (4 em volta)</p><%= render Ss::FlowDiagramComponent.new(center: casa, around: [solar, rede, carro, bat], links: [{ from: :solar, to: :casa, power: 3800 }, { from: :casa, to: :bat, power: 1400 }, { from: :rede, to: :casa, power: 0 }, { from: :carro, to: :casa, power: 0 }]) %></div>
+    <div><p class="ss-kicker">sem fluxo · animate: false</p><%= render Ss::FlowDiagramComponent.new(center: casa, around: [solar, rede], links: [{ from: :solar, to: :casa, power: 1200 }, { from: :rede, to: :casa, power: 0 }], animate: false) %></div>
+  </div>
+<% end %>
+
+<%= demo "Ss::DPadComponent", "Cruz com OK, voltar/início/menu e as gangorras de volume e canal. Com url:, cada tecla é um button_to com key=; sem url, só o evento ss-dpad:key. Com foco no controle, setas, Enter e Esc apertam.",
+      uso: 'render Ss::DPadComponent.new(url: remoto_path(tv), volume: true, channel: true)' do %>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2rem">
+    <%= render Ss::DPadComponent.new(volume: true, channel: true, mute: true, id: "vt-dpad") %>
+    <div style="display:grid;gap:.5rem"><%= render Ss::DPadComponent.new(url: vitrine_path("casa_midia"), disabled: true, style: "--s: 9rem") %><small class="text-muted">disabled (aparelho offline)</small></div>
+  </div>
+  <p style="margin-top:.75rem"><output id="vt-dpad-out" class="ss-badge">última tecla: —</output></p>
+<% end %>
+
+<%= demo "Ss::WeatherCardComponent", "Temperatura, condição (ícone em SVG simples e texto), mín/máx, umidade, vento e a faixa de previsão por hora (chance de chuva) ou por dia (mínima). Só dados.",
+      uso: 'render Ss::WeatherCardComponent.new(temperature: 27, condition: :partly_cloudy, min:, max:, humidity:, wind:, forecast: [{ label: "15h", condition: :rain, temp: 25, precip: 70 }])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem;align-items:start">
+    <%= render Ss::WeatherCardComponent.new(location: "São Paulo", temperature: 27, condition: :partly_cloudy, min: 19, max: 29, humidity: 62, wind: 14,
+          forecast: [{ label: "Agora", condition: :partly_cloudy, temp: 27, precip: 10 }, { label: "15h", condition: :cloudy, temp: 28, precip: 20 },
+                     { label: "16h", condition: :rain, temp: 25, precip: 70 }, { label: "17h", condition: :storm, temp: 23, precip: 90 },
+                     { label: "18h", condition: :rain, temp: 22, precip: 60 }, { label: "19h", condition: :clear_night, temp: 21, precip: 5 }]) %>
+    <%= render Ss::WeatherCardComponent.new(temperature: 21, condition: :rain, min: 17, max: 24, humidity: 88,
+          forecast: [{ label: "Qui", condition: :clear, temp: 31, min: 19 }, { label: "Sex", condition: :partly_cloudy, temp: 29, min: 18 },
+                     { label: "Sáb", condition: :rain, temp: 24, min: 17 }, { label: "Dom", condition: :fog, temp: 22, min: 15 }, { label: "Seg", condition: :wind, temp: 25, min: 16 },
+                     { label: "Ter", condition: :snow, temp: 2, min: -3 }]) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::ClockComponent", "Hora grande em DM Mono, data e o ponto dos segundos. Anda de segundo em segundo com Intl no idioma da página; fixed: true fica parado.",
+      uso: 'render Ss::ClockComponent.new(seconds: true)  ·  Ss::ClockComponent.new(now:, hour12: true, date: false, fixed: true)' do %>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2.5rem">
+    <%= render Ss::ClockComponent.new(seconds: true) %>
+    <%= render Ss::ClockComponent.new(now: Time.zone.local(2026, 11, 4, 21, 5), hour12: true, date: false, fixed: true, size: 40) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::ScanRadarComponent", "Ondas saem do centro enquanto procura; os achados entram pulando em volta (o app manda um replace por Turbo Stream a cada achado). Achou N: as ondas param. Nada: mensagem e procurar de novo.",
+      uso: 'render Ss::ScanRadarComponent.new(state: :searching, items: [{ label:, icon:, url: }])  ·  state: :empty, retry_url:' do %>
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-around;gap:1.5rem">
+    <%= render Ss::ScanRadarComponent.new(state: radar, items: (radar == :empty ? [] : achados.first(radar == :found ? 4 : 2)), size: 220,
+          retry_url: vitrine_path("casa_midia", radar: :searching)) %>
+    <%= render Ss::ScanRadarComponent.new(state: :found, items: achados, size: 220) %>
+    <%= render Ss::ScanRadarComponent.new(state: :empty, size: 200, retry_url: vitrine_path("casa_midia", radar: :searching)) %>
+  </div>
+  <p style="margin-top:.75rem;display:flex;gap:.5rem">
+    <a class="ss-chip" href="<%= vitrine_path("casa_midia", radar: :searching) %>"<%= ' aria-current="true"'.html_safe if radar == :searching %>>procurando</a>
+    <a class="ss-chip" href="<%= vitrine_path("casa_midia", radar: :found) %>"<%= ' aria-current="true"'.html_safe if radar == :found %>>achou</a>
+    <a class="ss-chip" href="<%= vitrine_path("casa_midia", radar: :empty) %>"<%= ' aria-current="true"'.html_safe if radar == :empty %>>nada</a>
+  </p>
+<% end %>
+</div>
+
+<script>
+  (() => {
+    if (window.__midiaDemo) return
+    window.__midiaDemo = true
+    // Comandos (button_to) desta página: não vão ao servidor; URL com ?… recarrega com o estado novo.
+    document.addEventListener("submit", (e) => {
+      const form = e.target
+      if (!form.closest("[data-vt-midia]")) return
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      const url = new URL(form.action, location.href)
+      if (url.search && url.pathname === location.pathname) window.Turbo ? Turbo.visit(url.href, { action: "replace" }) : (location.href = url.href)
+    }, true)
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("[data-vt-connect]")) return
+      const cam = document.getElementById("vt-cam-conn")
+      cam.dataset.state = "loading"
+      setTimeout(() => { cam.dataset.state = "live" }, 1200)
+    })
+    document.addEventListener("ss-camera:retry", (e) => {
+      const cam = e.target.closest(".ss-cam")
+      cam.dataset.state = "loading"
+      setTimeout(() => { cam.dataset.state = "live" }, 1200)
+    })
+    document.addEventListener("ss-dpad:key", (e) => {
+      const out = document.getElementById("vt-dpad-out")
+      if (out) out.textContent = `última tecla: ${e.detail.key}`
+    })
+
+    // Microfone de verdade: getUserMedia + AnalyserNode → ss-mic:level.
+    let audio = null
+    const stop = () => { if (audio) { cancelAnimationFrame(audio.raf); audio.stream.getTracks().forEach((t) => t.stop()); audio.ctx.close(); audio = null } }
+    document.addEventListener("ss-mic:press", async (e) => {
+      const mic = e.target.closest(".ss-mic")
+      if (mic.id !== "vt-mic") return
+      const txt = document.getElementById("vt-mic-txt")
+      const set = (s, t) => { mic.dataset.ssMicStateValue = s; txt.textContent = t }
+      if (e.detail.state === "listening") {
+        stop()
+        set("processing", "processando…")
+        setTimeout(() => set("idle", "toque para falar"), 1400)
+        return
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        const ctx = new AudioContext()
+        const an = ctx.createAnalyser()
+        an.fftSize = 512
+        ctx.createMediaStreamSource(stream).connect(an)
+        const buf = new Uint8Array(an.fftSize)
+        audio = { stream, ctx }
+        set("listening", "ouvindo…")
+        const loop = () => {
+          an.getByteTimeDomainData(buf)
+          let sum = 0
+          for (const v of buf) sum += ((v - 128) / 128) ** 2
+          const rms = Math.sqrt(sum / buf.length)
+          mic.dispatchEvent(new CustomEvent("ss-mic:level", { detail: Math.min(1, rms * 4) }))
+          audio.raf = requestAnimationFrame(loop)
+        }
+        loop()
+      } catch (err) {
+        set("error", "sem acesso ao microfone")
+      }
+    })
+    // Nível simulado (sem microfone).
+    setInterval(() => {
+      const sim = document.getElementById("vt-mic-sim")
+      if (sim) sim.dispatchEvent(new CustomEvent("ss-mic:level", { detail: Math.abs(Math.sin(Date.now() / 600)) * (0.5 + Math.random() * 0.5) }))
+    }, 120)
+    document.addEventListener("turbo:before-render", stop)
+  })()
+</script>

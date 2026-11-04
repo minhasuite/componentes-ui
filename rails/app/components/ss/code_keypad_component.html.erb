@@ -1,0 +1,32 @@
+<%= content_tag(form? ? :form : :div, **root_options) do %>
+  <%= method_tag %>
+  <% if title %><p class="ss-keypad-title"><%= title %></p><% end %>
+  <div class="ss-keypad-dots" role="status" aria-live="polite" aria-label="<%= tx(:digits, "Dígitos digitados") %>"
+       data-ss-code-keypad-target="dots" data-count-label="<%= tx(:count, "%{n} dígitos") %>">
+    <% dots.times do %><i></i><% end %>
+  </div>
+  <p class="ss-keypad-msg" aria-live="assertive" data-ss-code-keypad-target="msg"><%= message %></p>
+  <input type="hidden" name="<%= name %>" value="" data-ss-code-keypad-target="input">
+  <div class="ss-keypad-grid" role="group" aria-label="<%= tx(:keys, "Teclado") %>">
+    <% %w[1 2 3 4 5 6 7 8 9].each do |d| %>
+      <button type="button" class="num" data-digit="<%= d %>" data-ss-code-keypad-target="key" data-action="ss-code-keypad#press"><%= d %></button>
+    <% end %>
+    <span></span>
+    <button type="button" class="num" data-digit="0" data-ss-code-keypad-target="key" data-action="ss-code-keypad#press">0</button>
+    <button type="button" class="ss-keypad-back" aria-label="<%= tx(:backspace, "Apagar") %>" title="<%= tx(:backspace, "Apagar") %>"
+            data-ss-code-keypad-target="back" data-action="ss-code-keypad#back"><%= back_icon %></button>
+  </div>
+  <% if submit_button? || actions.any? %>
+    <div class="ss-keypad-actions">
+      <% if submit_button? %>
+        <button type="submit" class="ss-btn ss-btn-primary" data-ss-code-keypad-target="submit" disabled><%= submit_label %></button>
+      <% end %>
+      <% actions.each do |a| %>
+        <% a = a.transform_keys(&:to_sym) %>
+        <button type="submit" class="ss-btn <%= a[:primary] ? 'ss-btn-primary' : 'ss-btn-ghost' %>" data-ss-code-keypad-target="submit" disabled
+                <% if a[:name] %>name="<%= a[:name] %>" value="<%= a[:value] %>"<% end %>
+                <% if a[:url] %>formaction="<%= a[:url] %>"<% end %>><% if a[:icon] %><%= a[:icon].html_safe %><% end %><%= a[:label] %></button>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

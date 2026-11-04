@@ -1,0 +1,14 @@
+<%= tag.div(**root_attrs(class: classes("ss-notice"), role: role, data: { tone: tone, **root_data })) do %>
+  <span class="ss-notice-ico" aria-hidden="true"><%= icon %></span>
+  <div class="ss-notice-main">
+    <div class="ss-notice-head">
+      <b class="ss-notice-title"><%= title %></b>
+      <% if time %><time class="ss-notice-time num"><%= time %></time><% end %>
+    </div>
+    <% if text %><p class="ss-notice-text"><%= text %></p><% end %>
+    <% if actions.any? %>
+      <div class="ss-notice-actions"><% actions.each_with_index do |a, i| %><%= action_button(a, i) %><% end %></div>
+    <% end %>
+  </div>
+  <% if dismiss? %><%= close_button %><% end %>
+<% end %>

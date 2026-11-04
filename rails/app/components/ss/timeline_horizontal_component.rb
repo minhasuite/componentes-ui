@@ -4,10 +4,10 @@ module Ss
   # state: :done (feito), :current (agora), nil (a seguir).
   class TimelineHorizontalComponent < BaseComponent
     include InView
-    def initialize(items:, label: "Linha do tempo", **opts)
+    def initialize(items:, label: nil, **opts)
       super(**opts)
       @items = items
-      @label = label
+      @label = label || ss_t("timeline.label", default: "Linha do tempo")
     end
 
     def call
@@ -16,7 +16,7 @@ module Ss
           state = it[:state]&.to_s
           tag.li(class: ("is-#{state}" if state), "aria-current": (state == "current" ? "step" : nil)) do
             safe_join([tag.i(aria: { hidden: true }), tag.small(it[:date], class: "num"), tag.b(it[:title]), (tag.p(it[:text]) if it[:text]),
-                       (tag.span(state == "done" ? "feito" : "agora", class: "ss-sr") if state)].compact)
+                       (tag.span(state == "done" ? ss_t("timeline.done", default: "feito") : ss_t("timeline.current", default: "agora"), class: "ss-sr") if state)].compact)
           end
         end)
       end

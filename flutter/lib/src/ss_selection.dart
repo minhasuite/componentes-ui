@@ -5,6 +5,7 @@ import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_context_menu.dart';
 import 'ss_odometer.dart';
+import 'ss_strings.dart';
 
 /// Barra de seleção múltipla: sobe de baixo com mola ([SsMotion.bounce])
 /// quando [count] > 0 ("3 selecionados", com o número rolando), as [actions]
@@ -56,7 +57,7 @@ class _SsSelectionBarState extends State<SsSelectionBar> {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip: 'Limpar seleção',
+                    tooltip: SsStrings.of(context).clearSelection,
                     onPressed: widget.onClear,
                     icon: const Icon(Icons.close_rounded, color: AppColors.onDarkIcon),
                   ),
@@ -64,7 +65,7 @@ class _SsSelectionBarState extends State<SsSelectionBar> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      _ultimo == 1 ? 'selecionado' : 'selecionados',
+                      SsStrings.of(context).selectedCount(_ultimo),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

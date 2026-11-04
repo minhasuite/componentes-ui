@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
 
 /// Um passo do [SsTimeline]. [done] = já passou (nó cheio), [current] = é
 /// agora (anel que pulsa uma vez); nenhum dos dois = futuro (tracejado).
@@ -97,13 +98,14 @@ class _Linha extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final cor = item.tone ?? c.accent;
+    final s = SsStrings.of(context);
     final estado = item.done
-        ? 'feito'
+        ? s.stepDone
         : item.current
-        ? 'agora'
-        : 'a seguir';
+        ? s.stepNow
+        : s.stepNext;
     return Semantics(
-      label: 'Passo ${index + 1} de $count, $estado',
+      label: '${s.stepOf(index + 1, count)}, $estado',
       selected: item.current,
       child: IntrinsicHeight(
         child: Row(

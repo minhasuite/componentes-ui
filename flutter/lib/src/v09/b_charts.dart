@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../motion_view.dart';
+import '../ss_strings.dart';
 
 /// Curva suave por Catmull-Rom em cúbicas (a mesma do SsLineChart).
 Path _curva(List<Offset> pts) {
@@ -75,7 +76,9 @@ class _SsAreaChartState extends State<SsAreaChart> {
     if (_sel >= widget.values.length) _sel = widget.values.length - 1;
   }
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
 
   void _go(int i) {
     final n = widget.values.length;
@@ -95,12 +98,14 @@ class _SsAreaChartState extends State<SsAreaChart> {
 
   @override
   Widget build(BuildContext context) {
+    _formats = SsFormats.of(context);
     final c = SsColors.of(context);
     final n = widget.values.length;
     final temSel = n > 0 && _sel >= 0;
+    final s = SsStrings.of(context);
     return Semantics(
-      label: widget.label == null ? 'Gráfico de área' : 'Gráfico de ${widget.label}',
-      value: temSel ? '${widget.labels[_sel]}: ${_fmt(widget.values[_sel])}' : 'sem dados',
+      label: widget.label == null ? s.areaChart : s.chartOfLabel(widget.label!),
+      value: temSel ? '${widget.labels[_sel]}: ${_fmt(widget.values[_sel])}' : s.noData,
       increasedValue: temSel && _sel < n - 1 ? '${widget.labels[_sel + 1]}: ${_fmt(widget.values[_sel + 1])}' : null,
       decreasedValue: temSel && _sel > 0 ? '${widget.labels[_sel - 1]}: ${_fmt(widget.values[_sel - 1])}' : null,
       onIncrease: temSel && _sel < n - 1 ? () => _go(_sel + 1) : null,
@@ -310,7 +315,7 @@ class SsExplodedDonut extends StatefulWidget {
     this.selected,
     this.onSelect,
     this.format,
-    this.totalLabel = 'Total',
+    this.totalLabel,
     this.size = 200,
     this.legend = true,
   });
@@ -319,7 +324,9 @@ class SsExplodedDonut extends StatefulWidget {
   final int? selected;
   final ValueChanged<int?>? onSelect;
   final String Function(double value)? format;
-  final String totalLabel;
+
+  /// Padrão: [SsStrings.total].
+  final String? totalLabel;
   final double size;
   final bool legend;
 
@@ -331,7 +338,9 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
   late int? _sel = widget.selected;
   int? _prev;
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
   double get _total => widget.slices.fold(0.0, (s, e) => s + math.max(0, e.value));
 
   void _pick(int? i) {
@@ -359,6 +368,7 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
 
   @override
   Widget build(BuildContext context) {
+    _formats = SsFormats.of(context);
     final c = SsColors.of(context);
     final cores = [
       for (var i = 0; i < widget.slices.length; i++) widget.slices[i].color ?? c.series[i % c.series.length],
@@ -366,13 +376,16 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
     final total = _total;
     final sel = _sel;
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
+    final str = SsStrings.of(context);
+    final totalLabel = widget.totalLabel ?? str.total;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Semantics(
-          label:
-              'Rosca: ${widget.totalLabel} ${_fmt(total)}. '
-              '${[for (final s in widget.slices) '${s.label} ${_fmt(s.value)}'].join(', ')}',
+          label: str.donutSummary(
+            '$totalLabel ${_fmt(total)}',
+            [for (final s in widget.slices) '${s.label} ${_fmt(s.value)}'].join(', '),
+          ),
           excludeSemantics: true,
           child: GestureDetector(
             onTapUp: (d) => _tap(d.localPosition),
@@ -403,7 +416,7 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              sel == null ? widget.totalLabel : widget.slices[sel].label,
+                              sel == null ? totalLabel : widget.slices[sel].label,
                               style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 4),
@@ -691,7 +704,9 @@ class SsFloatingBars extends StatefulWidget {
 class _SsFloatingBarsState extends State<SsFloatingBars> {
   late int _sel = widget.selected ?? widget.values.length - 1;
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v);
+  SsFormats _formats = SsFormats.brl;
+
+  String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
 
   /// Altura (0 a ~1,12) da barra [i] no instante [t] da cascata.
   double _sobe(double t, int i) {
@@ -701,6 +716,7 @@ class _SsFloatingBarsState extends State<SsFloatingBars> {
 
   @override
   Widget build(BuildContext context) {
+    _formats = SsFormats.of(context);
     final c = SsColors.of(context);
     // Fundo cheio na cor da marca (versão do claro, que passa AA com branco).
     final fundo = c.brand.accentLight;

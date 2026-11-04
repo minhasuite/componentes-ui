@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Seletor de 2 a 4 opções (período, abas de uma tela): trilha afundada e uma
 /// pílula que desliza com mola até a opção escolhida, esticando no caminho
@@ -239,7 +240,7 @@ class SsSearchField extends StatefulWidget {
   const SsSearchField({
     super.key,
     this.controller,
-    this.hint = 'Buscar',
+    this.hint,
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
@@ -251,7 +252,9 @@ class SsSearchField extends StatefulWidget {
   final Widget? suffix;
 
   final TextEditingController? controller;
-  final String hint;
+
+  /// Padrão: [SsStrings.search].
+  final String? hint;
   final ValueChanged<String>? onChanged;
 
   /// Enter do teclado (busca que vai ao servidor só ao confirmar).
@@ -321,14 +324,14 @@ class _SsSearchFieldState extends State<SsSearchField> {
               textInputAction: TextInputAction.search,
               style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w600),
               decoration: InputDecoration.collapsed(
-                hintText: widget.hint,
+                hintText: widget.hint ?? SsStrings.of(context).search,
                 hintStyle: TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w500),
               ),
             ),
           ),
           if (_ctrl.text.isNotEmpty)
             IconButton(
-              tooltip: 'Limpar',
+              tooltip: SsStrings.of(context).clear,
               icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
               onPressed: () {
                 _ctrl.clear();

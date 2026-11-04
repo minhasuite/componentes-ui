@@ -1,0 +1,45 @@
+<%= tag.div(**root_attrs(class: classes("ss-card", "ss-media"), data: root_data, role: "group", aria: { label: [title, subtitle].compact_blank.join(" — ").presence })) do %>
+  <div class="ss-media-head">
+    <span class="ss-media-art" aria-hidden="true"><% if art_url %><img src="<%= art_url %>" alt=""><% else %><%= icon(:note) %><% end %></span>
+    <div class="ss-media-meta">
+      <b class="ss-media-title"><%= title %></b>
+      <% if subtitle && active? %><span class="ss-media-sub"><%= subtitle %></span><% end %>
+      <% if source %><span class="ss-media-src"><%= icon(:speaker) %><%= source %></span><% end %>
+    </div>
+  </div>
+  <% if duration && active? %>
+    <div class="ss-media-progress">
+      <% if url(:seek) %>
+        <%= form_with url: url(:seek), method:, class: "ss-media-form", data: { action: "change->ss-media#submit" } do %>
+          <input type="range" name="position" min="0" max="<%= duration %>" value="<%= position %>" class="ss-media-range" style="--pct: <%= pct %>%"
+                 aria-label="<%= label(:progress) %>" aria-valuetext="<%= fmt(position) %> / <%= fmt(duration) %>" data-ss-media-target="range" data-action="input->ss-media#paint">
+        <% end %>
+      <% else %>
+        <div class="ss-media-bar" role="progressbar" aria-label="<%= label(:progress) %>" aria-valuemin="0" aria-valuemax="<%= duration %>" aria-valuenow="<%= position %>" aria-valuetext="<%= fmt(position) %> / <%= fmt(duration) %>"><i style="width: <%= pct %>%" data-ss-media-target="bar"></i></div>
+      <% end %>
+      <div class="ss-media-times num"><span data-ss-media-target="now"><%= fmt(position) %></span><span><%= fmt(duration) %></span></div>
+    </div>
+  <% end %>
+  <div class="ss-media-ctrl">
+    <%= command(:previous, :prev, css: "ss-media-btn") %>
+    <% if state == :buffering %>
+      <button type="button" class="ss-media-play is-buffering" disabled aria-label="<%= play_label %>"><span class="ss-media-spin" aria-hidden="true"></span></button>
+    <% else %>
+      <%= command(play_key, playing? ? :pause : :play, css: "ss-media-play") %>
+    <% end %>
+    <%= command(:next, :next, css: "ss-media-btn") %>
+  </div>
+  <% unless volume.nil? %>
+    <div class="ss-media-vol">
+      <%= icon(volume.zero? ? :volume_off : :volume) %>
+      <% if url(:volume) && !off? %>
+        <%= form_with url: url(:volume), method:, class: "ss-media-form", data: { action: "change->ss-media#submit" } do %>
+          <input type="range" name="volume" min="0" max="100" value="<%= (volume * 100).round %>" class="ss-media-range" style="--pct: <%= (volume * 100).round %>%"
+                 aria-label="<%= label(:volume) %>" aria-valuetext="<%= (volume * 100).round %>%" data-action="input->ss-media#paint">
+        <% end %>
+      <% else %>
+        <div class="ss-media-bar" role="meter" aria-label="<%= label(:volume) %>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= (volume * 100).round %>"><i style="width: <%= (volume * 100).round %>%"></i></div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

@@ -10,5 +10,9 @@ module Ss
       super(**rest)
       @value, @name, @url, @method_name, @label, @type = value, name, url, method, label, type
     end
+
+    # "Editar %{label}: %{value}" (o controller refaz com o valor novo).
+    def edit_template = ss_t("inline_edit.edit", default: "Editar %{label}: %{value}")
+    def edit_label = I18n.interpolate(edit_template, label:, value:)
   end
 end

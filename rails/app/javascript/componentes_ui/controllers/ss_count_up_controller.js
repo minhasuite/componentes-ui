@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { inView } from "componentes_ui/controllers/ss_in_view_controller"
+import { ssNumber, ssMoney, ssParseNumber, ssSplitCents } from "componentes_ui/controllers/ss_intl"
 
 // Número que conta ao entrar na tela (Ss::CountUpComponent). Menos movimento: fica no valor final.
 // Trocar o valor (data-ss-count-up-value-value, por JS ou morph do Turbo) anima a troca:
@@ -22,10 +23,9 @@ function spring() {
   return springEasing
 }
 
-// "R$ 1.234,50" → 1234.5 (NaN se não tem número).
+// "R$ 1.234,50" → 1234.5 (NaN se não tem número), no formato do <html lang>.
 export function parseNumber(text) {
-  const m = String(text).match(/-?[\d.]*\d(,\d+)?/)
-  return m ? parseFloat(m[0].replace(/\./g, "").replace(",", ".")) : NaN
+  return ssParseNumber(text)
 }
 
 // Põe em `parent` o texto `to`, com as posições que mudaram (alinhadas pela direita) rolando.
@@ -69,12 +69,12 @@ export function ssRoll(el, from, to, { dir, money = false, done } = {}) {
   const anims = []
   el.textContent = ""
   if (money) {
-    // Mantém os centavos menores: R$ 1.234<small>,56</small>.
-    const split = (t) => { const i = t.lastIndexOf(","); return i < 0 ? [t, ""] : [t.slice(0, i), t.slice(i)] }
-    const [fm, fc] = split(from)
-    const [tm, tc] = split(to)
+    // Mantém os centavos menores: R$ 1.234<small>,56</small> (separador do idioma).
+    const [fm, fc] = ssSplitCents(from)
+    const [tm, tc, tt] = ssSplitCents(to)
     appendRolled(el, fm, tm, dir, anims)
     if (tc || fc) { const small = document.createElement("small"); appendRolled(small, fc, tc, dir, anims); el.append(small) }
+    if (tt) el.append(tt)
   } else {
     appendRolled(el, from, to, dir, anims)
   }
@@ -83,7 +83,8 @@ export function ssRoll(el, from, to, { dir, money = false, done } = {}) {
 
 export default class extends Controller {
   static targets = ["out"]
-  static values = { value: Number, decimals: Number, format: String, duration: { type: Number, default: 900 }, roll: Boolean, watch: String }
+  static values = { value: Number, decimals: Number, format: String, duration: { type: Number, default: 900 }, roll: Boolean, watch: String,
+                    currency: { type: String, default: "BRL" } }
 
   connect() {
     if (this.watchValue) return this.watch()
@@ -123,8 +124,9 @@ export default class extends Controller {
   }
 
   format(v) {
-    const n = v.toLocaleString("pt-BR", { minimumFractionDigits: this.decimalsValue, maximumFractionDigits: this.decimalsValue })
-    if (this.formatValue === "money") return `R$ ${n}`
+    // Intl com o idioma da página (pt-BR de reserva) e a moeda do componente.
+    if (this.formatValue === "money") return ssMoney(v, this.currencyValue, undefined, this.decimalsValue)
+    const n = ssNumber(v, this.decimalsValue)
     return this.formatValue === "percent" ? `${n}%` : n
   }
 
@@ -134,10 +136,11 @@ export default class extends Controller {
     const el = this.outTarget.firstElementChild || this.outTarget
     const text = this.format(v)
     if (this.formatValue === "money") {
-      const [main, cents] = text.split(",")
+      const [main, cents, tail] = ssSplitCents(text)
       el.innerHTML = ""
       el.append(main)
-      if (cents) { const small = document.createElement("small"); small.textContent = `,${cents}`; el.append(small) }
+      if (cents) { const small = document.createElement("small"); small.textContent = cents; el.append(small) }
+      if (tail) el.append(tail)
     } else {
       el.textContent = text
     }

@@ -29,6 +29,20 @@ class PaletasTest < ActiveSupport::TestCase
     assert_equal [], slugs - ComponentesUi::PALETAS.keys
   end
 
+  test "toda paleta declara o --accent-solid (claro e escuro), e a padrão no engine.css" do
+    src = CSS.read
+    ComponentesUi::PALETAS.each_key do |slug|
+      next if slug == ComponentesUi::PALETA_PADRAO
+      claro = src[/^:root\[data-palette="#{slug}"\] \{\n[^}]*\}/] # o bloco do accent (não o das --p1…--p4)
+      escuro = src[/:root\[data-theme="dark"\]\[data-palette="#{slug}"\] \{[^}]*\}/]
+      assert_match(/--accent-solid: #\h{6};/, claro.to_s, "falta --accent-solid claro em #{slug}")
+      assert_match(/--accent-solid: #\h{6};/, escuro.to_s, "falta --accent-solid escuro em #{slug}")
+    end
+    engine = GEM.join("app/assets/tailwind/componentes_ui/engine.css").read
+    assert_includes engine, "--accent-solid: #5a45e8;"
+    assert_includes engine, "--accent-solid: #6d5cf6;"
+  end
+
   test "família de toda paleta está na lista, e o seletor usa as mesmas paletas" do
     assert_equal ComponentesUi::PALETAS.keys, ComponentesUi::PALETA_FAMILIA.keys
     assert ComponentesUi::PALETA_FAMILIA.values.all? { ComponentesUi::PALETA_FAMILIAS.include?(_1) }

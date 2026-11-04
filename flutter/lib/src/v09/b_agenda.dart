@@ -8,25 +8,9 @@ import '../format.dart';
 import '../motion.dart';
 import '../ss_calendar.dart';
 import '../ss_sheet.dart';
+import '../ss_strings.dart';
 
 DateTime _dia(DateTime d) => DateTime(d.year, d.month, d.day);
-
-const _semanaCurta = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-const _semanaLonga = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
-const _mesesMin = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
-];
 
 /// Faixa horizontal de dias do mês do [selected]: o escolhido vira uma pílula
 /// alta na cor da marca, que desliza com mola de um dia para o outro
@@ -92,7 +76,7 @@ class _SsDateStripState extends State<SsDateStrip> {
     var mes = DateTime(widget.selected.year, widget.selected.month);
     final escolhido = await showSsSheet<DateTime>(
       context,
-      title: 'Escolher dia',
+      title: SsStrings.of(context).pickDay,
       child: StatefulBuilder(
         builder: (context, set) => Column(
           mainAxisSize: MainAxisSize.min,
@@ -122,6 +106,7 @@ class _SsDateStripState extends State<SsDateStrip> {
     final marcas = {for (final e in widget.markers.entries) _dia(e.key): e.value};
     final total = DateTime(sel.year, sel.month + 1, 0).day;
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.slow;
+    final s = SsStrings.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -130,7 +115,7 @@ class _SsDateStripState extends State<SsDateStrip> {
           Center(
             child: Semantics(
               button: true,
-              label: 'Mês: ${ssMonthName(sel)}. Abrir calendário',
+              label: s.monthOpenCalendar(ssMonthName(sel, s)),
               excludeSemantics: true,
               child: SsPressable(
                 onTap: _abrirMes,
@@ -140,7 +125,7 @@ class _SsDateStripState extends State<SsDateStrip> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        ssMonthName(sel),
+                        ssMonthName(sel, s),
                         style: TextStyle(color: c.ink, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -.3),
                       ),
                       const SizedBox(width: 6),
@@ -214,13 +199,14 @@ class _SsDateStripState extends State<SsDateStrip> {
     final eHoje = d == hoje;
     final pontos = (marcas[d] ?? const <Color>[]).take(3).toList();
     final fg = eSel ? AppColors.onDark : c.ink;
+    final s = SsStrings.of(context);
     return Center(
       child: Semantics(
         button: true,
         selected: eSel,
         label:
-            '${_semanaLonga[d.weekday - 1]}, ${d.day} de ${_mesesMin[d.month - 1]}'
-            '${eHoje ? ', hoje' : ''}${pontos.isEmpty ? '' : ', com eventos'}',
+            '${s.longDate(d)}'
+            '${eHoje ? s.todaySuffix : ''}${pontos.isEmpty ? '' : s.withEvents}',
         excludeSemantics: true,
         child: SsPressable(
           onTap: () {
@@ -247,7 +233,7 @@ class _SsDateStripState extends State<SsDateStrip> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _semanaCurta[d.weekday - 1],
+                  s.weekdaysShort[d.weekday - 1],
                   textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3),
                   style: TextStyle(
                     color: eSel ? AppColors.onDark.withValues(alpha: .85) : c.muted,
@@ -417,7 +403,7 @@ class SsDayAgenda extends StatelessWidget {
                   top: y(now!.hour * 60 + now!.minute) - 6,
                   height: 12,
                   child: Semantics(
-                    label: 'Agora, ${two(now!.hour)}:${two(now!.minute)}',
+                    label: SsStrings.of(context).nowAt('${two(now!.hour)}:${two(now!.minute)}'),
                     child: Row(
                       children: [
                         Container(

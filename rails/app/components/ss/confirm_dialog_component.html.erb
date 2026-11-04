@@ -1,0 +1,13 @@
+<%= tag.dialog(**dialog_attrs) do %>
+  <form method="dialog">
+    <div class="ss-dialog-body">
+      <div class="ss-dialog-icon"><%= icons %></div>
+      <h2 id="<%= id %>-t" data-ss-confirm-dialog-target="title"><%= title %></h2>
+      <p id="<%= id %>-m" data-ss-confirm-dialog-target="text"<% if text.blank? %> hidden<% end %>><%= text %></p>
+    </div>
+    <div class="ss-dialog-actions">
+      <button type="submit" value="ok" class="ss-btn ss-btn-primary" data-ss-confirm-dialog-target="ok"><%= ok_label %></button>
+      <button type="submit" value="cancel" class="ss-btn ss-btn-ghost" autofocus data-ss-confirm-dialog-target="cancel"><%= cancel_label %></button>
+    </div>
+  </form>
+<% end %>

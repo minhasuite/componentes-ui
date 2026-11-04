@@ -108,7 +108,14 @@ class SsBrand extends ThemeExtension<SsBrand> {
     required this.brandTo,
     required this.brandDeep,
     this.stops,
-  });
+    Color? accentSolidLight,
+    Color? accentSolidDark,
+    // Parâmetro nomeado não pode ser privado: por isso não é this._accentSolid*.
+  })
+    // ignore: prefer_initializing_formals
+    : _accentSolidLight = accentSolidLight,
+       // ignore: prefer_initializing_formals
+       _accentSolidDark = accentSolidDark;
 
   final Color accentLight;
   final Color accentHoverLight;
@@ -118,6 +125,18 @@ class SsBrand extends ThemeExtension<SsBrand> {
   final Color brandFrom;
   final Color brandTo;
   final Color brandDeep;
+
+  final Color? _accentSolidLight;
+  final Color? _accentSolidDark;
+
+  /// Accent sólido do claro: fundo com texto branco ≥ 4,5:1 (checkbox, rádio,
+  /// switch, botão sólido). Sem valor, é o [accentLight] (que já passa 4,5:1).
+  Color get accentSolidLight => _accentSolidLight ?? accentLight;
+
+  /// Accent sólido do escuro: o [accentDark] é claro demais para texto branco,
+  /// então as paletas prontas trazem um tom fechado (paletas/gerar.py). Sem valor,
+  /// é o [accentLight].
+  Color get accentSolidDark => _accentSolidDark ?? accentLight;
 
   /// As 4 cores do gradiente, da mais funda à mais clara. Sem elas, derivam de
   /// [brandDeep], [brandTo], [brandFrom] e [accentDark] (ver [gradientColors]).
@@ -343,6 +362,10 @@ class SsColors {
 
   Color get accent => _dark ? brand.accentDark : brand.accentLight;
   Color get accentSoft => _dark ? brand.accentSoftDark : brand.accentSoftLight;
+
+  /// Accent sólido (texto branco ≥ 4,5:1): preenchimento de checkbox, rádio,
+  /// switch e botão sólido. É o `--accent-solid` do Rails.
+  Color get accentSolid => _dark ? brand.accentSolidDark : brand.accentSolidLight;
   Color get accentBright => brand.accentDark;
   Color get brandFrom => brand.brandFrom;
   Color get brandTo => brand.brandTo;

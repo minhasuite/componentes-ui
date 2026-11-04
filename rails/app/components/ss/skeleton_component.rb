@@ -4,14 +4,14 @@ module Ss
   #   render Ss::SkeletonComponent.new(shape: :table, rows: 5)
   #   render Ss::SkeletonComponent.new(shape: :list, frame: { id: "ultimos", src: ultimos_path })
   class SkeletonComponent < BaseComponent
-    def initialize(shape: :line, lines: 3, rows: 4, cols: 4, frame: nil, label: "Carregando…", **opts)
+    def initialize(shape: :line, lines: 3, rows: 4, cols: 4, frame: nil, label: nil, **opts)
       super(**opts)
       @shape = shape.to_sym
       @lines = lines
       @rows = rows
       @cols = cols
       @frame = frame
-      @label = label
+      @label = label || ss_t("common.loading", default: "Carregando…")
     end
 
     def call

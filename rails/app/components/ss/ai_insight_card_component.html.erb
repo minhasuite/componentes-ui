@@ -1,8 +1,8 @@
 <%= tag.article(**root_attrs(class: classes("ss-ai-card", ("is-thinking" if thinking?)), "aria-busy": (thinking? ? "true" : nil))) do %>
   <div class="ss-ai-inner">
     <header class="ss-ai-head">
-      <span class="ss-ai-badge"><%= spark %>IA</span>
-      <% if confidence && !thinking? %><span class="ss-ai-conf">Confiança <b><%= confidence %></b></span><% end %>
+      <span class="ss-ai-badge"><%= spark %><%= ss_t("ai_insight.badge", default: "IA") %></span>
+      <% if confidence && !thinking? %><span class="ss-ai-conf"><%= ss_t("ai_insight.confidence", default: "Confiança") %> <b><%= confidence %></b></span><% end %>
       <% if when_text %><small class="ss-ai-when"><%= when_text %></small><% end %>
     </header>
     <% if thinking? %>
@@ -16,7 +16,7 @@
       <% if body %><div class="ss-ai-text"><%= body %></div><% end %>
       <% if sources.any? %>
         <details class="ss-ai-sources">
-          <summary>De onde vem isso <small class="num">(<%= sources.size %>)</small></summary>
+          <summary><%= ss_t("ai_insight.sources", default: "De onde vem isso") %> <small class="num">(<%= sources.size %>)</small></summary>
           <ul>
             <% sources.each do |s| %>
               <li><%= s[:url] ? link_to(s[:label], s[:url]) : s[:label] %><% if s[:detail] %><small><%= s[:detail] %></small><% end %></li>
@@ -26,8 +26,8 @@
       <% end %>
       <% if apply || dismiss %>
         <div class="ss-ai-actions">
-          <% if apply %><%= action(apply, "ss-btn ss-btn-primary ss-btn-sm", "Aplicar") %><% end %>
-          <% if dismiss %><%= action(dismiss, "ss-btn ss-btn-ghost ss-btn-sm", "Ignorar") %><% end %>
+          <% if apply %><%= action(apply, "ss-btn ss-btn-primary ss-btn-sm", ss_t("ai_insight.apply", default: "Aplicar")) %><% end %>
+          <% if dismiss %><%= action(dismiss, "ss-btn ss-btn-ghost ss-btn-sm", ss_t("ai_insight.dismiss", default: "Ignorar")) %><% end %>
         </div>
       <% end %>
     <% end %>

@@ -1,0 +1,119 @@
+<%# titulo: Ícones, idiomas e blocos | grupo: Casa e automação | ordem: 40 %>
+<%# Peças de estrutura da casa (v0.10): seletor de ícone, seletor de idioma, lista de blocos
+    (o núcleo genérico do editor de automação) e grupo recolhível. Os formulários desta página
+    não vão ao servidor: o script do fim mostra o que seria enviado. %>
+<%
+  ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="#{d}"/></svg>) }
+  icones = {
+    "lightbulb" => "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z",
+    "power-socket" => "M7 3v5M17 3v5M5 8h14v4a7 7 0 0 1-14 0zM12 19v2",
+    "fan" => "M12 12c0-4 1-8 4-8s2 5-4 8zm0 0c4 0 8 1 8 4s-5 2-8-4zm0 0c0 4-1 8-4 8s-2-5 4-8zm0 0c-4 0-8-1-8-4s5-2 8 4z",
+    "thermometer" => "M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z",
+    "door" => "M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M4 21h16M14 12h.01",
+    "window" => "M4 4h16v16H4zM12 4v16M4 12h16",
+    "lock" => "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",
+    "camera" => "M3 7h12v10H3zM15 10l6-3v10l-6-3",
+    "television" => "M3 6h18v12H3zM8 21h8M9 3l3 3 3-3",
+    "speaker" => "M6 3h12v18H6zM12 14a3 3 0 1 0 0-.01M12 7h.01",
+    "water" => "M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z",
+    "garage" => "M3 21V9l9-6 9 6v12M7 21v-8h10v8M7 17h10",
+    "sofa" => "M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2zM5 18v2m14-2v2",
+    "bed" => "M3 18V6M3 13h18v5M21 18v-3M7 13V10h6a3 3 0 0 1 3 3",
+    "sun" => "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5",
+    "moon" => "M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z",
+    "bell" => "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4",
+    "car" => "M5 17h14M6 17l1.5-6h9L18 17M8 17v2m8-2v2",
+    "plant" => "M12 21v-9M12 12C12 8 9 5 4 5c0 4 3 7 8 7zm0 0c0-3 2-6 7-6 0 3-2 6-7 6z",
+    "robot-vacuum" => "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8 8h8"
+  }.map { |n, d| [n, ico.(d)] }
+  passo = ->(d) { ico.(d).html_safe }
+%>
+<div data-vt-estrutura>
+
+<%= demo "Ss::IconPickerComponent", "Grade com busca (sem acento e sem caixa) e anel no escolhido. Os ícones vêm do app como [nome, svg]; o nome vai num input hidden. É um radiogroup: setas andam e escolhem.",
+      uso: 'render Ss::IconPickerComponent.new(name: "ponto[icone]", value: "lightbulb", allow_none: true, icons: [["lightbulb", svg], …])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1.25rem;align-items:start">
+    <form data-vt-form>
+      <%= render Ss::IconPickerComponent.new(name: "ponto[icone]", value: "lightbulb", icons: icones) %>
+      <p style="margin-top:.5rem"><output class="ss-badge" data-vt-out>ponto[icone]=lightbulb</output></p>
+    </form>
+    <form data-vt-form>
+      <%= render Ss::IconPickerComponent.new(name: "comodo[icone]", allow_none: true, icons: icones.first(8)) %>
+      <p style="margin-top:.5rem"><output class="ss-badge" data-vt-out>comodo[icone]=</output></p>
+    </form>
+  </div>
+<% end %>
+
+<%= demo "Ss::LocalePickerComponent", "Idiomas no próprio idioma (Português, English, Español), com a bandeira ou o código e o atual marcado. Rádios dentro do form do app (name:) ou button_to (url:); segmented: true para uma linha de configuração.",
+      uso: 'render Ss::LocalePickerComponent.new(value: I18n.locale, name: "user[locale]")  ·  Ss::LocalePickerComponent.new(value:, url: idioma_path, segmented: true)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1.25rem;align-items:start">
+    <form data-vt-form>
+      <%= render Ss::LocalePickerComponent.new(value: "pt-BR", name: "user[locale]") %>
+      <p style="margin-top:.5rem"><output class="ss-badge" data-vt-out>user[locale]=pt-BR</output></p>
+    </form>
+    <div style="display:grid;gap:1rem;justify-items:start">
+      <form data-vt-form><%= render Ss::LocalePickerComponent.new(value: "en", name: "loc2", segmented: true, flags: false) %></form>
+      <%= render Ss::LocalePickerComponent.new(value: I18n.locale.to_s, url: vitrine_path("casa_estrutura"), method: :get, segmented: true) %>
+    </div>
+  </div>
+<% end %>
+
+<%= demo "Ss::BlockListComponent", "Blocos recolhíveis em <details> (abrem com a mola), cada um com ícone, resumo, chave de ligar, ⋮ (mover, duplicar, excluir) e o corpo do app. Mover troca no DOM e renumera as posições; aninha. Erro: borda vermelha; foco: anel.",
+      uso: 'render Ss::BlockListComponent.new(name: "automacao[passos]") { |l| l.with_block(id:, title:, summary:, icon:, tone: :warn, open: true, error:, delete_url:) { campos } }' do %>
+  <form data-vt-form data-vt-blocks style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.25rem;align-items:start">
+    <%= render Ss::BlockListComponent.new(name: "auto[passos]") do |l| %>
+      <% l.with_block(id: "g1", title: "Quando", summary: "A porta da frente abrir", tone: :warn, open: true, icon: passo.("M13 2 4 14h7l-1 8 9-12h-7z")) do %>
+        <label class="ss-label" for="vt-sensor">Sensor</label><select id="vt-sensor" class="ss-input"><option>Porta da frente</option><option>Portão</option></select>
+      <% end %>
+      <% l.with_block(id: "c1", title: "Se", summary: "Depois das 22:00 e alguém em casa", tone: :info, focused: true, icon: passo.("M4 6h16M4 12h10M4 18h6")) do %>
+        <label class="ss-label" for="vt-hora">Depois de</label><input id="vt-hora" type="time" class="ss-input" value="22:00">
+      <% end %>
+      <% l.with_block(id: "a1", title: "Então", summary: "2 ações", tone: :success, open: true, icon: passo.("M7 4.5v15l12.5-7.5z")) do %>
+        <%= render Ss::BlockListComponent.new(name: "auto[acoes]") do |i| %>
+          <% i.with_block(id: "a1.1", title: "Acender luz", summary: "Hall de entrada, 60%", icon: passo.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z")) do %>
+            <label class="ss-label" for="vt-brilho">Brilho</label><input id="vt-brilho" type="range" class="ss-range" value="60">
+          <% end %>
+          <% i.with_block(id: "a1.2", title: "Avisar no celular", summary: "Sem destino escolhido", error: "Escolha para quem avisar.", icon: passo.("M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4")) %>
+        <% end %>
+      <% end %>
+      <% l.with_block(id: "m1", title: "Tocar música", summary: "Desligado", enabled: false, icon: passo.("M9 18V5l11-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z")) do %>
+        <p class="text-muted" style="margin:0">Playlist “Boa noite” na sala.</p>
+      <% end %>
+    <% end %>
+    <div><p class="ss-kicker">o que o form manda</p><pre class="ss-card ss-card-pad" style="margin:.4rem 0 0;font-size:.75rem;white-space:pre-wrap" data-vt-out></pre></div>
+  </form>
+<% end %>
+
+<%= demo "Ss::CollapsibleComponent", "Cabeçalho com seta, contagem e selo colorido; o corpo abre com a mola (::details-content). Sem JS.",
+      uso: 'render Ss::CollapsibleComponent.new(title: "Sala de estar", count: 3, label: "2 ligados", tone: :success, open: true) { … }' do %>
+  <div class="ss-card ss-card-pad" style="max-width:32rem">
+    <%= render Ss::CollapsibleComponent.new(title: "Sala de estar", count: 3, label: "2 ligados", tone: :success, open: true, icon: ico.("M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2z")) do %>
+      <div style="display:grid;gap:.4rem"><span>Luz do teto · Ligada</span><span>Abajur · Ligado</span><span>TV · Desligada</span></div>
+    <% end %>
+    <%= render Ss::CollapsibleComponent.new(title: "Garagem", count: 2, label: "Offline", tone: :danger, icon: ico.("M3 21V9l9-6 9 6v12M7 21v-8h10v8")) do %>
+      <span>Portão · sem sinal</span>
+    <% end %>
+    <%= render Ss::CollapsibleComponent.new(title: "Cozinha", count: 5) do %><span>Geladeira · 4 °C</span><% end %>
+  </div>
+<% end %>
+</div>
+
+<script>
+  (() => {
+    if (window.__estruturaDemo) return
+    window.__estruturaDemo = true
+    const show = (form) => {
+      const out = form.querySelector("[data-vt-out]")
+      if (!out) return
+      const pares = [...new FormData(form)].filter(([k]) => !k.startsWith("authenticity"))
+      out.textContent = pares.map(([k, v]) => `${k}=${v}`).join(form.hasAttribute("data-vt-blocks") ? "\n" : "  ")
+    }
+    document.addEventListener("change", (e) => { const f = e.target.closest("[data-vt-form]"); if (f) show(f) })
+    document.addEventListener("ss-block-list:move", (e) => { const f = e.target.closest("[data-vt-form]"); if (f) show(f) })
+    document.addEventListener("ss-block-list:delete", (e) => setTimeout(() => { const f = document.querySelector("[data-vt-blocks]"); if (f) show(f) }))
+    document.addEventListener("submit", (e) => { if (e.target.closest("[data-vt-form]")) e.preventDefault() })
+    const init = () => document.querySelectorAll("[data-vt-blocks]").forEach(show)
+    document.addEventListener("turbo:load", init)
+    init()
+  })()
+</script>

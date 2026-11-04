@@ -4,6 +4,7 @@ import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_badge.dart';
 import 'ss_list.dart';
+import 'ss_strings.dart';
 
 /// Oferta de uma loja/site para comparar preço: fonte (chip), título, preço
 /// pronto em DM Mono, preço antigo riscado e uma nota ("à vista", "10x sem
@@ -128,14 +129,14 @@ class SsOfferCard extends StatelessWidget {
                   color: AppColors.success,
                   borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_rounded, size: 13, color: AppColors.inkLight),
-                    SizedBox(width: 3),
+                    const Icon(Icons.check_rounded, size: 13, color: AppColors.inkLight),
+                    const SizedBox(width: 3),
                     Text(
-                      'MAIS BARATA',
-                      style: TextStyle(
+                      SsStrings.of(context).cheapestBadge,
+                      style: const TextStyle(
                         color: AppColors.inkLight,
                         fontSize: AppType.micro,
                         fontWeight: FontWeight.w800,
@@ -153,9 +154,9 @@ class SsOfferCard extends StatelessWidget {
       source,
       title,
       price,
-      if ((oldPrice ?? '').isNotEmpty) 'antes $oldPrice',
+      if ((oldPrice ?? '').isNotEmpty) SsStrings.of(context).wasPrice(oldPrice!),
       if ((note ?? '').isNotEmpty) note!,
-      if (best) 'mais barata',
+      if (best) SsStrings.of(context).cheapest,
     ].join(', ');
     return Semantics(
       button: onTap != null,

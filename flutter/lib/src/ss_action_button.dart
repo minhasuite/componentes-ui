@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'motion.dart';
 import 'ss_button.dart';
+import 'ss_strings.dart';
 
 /// [SsButton] que roda uma ação assíncrona: carregando → ✓ [doneLabel] em
 /// verde, que chega com mola (volta ao normal após 1,4 s). O toque afunda e
@@ -19,7 +20,7 @@ class SsActionButton extends StatefulWidget {
     required this.onPressed,
     this.icon,
     this.variant = SsButtonVariant.primary,
-    this.doneLabel = 'Pronto',
+    this.doneLabel,
     this.small = false,
     this.expand = true,
   });
@@ -28,7 +29,9 @@ class SsActionButton extends StatefulWidget {
   final Future<void> Function()? onPressed;
   final IconData? icon;
   final SsButtonVariant variant;
-  final String doneLabel;
+
+  /// Padrão: [SsStrings.done].
+  final String? doneLabel;
   final bool small;
   final bool expand;
 
@@ -75,7 +78,7 @@ class _SsActionButtonState extends State<SsActionButton> with SingleTickerProvid
     final pronto = _fase == _Fase.pronto;
     final button = SsButton(
       key: ValueKey(pronto),
-      label: pronto ? widget.doneLabel : widget.label,
+      label: pronto ? widget.doneLabel ?? SsStrings.of(context).done : widget.label,
       icon: pronto ? Icons.check_rounded : widget.icon,
       variant: pronto ? SsButtonVariant.success : widget.variant,
       loading: _fase == _Fase.carregando,

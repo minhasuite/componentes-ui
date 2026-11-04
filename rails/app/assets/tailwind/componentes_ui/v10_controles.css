@@ -1,0 +1,260 @@
+/* v0.10 (controles): peças para a migração do minha-automacao.
+   Tile de aparelho (.ss-device), chave sozinha (.ss-switch), slider em gradiente e "fill"
+   (.ss-range, extensão), termostato (.ss-thermo), teclado de código (.ss-keypad),
+   campo −/+ (.ss-stepper-input) e dias da semana (.ss-weekday).
+   Cor da marca só por var(--accent)/var(--grad); semânticas da suíte (success, warn, danger,
+   --ss-info) e o âmbar de aquecimento (#e0952a, o AppColors.aquecFg do Flutter). */
+
+@layer components {
+  /* ── Chave sozinha (Ss::SwitchComponent) ──
+     Modo A (checkbox no form) usa o .ss-switch-row do engine (mesmo movimento, sem texto ao lado
+     se pedir). Modo B (button_to com aria-pressed, comando de aparelho) redesenha a mesma chave
+     no <button class="ss-switch">: trilho líquido (--ss-pour), bolinha-gota e ✓. */
+  .ss-switch-row.ss-switch-solo { display: inline-flex; min-height: 2.75rem; padding: 0; justify-content: flex-start; }
+  .ss-switch-row.ss-switch-solo.is-label-end { flex-direction: row-reverse; }
+  .ss-switch-cmd { display: inline-flex; align-items: center; gap: .75rem; }
+  .ss-switch-cmd > span { font-weight: 600; font-size: .92rem; }
+  .ss-switch-form { display: inline-flex; margin: 0; }
+  .ss-switch { appearance: none; position: relative; isolation: isolate; flex: none; width: 46px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px;
+               cursor: pointer; font: inherit; color: inherit;
+               --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
+               --sw-on: var(--tone, var(--accent));
+               background: radial-gradient(circle at 14px 50%, var(--sw-on) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
+               transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
+  /* Alvo de toque maior que o desenho (44 px de altura). */
+  .ss-switch::selection { background: none; }
+  .ss-switch > .ss-switch-hit { position: absolute; inset: -8px -4px; }
+  .ss-switch[aria-pressed="true"] { --ss-pour: 40px; --sw-halo: color-mix(in srgb, var(--sw-on) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
+  .ss-switch::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: 21px; border-radius: 999px; background: #fff;
+                       box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
+                       transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
+  .ss-switch[aria-pressed="true"]::before { left: 21px; right: 3px; transform-origin: 100% 50%;
+                                            transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; }
+  .ss-switch::after { content: ""; position: absolute; z-index: 2; top: 50%; left: 32px; width: 12px; height: 12px; margin: -6px 0 0 -6px; pointer-events: none;
+                      background: var(--sw-on); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
+                      transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
+  .ss-switch[aria-pressed="true"]::after { opacity: 1; scale: 1; rotate: 0deg;
+                                           transition: opacity .12s ease-out .2s, scale .42s var(--ss-bounce) .2s, rotate .42s var(--ss-bounce) .2s; }
+  .ss-switch:active:not(:disabled)::before { scale: .92; }
+  .ss-switch[data-ss-anim="on"]::before { animation: ss-sw-on .54s linear, ss-sw-halo .6s ease-out; }
+  .ss-switch[data-ss-anim="off"]::before { animation: ss-sw-off .54s linear, ss-sw-halo .6s ease-out; }
+  .ss-switch[data-ss-anim="on"]::after { animation: ss-sw-tick .44s linear .22s both; }
+  .ss-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-switch:disabled { opacity: .5; cursor: not-allowed; }
+  /* Comando indo: a bolinha pulsa devagar. */
+  .ss-switch[aria-busy="true"] { cursor: progress; }
+  .ss-switch[aria-busy="true"]::before { animation: ss-sw-busy 1s ease-in-out infinite; }
+
+  /* ── Tile de aparelho (Ss::DeviceTileComponent) ──
+     <div class="ss-device [is-on] [is-wide]" data-status="ready|unavailable|pending|error|locked" style="--tone:…"> */
+  .ss-device { --tone: var(--accent); position: relative; display: grid; gap: .75rem; padding: .9rem; border-radius: var(--r-card); background: var(--surface);
+               border: 1px solid var(--line); box-shadow: var(--shadow-card); min-width: 0;
+               transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease, opacity .3s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-device-main { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ico . end" "text text text"; align-items: start; row-gap: .7rem; min-width: 0; }
+  .ss-device.is-wide .ss-device-main { grid-template-areas: "ico text end"; align-items: center; column-gap: .8rem; }
+  .ss-device-ico { grid-area: ico; position: relative; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 14px;
+                   background: var(--field); color: var(--ink-2); transition: background .3s ease, color .3s ease, box-shadow .3s ease; }
+  .ss-device-ico svg { width: 1.35rem; height: 1.35rem; }
+  .ss-device-text { grid-area: text; display: block; min-width: 0; color: inherit; text-decoration: none; }
+  .ss-device-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+                    font-weight: 700; font-size: .9rem; line-height: 1.25; color: var(--ink); }
+  .ss-device-state { display: block; margin-top: .15rem; font-size: .8rem; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ss-device-end { grid-area: end; position: relative; z-index: 2; display: flex; align-items: center; min-height: 2.75rem; }
+  .ss-device-lock { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; color: var(--muted); }
+  .ss-device-lock svg { width: 1.2rem; height: 1.2rem; }
+  .ss-device-foot { position: relative; z-index: 2; min-width: 0; }
+  /* O link do nome cobre o tile todo (detalhes); a chave e o rodapé ficam por cima. */
+  a.ss-device-text::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+  .ss-device:has(a.ss-device-text) { cursor: pointer; }
+  .ss-device:has(a.ss-device-text:hover) { border-color: color-mix(in srgb, var(--tone) 35%, var(--line)); }
+  .ss-device:has(a.ss-device-text:active) { scale: .985; transition: scale 80ms ease-out; }
+  .ss-device:has(a.ss-device-text:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a.ss-device-text:focus-visible { outline: 0; }
+  /* Ligado: tinge na cor do aparelho, ícone cheio e com brilho. */
+  .ss-device.is-on { border-color: color-mix(in srgb, var(--tone) 38%, var(--line));
+                     background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 11%, var(--surface)), var(--surface) 78%);
+                     box-shadow: 0 14px 28px -16px color-mix(in srgb, var(--tone) 55%, transparent); }
+  .ss-device.is-on .ss-device-ico { color: #fff; background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 82%, #fff), var(--tone));
+                                    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--tone) 75%, transparent); }
+  .ss-device.is-on .ss-device-state { color: var(--ink-2); }
+  /* Indisponível: apagado e tracejado. */
+  .ss-device[data-status="unavailable"] { background: var(--field); border: 1.5px dashed color-mix(in srgb, var(--muted) 45%, transparent); box-shadow: none; opacity: .78; }
+  .ss-device[data-status="unavailable"] .ss-device-ico { background: var(--surface); color: var(--muted); box-shadow: none; }
+  .ss-device[data-status="unavailable"] .ss-device-name { color: var(--ink-2); }
+  /* Enviando: anel girando em volta do ícone; o estado ganha " · Enviando…". */
+  .ss-device-spin { display: none; position: absolute; inset: -6px; border-radius: 50%; pointer-events: none;
+                    border: 2.5px solid transparent; border-top-color: var(--tone); border-right-color: var(--tone); }
+  .ss-device[data-status="pending"] .ss-device-spin { display: block; animation: ss-spin .9s linear infinite; }
+  .ss-device[data-status="pending"] .ss-device-state::after { content: " · " attr(data-pending); }
+  /* Erro: borda e texto em vermelho. */
+  .ss-device[data-status="error"] { border-color: color-mix(in srgb, var(--danger) 60%, var(--line)); }
+  .ss-device[data-status="error"] .ss-device-state { color: var(--danger); }
+  .ss-device[data-status="error"] .ss-device-state::before { content: ""; display: inline-block; width: .85rem; height: .85rem; margin: 0 .25rem -.12rem 0;
+                                                             background: currentColor; mask: var(--ss-i-alert) center / contain no-repeat; }
+  @media (max-width: 420px) { .ss-device { padding: .8rem; } .ss-device-ico { width: 2.5rem; height: 2.5rem; border-radius: 12px; } }
+
+  /* ── Slider (extensão do .ss-range: gradiente, bolha e "fill") ── */
+  .ss-range-track { position: relative; }
+  /* Gradiente: a trilha toda é o gradiente; o seletor pega a cor do ponto (--range-c). */
+  .ss-range.is-gradient::-webkit-slider-runnable-track { height: .65rem; background: var(--range-track); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent); }
+  .ss-range.is-gradient::-moz-range-track { height: .65rem; background: var(--range-track); }
+  .ss-range.is-gradient::-moz-range-progress { background: transparent; }
+  .ss-range.is-gradient::-webkit-slider-thumb { background: var(--range-c); border-color: #fff; margin-top: -.43rem; }
+  .ss-range.is-gradient::-moz-range-thumb { background: var(--range-c); border-color: #fff; }
+  /* Bolha com o valor: aparece arrastando, sobe com a mola. --pn é a fração 0..1. */
+  .ss-range-bubble { position: absolute; bottom: calc(100% - .1rem); left: calc(.75rem + (100% - 1.5rem) * var(--pn, .5)); z-index: 3;
+                     translate: -50% 0; scale: 0; transform-origin: 50% 100%; pointer-events: none; padding: .2rem .5rem; border-radius: 9px;
+                     background: var(--ink); color: var(--surface); font: 500 .78rem var(--font-mono); white-space: nowrap;
+                     box-shadow: 0 6px 14px -6px rgba(20, 22, 40, .45); transition: scale .3s var(--ss-bounce); }
+  .ss-range-bubble::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% -1px; border: 5px solid transparent; border-top-color: var(--ink); }
+  .ss-range-field:has(.ss-range:is([data-dragging], :focus-visible)) .ss-range-bubble { scale: 1; }
+  /* Fill: barra grossa, a parte cheia é o valor; rótulo, ícone e valor escritos dentro. */
+  .ss-range-fillbox { position: relative; isolation: isolate; height: 3.5rem; border-radius: 16px; overflow: hidden; background: var(--field);
+                      box-shadow: inset 0 0 0 1px var(--line); }
+  .ss-range.is-fill { position: absolute; inset: 0; height: 100%; z-index: 1; }
+  .ss-range.is-fill::-webkit-slider-runnable-track { height: 3.5rem; border-radius: 0;
+    background: linear-gradient(to right, var(--range-fill, var(--range-c)) var(--p), transparent var(--p)); box-shadow: none; }
+  .ss-range.is-fill::-moz-range-track { height: 3.5rem; background: transparent; }
+  .ss-range.is-fill::-moz-range-progress { height: 3.5rem; border-radius: 0; background: var(--range-fill, var(--range-c)); }
+  .ss-range.is-fill::-webkit-slider-thumb { width: .3rem; height: 1.6rem; margin-top: .95rem; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92);
+                                            box-shadow: 0 1px 4px rgba(20, 22, 40, .3); translate: -.55rem 0; }
+  .ss-range.is-fill::-moz-range-thumb { width: .3rem; height: 1.6rem; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92); }
+  .ss-range.is-fill:is(:active, [data-dragging])::-webkit-slider-thumb { transform: scaleY(1.25); box-shadow: 0 1px 4px rgba(20, 22, 40, .3); }
+  .ss-range.is-fill:is(:active, [data-dragging])::-moz-range-thumb { transform: scaleY(1.25); }
+  .ss-range.is-fill:focus-visible { outline: 0; }
+  .ss-range-fillbox:has(.ss-range:focus-visible) { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 4px var(--ring); }
+  /* Fill em gradiente: o gradiente inteiro por baixo e o "vazio" cobrindo depois da ponta. */
+  .ss-range.is-fill.is-gradient::-webkit-slider-runnable-track { background: linear-gradient(to right, transparent var(--p), var(--field) var(--p)), var(--range-track); }
+  .ss-range.is-fill.is-gradient::-moz-range-progress { background: var(--range-track); }
+  .ss-range-fill-text { position: absolute; inset: 0; padding: 0 1.1rem; z-index: 2; display: flex; align-items: center; gap: .55rem; pointer-events: none; color: var(--ink); }
+  .ss-range-fill-text svg { width: 1.2rem; height: 1.2rem; flex: none; }
+  .ss-range-fill-text b { flex: 1; min-width: 0; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-range-fill-text .ss-range-out { color: inherit; }
+  /* A cópia branca do texto só aparece em cima da parte cheia (recorte em --p). */
+  .ss-range-fill-text.is-on { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .2); clip-path: inset(0 calc(100% - var(--p)) 0 0); }
+  .ss-range-fillbox:has(.ss-range:disabled) { opacity: .5; }
+  .ss-range-fillbox:has(.ss-range[data-dragging]) .ss-range-out { scale: 1.12; }
+  .ss-range-fill-text .ss-range-out { display: inline-block; transition: scale var(--ss-dur-indicator) var(--ss-bounce); }
+
+  /* ── Termostato (Ss::ThermostatComponent) ── */
+  .ss-thermo { --thermo-c: var(--accent); --thermo-heat: #e0952a; --thermo-cool: var(--ss-info, #3b82f6);
+               display: grid; justify-items: center; gap: .6rem; margin: 0; }
+  .ss-thermo[data-mode="heat"] { --thermo-c: var(--thermo-heat); }
+  .ss-thermo[data-mode="cool"] { --thermo-c: var(--thermo-cool); }
+  .ss-thermo[data-mode="off"] { --thermo-c: var(--muted); }
+  .ss-thermo-dial { position: relative; width: min(15rem, 100%); aspect-ratio: 1; border-radius: 50%; touch-action: none; outline: 0; }
+  .ss-thermo-dial:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
+  .ss-thermo-dial svg { width: 100%; height: 100%; overflow: visible; }
+  .ss-thermo-track { fill: none; stroke: color-mix(in srgb, var(--muted) 18%, var(--field)); stroke-width: 13; stroke-linecap: round; }
+  .ss-thermo-bar { fill: none; stroke: var(--thermo-c); stroke-width: 13; stroke-linecap: round;
+                   stroke-dasharray: calc(var(--f) * 100px) 200px; transition: stroke-dasharray var(--ss-dur-indicator) var(--ss-bounce), stroke .3s ease; }
+  .ss-thermo-knob, .ss-thermo-cur { transform-box: view-box; transform-origin: 100px 100px; }
+  .ss-thermo-knob { transform: rotate(calc(135deg + var(--f) * 270deg)); transition: transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-thermo-knob circle:first-child { fill: var(--surface); filter: drop-shadow(0 2px 3px rgba(20, 22, 40, .3)); }
+  .ss-thermo-knob circle:last-child { fill: var(--thermo-c); transition: fill .3s ease; }
+  .ss-thermo-cur { transform: rotate(calc(135deg + var(--cf) * 270deg)); }
+  .ss-thermo-cur line { stroke: var(--ink-2); stroke-width: 3; stroke-linecap: round; }
+  .ss-thermo[data-dragging] :is(.ss-thermo-bar, .ss-thermo-knob) { transition: none; }
+  .ss-thermo-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; pointer-events: none; }
+  .ss-thermo-legend { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .ss-thermo[data-hvac="heating"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-heat) 70%, var(--ink)); }
+  .ss-thermo[data-hvac="cooling"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-cool) 75%, var(--ink)); }
+  .ss-thermo-value { display: block; margin-top: .2rem; font: 500 2.9rem/1 var(--font-mono); letter-spacing: -.02em; color: var(--ink); transition: opacity .2s ease, scale .3s var(--ss-bounce); }
+  .ss-thermo-now { margin-top: .4rem; font-size: .82rem; font-weight: 600; color: var(--ink-2); }
+  .ss-thermo[data-mode="off"] :is(.ss-thermo-bar, .ss-thermo-knob) { opacity: 0; }
+  .ss-thermo[data-mode="off"] .ss-thermo-value { opacity: .45; }
+  .ss-thermo[aria-busy="true"] .ss-thermo-legend::before { content: ""; width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--thermo-c);
+                                                           border-right-color: transparent; animation: ss-spin .8s linear infinite; }
+  .ss-thermo-steps { display: flex; gap: 4.5rem; margin-top: -.4rem; }
+  .ss-thermo-steps button { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; border: 1px solid var(--line); background: var(--field);
+                            color: var(--ink); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .2s; }
+  .ss-thermo-steps button svg { width: 1.4rem; height: 1.4rem; }
+  .ss-thermo-steps button:hover:not(:disabled) { background: color-mix(in srgb, var(--thermo-c) 10%, var(--field)); }
+  .ss-thermo-steps button:active:not(:disabled) { scale: .88; transition: scale 80ms ease-out; }
+  .ss-thermo-steps button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
+  .ss-thermo-steps button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-thermo-modes { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: .3rem 0 0; padding: 0; border: 0; min-width: 0; }
+  .ss-thermo-mode { --mc: var(--accent); position: relative; display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; padding: 0 .9rem; border-radius: 999px;
+                    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: .82rem; cursor: pointer;
+                    transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-thermo-mode[data-value="heat"] { --mc: var(--thermo-heat); }
+  .ss-thermo-mode[data-value="cool"] { --mc: var(--thermo-cool); }
+  .ss-thermo-mode[data-value="off"] { --mc: var(--muted); }
+  .ss-thermo-mode input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: inherit; }
+  .ss-thermo-mode svg { width: 1.05rem; height: 1.05rem; }
+  .ss-thermo-mode:active { scale: .94; transition: scale 80ms ease-out; }
+  .ss-thermo-mode:has(:checked) { border-color: color-mix(in srgb, var(--mc) 70%, transparent); background: color-mix(in srgb, var(--mc) 14%, var(--surface));
+                                  color: color-mix(in srgb, var(--mc) 62%, var(--ink)); }
+  .ss-thermo-mode:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-thermo-mode:has(:disabled) { opacity: .5; cursor: not-allowed; }
+  .ss-thermo.is-disabled .ss-thermo-dial { opacity: .6; }
+
+  /* ── Teclado de código (Ss::CodeKeypadComponent) ── */
+  .ss-keypad { display: grid; gap: .6rem; width: min(20rem, 100%); margin: 0 auto; outline: 0; }
+  .ss-keypad-title { text-align: center; font-weight: 700; font-size: 1rem; color: var(--ink); }
+  .ss-keypad-dots { display: flex; justify-content: center; align-items: center; gap: .85rem; height: 1.8rem; }
+  .ss-keypad-dots i { width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 45%, transparent); scale: .75;
+                      transition: background-color .15s, border-color .15s, scale .45s var(--ss-bounce); }
+  .ss-keypad-dots i.is-on { background: var(--accent); border-color: var(--accent); scale: 1; }
+  .ss-keypad-dots b { min-width: 1rem; text-align: center; font: 500 1.4rem var(--font-mono); color: var(--accent); }
+  .ss-keypad[data-state="error"] .ss-keypad-dots i.is-on { background: var(--danger); border-color: var(--danger); }
+  .ss-keypad[data-state="error"] .ss-keypad-dots b { color: var(--danger); }
+  .ss-keypad[data-state="success"] .ss-keypad-dots i.is-on { background: var(--success); border-color: var(--success); }
+  .ss-keypad[data-shake] .ss-keypad-dots { animation: ss-keypad-shake .48s ease-out; }
+  .ss-keypad-msg { min-height: 1.3rem; text-align: center; font-size: .85rem; font-weight: 700; color: var(--muted); }
+  .ss-keypad[data-state="error"] .ss-keypad-msg { color: var(--danger); }
+  .ss-keypad[data-state="success"] .ss-keypad-msg { color: var(--success); }
+  .ss-keypad[data-state="success"] .ss-keypad-msg::before { content: ""; display: inline-block; width: 1rem; height: 1rem; margin: 0 .3rem -.18rem 0;
+                                                           background: currentColor; mask: var(--ss-i-check) center / contain no-repeat; animation: ss-icon-pop .45s var(--ss-bounce); }
+  .ss-keypad[data-state="busy"] .ss-keypad-msg::before { content: ""; display: inline-block; width: .95rem; height: .95rem; margin-bottom: -.15rem; border-radius: 50%;
+                                                        border: 2px solid var(--accent); border-right-color: transparent; animation: ss-spin .8s linear infinite; }
+  .ss-keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+  .ss-keypad-grid button { display: grid; place-items: center; height: 4rem; border: 0; border-radius: 16px; background: var(--field); color: var(--ink);
+                           font: 500 1.5rem var(--font-mono); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .15s; }
+  .ss-keypad-grid button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 8%, var(--field)); }
+  .ss-keypad-grid button:active:not(:disabled), .ss-keypad-grid button[data-pressed] { scale: .9; transition: scale 80ms ease-out; }
+  .ss-keypad-grid button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-keypad-grid button:disabled { color: var(--muted); cursor: not-allowed; }
+  .ss-keypad-grid .ss-keypad-back { background: transparent; color: var(--ink-2); }
+  .ss-keypad-grid .ss-keypad-back svg { width: 1.5rem; height: 1.5rem; }
+  .ss-keypad-actions { display: flex; gap: .6rem; margin-top: .35rem; }
+  .ss-keypad-actions .ss-btn { flex: 1; min-height: 3rem; }
+
+  /* ── Campo −/+ (Ss::StepperInputComponent): o .ss-stepper do engine com input e unidade. ── */
+  .ss-stepper-input { width: fit-content; }
+  .ss-stepper-input input { width: 4rem; padding: 0; }
+  .ss-stepper-unit { margin: 0 .2rem 0 -.35rem; font: 500 .85rem var(--font-mono); color: var(--muted); }
+  .ss-stepper-input:has(input:focus-visible) { box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 4px var(--ring); }
+  .ss-stepper-input:has(input:disabled) { opacity: .55; }
+  .ss-stepper-input button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-stepper-input input.is-bump { animation: ss-icon-pop .35s var(--ss-bounce); }
+
+  /* ── Dias da semana (Ss::WeekdayPickerComponent) ── */
+  .ss-weekday { display: grid; gap: .6rem; margin: 0; padding: 0; border: 0; min-width: 0; }
+  .ss-weekday-days { display: flex; gap: .4rem; flex-wrap: nowrap; }
+  .ss-weekday-day { position: relative; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; flex: 0 1 2.75rem; min-width: 2.25rem; cursor: pointer; }
+  .ss-weekday-day input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+  .ss-weekday-day span { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: var(--field);
+                         color: var(--ink-2); font-weight: 800; font-size: .88rem; scale: .92; pointer-events: none;
+                         transition: background-color .18s, border-color .18s, color .18s, scale .45s var(--ss-bounce), box-shadow .2s; }
+  .ss-weekday-day:has(:checked) span { background: var(--accent); border-color: var(--accent); color: #fff; scale: 1;
+                                       box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .ss-weekday-day:hover:not(:has(:disabled)) span { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .ss-weekday-day:has(:focus-visible) span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-weekday-day:has(:disabled) { opacity: .5; cursor: not-allowed; }
+  .ss-weekday-shortcuts { display: flex; flex-wrap: wrap; gap: .45rem; }
+  .ss-weekday-shortcuts[hidden] { display: none; }
+  .ss-weekday-shortcuts button { min-height: 2.25rem; padding: 0 .85rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+                                 font-weight: 700; font-size: .78rem; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-weekday-shortcuts button[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent); }
+  .ss-weekday-shortcuts button:active { scale: .94; transition: scale 80ms ease-out; }
+  .ss-weekday-shortcuts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+@keyframes ss-sw-busy { 50% { opacity: .55; scale: .86; } }
+@keyframes ss-keypad-shake { 0%, 100% { translate: 0; } 15% { translate: -10px; } 30% { translate: 9px; } 45% { translate: -7px; } 60% { translate: 5px; } 75% { translate: -3px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-device-spin { animation: none !important; border-color: var(--tone); opacity: .5; }
+  .ss-keypad[data-shake] .ss-keypad-dots { animation: none; }
+}

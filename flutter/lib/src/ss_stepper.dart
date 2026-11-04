@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
+import 'ss_strings.dart';
 
 /// Ajuste numérico "− valor +": o número (DM Mono) rola na direção da
 /// mudança e assenta com mola, os botões afundam e voltam com mola, segurar um botão repete cada vez mais rápido, o botão desabilita
@@ -44,7 +45,9 @@ class SsStepper extends StatefulWidget {
   }
 
   /// "2", "2,5" (vírgula pt-BR, sempre com [decimals] casas).
-  static String format(num v, int decimals) => v.toStringAsFixed(decimals).replaceAll('.', ',');
+  /// Sem [formats], com vírgula decimal.
+  static String format(num v, int decimals, [SsFormats? formats]) =>
+      v.toStringAsFixed(decimals).replaceAll('.', (formats ?? SsFormats.brl).decimalSeparator);
 
   @override
   State<SsStepper> createState() => _SsStepperState();
@@ -99,7 +102,7 @@ class _SsStepperState extends State<SsStepper> {
   }
 
   void _edit() {
-    _ctrl.text = SsStepper.format(widget.value, widget.decimals);
+    _ctrl.text = SsStepper.format(widget.value, widget.decimals, SsFormats.of(context));
     _ctrl.selection = TextSelection(baseOffset: 0, extentOffset: _ctrl.text.length);
     setState(() => _editing = true);
     WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
@@ -119,7 +122,8 @@ class _SsStepperState extends State<SsStepper> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final text = SsStepper.format(widget.value, widget.decimals);
+    final f = SsFormats.of(context);
+    final text = SsStepper.format(widget.value, widget.decimals, f);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.slow;
     final numStyle = AppTheme.number(context, size: AppType.lg, color: c.ink);
 
@@ -175,7 +179,7 @@ class _SsStepperState extends State<SsStepper> {
       );
     }
 
-    String falado(num v) => '${SsStepper.format(v, widget.decimals)}${widget.unit == null ? '' : ' ${widget.unit}'}';
+    String falado(num v) => '${SsStepper.format(v, widget.decimals, f)}${widget.unit == null ? '' : ' ${widget.unit}'}';
     final stepper = Semantics(
       label: widget.label,
       value: falado(widget.value),
@@ -189,9 +193,9 @@ class _SsStepperState extends State<SsStepper> {
         decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.field)),
         child: Row(
           children: [
-            _btn(c, Icons.remove_rounded, 'Diminuir', -1, widget.value > widget.min),
+            _btn(c, Icons.remove_rounded, SsStrings.of(context).decrease, -1, widget.value > widget.min),
             Expanded(child: valor),
-            _btn(c, Icons.add_rounded, 'Aumentar', 1, widget.value < widget.max),
+            _btn(c, Icons.add_rounded, SsStrings.of(context).increase, 1, widget.value < widget.max),
           ],
         ),
       ),

@@ -1,0 +1,38 @@
+<%= content_tag(root_tag, **root_options) do %>
+  <%= method_tag %>
+  <div class="ss-thermo-dial" role="slider" tabindex="<%= disabled? || off? ? -1 : 0 %>"
+       aria-label="<%= @label || tx(:label, "Temperatura") %>" aria-valuemin="<%= min %>" aria-valuemax="<%= max %>" aria-valuenow="<%= target %>"
+       aria-valuetext="<%= off? ? tx(:off, "Desligado") : text(target) %>" <% if disabled? || off? %>aria-disabled="true"<% end %>
+       data-ss-thermostat-target="dial" data-action="keydown->ss-thermostat#key pointerdown->ss-thermostat#down">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <path class="ss-thermo-track" d="<%= self.class::ARC %>" pathLength="100"/>
+      <path class="ss-thermo-bar" d="<%= self.class::ARC %>" pathLength="100"/>
+      <% if current %><g class="ss-thermo-cur"><line x1="172" y1="100" x2="196" y2="100"/></g><% end %>
+      <g class="ss-thermo-knob"><circle cx="184" cy="100" r="11"/><circle cx="184" cy="100" r="5.5"/></g>
+    </svg>
+    <div class="ss-thermo-center">
+      <span class="ss-thermo-legend" data-ss-thermostat-target="legend" data-text="<%= legend %>"><%= legend %></span>
+      <output class="ss-thermo-value num" data-ss-thermostat-target="value"><%= text(target) %></output>
+      <% if current %><span class="ss-thermo-now"><%= tx(:current, "Agora") %> <span class="num"><%= text(current) %></span></span><% end %>
+    </div>
+  </div>
+  <input type="hidden" name="<%= name %>" value="<%= target %>" data-ss-thermostat-target="input">
+  <div class="ss-thermo-steps">
+    <button type="button" aria-label="<%= tx(:less, "Diminuir") %>" title="<%= tx(:less, "Diminuir") %>" data-ss-thermostat-target="minus" data-action="ss-thermostat#minus"
+            <% if disabled? || off? || target <= min %>disabled<% end %>><%= step_icon(:minus) %></button>
+    <button type="button" aria-label="<%= tx(:more, "Aumentar") %>" title="<%= tx(:more, "Aumentar") %>" data-ss-thermostat-target="plus" data-action="ss-thermostat#plus"
+            <% if disabled? || off? || target >= max %>disabled<% end %>><%= step_icon(:plus) %></button>
+  </div>
+  <% if modes.any? %>
+    <fieldset class="ss-thermo-modes">
+      <legend class="ss-sr"><%= tx(:modes, "Modo") %></legend>
+      <% modes.each do |m| %>
+        <label class="ss-thermo-mode" data-value="<%= m[:value] %>" <% if m[:tone] %>style="--mc: <%= m[:tone] %>"<% end %>>
+          <input type="radio" name="<%= mode_name %>" value="<%= m[:value] %>" <% if m[:value] == mode %>checked<% end %> <% if disabled? %>disabled<% end %>
+                 data-tone="<%= m[:tone] %>" data-action="change->ss-thermostat#mode">
+          <%= m[:icon]&.html_safe %><%= m[:label] %>
+        </label>
+      <% end %>
+    </fieldset>
+  <% end %>
+<% end %>

@@ -11,6 +11,10 @@ import 'catalogo/catalogo_v09_a.dart';
 import 'catalogo/catalogo_v09_b.dart';
 import 'catalogo/catalogo_mov_a.dart';
 import 'catalogo/catalogo_mov_b.dart';
+import 'catalogo/catalogo_v10_controles.dart';
+import 'catalogo/catalogo_v10_dados.dart';
+import 'catalogo/catalogo_v10_casa.dart';
+import 'catalogo/catalogo_v10_estrutura.dart';
 import 'aparencia.dart';
 import 'telas/tela_demo.dart';
 import 'telas/telas_a.dart';
@@ -66,6 +70,11 @@ class _InicioState extends State<_Inicio> {
     final novos = {
       for (final x in [...catalogoV09A, ...catalogoV09B]) x.slug,
     };
+    final casa = {
+      for (final x in [...catalogoV10Controles, ...catalogoV10Dados, ...catalogoV10Casa, ...catalogoV10Estrutura])
+        x.slug,
+    };
+    final casaLista = catalogo.where((x) => casa.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final mov = {
       for (final x in [...catalogoMovA, ...catalogoMovB]) x.slug,
     };
@@ -73,7 +82,13 @@ class _InicioState extends State<_Inicio> {
     final telas = [...telasA, ...telasB].where((t) => _bate('${t.titulo} ${t.descricao}')).toList();
     final v09 = catalogo.where((x) => novos.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final antigos = catalogo
-        .where((x) => !novos.contains(x.slug) && !mov.contains(x.slug) && _bate('${x.nome} ${x.descricao}'))
+        .where(
+          (x) =>
+              !novos.contains(x.slug) &&
+              !mov.contains(x.slug) &&
+              !casa.contains(x.slug) &&
+              _bate('${x.nome} ${x.descricao}'),
+        )
         .toList();
 
     return Scaffold(
@@ -92,7 +107,7 @@ class _InicioState extends State<_Inicio> {
                       style: TextStyle(fontSize: AppType.screenTitle, fontWeight: FontWeight.w800, color: c.ink),
                     ),
                     Text(
-                      'componentes_ui v0.9 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
+                      'componentes_ui v0.10 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
                       style: TextStyle(color: c.muted),
                     ),
                     const AparenciaBar(),
@@ -104,6 +119,13 @@ class _InicioState extends State<_Inicio> {
             if (telas.isNotEmpty) ...[
               const _Titulo('Telas montadas'),
               SliverList.builder(itemCount: telas.length, itemBuilder: (context, i) => _TelaTile(telas[i])),
+            ],
+            if (casaLista.isNotEmpty) ...[
+              const _Titulo('Casa e automação (v0.10)'),
+              SliverList.builder(
+                itemCount: casaLista.length,
+                itemBuilder: (context, i) => _CompTile(casaLista[i], novo: true),
+              ),
             ],
             if (movimento.isNotEmpty) ...[
               const _Titulo('Movimento (toque para ver)'),

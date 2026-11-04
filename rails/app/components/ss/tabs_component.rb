@@ -32,9 +32,10 @@ module Ss
 
     renders_many :tabs, Tab
 
-    def initialize(label: "Abas", id: nil, **opts)
+    def initialize(label: nil, id: nil, **opts)
       super(**opts)
-      @label = label
+      @label = label || ss_t("tabs.label", default: "Abas")
+      # O id não muda com o idioma: sai do label passado pelo app ou de "abas".
       @id = id || "ss-tabs-#{label.to_s.parameterize.presence || "abas"}"
     end
 

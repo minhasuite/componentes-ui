@@ -13,11 +13,11 @@ module Ss
     renders_one :detail
     renders_one :empty
 
-    def initialize(frame_id: "detalhe", back_label: "Voltar", list_label: "Lista", **opts)
+    def initialize(frame_id: "detalhe", back_label: nil, list_label: nil, **opts)
       super(**opts)
       @frame_id = frame_id
-      @back_label = back_label
-      @list_label = list_label
+      @back_label = back_label || ss_t("common.back", default: "Voltar")
+      @list_label = list_label || ss_t("split_view.list", default: "Lista")
     end
   end
 end

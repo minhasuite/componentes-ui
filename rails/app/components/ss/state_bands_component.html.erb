@@ -1,0 +1,40 @@
+<% if empty? %>
+  <%= tag.div(text(:empty, "Nenhuma mudança neste período"), **root_attrs(class: classes("ss-sb-empty"), role: "status")) %>
+<% else %>
+  <% data = embedded? ? {} : in_view_data(controller: "ss-state-bands ss-in-view", ss_state_bands_from_value: from_ms, ss_state_bands_to_value: to_ms, ss_state_bands_lang_value: lang) %>
+  <%= tag.div(**root_attrs(class: classes("ss-sb", ("is-top" if top?), ("is-embedded" if embedded?)), role: "group", "aria-label": title, data: data)) do %>
+    <% rows.each_with_index do |row, i| %>
+      <div class="ss-sb-row" style="--i:<%= [i, 8].min %>">
+        <span class="ss-sb-label" title="<%= row[:label] %>"><%= row[:label] %></span>
+        <% if embedded? %>
+        <div class="ss-sb-bar" role="img" aria-label="<%= summary(row) %>">
+        <% else %>
+        <div class="ss-sb-bar" tabindex="0" role="group" aria-roledescription="<%= text(:role, "faixa de estado") %>"
+             aria-label="<%= summary(row) %>" data-ss-state-bands-target="bar"
+             data-action="pointermove->ss-state-bands#move pointerleave->ss-state-bands#leave pointerdown->ss-state-bands#tap keydown->ss-state-bands#key blur->ss-state-bands#leave">
+        <% end %>
+          <% if row[:segments].empty? %>
+            <span class="ss-sb-none"><%= text(:no_data, "sem leituras") %></span>
+          <% else %>
+            <div class="ss-sb-fill" aria-hidden="true">
+              <% row[:segments].each do |s| %>
+                <% left, width = pos(s) %>
+                <i data-tone="<%= tone_map[s[:state]] %>" data-state="<%= s[:state] %>" data-label="<%= s[:label] %>"
+                   data-from="<%= Ss::TimeData.ms(s[:from]) %>" data-to="<%= Ss::TimeData.ms(s[:to]) %>"
+                   title="<%= seg_title(s) %>" style="left:<%= left %>%;width:max(1px, <%= width %>%)"<%= " hidden" if width <= 0 %>></i>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <span class="ss-sb-now"><%= row[:current] %></span>
+      </div>
+    <% end %>
+    <% if axis? %>
+      <div class="ss-sb-axis ss-tc-axis num" aria-hidden="true" data-ss-state-bands-target="axis"></div>
+    <% end %>
+    <% unless embedded? %>
+      <div class="ss-tc-tip ss-sb-tip" data-ss-state-bands-target="tip" hidden></div>
+      <p class="ss-sr" aria-live="polite" data-ss-state-bands-target="live"></p>
+    <% end %>
+  <% end %>
+<% end %>

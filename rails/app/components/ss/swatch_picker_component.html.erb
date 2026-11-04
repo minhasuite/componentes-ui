@@ -8,5 +8,15 @@
         <span class="ss-sr"><%= o[:label] %></span>
       </label>
     <% end %>
+    <% if free? %>
+      <%# Cor livre: o <input type=color> cobre a ficha (clicar abre o seletor do navegador); o radio leva o hex. %>
+      <label class="ss-swatch-picker-item is-free<%= " is-set" if free_checked? %>" for="<%= free_id %>" title="<%= free_label %>" style="--c:<%= free_hex %>" data-controller="ss-swatch-free">
+        <input type="radio" class="ss-sr" id="<%= free_id %>" name="<%= name %>" value="<%= free_hex %>" <% if free_checked? %>checked<% end %> data-ss-swatch-free-target="radio">
+        <span class="ss-swatch-picker-dot" aria-hidden="true"></span>
+        <span class="ss-sr"><%= free_label %></span>
+        <input type="color" class="ss-swatch-picker-color" value="<%= free_hex %>" aria-label="<%= free_pick_label %>" tabindex="-1"
+               data-ss-swatch-free-target="color" data-action="input->ss-swatch-free#pick change->ss-swatch-free#pick">
+      </label>
+    <% end %>
   </div>
 <% end %>

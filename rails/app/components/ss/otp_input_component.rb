@@ -5,9 +5,9 @@ module Ss
   class OtpInputComponent < BaseComponent
     attr_reader :name, :length, :label
 
-    def initialize(name:, length: 6, label: "Código de verificação", **rest)
+    def initialize(name:, length: 6, label: nil, **rest)
       super(**rest)
-      @name, @length, @label = name, length, label
+      @name, @length, @label = name, length, label || ss_t("otp.label", default: "Código de verificação")
     end
   end
 end

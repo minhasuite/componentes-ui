@@ -1,0 +1,25 @@
+<%= tag.li(**root_attrs(class: classes("ss-blk", ("is-off" unless enabled?), ("is-invalid" if invalid?), ("is-focused" if focused?)),
+                        data: { id: id, tone: tone, ss_block_list_target: "block" }, aria: { invalid: (invalid? ? "true" : nil) })) do %>
+  <input type="hidden" name="<%= field(:position) %>" value="<%= position %>" data-ss-block-list-target="position">
+  <details class="ss-blk-d"<%= " open" if open? %>>
+    <summary class="ss-blk-head">
+      <span class="ss-blk-ico" aria-hidden="true"><%= icon %></span>
+      <span class="ss-blk-text"><b><%= title %></b><% if summary %><small><%= summary %></small><% end %></span>
+      <span class="ss-blk-chev" aria-hidden="true"><%= svg(:down) %></span>
+    </summary>
+    <div class="ss-blk-body"><%= content %></div>
+  </details>
+  <% if invalid? %><p class="ss-blk-error" role="alert"><%= svg(:critical) %><%= error %></p><% end %>
+  <div class="ss-blk-tools">
+    <%= render switch %>
+    <details class="ss-blk-more">
+      <summary class="ss-blk-more-btn" title="<%= l(:more) %>" aria-label="<%= l(:more) %>"><%= svg(:dots) %></summary>
+      <div class="ss-blk-menu" role="menu">
+        <%= menu_item(:move_up, :arrow_up) %>
+        <%= menu_item(:move_down, :arrow_down) %>
+        <%= menu_item(:duplicate, :copy, url: @duplicate_url, method: :post) %>
+        <%= menu_item(:delete, :trash, url: @delete_url, method: :delete, danger: true) %>
+      </div>
+    </details>
+  </div>
+<% end %>

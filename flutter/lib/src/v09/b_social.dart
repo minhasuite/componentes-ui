@@ -8,6 +8,7 @@ import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_aurora.dart';
 import '../ss_list.dart';
+import '../ss_strings.dart';
 
 // ---------------------------------------------------------------------------
 // SsPeoplePicker
@@ -24,19 +25,22 @@ class SsPeoplePicker extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.onAdd,
-    this.addLabel = 'Novo',
+    this.addLabel,
   });
 
   final List<String> people;
   final Set<String> selected;
   final ValueChanged<Set<String>> onChanged;
   final VoidCallback? onAdd;
-  final String addLabel;
+
+  /// Padrão: [SsStrings.newItem].
+  final String? addLabel;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
+    final addLabel = this.addLabel ?? SsStrings.of(context).newItem;
     Widget pilula({required bool on, required Widget top, required String nome, required Widget badge}) =>
         AnimatedContainer(
           duration: dur,
@@ -361,7 +365,7 @@ class SsStoryRing extends StatelessWidget {
               bottom: -2,
               child: Semantics(
                 button: true,
-                label: 'Adicionar',
+                label: SsStrings.of(context).add,
                 excludeSemantics: true,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -390,7 +394,7 @@ class SsStoryRing extends StatelessWidget {
     );
     return Semantics(
       button: onTap != null,
-      label: '$name${novos > 0 ? ', $novos ${novos == 1 ? 'novidade' : 'novidades'}' : ''}',
+      label: '$name${novos > 0 ? SsStrings.of(context).newsCount(novos) : ''}',
       child: SsPressable(
         onTap: onTap,
         child: Column(
