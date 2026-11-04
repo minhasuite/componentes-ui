@@ -22,14 +22,20 @@ module Ss
   # - zoomed: true (a página já veio na janela pedida) mostra o "Ver tudo", que vai ao reset_url.
   # - loading: true mostra o esqueleto; sem leituras, o estado vazio.
   # - Textos: componentes_ui.time_series_chart.* (texts: { empty: "…" } troca).
+  # - legend: true/:auto (padrão: só com 2+ séries), :always (mesmo com uma série) ou
+  #   false/:never. show_values: true põe na legenda o último valor de cada série (com a
+  #   unidade); com o cursor em cima, o valor acompanha o instante do cursor e volta ao
+  #   último ao sair. (v0.10.1, como o SsTimeChart(legend:, showValues:))
+  # - time_zone: "America/Sao_Paulo" (v0.10.1): eixo, balão e resumo nesse fuso, não no do
+  #   navegador (o padrão continua o do navegador no JS e o Time.zone no servidor).
   class TimeSeriesChartComponent < BaseComponent
     include InView
 
     attr_reader :title, :height
 
     def initialize(title:, series: [], from: nil, to: nil, mode: :line, bands: [], band_tones: {}, loading: false,
-                   height: 220, legend: true, dual_axis: true, zoom_url: nil, zoom_frame: nil, reset_url: nil,
-                   show_title: false, locale: nil, zoomed: false, texts: {}, **opts)
+                   height: 220, legend: true, show_values: false, dual_axis: true, zoom_url: nil, zoom_frame: nil, reset_url: nil,
+                   show_title: false, locale: nil, zoomed: false, texts: {}, time_zone: nil, **opts)
       super(**opts)
       @title = title
       @series = series.map { |s| normalize(s) }
@@ -39,6 +45,7 @@ module Ss
       @loading = loading
       @height = height
       @legend = legend
+      @show_values = show_values
       @dual_axis = dual_axis
       @zoom_url = zoom_url
       @zoom_frame = zoom_frame
@@ -46,6 +53,7 @@ module Ss
       @show_title = show_title
       @zoomed = zoomed
       @locale = locale
+      @zone = TimeData.zone(time_zone)
       @texts = texts.to_h.transform_keys(&:to_sym)
       @from, @to = range(from, to)
     end
@@ -57,7 +65,21 @@ module Ss
     # A janela já veio aproximada do servidor (zoom_url): "Ver tudo" aparece e volta pelo reset_url.
     def zoomed? = @zoomed
     def show_title? = @show_title
-    def legend? = @legend && @series.size > 1
+    def legend?
+      case @legend
+      when false, nil, :never, "never" then false
+      when :always, "always" then @series.any?
+      else @series.size > 1
+      end
+    end
+
+    def show_values? = !!@show_values
+
+    # Último valor da série dentro da janela, já formatado (ou o "—").
+    def last_value(s)
+      p = s[:points].reverse.find { |pt| pt[:v] && (@from.nil? || pt[:t] >= @from) && (@to.nil? || pt[:t] <= @to) }
+      p ? value(p[:v], s) : text(:no_value, "—")
+    end
     def series = @series
     def bands? = @bands.any? && !empty_range?
 
@@ -76,6 +98,7 @@ module Ss
 
     def bands_component
       StateBandsComponent.new(rows: @bands, from: @from, to: @to, tones: @band_tones, embedded: true, locale: @locale,
+                              time_zone: @zone&.name,
                               data: { ss_time_chart_target: "bands" })
     end
 
@@ -91,6 +114,7 @@ module Ss
         ss_time_chart_zoom_frame_value: @zoom_frame,
         ss_time_chart_reset_url_value: @reset_url,
         ss_time_chart_lang_value: @locale&.to_s,
+        ss_time_chart_time_zone_value: TimeData.iana(@zone),
         ss_time_chart_empty_value: text(:no_value, "—")
       ).compact
     end
@@ -120,7 +144,7 @@ module Ss
 
     private
 
-    def when_text(t) = ss_date(t.in_time_zone, :day_month_time)
+    def when_text(t) = ss_date(TimeData.local(t, @zone), :day_month_time)
 
     def normalize(s)
       pts = Array(s[:points]).map do |p|

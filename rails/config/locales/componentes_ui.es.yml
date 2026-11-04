@@ -2,8 +2,15 @@
 es:
   componentes_ui:
     agenda:
+      all_day: Todo el día
       label: Agenda
       now: Ahora, %{time}
+    agenda_list:
+      empty: Nada este día
+      label: Agenda
+      today: Hoy
+      tomorrow: Mañana
+      week: Semana
     ai_insight:
       apply: Aplicar
       badge: IA
@@ -215,6 +222,7 @@ es:
       turn_off: Apagar %{name}
       turn_on: Encender %{name}
       unavailable: No disponible
+      run: Accionar %{name}
     file_drop:
       any_type: Cualquier tipo de archivo
       hint: Arrastra aquí o haz clic para elegir
@@ -255,6 +263,12 @@ es:
         failed: Falló
         queued: En cola
         running: En curso
+      stage_states:
+        done: Completada
+        failed: Falló
+        running: En curso
+        skipped: Omitida
+      total: Total
     kpi_strip:
       bad: " (malo)"
       delta: Variación %{delta}%{sense}
@@ -272,9 +286,11 @@ es:
       transaction: Transacción
     locale_picker:
       label: Idioma
+      system: Seguir el sistema
     logbook:
       empty: Aún no hay registros
       end: Inicio del registro
+      end_link: Ver un período más largo
       error: No se pudo cargar más.
       label: Registro de eventos
       load_more: Cargar más
@@ -286,13 +302,19 @@ es:
     media_player:
       buffering: Cargando
       idle: Nada en reproducción
+      mute: Silenciar
       next: Siguiente
       pause: Pausar
       play: Reproducir
+      power_off: Apagar
+      power_on: Encender
       previous: Anterior
       progress: Posición
       unavailable: No disponible
+      unmute: Activar sonido
       volume: Volumen
+      volume_down: Bajar volumen
+      volume_up: Subir volumen
     mic_button:
       error: Error del micrófono, toca para reintentar
       idle: Hablar
@@ -302,6 +324,7 @@ es:
       format: "%n %u"
     notice_card:
       dismiss: Descartar
+      unread: no leído
     number:
       delimiter: "."
       separator: ","
@@ -478,6 +501,7 @@ es:
       clear: Despejado
       clear_night: Noche despejada
       cloudy: Nublado
+      feels_like: Sensación
       fog: Niebla
       forecast: Pronóstico
       humidity: Humedad
@@ -485,6 +509,7 @@ es:
       min: Mín
       partly_cloudy: Parcialmente nublado
       rain: Lluvia
+      rain_chance: Probabilidad de lluvia
       snow: Nieve
       storm: Tormenta
       wind: Ventoso

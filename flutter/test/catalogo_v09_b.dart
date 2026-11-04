@@ -363,6 +363,88 @@ final catalogoV09B = <Componente>[
     ],
   ),
   Componente(
+    'ss-agenda-list',
+    'SsAgendaList',
+    'Agenda de vários dias em lista: cabeçalho de cada dia ("Hoje · quarta, 4 de novembro"), compromissos com a hora em DM Mono e a barrinha de cor, e "Nada neste dia" no dia vazio. Faixa de dias opcional em cima.',
+    comportamentos: [
+      'SsAgendaDay(date, label:, events:) e SsAgendaItem(time:, title:, detail:, color:/tone:, onTap:); a hora vem formatada pelo app.',
+      'Dia sem compromisso mostra emptyLabel (padrão "Nada neste dia", em pt/en/es).',
+      'weekStrip: SsDateStrip em cima (sem o cabeçalho do mês) com pontinho nos dias com compromisso; tocar num dia (faixa ou cabeçalho) chama onSelectDay.',
+      'selected destaca o dia na faixa e no cabeçalho (ponto e texto na cor da marca).',
+      'Linha com onTap encolhe ao toque e ganha a seta; leitor de tela lê "hora, título, detalhe".',
+      'SsAgendaList.sliver: a mesma lista como sliver, para um CustomScrollView.',
+    ],
+    estados: [
+      Estado(
+        'dias',
+        'hoje cheio · amanhã vazio · sexta',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SsAgendaList(
+            days: [
+              SsAgendaDay(
+                DateTime(2026, 11, 4),
+                label: 'Hoje',
+                events: [
+                  SsAgendaItem(time: '08:30', title: 'Visita à Padaria Sol', detail: 'Centro', onTap: () {}),
+                  const SsAgendaItem(time: '10:00', title: 'Reunião de metas', detail: 'Sala 3', tone: SsTone.info),
+                  const SsAgendaItem(time: '12:00', title: 'Almoço com fornecedor', tone: SsTone.warning),
+                  const SsAgendaItem(time: '15:30', title: 'Entrega do pedido 4521', tone: SsTone.success),
+                  const SsAgendaItem(time: 'Dia todo', title: 'Inventário do depósito', tone: SsTone.danger),
+                ],
+              ),
+              SsAgendaDay(DateTime(2026, 11, 5), label: 'Amanhã'),
+              SsAgendaDay(
+                DateTime(2026, 11, 6),
+                events: const [SsAgendaItem(time: '09:00', title: 'Dentista', color: Color(0xFF14B8A6))],
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 560),
+      ),
+      Estado(
+        'vazio',
+        'dia vazio',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SsAgendaList(days: [SsAgendaDay(DateTime(2026, 11, 7), label: 'Sábado')]),
+        ),
+        tamanho: const Size(360, 110),
+      ),
+      Estado(
+        'faixa',
+        'com a faixa de dias (toque escolhe o dia)',
+        (_) => _Holder<DateTime>(
+          DateTime(2026, 11, 4),
+          (sel, set) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: SsAgendaList(
+              weekStrip: true,
+              today: DateTime(2026, 11, 4),
+              selected: sel,
+              onSelectDay: set,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              days: [
+                SsAgendaDay(
+                  sel,
+                  label: sel.day == 4 ? 'Hoje' : null,
+                  events: sel.day.isEven
+                      ? const [
+                          SsAgendaItem(time: '09:00', title: 'Rota zona sul', detail: '6 clientes'),
+                          SsAgendaItem(time: '14:00', title: 'Reunião com a gerente', tone: SsTone.info),
+                        ]
+                      : const [],
+                ),
+              ],
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 330),
+      ),
+    ],
+  ),
+  Componente(
     'ss-attach-bar',
     'SsAttachBar',
     'Fileira de botões quadrados coloridos para anexar foto, documento, contato ou local.',
@@ -819,6 +901,7 @@ final catalogoV09B = <Componente>[
       'danger: vermelho e 20% maior (encerrar).',
       'active: fundo da marca e activeIcon (câmera ligada); o leitor de tela diz ligado/desligado.',
       'Sem onTap fica apagado; com labels, o nome vai embaixo.',
+      'Segurar para falar (onHoldStart/onHoldEnd): encostar vibra, acende na cor da marca, cresce com halo e chama onHoldStart; soltar chama onHoldEnd.',
     ],
     estados: [
       Estado(
@@ -841,6 +924,27 @@ final catalogoV09B = <Componente>[
           ),
         ),
         tamanho: const Size(360, 150),
+      ),
+      Estado(
+        'segurar',
+        'interfone: segure para falar',
+        (_) => _pad(
+          SsCallControls(
+            labels: true,
+            actions: [
+              SsCallAction(Icons.lock_open_rounded, 'Abrir', onTap: () {}),
+              SsCallAction(
+                Icons.mic_none_rounded,
+                'Falar',
+                activeIcon: Icons.mic_rounded,
+                onHoldStart: () {},
+                onHoldEnd: () {},
+              ),
+              SsCallAction(Icons.call_end_rounded, 'Encerrar', danger: true, onTap: () {}),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),

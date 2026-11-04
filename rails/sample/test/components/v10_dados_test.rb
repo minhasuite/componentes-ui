@@ -62,6 +62,26 @@ class V10DadosTest < ComponentTest
     assert_selector ".ss-tc-empty", text: "Nada ainda"
   end
 
+  test "gráfico v0.10.1: legend :always/:never e show_values com o último valor" do
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "Sala", series: [serie], legend: :always, show_values: true))
+    assert_selector ".ss-tc-legend button", count: 1
+    val = page.find(".ss-tc-legend button .ss-tc-legend-val[data-ss-time-chart-target=reading][data-index='0']")
+    assert_equal "25 °C", val.text
+    assert_equal "25 °C", val["data-last"]
+    assert_no_selector ".ss-tc-legend small"
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "Clima", series: [serie, serie("Umidade", unit: "%", pts: [[T0, 60], [T0 + 30.minutes, 58.5]])],
+                                                   legend: :never))
+    assert_no_selector ".ss-tc-legend"
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "Clima", series: [serie, serie("Umidade", unit: "%", pts: [[T0, 60], [T0 + 30.minutes, 58.5]])],
+                                                   show_values: true))
+    assert_selector ".ss-tc-legend-val", text: "58,5%"
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "Clima", series: [serie, serie("U", unit: "%")], legend: false))
+    assert_no_selector ".ss-tc-legend"
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "x", locale: :en, legend: :always, show_values: true,
+                                                   series: [serie(pts: [[T0, 1234.5], [T0 + 1.hour, nil]], decimals: 1)]))
+    assert_selector ".ss-tc-legend-val", text: "1,234.5 °C"
+  end
+
   test "gráfico: faixas dentro, no mesmo eixo, sem controller próprio" do
     render_inline(Ss::TimeSeriesChartComponent.new(title: "Casa", series: [serie], bands: [luz], from: T0, to: T0 + 4.hours, mode: :step))
     assert_equal "step", page.find("figure.ss-tc")["data-ss-time-chart-mode-value"]
@@ -154,5 +174,65 @@ class V10DadosTest < ComponentTest
     assert_selector "a.ss-btn[href='/x']", text: "Tentar de novo"
     render_inline(Ss::LogbookComponent.new(entries: [], texts: { empty: "Sem eventos" }))
     assert_text "Sem eventos"
+  end
+  test "fuso v0.10.1: gráfico, faixas e logbook no time_zone:" do
+    t = Time.utc(2026, 11, 5, 1, 30) # 22:30 do dia 4 em São Paulo; 10:30 do dia 5 em Tóquio
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "x", time_zone: "America/Sao_Paulo", series: [serie(pts: [[t, 1.0], [t + 1.hour, 2.0]])]))
+    assert_equal "America/Sao_Paulo", page.find("figure.ss-tc")["data-ss-time-chart-time-zone-value"]
+    assert_includes page.find(".ss-sr[id$='-sum']", visible: :all).text(:all), "04/11 22:30"
+    render_inline(Ss::StateBandsComponent.new(time_zone: "Asia/Tokyo", rows: [{ label: "L", segments: [{ from: t, to: t + 1.hour, state: "on", label: "On" }] }]))
+    assert_equal "Asia/Tokyo", page.find(".ss-sb")["data-ss-state-bands-time-zone-value"]
+    assert_selector ".ss-sb-fill > i[title*='05/11 10:30']"
+    render_inline(Ss::TimeSeriesChartComponent.new(title: "x", series: [serie]))
+    assert_nil page.find("figure.ss-tc")["data-ss-time-chart-time-zone-value"]
+    render_inline(Ss::LogbookComponent.new(entries: [{ at: t, title: "A" }, { at: t - 3.hours, title: "B" }], now: t, time_zone: "Asia/Tokyo"))
+    assert_selector ".ss-lb-day", count: 1
+    assert_selector ".ss-lb-time", text: "10:30"
+    render_inline(Ss::LogbookComponent.new(entries: [{ at: t, title: "A" }, { at: t - 3.hours, title: "B" }], now: t, time_zone: "America/Sao_Paulo"))
+    assert_selector ".ss-lb-time", text: "22:30"
+    assert_raises(ArgumentError) { Ss::LogbookComponent.new(entries: [], time_zone: "Marte/Olimpo") }
+  end
+
+  test "logbook v0.10.1: fim com link, slot e sem marcador" do
+    e = [{ at: T0, title: "A" }]
+    render_inline(Ss::LogbookComponent.new(entries: e, now: T0, end_url: "/hist?dias=30"))
+    assert_selector ".ss-lb-foot.is-end", text: "Início do registro"
+    assert_selector ".ss-lb-foot.is-end a.ss-lb-end-link[href='/hist?dias=30']", text: "Ver um período maior"
+    render_inline(Ss::LogbookComponent.new(entries: e, now: T0, end_url: "/h", end_link_label: "Mais 30 dias", end_marker: false))
+    assert_no_text "Início do registro"
+    assert_selector "a.ss-lb-end-link", text: "Mais 30 dias"
+    render_inline(Ss::LogbookComponent.new(entries: e, now: T0, end_marker: false))
+    assert_no_selector ".ss-lb-foot.is-end"
+    render_inline(Ss::LogbookComponent.new(entries: e, now: T0)) { |l| l.with_end { "<a href='/x' class='fim'>Fim</a>".html_safe } }
+    assert_selector ".ss-lb-foot.is-end a.fim"
+    assert_no_text "Início do registro"
+  end
+
+  test "agenda em lista v0.10.1: dias, vazio, faixa da semana e cores" do
+    d = Date.new(2026, 11, 4) # quarta
+    render_inline(Ss::AgendaListComponent.new(now: Time.zone.local(2026, 11, 4, 9), week_strip: true, selected: d,
+      days: [{ date: d, events: [{ time: "08:30", title: "Dentista", detail: "Dr. Paulo", tone: :info, url: "/c/1" },
+                                 { time: "14:00", title: "Reunião", color: "#c0392b" }] },
+             { date: d + 1, events: [] },
+             { date: d + 2, label: "Viagem", events: [{ time: "Dia todo", title: "Praia", color: "red;x:y" }] }]))
+    assert_selector ".ss-agl[role=region][aria-label=Agenda]"
+    assert_selector "nav.ss-agl-week a.ss-agl-wd", count: 3
+    assert_selector "nav.ss-agl-week span.ss-agl-wd[aria-disabled]", count: 4
+    assert_selector "a.ss-agl-wd[aria-current=date][href='#day-2026-11-04'] .ss-agl-mark.is-on"
+    assert_selector "a.ss-agl-wd[href='#day-2026-11-05'] .ss-agl-mark:not(.is-on)"
+    assert_selector "#day-2026-11-04 .ss-agl-head", text: "Hoje"
+    assert_selector "#day-2026-11-05 .ss-agl-head", text: "Amanhã"
+    assert_selector "#day-2026-11-06 .ss-agl-head", text: "Viagem"
+    assert_selector "#day-2026-11-05 .ss-agl-empty", text: "Nada neste dia"
+    assert_selector "li.ss-agl-ev[style*='var(--ss-info)'] a.ss-agl-link[href='/c/1']", text: "Dentista"
+    assert_selector "li.ss-agl-ev[style*='#c0392b']", text: "Reunião"
+    assert_selector "li.ss-agl-ev[style*='var(--accent)']", text: "Praia"
+    render_inline(Ss::AgendaListComponent.new(days: [{ date: d, events: [] }], week_strip: true, day_url: "/agenda?dia=%{date}", empty_label: "Livre"))
+    assert_selector "a.ss-agl-wd[href='/agenda?dia=2026-11-01']"
+    assert_selector ".ss-agl-empty", text: "Livre"
+    I18n.with_locale(:en) do
+      render_inline(Ss::AgendaListComponent.new(days: [{ date: d, events: [] }]))
+      assert_selector ".ss-agl-empty", text: "Nothing this day"
+    end
   end
 end

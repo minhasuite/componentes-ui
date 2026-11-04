@@ -11,6 +11,14 @@ module Ss
   # form de quem chama. action: :heating | :cooling | :idle | :off (o que o aparelho faz agora;
   # padrão: deduzido do modo e da temperatura). modes: [:off, :heat, :cool, :auto] ou hashes
   # { value:, label:, tone:, icon: }. pending: true mostra "Enviando…"; disabled: true apaga.
+  #
+  # v0.10.1 (como o SsThermostat(color:, tone:, showModes:, currentLabel:)):
+  # - color: (cor CSS) ou tone: (:accent, :info, :warn, :danger, :success, :neutral, :heat,
+  #   :cool) pinta o anel sem depender do modo; color: ganha de tone:, e os dois ganham do modo.
+  # - show_modes: false esconde os chips de modo (o modo atual continua no hidden mode_name:).
+  # - current_label: troca a linha da temperatura atual inteira ("Agora 22°" → o que vier).
+  # - adjust_when_off: true deixa mudar o alvo (−/+, arrasto, teclado) com o modo off.
+  # - format: segue o Kernel.format também no JS (o %% vira %).
   class ThermostatComponent < BaseComponent
     ICONS = {
       "off" => '<path d="M12 3v8M6.3 6.8a8 8 0 1 0 11.4 0"/>',
@@ -22,18 +30,25 @@ module Ss
     ACTIONS = %i[off heating cooling idle].freeze
     # Arco de 270° (de 135° a 405°) num círculo de raio 84 centrado em (100, 100).
     ARC = "M 40.6 159.4 A 84 84 0 1 1 159.4 159.4".freeze
+    TONES = { "accent" => "var(--accent)", "info" => "var(--ss-info)", "warn" => "var(--warn)", "danger" => "var(--danger)",
+              "critical" => "var(--danger)", "success" => "var(--success)", "neutral" => "var(--muted)",
+              "heat" => "var(--thermo-heat)", "cool" => "var(--thermo-cool)" }.freeze
 
     attr_reader :name, :target, :current, :min, :max, :step, :unit, :mode, :mode_name, :url, :http_method, :id, :debounce
 
     def initialize(target:, name: "target", current: nil, min: 7, max: 35, step: 0.5, unit: "°C", mode: "heat",
                    modes: %i[off heat cool auto], mode_name: "mode", action: nil, url: nil, method: :post,
                    pending: false, disabled: false, draggable: true, debounce: 700, format: nil, id: nil,
-                   label: nil, labels: {}, **rest)
+                   label: nil, labels: {}, color: nil, tone: nil, show_modes: true, current_label: nil,
+                   adjust_when_off: false, **rest)
       super(**rest)
       @name, @target, @current, @min, @max, @step, @unit = name, target.to_f, current&.to_f, min.to_f, max.to_f, step.to_f, unit
       @mode, @mode_name, @url, @http_method = mode.to_s, mode_name, url, method
       @modes_in, @action, @pending, @disabled, @draggable, @debounce = modes, action, pending, disabled, draggable, debounce
       @format, @label, @labels = format, label, labels
+      @ring = safe_css(color) || TONES[tone.to_s]
+      @show_modes, @current_label = show_modes, current_label
+      @adjust_when_off = adjust_when_off
       @id = id || "ss-thermo-#{SecureRandom.hex(3)}"
     end
 
@@ -49,6 +64,8 @@ module Ss
     end
 
     def off? = mode == "off"
+    # Desligado e sem adjust_when_off: o alvo fica travado.
+    def locked? = disabled? || (off? && !@adjust_when_off)
     def pending? = !!@pending
     def disabled? = !!@disabled
     def form? = url.present?
@@ -81,18 +98,20 @@ module Ss
     end
 
     def current_mode_tone = modes.find { |m| m[:value] == mode }&.dig(:tone)
+    def show_modes? = @show_modes != false && modes.any?
 
     def style
       s = ["--f:#{frac(target)}"]
       s << "--cf:#{frac(current)}" if current
-      s << "--thermo-c:#{current_mode_tone}" if current_mode_tone
+      ring = @ring || current_mode_tone
+      s << "--thermo-c:#{ring}" if ring
       s.join(";")
     end
 
     def root_tag = form? ? :form : :div
 
     def root_options
-      opts = { class: classes("ss-thermo", ("is-disabled" if disabled?)), style:, id: }
+      opts = { class: classes("ss-thermo", ("is-disabled" if disabled?), ("is-adjust-off" if @adjust_when_off)), style:, id: }
       if form?
         opts[:action] = url
         opts[:method] = http_method.to_s == "get" ? "get" : "post"
@@ -102,7 +121,8 @@ module Ss
         controller: "ss-thermostat", mode:, hvac: action,
         ss_thermostat_min_value: min, ss_thermostat_max_value: max, ss_thermostat_step_value: step,
         ss_thermostat_debounce_value: debounce, ss_thermostat_draggable_value: @draggable && !disabled?,
-        ss_thermostat_format_value: @format.to_s,
+        ss_thermostat_format_value: @format.to_s, ss_thermostat_color_value: @ring.to_s,
+        ss_thermostat_adjust_when_off_value: !!@adjust_when_off,
         ss_thermostat_off_label_value: tx(:off, "Desligado"), ss_thermostat_pending_label_value: tx(:pending, "Enviando…")
       })
     end
@@ -118,7 +138,7 @@ module Ss
       nil
     end
 
-    def safe_css(v) = v.to_s.match?(/\A[#\w\s(),.%-]+\z/) ? v.to_s : nil
+    def safe_css(v) = v.to_s.match?(%r{\A[#\w\s(),.%/-]+\z}) ? v.to_s : nil
 
     def step_icon(sign) = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14#{sign == :plus ? 'M12 5v14' : ''}"/></svg>).html_safe
   end

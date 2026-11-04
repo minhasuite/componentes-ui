@@ -1,7 +1,7 @@
 <% if empty? %>
   <%= tag.div(text(:empty, "Nenhuma mudança neste período"), **root_attrs(class: classes("ss-sb-empty"), role: "status")) %>
 <% else %>
-  <% data = embedded? ? {} : in_view_data(controller: "ss-state-bands ss-in-view", ss_state_bands_from_value: from_ms, ss_state_bands_to_value: to_ms, ss_state_bands_lang_value: lang) %>
+  <% data = embedded? ? {} : in_view_data(controller: "ss-state-bands ss-in-view", ss_state_bands_from_value: from_ms, ss_state_bands_to_value: to_ms, ss_state_bands_lang_value: lang, ss_state_bands_time_zone_value: iana_zone).compact %>
   <%= tag.div(**root_attrs(class: classes("ss-sb", ("is-top" if top?), ("is-embedded" if embedded?)), role: "group", "aria-label": title, data: data)) do %>
     <% rows.each_with_index do |row, i| %>
       <div class="ss-sb-row" style="--i:<%= [i, 8].min %>">

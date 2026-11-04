@@ -11,7 +11,12 @@
       <div class="ss-dpad-rocker"><%= key(:channel_up, "is-rock") %><span aria-hidden="true"><%= label(:channel) %></span><%= key(:channel_down, "is-rock") %></div>
     <% end %>
   </div>
-  <div class="ss-dpad-row is-nav">
-    <%= key(:back, "is-round") %><%= key(:home, "is-round") %><%= key(:menu, "is-round") %><% if mute? %><%= key(:mute, "is-round") %><% end %>
-  </div>
+  <% if extra_buttons.any? %>
+    <div class="ss-dpad-row is-extra"><% extra_buttons.each do |b| %><%= extra_key(b) %><% end %></div>
+  <% end %>
+  <% if nav_row? || mute? %>
+    <div class="ss-dpad-row is-nav">
+      <% if nav_row? %><%= key(:back, "is-round") %><%= key(:home, "is-round") %><%= key(:menu, "is-round") %><% end %><% if mute? %><%= key(:mute, "is-round") %><% end %>
+    </div>
+  <% end %>
 <% end %>

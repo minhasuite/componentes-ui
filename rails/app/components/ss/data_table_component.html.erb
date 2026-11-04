@@ -60,13 +60,13 @@
     <% pg = @pagination[:page].to_i %>
     <nav class="ss-dt-pager" aria-label="<%= tt("pagination", default: "Paginação") %>" data-controller="ss-indicator" data-ss-indicator-key-value="dt-pager">
       <% if @pagination[:total] %><span class="ss-dt-total num"><%= tt("items", count: @pagination[:total].to_i, default: { one: "%{count} item", other: "%{count} itens" }) %></span><% end %>
-      <%= pg > 1 ? link_to("‹", page_href(pg - 1), rel: "prev", "aria-label": tt("prev_page", default: "Página anterior")) : tag.span("‹", "aria-disabled": "true") %>
+      <%= pg > 1 ? link_to(Ss::PaginationComponent::PREV, page_href(pg - 1), rel: "prev", "aria-label": tt("prev_page", default: "Página anterior")) : tag.span(Ss::PaginationComponent::PREV, "aria-disabled": "true") %>
       <% page_items.each do |n| %>
-        <% if n == :gap %><span class="ss-dt-gap">…</span>
+        <% if n == :gap %><span class="ss-dt-gap" aria-hidden="true"><%= Ss::PaginationComponent::GAP %></span>
         <% elsif n == pg %><a href="<%= page_href(n) %>" aria-current="page" class="num"><%= n %></a>
         <% else %><a href="<%= page_href(n) %>" class="num"><%= n %></a><% end %>
       <% end %>
-      <%= pg < @pagination[:pages].to_i ? link_to("›", page_href(pg + 1), rel: "next", "aria-label": tt("next_page", default: "Próxima página")) : tag.span("›", "aria-disabled": "true") %>
+      <%= pg < @pagination[:pages].to_i ? link_to(Ss::PaginationComponent::NEXT, page_href(pg + 1), rel: "next", "aria-label": tt("next_page", default: "Próxima página")) : tag.span(Ss::PaginationComponent::NEXT, "aria-disabled": "true") %>
     </nav>
   <% end %>
   <% if selectable? %>

@@ -1,6 +1,8 @@
 module Ss
   # Slider (.ss-range) com o valor ao lado e marcas opcionais embaixo.
-  # format: "R$ %d", "%d%%", "%d km" (sprintf); ticks: [0, 25, 50, 75, 100].
+  # format: "R$ %d", "%d%%", "%d km", "%.1f °C" (como o sprintf); ticks: [0, 25, 50, 75, 100].
+  # v0.10.1: o número sai com o separador decimal do idioma ("%.1f" → "21,5" em pt, "21.5" em
+  # en), no servidor (ss_t number.separator) e no JS (Intl); sem separador de milhar.
   #   render Ss::RangeComponent.new(name: "desconto", label: "Desconto", value: 10, max: 30, format: "%d%%", ticks: [0, 10, 20, 30])
   #
   # v0.10 (casa), tudo opcional:
@@ -36,7 +38,21 @@ module Ss
 
     def pct(v = value) = max == min ? 0 : ((v.to_f - min) * 100.0 / (max - min)).round(2)
 
-    def text(v = value) = Kernel.format(fmt, v)
+    # Formato estilo sprintf (%s, %d, %.Nf, %%), com o decimal do idioma.
+    def text(v = value)
+      fmt.to_s.sub(/%(?:\.(\d+))?([sdf])/) { local_number(v, $2, $1) }.gsub("%%", "%")
+    end
+
+    def local_number(v, kind, prec)
+      raw = case kind
+            when "d" then v.to_f.truncate.to_s
+            when "f" then Kernel.format("%.#{(prec || 6).to_i}f", v.to_f)
+            else prec ? Kernel.format("%.#{prec.to_i}f", v.to_f) : v.to_s
+            end
+      return raw unless raw.match?(/\A-?\d+\.\d+\z/)
+
+      raw.sub(".", ss_t("number.separator", default: ","))
+    end
 
     def fill? = @variant == :fill
     def bubble? = !!@bubble

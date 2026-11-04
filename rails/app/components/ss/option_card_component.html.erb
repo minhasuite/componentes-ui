@@ -1,3 +1,13 @@
+<% if link? %>
+<%= tag.a(href: url, class: classes("ss-option-card", "is-link"), "aria-current": (checked ? "true" : nil), **root_attrs) do %>
+  <% if icon %><span class="ss-option-card-icon" aria-hidden="true"><%= icon %></span><% end %>
+  <span class="ss-option-card-body">
+    <strong><%= title %><% if badge %> <span class="ss-badge ss-badge-accent"><%= badge %></span><% end %></strong>
+    <% if description %><small><%= description %></small><% end %>
+  </span>
+  <span class="ss-option-card-chev" aria-hidden="true"><%= CHEVRON.html_safe %></span>
+<% end %>
+<% else %>
 <%= tag.label(class: classes("ss-option-card", ("is-check" if type == "checkbox")), **root_attrs) do %>
   <input type="<%= type %>" name="<%= name %>" value="<%= value %>" <% if checked %>checked<% end %>>
   <% if icon %><span class="ss-option-card-icon" aria-hidden="true"><%= icon %></span><% end %>
@@ -5,4 +15,5 @@
     <strong><%= title %><% if badge %> <span class="ss-badge ss-badge-accent"><%= badge %></span><% end %></strong>
     <% if description %><small><%= description %></small><% end %>
   </span>
+<% end %>
 <% end %>

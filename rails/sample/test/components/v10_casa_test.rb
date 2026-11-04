@@ -67,6 +67,28 @@ class V10CasaTest < ComponentTest
     assert_no_selector ".ss-notice-actions"
   end
 
+  test "aviso v0.10.1: card-link, imagem, não lido e rodapé (texto e slot)" do
+    render_inline(Ss::NoticeCardComponent.new(title: "Encomenda", text: "Chegou na portaria", url: "/avisos/9", unread: true,
+                                              image_url: "/foto.jpg", image_alt: "Pacote", footer: "Respondido: Sim",
+                                              actions: [{ label: "Ok", url: "/ok" }], dismiss_url: "/avisos/9"))
+    assert_selector ".ss-notice.is-link.is-unread"
+    assert_selector ".ss-notice-head .ss-notice-dot + .ss-notice-title a.ss-notice-link[href='/avisos/9']", text: "Encomenda"
+    assert_selector ".ss-notice-title .ss-sr", text: "não lido", visible: :all
+    assert_selector "img.ss-notice-img[src='/foto.jpg'][alt=Pacote][loading=lazy]"
+    assert_selector ".ss-notice-foot", text: "Respondido: Sim"
+    # Nada interativo dentro do link: ações e dispensar ficam fora dele.
+    assert_no_selector "a.ss-notice-link a, a.ss-notice-link button, a.ss-notice-link form"
+    assert_selector ".ss-notice-actions form[action='/ok'] button"
+    assert_selector "form[action='/avisos/9'] button.ss-notice-x"
+
+    render_inline(Ss::NoticeCardComponent.new(title: "Pergunta", footer: "ignorado")) { |n| n.with_footer { "<b>Confirmado</b>".html_safe } }
+    assert_selector ".ss-notice-foot b", text: "Confirmado"
+    assert_no_text "ignorado"
+    assert_no_selector ".ss-notice.is-link, .ss-notice.is-unread, .ss-notice-dot, .ss-notice-img, a.ss-notice-link"
+    render_inline(Ss::NoticeCardComponent.new(title: "Sem nada"))
+    assert_no_selector ".ss-notice-foot"
+  end
+
   test "microfone: estado, nível e rótulos" do
     render_inline(Ss::MicButtonComponent.new(state: :listening, level: 0.6, size: 64))
     assert_selector ".ss-mic[data-controller=ss-mic][data-ss-mic-state-value=listening][style*='--level: 0.6'][style*='--size: 64px']"
@@ -164,5 +186,71 @@ class V10CasaTest < ComponentTest
     render_inline(Ss::ScanRadarComponent.new(state: :empty, retry_url: "/buscar"))
     assert_selector ".ss-radar[data-state=empty] .ss-radar-status", text: "Nada encontrado"
     assert_selector "form[action='/buscar'] button", text: "Procurar de novo"
+  end
+
+  test "radar compacto: em linha, 72 px e achados em fila ao lado" do
+    render_inline(Ss::ScanRadarComponent.new(compact: true, items: [{ label: "Lâmpada" }, { label: "Tomada" }]))
+    assert_selector ".ss-radar.is-compact[style*='--size: 72px'][data-state=searching]"
+    assert_selector ".ss-radar-side .ss-radar-status", text: "Procurando…"
+    assert_selector ".ss-radar-side .ss-radar-items .ss-radar-chip", count: 2
+    assert_no_selector ".ss-radar-field .ss-radar-items"
+    render_inline(Ss::ScanRadarComponent.new(compact: true, size: 96, state: :empty, retry_url: "/b"))
+    assert_selector ".ss-radar.is-compact[style*='--size: 96px'] .ss-radar-side form[action='/b'] button", text: "Procurar de novo"
+    render_inline(Ss::ScanRadarComponent.new(items: [{ label: "A" }]))
+    assert_selector ".ss-radar[style*='--size: 240px'] .ss-radar-field .ss-radar-items"
+    assert_no_selector ".ss-radar-side, .ss-radar.is-compact"
+  end
+  test "player v0.10.1: liga/desliga, volume_param, −/+ de volume, mudo e o slot do que tocar" do
+    render_inline(Ss::MediaPlayerComponent.new(title: "T", state: :idle, power: false, power_url: "/p", volume: 0.3, volume_url: "/v",
+                                               volume_param: "value", volume_up_url: "/up", volume_down_url: "/down",
+                                               mute_url: "/mute", muted: true)) { |m| m.with_media_picker { "<ul class='fontes'></ul>".html_safe } }
+    assert_selector "form[action='/p'] button.ss-media-power[aria-pressed=false][aria-label=Ligar]"
+    assert_selector "form[action='/v'] input[type=range][name=value]"
+    assert_selector "form[action='/up'] button[aria-label='Aumentar volume']"
+    assert_selector "form[action='/down'] button[aria-label='Diminuir volume']"
+    assert_selector "form[action='/mute'] button.ss-media-mute.is-on[aria-pressed=true][aria-label='Tirar do mudo']"
+    assert_selector ".ss-media-picker ul.fontes"
+    render_inline(Ss::MediaPlayerComponent.new(state: :playing, title: "T", power: true, power_url: "/p", volume: 0.5, volume_url: "/v"))
+    assert_selector "button.ss-media-power.is-on[aria-label=Desligar]"
+    assert_selector "input[type=range][name=volume]"
+    render_inline(Ss::MediaPlayerComponent.new(state: :unavailable, power: true, power_url: "/p"))
+    assert_selector "button.ss-media-power[disabled]"
+    render_inline(Ss::MediaPlayerComponent.new(state: :idle))
+    assert_no_selector ".ss-media-power, .ss-media-vol, .ss-media-picker"
+  end
+
+  test "controle v0.10.1: sem a linha de navegação, keys: e extra_buttons:" do
+    render_inline(Ss::DPadComponent.new(url: "/tv", nav_row: false, keys: { ok: "select" },
+                                        extra_buttons: [{ name: "netflix", label: "Netflix" }, { label: "sem nome" }]))
+    assert_no_selector "[data-key=back], [data-key=home], [data-key=menu]"
+    assert_selector "form[action='/tv'] input[name=key][value=select]", visible: :all
+    assert_selector "button[data-key=ok][data-value=select]"
+    assert_selector "form input[name=key][value=up]", visible: :all
+    assert_selector ".ss-dpad-row.is-extra button.is-extra[data-value=netflix]", text: "Netflix", count: 1
+    assert_selector "form input[name=key][value=netflix]", visible: :all
+    render_inline(Ss::DPadComponent.new(nav_row: false, mute: true))
+    assert_selector ".ss-dpad-row.is-nav [data-key=mute]"
+    assert_no_selector "[data-key=home]"
+  end
+
+  test "clima v0.10.1: chance de chuva de agora, sensação e chuva no diário" do
+    render_inline(Ss::WeatherCardComponent.new(temperature: 24, condition: :rain, rain_chance: 80, feels_like: 26, max: 27,
+                                               forecast: [{ label: "Ter", condition: :rain, temp: 25, min: 18, rain_chance: 60 }]))
+    assert_selector ".ss-wx-cond .ss-wx-rain svg"
+    assert_selector ".ss-wx-rain", text: "80%"
+    assert_selector ".ss-wx-now[aria-label*='Chance de chuva 80%']"
+    assert_selector ".ss-wx-minmax", text: "Sensação 26°"
+    assert_selector ".ss-wx-strip li small.is-rain svg"
+    assert_selector ".ss-wx-strip li small.is-rain", text: "60%"
+  end
+
+  test "relógio v0.10.1: segundos em dígitos e fit" do
+    render_inline(Ss::ClockComponent.new(now: Time.zone.local(2026, 11, 4, 14, 32, 7), seconds: :digits, fit: true, fixed: true))
+    assert_selector ".ss-clock.is-fit.is-digits .ss-clock-sec", text: "07"
+    assert_no_selector ".ss-clock-dot"
+    assert_selector ".ss-clock[aria-label^='14:32:07']"
+    render_inline(Ss::ClockComponent.new(now: Time.zone.local(2026, 11, 4, 14, 32, 8), seconds: true, fixed: true))
+    assert_selector ".ss-clock-dot"
+    assert_no_selector ".ss-clock-sec, .ss-clock.is-fit"
   end
 end

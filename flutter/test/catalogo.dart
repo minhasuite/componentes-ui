@@ -141,6 +141,7 @@ final catalogo = comV08(<Componente>[
       'loading troca o conteúdo por um spinner e bloqueia o toque.',
       'Sem onPressed (ou loading) fica com opacidade 50%.',
       'Toque com ripple do Material no raio do botão.',
+      'SsButton.text: botão de texto (link) sem fundo nem sombra, na cor da marca (danger: vermelho), altura 40 (32 no small), não expande.',
     ],
     estados: [
       for (final v in SsButtonVariant.values)
@@ -151,6 +152,16 @@ final catalogo = comV08(<Componente>[
         'small',
         'small, sem expandir',
         (_) => _pad(const SsButton(label: 'Filtrar', small: true, expand: false, onPressed: _nada)),
+      ),
+      Estado(
+        'texto',
+        'SsButton.text (link)',
+        (_) => _pad(const SsButton.text(label: 'Esqueci a senha', onPressed: _nada)),
+      ),
+      Estado(
+        'texto-perigo',
+        'SsButton.text com ícone, danger',
+        (_) => _pad(const SsButton.text(label: 'Remover', icon: Icons.delete_outline, danger: true, onPressed: _nada)),
       ),
     ],
   ),
@@ -355,6 +366,9 @@ final catalogo = comV08(<Componente>[
     comportamentos: [
       'A busca filtra todas as linhas pelo título e subtítulo.',
       'Seções recolhem e expandem; danger pinta a linha de vermelho.',
+      'onDeleteAccount nulo tira o botão "Excluir minha conta".',
+      'appearance: widgets livres em "Aparência e sobre" (paleta, switch, idioma); SsMenuSection(top:) põe widgets antes das linhas. SsMenuCard é o cartão das linhas.',
+      'O tema usa o SsSegmented da suíte (com ícones), não o SegmentedButton do Material.',
     ],
     estados: [
       Estado(
@@ -377,6 +391,37 @@ final catalogo = comV08(<Componente>[
           onLogout: _nada,
         ),
         tamanho: _tela,
+      ),
+      Estado(
+        'aparencia-livre',
+        'sem excluir conta; aparência com paleta, switch e idioma',
+        (_) => SsMenuView(
+          name: 'Ana Souza',
+          email: 'ana@exemplo.com',
+          sections: const [],
+          themeMode: ThemeMode.dark,
+          onThemeMode: (_) {},
+          onLogout: _nada,
+          appearanceOpen: true,
+          appearance: [
+            SsMenuCard(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: SsPalettePicker(value: SsBrand.violeta, onChanged: (_) {}),
+            ),
+            SsMenuSwitch(label: 'Sons', icon: Icons.volume_up_outlined, value: true, onChanged: (_) {}),
+            SsMenuCard(
+              padding: EdgeInsets.zero,
+              child: SsLocalePicker(
+                value: null,
+                onChanged: (_) {},
+                systemOption: true,
+                onSystem: _nada,
+                showFlag: false,
+              ),
+            ),
+          ],
+        ),
+        tamanho: const Size(390, 780),
       ),
     ],
   ),
@@ -626,6 +671,9 @@ final catalogo = comV08(<Componente>[
       'O ✓ entra crescendo (220 ms, easeOutBack) e empurra o texto.',
       'Encolhe para 0,97 ao toque, com haptic leve.',
       'Contador opcional em DM Mono.',
+      'onTap nulo desabilita: o chip apaga (45%) e não responde ao toque.',
+      'color: bolinha da cor antes do texto, com borda para a cor clara aparecer; marcado, o ✓ fica dentro dela.',
+      'color com swatch: true pinta o chip inteiro (texto claro ou escuro conforme a cor); marcado ganha o anel da marca.',
     ],
     estados: [
       Estado(
@@ -637,6 +685,44 @@ final catalogo = comV08(<Componente>[
               SsFilterChip('Todos', selected: false, onTap: _nada, count: 48),
               SsFilterChip('Com vencido', selected: true, onTap: _nada, count: 6),
               SsFilterChip('Sem compra', selected: false, onTap: _nada),
+            ],
+          ),
+        ),
+      ),
+      Estado(
+        'desabilitado',
+        'desabilitado (onTap nulo)',
+        (_) => const Center(
+          child: SsChipBar(
+            children: [
+              SsFilterChip('Todos', selected: true, onTap: null, count: 48),
+              SsFilterChip('Sem compra', selected: false, onTap: null),
+            ],
+          ),
+        ),
+      ),
+      Estado(
+        'cor',
+        'amostra de cor (cores claras com borda)',
+        (_) => Center(
+          child: SsChipBar(
+            children: [
+              SsFilterChip('Branco', color: const Color(0xFFFFFFFF), selected: true, onTap: _nada),
+              SsFilterChip('Amarelo', color: const Color(0xFFFFF59D), selected: false, onTap: _nada),
+              SsFilterChip('Azul', color: const Color(0xFF3D5AFE), selected: false, onTap: _nada),
+            ],
+          ),
+        ),
+      ),
+      Estado(
+        'swatch',
+        'chip pintado (swatch: true)',
+        (_) => Center(
+          child: SsChipBar(
+            children: [
+              SsFilterChip('Quente', color: const Color(0xFFFFD8A8), swatch: true, selected: true, onTap: _nada),
+              SsFilterChip('Neutro', color: const Color(0xFFFFFFFF), swatch: true, selected: false, onTap: _nada),
+              SsFilterChip('Frio', color: const Color(0xFF1E3A8A), swatch: true, selected: false, onTap: _nada),
             ],
           ),
         ),

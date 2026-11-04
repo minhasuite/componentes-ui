@@ -34,7 +34,7 @@
     <% if legend? %>
       <ul class="ss-tc-legend" aria-label="<%= text(:legend, "Séries") %>">
         <% series.each_with_index do |s, i| %>
-          <li><button type="button" aria-pressed="true" style="--c:<%= color(i) %>" data-index="<%= i %>" data-action="ss-time-chart#toggle" data-ss-time-chart-target="key"><%= s[:name] %><% if s[:unit] %> <small><%= s[:unit] %></small><% end %></button></li>
+          <li><button type="button" aria-pressed="true" style="--c:<%= color(i) %>" data-index="<%= i %>" data-action="ss-time-chart#toggle" data-ss-time-chart-target="key"><%= s[:name] %><% if show_values? %> <b class="ss-tc-legend-val num" data-index="<%= i %>" data-last="<%= last_value(s) %>" data-ss-time-chart-target="reading"><%= last_value(s) %></b><% elsif s[:unit] %> <small><%= s[:unit] %></small><% end %></button></li>
         <% end %>
       </ul>
     <% end %>

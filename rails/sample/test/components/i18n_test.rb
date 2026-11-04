@@ -212,7 +212,15 @@ class I18nV10RenderTest < ComponentTest
       Ss::ScanRadarComponent.new(state: :empty, retry_url: "/r"),
       Ss::ScanRadarComponent.new(items: [{ label: "I1" }, { label: "I2" }]),
       Ss::IconPickerComponent.new(name: "i", icons: [["bulb", SVG]], allow_none: true),
-      Ss::LocalePickerComponent.new(value: "en", name: "l")
+      Ss::LocalePickerComponent.new(value: "en", name: "l"),
+      Ss::LocalePickerComponent.new(value: nil, name: "l", system_option: true),
+      Ss::NoticeCardComponent.new(title: "N", url: "/n", unread: true, footer: "F"),
+      Ss::ScanRadarComponent.new(state: :empty, retry_url: "/r", compact: true),
+      Ss::TimeSeriesChartComponent.new(title: "C", series: [serie], legend: :always, show_values: true),
+      Ss::MediaPlayerComponent.new(state: :idle, power: false, power_url: "/p", volume: 0.2, mute_url: "/m", volume_up_url: "/u", volume_down_url: "/d"),
+      Ss::WeatherCardComponent.new(temperature: 20, condition: :rain, rain_chance: 40, feels_like: 19),
+      Ss::LogbookComponent.new(entries: eventos, now: NOW, end_url: "/h"),
+      Ss::AgendaListComponent.new(days: [{ date: NOW.to_date, events: [] }, { date: NOW.to_date + 1, events: [] }], now: NOW, week_strip: true)
     ]
   end
 

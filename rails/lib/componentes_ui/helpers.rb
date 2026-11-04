@@ -82,6 +82,27 @@ module ComponentesUi
     def ss_weekdays(long: false) = ss_t("date.#{long ? "weekdays" : "weekdays_short"}", default: nil) || (long ? WEEKDAYS_LONG_PT : WEEKDAYS_PT)
     def ss_months(short: false) = ss_t("date.#{short ? "months_short" : "months"}", default: nil) || (short ? MONTHS_SHORT_PT : MONTHS_PT)
 
+    # ── Moldura (v0.10.1) ─────────────────────────────────────────────
+    # Script inline para o <head> do layout com Ss::AppShellComponent: lê a escolha
+    # "menu recolhido" (localStorage ou cookie ss_shell_collapsed) e põe
+    # data-ss-shell-collapsed no <html> antes da 1ª pintura (o menu não pisca aberto).
+    # Também copia o localStorage antigo para o cookie, que o servidor lê.
+    #   <head> … <%= ss_app_shell_head %> … </head>
+    # Com CSP, sai com o nonce da requisição (content_security_policy_nonce).
+    APP_SHELL_HEAD_JS = <<~JS.gsub(/\n\s*/, "").freeze
+      (function(){try{var d=document.documentElement,v=null,m=document.cookie.match(/(?:^|;\\s*)ss_shell_collapsed=([01])/);
+      try{v=localStorage.getItem("ss-shell-collapsed")}catch(e){}
+      if(v!=="1"&&v!=="0")v=m?m[1]:null;
+      if(v==="1")d.setAttribute("data-ss-shell-collapsed","");
+      if(v&&(!m||m[1]!==v))document.cookie="ss_shell_collapsed="+v+"; path=/; max-age=31536000; samesite=lax"}catch(e){}})();
+    JS
+
+    def ss_app_shell_head
+      nonce = (content_security_policy_nonce if respond_to?(:content_security_policy_nonce)) rescue nil
+      attr = nonce ? %( nonce="#{ERB::Util.html_escape(nonce)}") : ""
+      %(<script#{attr} data-ss-shell-head>#{APP_SHELL_HEAD_JS}</script>).html_safe
+    end
+
     # Nome da paleta e da família no idioma da página (paletas.rb tem o pt-BR, gerado).
     def ss_palette_name(slug)
       pt = ComponentesUi::PALETAS[slug.to_s] if defined?(ComponentesUi::PALETAS)

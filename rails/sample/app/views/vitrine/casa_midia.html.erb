@@ -53,6 +53,19 @@
   </div>
 <% end %>
 
+<%= demo "Ss::MediaPlayerComponent (v0.10.1)", "power: (true/false; nil esconde) + power_url: liga e desliga; volume_param: troca o nome do param do slider; volume_up_url:/volume_down_url: dão −/+ de volume; mute_url: + muted: o mudo; o slot with_media_picker é o que tocar.",
+      uso: 'render Ss::MediaPlayerComponent.new(title:, state:, power: true, power_url:, volume: 0.4, volume_url:, volume_param: "value", volume_up_url:, volume_down_url:, mute_url:, muted: false) { |m| m.with_media_picker { … } }' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem;align-items:start">
+    <%= render Ss::MediaPlayerComponent.new(title: "Jornal da noite", subtitle: "Globo", source: "TV da sala", state: :playing, power: true, power_url: "#",
+          volume: 0.4, volume_url: "#", volume_param: "value", volume_up_url: "#", volume_down_url: "#", mute_url: "#", play_url: "#", pause_url: "#") do |m| %>
+      <% m.with_media_picker do %>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="ss-chip" aria-current="true">TV</span><span class="ss-chip">Netflix</span><span class="ss-chip">YouTube</span><span class="ss-chip">HDMI 2</span></div>
+      <% end %>
+    <% end %>
+    <%= render Ss::MediaPlayerComponent.new(source: "Receiver da varanda", state: :idle, power: false, power_url: "#", volume_up_url: "#", volume_down_url: "#", mute_url: "#", muted: true) %>
+  </div>
+<% end %>
+
 <%= demo "Ss::NoticeCardComponent", "Ícone, título, texto, tom (info, warn, critical, success), hora e N ações (a 1ª cheia, as outras fantasma), mais o dispensar (button_to com dismiss_url, ou dismissible: true que só tira da tela).",
       uso: 'render Ss::NoticeCardComponent.new(title:, text:, tone: :warn, time: "14:32", actions: [{ label:, url: }, { label:, url:, method: :delete }], dismiss_url:)' do %>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:.75rem">
@@ -63,6 +76,21 @@
     <%= render Ss::NoticeCardComponent.new(title: "Vazamento na lavanderia", text: "O sensor de água detectou umidade.", tone: :critical, time: "agora",
           actions: [{ label: "Fechar registro", url: "#" }, { label: "Ligar para alguém", url: "#" }, { label: "Silenciar", url: "#" }], dismissible: true) %>
     <%= render Ss::NoticeCardComponent.new(title: "Backup concluído", text: "Tudo salvo às 03:00.", tone: :success, time: "03:00") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::NoticeCardComponent (v0.10.1)", "url: o card inteiro abre o aviso (link esticado no título; ações e dispensar continuam por cima). image_url: imagem 16:9 embaixo do texto. unread: true ponto e borda da cor do tom. footer: (texto) ou o slot with_footer: rodapé miúdo com um fio em cima, para “Respondido: Sim”.",
+      uso: 'render Ss::NoticeCardComponent.new(title:, text:, url: aviso_path(a), unread: true, image_url:, image_alt:, footer: "Respondido: Sim")  ·  { |n| n.with_footer { … } }' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:.75rem;align-items:start">
+    <%= render Ss::NoticeCardComponent.new(title: "Visitante no portão", text: "A câmera do portão viu alguém às 14:32.", tone: :info, time: "14:32",
+          url: "#aviso-visitante", unread: true, image_url: frame, image_alt: "Quadro da câmera do portão",
+          actions: [{ label: "Abrir portão", url: "#" }, { label: "Ignorar", url: "#" }], dismissible: true) %>
+    <%= render Ss::NoticeCardComponent.new(title: "Encomenda na portaria", text: "Chegou um pacote para o apartamento 42.", tone: :warn, time: "10:05",
+          url: "#aviso-encomenda", unread: true, footer: "Avisado pelo porteiro · 1 foto") %>
+    <%= render Ss::NoticeCardComponent.new(title: "Vai jantar em casa?", text: "Pergunta da Ana para hoje à noite.", tone: :success, time: "ontem",
+          url: "#aviso-jantar") do |n| %>
+      <% n.with_footer do %>Respondido: <b>Sim</b><% end %>
+    <% end %>
   </div>
 <% end %>
 
@@ -87,6 +115,13 @@
   </div>
 <% end %>
 
+<%= demo "Ss::FlowDiagramComponent (estreito)", "Numa caixa estreita (~330 px, card de celular) os nomes ficam menores e cortam com reticências em vez de encostar nos discos vizinhos.",
+      uso: 'render Ss::FlowDiagramComponent.new(center:, around:, links:)  # mesmo uso; o tamanho vem da caixa' do %>
+  <div class="ss-card ss-card-pad" id="vt-flow-estreito" style="width:330px;max-width:100%">
+    <%= render Ss::FlowDiagramComponent.new(center: casa, around: [solar, rede, carro, bat], links: [{ from: :solar, to: :casa, power: 3800 }, { from: :casa, to: :bat, power: 1400 }, { from: :rede, to: :casa, power: 0 }, { from: :carro, to: :casa, power: 0 }]) %>
+  </div>
+<% end %>
+
 <%= demo "Ss::DPadComponent", "Cruz com OK, voltar/início/menu e as gangorras de volume e canal. Com url:, cada tecla é um button_to com key=; sem url, só o evento ss-dpad:key. Com foco no controle, setas, Enter e Esc apertam.",
       uso: 'render Ss::DPadComponent.new(url: remoto_path(tv), volume: true, channel: true)' do %>
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2rem">
@@ -94,6 +129,15 @@
     <div style="display:grid;gap:.5rem"><%= render Ss::DPadComponent.new(url: vitrine_path("casa_midia"), disabled: true, style: "--s: 9rem") %><small class="text-muted">disabled (aparelho offline)</small></div>
   </div>
   <p style="margin-top:.75rem"><output id="vt-dpad-out" class="ss-badge">última tecla: —</output></p>
+<% end %>
+
+<%= demo "Ss::DPadComponent (v0.10.1)", "nav_row: false tira voltar/início/menu (câmera PTZ); keys: troca o valor enviado de cada tecla (ok → select); extra_buttons: botões aprendidos numa linha a mais (cada um manda key=<name>).",
+      uso: 'render Ss::DPadComponent.new(url:, nav_row: false)  ·  Ss::DPadComponent.new(url:, keys: { ok: "select" }, extra_buttons: [{ name: "netflix", label: "Netflix" }])' do %>
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:2rem">
+    <div style="display:grid;gap:.5rem;justify-items:center"><%= render Ss::DPadComponent.new(nav_row: false, style: "--s: 10rem") %><small class="text-muted">câmera PTZ (nav_row: false)</small></div>
+    <%= render Ss::DPadComponent.new(keys: { ok: "select", home: "KEY_HOME" }, volume: true,
+          extra_buttons: [{ name: "netflix", label: "Netflix" }, { name: "youtube", label: "YouTube" }, { name: "input", label: "Entrada", icon: Ss::CasaIcons.svg(:menu) }]) %>
+  </div>
 <% end %>
 
 <%= demo "Ss::WeatherCardComponent", "Temperatura, condição (ícone em SVG simples e texto), mín/máx, umidade, vento e a faixa de previsão por hora (chance de chuva) ou por dia (mínima). Só dados.",
@@ -110,11 +154,31 @@
   </div>
 <% end %>
 
+<%= demo "Ss::WeatherCardComponent (v0.10.1)", "rain_chance: chance de chuva de agora, com a gota, ao lado da condição; feels_like: na linha de mín/máx; na previsão por dia, rain_chance: de cada dia embaixo da mínima.",
+      uso: 'render Ss::WeatherCardComponent.new(temperature: 24, condition: :rain, rain_chance: 80, feels_like: 26, forecast: [{ label: "Qui", condition: :rain, temp: 25, min: 18, rain_chance: 60 }])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem;align-items:start;max-width:42rem">
+    <%= render Ss::WeatherCardComponent.new(location: "Curitiba", temperature: 17, condition: :rain, rain_chance: 80, feels_like: 15, min: 13, max: 19, humidity: 91,
+          forecast: [{ label: "Qui", condition: :rain, temp: 19, min: 13, rain_chance: 80 }, { label: "Sex", condition: :cloudy, temp: 21, min: 14, rain_chance: 40 },
+                     { label: "Sáb", condition: :partly_cloudy, temp: 24, min: 15, rain_chance: 10 }, { label: "Dom", condition: :clear, temp: 26, min: 16 }]) %>
+  </div>
+<% end %>
+
 <%= demo "Ss::ClockComponent", "Hora grande em DM Mono, data e o ponto dos segundos. Anda de segundo em segundo com Intl no idioma da página; fixed: true fica parado.",
       uso: 'render Ss::ClockComponent.new(seconds: true)  ·  Ss::ClockComponent.new(now:, hour12: true, date: false, fixed: true)' do %>
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2.5rem">
     <%= render Ss::ClockComponent.new(seconds: true) %>
     <%= render Ss::ClockComponent.new(now: Time.zone.local(2026, 11, 4, 21, 5), hour12: true, date: false, fixed: true, size: 40) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::ClockComponent (v0.10.1)", "seconds: :digits mostra os segundos em dígitos. fit: true encolhe para caber na caixa (abaixo, dois cards de ~160 px lado a lado) em vez de vazar.",
+      uso: 'render Ss::ClockComponent.new(seconds: :digits)  ·  Ss::ClockComponent.new(fit: true, seconds: :digits)' do %>
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:2rem">
+    <%= render Ss::ClockComponent.new(seconds: :digits) %>
+    <div id="vt-clock-fit" style="display:grid;grid-template-columns:repeat(2,160px);gap:.75rem">
+      <div class="ss-card ss-card-pad"><%= render Ss::ClockComponent.new(fit: true, seconds: :digits) %></div>
+      <div class="ss-card ss-card-pad"><%= render Ss::ClockComponent.new(fit: true, now: Time.zone.local(2026, 11, 4, 21, 5), hour12: true, fixed: true) %></div>
+    </div>
   </div>
 <% end %>
 
@@ -131,6 +195,15 @@
     <a class="ss-chip" href="<%= vitrine_path("casa_midia", radar: :found) %>"<%= ' aria-current="true"'.html_safe if radar == :found %>>achou</a>
     <a class="ss-chip" href="<%= vitrine_path("casa_midia", radar: :empty) %>"<%= ' aria-current="true"'.html_safe if radar == :empty %>>nada</a>
   </p>
+<% end %>
+
+<%= demo "Ss::ScanRadarComponent (compact)", "compact: true: em linha, radar pequeno (72 px; size: muda) ao lado do texto, para caber numa lista ou num card. Os achados ficam em fila embaixo do texto.",
+      uso: 'render Ss::ScanRadarComponent.new(compact: true, state: :searching, items: [{ label:, icon: }])' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:1.25rem">
+    <%= render Ss::ScanRadarComponent.new(compact: true, state: :searching, items: achados.first(2)) %>
+    <%= render Ss::ScanRadarComponent.new(compact: true, state: :found, items: achados) %>
+    <%= render Ss::ScanRadarComponent.new(compact: true, state: :empty, retry_url: vitrine_path("casa_midia", radar: :searching)) %>
+  </div>
 <% end %>
 </div>
 
@@ -208,3 +281,14 @@
     document.addEventListener("turbo:before-render", stop)
   })()
 </script>
+
+<%= demo "Ss::CameraTileComponent (v0.10.1: status e título à vista)", "status: \"Gravando\" (ou with_status { … }) põe um selo de texto ao lado do título, em qualquer estado. Offline ou com erro, o título continua por cima do aviso. O quadro escondido ([hidden]) fica escondido de verdade.",
+      uso: 'render Ss::CameraTileComponent.new(title: "Portão", state: :offline, status: "Gravando no cartão")  ·  …{ |t| t.with_status { tag.span("Movimento") } }' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:12px">
+    <%= render Ss::CameraTileComponent.new(title: "Quintal", image_url: frame, age: 4, status: "Gravando") %>
+    <%= render Ss::CameraTileComponent.new(title: "Portão", state: :offline, status: "Gravando no cartão", retry_button: true) %>
+    <%= render Ss::CameraTileComponent.new(title: "Corredor", state: :error, image_url: frame, retry_button: true) do |t| %>
+      <% t.with_status do %>Movimento 14:02<% end %>
+    <% end %>
+  </div>
+<% end %>

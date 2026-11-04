@@ -9,6 +9,9 @@ enum SsButtonVariant { primary, ghost, success, danger }
 /// `elevation` do Material não reproduz. Altura 50, raio 14 (11 quando `small`).
 /// No toque afunda rápido e, ao soltar, volta com mola ([SsPressable]); o
 /// carregando e o conteúdo trocam com um cruzamento curto.
+///
+/// [SsButton.text] é o botão de texto (link): sem fundo, na cor da marca
+/// ("Esqueci a senha", "Ver tudo", "Desfazer"); [danger] o deixa vermelho.
 class SsButton extends StatelessWidget {
   const SsButton({
     super.key,
@@ -19,7 +22,28 @@ class SsButton extends StatelessWidget {
     this.small = false,
     this.loading = false,
     this.expand = true,
-  });
+  }) : _text = false,
+       _danger = false;
+
+  /// Botão de texto: sem fundo nem sombra, rótulo na cor da marca (ou do
+  /// perigo, com [danger]); altura 40 (32 com [small]); não ocupa a
+  /// largura toda por padrão.
+  const SsButton.text({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.small = false,
+    this.loading = false,
+    this.expand = false,
+    bool danger = false,
+  }) : variant = SsButtonVariant.ghost,
+       _text = true,
+       // ignore: prefer_initializing_formals
+       _danger = danger;
+
+  final bool _text;
+  final bool _danger;
 
   final String label;
   final VoidCallback? onPressed;
@@ -34,8 +58,8 @@ class SsButton extends StatelessWidget {
     final c = SsColors.of(context);
     final enabled = onPressed != null && !loading;
 
-    late final Color bg;
-    late final Color fg;
+    late Color bg;
+    late Color fg;
     List<BoxShadow>? shadow;
     switch (variant) {
       case SsButtonVariant.primary:
@@ -53,7 +77,13 @@ class SsButton extends StatelessWidget {
         fg = AppColors.onDark;
     }
 
-    final height = small ? 36.0 : 50.0;
+    if (_text) {
+      bg = Colors.transparent;
+      fg = _danger ? c.dangerText : c.accentText;
+      shadow = null;
+    }
+
+    final height = _text ? (small ? 32.0 : 40.0) : (small ? 36.0 : 50.0);
     final radius = BorderRadius.circular(small ? AppRadius.stepperBtn : AppRadius.field);
     final fontSize = small ? AppType.meta : AppType.body;
 
@@ -99,7 +129,7 @@ class SsButton extends StatelessWidget {
           width: expand ? double.infinity : null,
           decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
           // Brilho de 1 px no topo dos botões sólidos (volume sem gradiente).
-          foregroundDecoration: variant == SsButtonVariant.ghost
+          foregroundDecoration: variant == SsButtonVariant.ghost || _text
               ? null
               : BoxDecoration(
                   borderRadius: radius,

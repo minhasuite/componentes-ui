@@ -470,6 +470,8 @@ final catalogoV09A = <Componente>[
       'Troca no meio continua de onde o traço está.',
       'uppercase: versalete com espaçamento largo; onDark: texto claro e traço na marca clara.',
       'Toque com haptic de seleção; sem animação com menos movimento.',
+      'Não cabendo (muitas abas, nomes longos, fonte grande), a faixa rola na horizontal com cada aba na largura do nome; a escolhida vem para o meio da vista ao mudar. scrollable força um ou outro.',
+      'icons: um ícone antes de cada nome (nulo na posição = sem ícone).',
     ],
     estados: [
       Estado(
@@ -499,6 +501,30 @@ final catalogoV09A = <Componente>[
           padding: const EdgeInsets.all(16),
           child: SsTabsUnderline(tabs: const ['Dia', 'Semana', 'Mês'], index: 0, onChanged: (_) {}, onDark: true),
         ),
+      ),
+      Estado(
+        'icones',
+        'icons: ícone antes de cada nome',
+        (_) => _pad(
+          SsTabsUnderline(
+            tabs: const ['Painel', 'Câmeras', 'Energia'],
+            icons: const [Icons.dashboard_outlined, Icons.videocam_outlined, Icons.bolt_rounded],
+            index: 1,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+      Estado(
+        'rolavel',
+        'muitas abas: a faixa rola e a escolhida (6ª) vem para a vista',
+        (_) => _pad(
+          SsTabsUnderline(
+            tabs: const ['Sala', 'Cozinha', 'Quarto', 'Escritório', 'Varanda', 'Garagem', 'Lavanderia', 'Jardim'],
+            index: 5,
+            onChanged: (_) {},
+          ),
+        ),
+        aguarde: 600,
       ),
     ],
   ),

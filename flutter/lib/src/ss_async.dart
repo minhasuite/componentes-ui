@@ -147,16 +147,40 @@ class SsInlineAsync<T> extends StatelessWidget {
   }
 }
 
+/// Marca uma peça que monta a própria rolagem (um `CustomScrollView` por
+/// dentro): o [SsPullToRefresh] a usa como está, sem embrulhar num
+/// `SingleChildScrollView` (que a deixaria sem altura limitada).
+abstract interface class SsSelfScrolling {}
+
 /// Puxar para atualizar que funciona com lista curta (força rolagem sempre,
 /// inclusive em `ListView` sem `physics`), na cor da marca e com haptic ao
 /// disparar. Enquanto puxa, um brilho de aurora acende no topo na medida do
 /// arraste e pulsa leve enquanto atualiza (parado com menos movimento).
 /// [child] pode ser uma lista ou qualquer widget (vira rolável).
+///
+/// O que já rola por dentro vai direto, sem embrulho: `ScrollView`
+/// (ListView, CustomScrollView, GridView), `SingleChildScrollView`,
+/// `NestedScrollView`, `Scrollable`, `PageView` e as peças marcadas com
+/// [SsSelfScrolling] ([SsLogbook], [SsPagedList], [SsScreenHeader],
+/// [SsMenuView]). Para um widget próprio que monta a sua rolagem (e precisa
+/// de altura limitada), passe [scrollable] `true`; `false` força o embrulho.
 class SsPullToRefresh extends StatefulWidget {
-  const SsPullToRefresh({super.key, required this.onRefresh, required this.child});
+  const SsPullToRefresh({super.key, required this.onRefresh, required this.child, this.scrollable});
 
   final Future<void> Function() onRefresh;
   final Widget child;
+
+  /// O [child] já rola sozinho? Nulo = descobre pelo tipo (ver acima).
+  final bool? scrollable;
+
+  /// O [child] já rola por dentro (não precisa de `SingleChildScrollView`).
+  static bool selfScrolling(Widget child) =>
+      child is ScrollView ||
+      child is SingleChildScrollView ||
+      child is NestedScrollView ||
+      child is Scrollable ||
+      child is PageView ||
+      child is SsSelfScrolling;
 
   @override
   State<SsPullToRefresh> createState() => _SsPullToRefreshState();
@@ -208,7 +232,7 @@ class _SsPullToRefreshState extends State<SsPullToRefresh> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final child = widget.child is ScrollView
+    final child = widget.scrollable ?? SsPullToRefresh.selfScrolling(widget.child)
         ? widget.child
         : LayoutBuilder(
             builder: (_, box) => SingleChildScrollView(
@@ -298,13 +322,17 @@ class _Brilho extends CustomPainter {
 }
 
 /// Rodapé de lista paginada: carregando (spinner), "Carregar mais" (quando
-/// [hasMore]) ou "Fim da lista".
+/// [hasMore]) ou "Fim da lista" ([endLabel] troca o texto do fim:
+/// "Início do registro", "Sem mais avisos").
 class SsLoadMore extends StatelessWidget {
-  const SsLoadMore({super.key, required this.hasMore, this.loading = false, this.onLoadMore});
+  const SsLoadMore({super.key, required this.hasMore, this.loading = false, this.onLoadMore, this.endLabel});
 
   final bool hasMore;
   final bool loading;
   final VoidCallback? onLoadMore;
+
+  /// Texto do fim da lista. Padrão: [SsStrings.endOfList].
+  final String? endLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +351,7 @@ class SsLoadMore extends StatelessWidget {
       );
     } else {
       w = Text(
-        SsStrings.of(context).endOfList,
+        endLabel ?? SsStrings.of(context).endOfList,
         style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
       );
     }
@@ -335,7 +363,7 @@ class SsLoadMore extends StatelessWidget {
 /// rolagem chega perto do fim e mostra o [SsLoadMore] no rodapé. Com
 /// [onRefresh], ganha o [SsPullToRefresh]. Se a página falhar, para de pedir
 /// sozinha e deixa o "Carregar mais" para tentar de novo.
-class SsPagedList<T> extends StatefulWidget {
+class SsPagedList<T> extends StatefulWidget implements SsSelfScrolling {
   const SsPagedList({
     super.key,
     required this.items,

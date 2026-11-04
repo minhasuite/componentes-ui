@@ -5,6 +5,21 @@
       <% days.each do |d| %><span class="<%= "is-today" if today?(d) %>"><small><%= weekdays[d.wday] %></small><b class="num"><%= d.day %></b></span><% end %>
     </div>
   <% end %>
+  <% if all_day? %>
+    <div class="ss-agenda-allday">
+      <span class="ss-agenda-allday-label"><%= all_day_label %></span>
+      <% days.each do |d| %>
+        <ul class="ss-agenda-allday-col" aria-label="<%= day_label(d) %>: <%= all_day_label %>">
+          <% all_day_on(d).each do |e| %>
+            <li class="ss-agenda-event is-all-day" data-tone="<%= e[:tone] || "accent" %>">
+              <%= e[:url] ? link_to(e[:url], class: "ss-agenda-in") { safe_join([tag.b(e[:title]), (tag.small(e[:sub]) if e[:sub])].compact) } :
+                            tag.div(class: "ss-agenda-in") { safe_join([tag.b(e[:title]), (tag.small(e[:sub]) if e[:sub])].compact) } %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  <% end %>
   <div class="ss-agenda-body">
     <ol class="ss-agenda-hours" aria-hidden="true">
       <% hours.each do |h| %><li class="num"><%= format("%02d:00", h) %></li><% end %>

@@ -21,6 +21,7 @@ export 'src/ss_calendar.dart';
 export 'src/ss_card.dart';
 export 'src/ss_charts.dart';
 export 'src/ss_chat.dart';
+export 'src/ss_color_picker.dart';
 export 'src/ss_command.dart';
 export 'src/ss_compare.dart';
 export 'src/ss_context_menu.dart';

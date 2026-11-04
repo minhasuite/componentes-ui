@@ -331,6 +331,22 @@ class SsStrings {
     required this.channelDown,
     required this.volumeShort,
     required this.channelShort,
+    required this.unmute,
+    required this.feelsLike,
+    required this.rainChance,
+    required this.agendaEmptyDay,
+    required this.deviceRun,
+    required this.holdToTalk,
+    required this.localeSystemShort,
+    required this.localeSystem,
+    required this.unread,
+    required this.colorCustom,
+    required this.colorPickOther,
+    required this.colorHue,
+    required this.colorSaturation,
+    required this.colorBrightness,
+    required this.colorHex,
+    required this.colorHexInvalid,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -764,6 +780,44 @@ class SsStrings {
   final String volumeShort;
   final String channelShort;
 
+  /// Leitor de tela do botão de som quando está mudo (SsMediaPlayer).
+  final String unmute;
+
+  /// Sensação térmica (SsWeatherCard).
+  final String feelsLike;
+
+  /// Chance de chuva em % (SsWeatherCard).
+  final String rainChance;
+
+  /// Dia sem compromisso (SsAgendaList).
+  final String agendaEmptyDay;
+
+  /// Dica do tile que executa um comando (SsDeviceTile.onPress).
+  final String deviceRun;
+
+  /// Dica do botão de segurar para falar (SsCallAction.onHoldStart).
+  final String holdToTalk;
+
+  /// SsLocalePicker(systemOption:, segmented:): a opção do sistema, curta.
+  final String localeSystemShort;
+
+  /// SsLocalePicker(systemOption:): a opção sem idioma fixo.
+  final String localeSystem;
+
+  /// SsNoticeCard(unread:) para o leitor de tela.
+  final String unread;
+
+  /// SsColorPicker(free:): a ficha da cor livre.
+  final String colorCustom;
+
+  /// Título da folha de cor livre do SsColorPicker.
+  final String colorPickOther;
+  final String colorHue;
+  final String colorSaturation;
+  final String colorBrightness;
+  final String colorHex;
+  final String colorHexInvalid;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1101,6 +1155,22 @@ class SsStrings {
     channelDown: 'Canal anterior',
     volumeShort: 'VOL',
     channelShort: 'CH',
+    unmute: 'Ativar som',
+    feelsLike: 'Sensação',
+    rainChance: 'Chance de chuva',
+    agendaEmptyDay: 'Nada neste dia',
+    deviceRun: 'Acionar',
+    holdToTalk: 'segure para falar',
+    localeSystemShort: 'Auto',
+    localeSystem: 'Seguir o sistema',
+    unread: 'Não lido',
+    colorCustom: 'Personalizada',
+    colorPickOther: 'Escolher outra cor',
+    colorHue: 'Matiz',
+    colorSaturation: 'Saturação',
+    colorBrightness: 'Brilho',
+    colorHex: 'Código hex',
+    colorHexInvalid: 'Use o formato #RRGGBB',
   );
 
   /// Inglês.
@@ -1426,6 +1496,22 @@ class SsStrings {
     channelDown: 'Previous channel',
     volumeShort: 'VOL',
     channelShort: 'CH',
+    unmute: 'Unmute',
+    feelsLike: 'Feels like',
+    rainChance: 'Chance of rain',
+    agendaEmptyDay: 'Nothing this day',
+    deviceRun: 'Run',
+    holdToTalk: 'hold to talk',
+    localeSystemShort: 'Auto',
+    localeSystem: 'Follow system',
+    unread: 'Unread',
+    colorCustom: 'Custom',
+    colorPickOther: 'Pick another color',
+    colorHue: 'Hue',
+    colorSaturation: 'Saturation',
+    colorBrightness: 'Brightness',
+    colorHex: 'Hex code',
+    colorHexInvalid: 'Use the #RRGGBB format',
   );
 
   /// Espanhol.
@@ -1751,6 +1837,22 @@ class SsStrings {
     channelDown: 'Canal anterior',
     volumeShort: 'VOL',
     channelShort: 'CH',
+    unmute: 'Activar sonido',
+    feelsLike: 'Sensación',
+    rainChance: 'Probabilidad de lluvia',
+    agendaEmptyDay: 'Nada este día',
+    deviceRun: 'Accionar',
+    holdToTalk: 'mantén pulsado para hablar',
+    localeSystemShort: 'Auto',
+    localeSystem: 'Seguir el sistema',
+    unread: 'No leído',
+    colorCustom: 'Personalizado',
+    colorPickOther: 'Elegir otro color',
+    colorHue: 'Tono',
+    colorSaturation: 'Saturación',
+    colorBrightness: 'Brillo',
+    colorHex: 'Código hex',
+    colorHexInvalid: 'Usa el formato #RRGGBB',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2063,6 +2165,22 @@ class SsStrings {
     'channelDown': channelDown,
     'volumeShort': volumeShort,
     'channelShort': channelShort,
+    'unmute': unmute,
+    'feelsLike': feelsLike,
+    'rainChance': rainChance,
+    'agendaEmptyDay': agendaEmptyDay,
+    'deviceRun': deviceRun,
+    'holdToTalk': holdToTalk,
+    'localeSystemShort': localeSystemShort,
+    'localeSystem': localeSystem,
+    'unread': unread,
+    'colorCustom': colorCustom,
+    'colorPickOther': colorPickOther,
+    'colorHue': colorHue,
+    'colorSaturation': colorSaturation,
+    'colorBrightness': colorBrightness,
+    'colorHex': colorHex,
+    'colorHexInvalid': colorHexInvalid,
   };
 
   /// Os idiomas prontos.
@@ -2410,6 +2528,22 @@ class SsStrings {
     String? channelDown,
     String? volumeShort,
     String? channelShort,
+    String? unmute,
+    String? feelsLike,
+    String? rainChance,
+    String? agendaEmptyDay,
+    String? deviceRun,
+    String? holdToTalk,
+    String? localeSystemShort,
+    String? localeSystem,
+    String? unread,
+    String? colorCustom,
+    String? colorPickOther,
+    String? colorHue,
+    String? colorSaturation,
+    String? colorBrightness,
+    String? colorHex,
+    String? colorHexInvalid,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -2719,6 +2853,22 @@ class SsStrings {
     channelDown: channelDown ?? this.channelDown,
     volumeShort: volumeShort ?? this.volumeShort,
     channelShort: channelShort ?? this.channelShort,
+    unmute: unmute ?? this.unmute,
+    feelsLike: feelsLike ?? this.feelsLike,
+    rainChance: rainChance ?? this.rainChance,
+    agendaEmptyDay: agendaEmptyDay ?? this.agendaEmptyDay,
+    deviceRun: deviceRun ?? this.deviceRun,
+    holdToTalk: holdToTalk ?? this.holdToTalk,
+    localeSystemShort: localeSystemShort ?? this.localeSystemShort,
+    localeSystem: localeSystem ?? this.localeSystem,
+    unread: unread ?? this.unread,
+    colorCustom: colorCustom ?? this.colorCustom,
+    colorPickOther: colorPickOther ?? this.colorPickOther,
+    colorHue: colorHue ?? this.colorHue,
+    colorSaturation: colorSaturation ?? this.colorSaturation,
+    colorBrightness: colorBrightness ?? this.colorBrightness,
+    colorHex: colorHex ?? this.colorHex,
+    colorHexInvalid: colorHexInvalid ?? this.colorHexInvalid,
   );
 }
 

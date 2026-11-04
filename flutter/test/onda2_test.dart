@@ -79,6 +79,84 @@ void main() {
     expect(v, lessThan(9));
   });
 
+  testWidgets('stepper: onChanged nulo desabilita e os rótulos do − e + vêm do widget', (tester) async {
+    await tester.pumpWidget(
+      _app(const SsStepper(value: 3, onChanged: null, decreaseLabel: 'Menos um', increaseLabel: 'Mais um')),
+    );
+    expect(find.text('3'), findsOneWidget);
+    expect(find.bySemanticsLabel('Menos um'), findsOneWidget);
+    expect(find.bySemanticsLabel('Mais um'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.text('3'));
+    await tester.pumpAndSettle();
+    expect(find.text('3'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets('stepper: debounce mostra na hora e avisa uma vez só', (tester) async {
+    final avisos = <num>[];
+    num v = 1;
+    await tester.pumpWidget(
+      _app(
+        StatefulBuilder(
+          builder: (context, set) => SsStepper(
+            value: v,
+            debounce: const Duration(milliseconds: 500),
+            onChanged: (n) => set(() {
+              avisos.add(n);
+              v = n;
+            }),
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('4'), findsOneWidget);
+    expect(avisos, isEmpty);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(avisos, [4]);
+    await tester.pumpAndSettle();
+    expect(find.text('4'), findsOneWidget);
+  });
+
+  testWidgets('stepper: debounce envia o pendente ao sair da tela', (tester) async {
+    final avisos = <num>[];
+    await tester.pumpWidget(_app(SsStepper(value: 1, debounce: const Duration(seconds: 1), onChanged: avisos.add)));
+    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.pump();
+    await tester.pumpWidget(_app(const SizedBox()));
+    await tester.pump();
+    expect(avisos, [2]);
+  });
+
+  testWidgets('SsFilterChip: desabilitado não responde; cor mostra a bolinha', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        const Row(
+          children: [
+            SsFilterChip('Parado', selected: false, onTap: null),
+            SsFilterChip('Branco', selected: true, onTap: null, color: Color(0xFFFFFFFF)),
+            SsFilterChip('Azul', selected: false, onTap: null, color: Color(0xFF2244FF), swatch: true),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Parado'), findsOneWidget);
+    expect(tester.getSemantics(find.text('Parado')), isSemantics(isButton: true, isEnabled: false));
+    var n = 0;
+    await tester.pumpWidget(
+      _app(SsFilterChip('Azul', selected: false, onTap: () => n++, color: const Color(0xFF2244FF))),
+    );
+    await tester.tap(find.text('Azul'));
+    await tester.pumpAndSettle();
+    expect(n, 1);
+  });
+
   testWidgets('stepper: tocar no número permite digitar', (tester) async {
     num v = 2;
     await tester.pumpWidget(

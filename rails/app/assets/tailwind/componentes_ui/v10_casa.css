@@ -9,7 +9,7 @@
   .ss-cam { position: relative; margin: 0; overflow: hidden; border-radius: var(--r-card); background: var(--field);
             box-shadow: var(--shadow-card); color: #fff; isolation: isolate; }
   .ss-cam-frame { position: absolute; inset: 0; z-index: -1; }
-  .ss-cam-frame > img, .ss-cam-frame > video, .ss-cam-frame > canvas, .ss-cam-frame > iframe { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }
+  .ss-cam-frame > :is(img, video, canvas, iframe):not([hidden]) { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }
   /* Véu escuro em cima e embaixo: título e ações leem sobre qualquer imagem. */
   .ss-cam::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
                    background: linear-gradient(180deg, rgba(0, 0, 0, .6), transparent 32%, transparent 62%, rgba(0, 0, 0, .55)); }
@@ -100,6 +100,18 @@
   .ss-media-btn:disabled, .ss-media-play:disabled { cursor: default; }
   .ss-media-btn:disabled { color: var(--line); }
   [data-theme="dark"] .ss-media-btn:disabled { color: var(--muted); opacity: .45; }
+  /* Liga/desliga (power:): no canto do cabeçalho; ligado na cor da marca. */
+  .ss-media-head .ss-media-power { margin-left: auto; align-self: flex-start; }
+  .ss-media-power { flex: none; width: 2.5rem; height: 2.5rem; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+  .ss-media-power svg { width: 20px; height: 20px; }
+  .ss-media-power.is-on { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+  /* Mudo e −/+ de volume (volume_up_url:/volume_down_url:), e o slot do que tocar. */
+  .ss-media-vol .ss-media-btn { flex: none; width: 2.25rem; height: 2.25rem; color: var(--muted); }
+  .ss-media-vol .ss-media-btn svg { width: 20px; height: 20px; }
+  .ss-media-vol .ss-media-mute.is-on { color: var(--danger); }
+  .ss-media-vol > .ss-media-vol-gap { flex: 1; }
+  .ss-media-vol > .ss-media-form:has(.ss-media-btn) { flex: none; display: contents; }
+  .ss-media-picker { padding-top: .75rem; border-top: 1px solid var(--line); }
   .ss-media-play:disabled:not(.is-buffering) { background: var(--field); color: var(--muted); box-shadow: none; }
   .ss-media-spin { width: 24px; height: 24px; border: 2.6px solid rgba(255, 255, 255, .35); border-top-color: #fff; border-radius: 50%; animation: ss-spin .8s linear infinite; }
   @keyframes ss-media-pop { from { scale: .6; } }
@@ -134,6 +146,23 @@
   .ss-notice.is-leaving { animation: ss-notice-out .22s ease-in forwards; }
   @keyframes ss-notice-in { from { opacity: 0; translate: 0 8px; scale: .98; } }
   @keyframes ss-notice-out { to { opacity: 0; translate: 0 -6px; scale: .97; } }
+  /* v0.10.1: card-link (link esticado no título), imagem, não lido e rodapé. */
+  .ss-notice.is-link { position: relative; transition: border-color .15s, background-color .15s; }
+  .ss-notice-link { color: inherit; text-decoration: none; outline: 0; }
+  .ss-notice-link::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+  .ss-notice.is-link:hover { border-color: color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 9%, var(--surface)); }
+  .ss-notice.is-link:active { scale: .99; transition-duration: .08s; }
+  .ss-notice.is-link:has(.ss-notice-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* Ações e dispensar ficam por cima do link esticado. */
+  .ss-notice.is-link .ss-notice-actions, .ss-notice.is-link .ss-notice-x, .ss-notice.is-link .ss-notice-foot :is(a, button, input, select, label) { position: relative; z-index: 1; }
+  .ss-notice-img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-top: .65rem; border-radius: 12px;
+                   background: var(--field); box-shadow: inset 0 0 0 1px var(--line); }
+  .ss-notice-dot { flex: none; align-self: center; width: .5rem; height: .5rem; border-radius: 50%; background: var(--c);
+                   box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); }
+  /* Não lido: borda da cor do tom, 2 px (o padding perde 1 px para nada pular). */
+  .ss-notice.is-unread, [data-theme="dark"] .ss-notice.is-unread { border: 2px solid var(--c); padding: calc(.85rem - 1px) calc(.5rem - 1px) calc(.85rem - 1px) calc(.9rem - 1px); }
+  .ss-notice-foot { margin-top: .75rem; padding-top: .55rem; border-top: 1px solid color-mix(in srgb, var(--c) 22%, var(--line));
+                    color: var(--muted); font-size: .75rem; line-height: 1.35; }
 
   /* ── Microfone com nível (Ss::MicButtonComponent) ── */
   .ss-mic { --size: 72px; --level: 0; --c: var(--accent); display: inline-grid; place-items: center; width: calc(var(--size) * 1.8); aspect-ratio: 1; }
@@ -182,6 +211,13 @@
   .ss-flow-disc b { max-width: calc(var(--d) - 8px); overflow: hidden; color: var(--ink); font-size: clamp(.6rem, 3.1cqw, .82rem); font-weight: 600; white-space: nowrap; }
   .ss-flow-label { margin-top: .25rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted);
                    font-size: clamp(.62rem, 3cqw, .75rem); font-weight: 700; }
+  /* Caixa estreita: o nome do nó de cima sobe para cima do disco (o disco continua no lugar)
+     e os nomes ficam colados, para não encostar no disco nem na seta do centro. */
+  @container (max-width: 22rem) {
+    .ss-flow-label { margin-top: .1rem; line-height: 1.15; }
+    .ss-flow-node[data-slot="top"] { translate: -50% calc(-100% + var(--d) / 2); }
+    .ss-flow-node[data-slot="top"] .ss-flow-label { order: -1; margin: 0 0 .1rem; }
+  }
 
   /* ── Controle remoto (Ss::DPadComponent) ── */
   .ss-dpad { --s: 13rem; display: inline-grid; justify-items: center; gap: 1.1rem; padding: .25rem; border-radius: var(--r-card); outline-offset: 4px; }
@@ -204,6 +240,11 @@
   .ss-dpad-key.is-ok:hover:not(:disabled) { background: var(--accent-hover, var(--accent)); color: #fff; }
   .ss-dpad-key.is-round { width: 3.25rem; height: 3.25rem; border: 1px solid var(--line); background: var(--field); }
   .ss-dpad-key.is-round svg { width: 22px; height: 22px; }
+  /* extra_buttons: botões aprendidos em pílulas, quebrando linha. */
+  .ss-dpad-row.is-extra { flex-wrap: wrap; justify-content: center; gap: .5rem; max-width: 18rem; margin-inline: auto; }
+  .ss-dpad-key.is-extra { display: inline-flex; align-items: center; width: auto; height: 2.5rem; padding: 0 1rem; gap: .4rem; border: 1px solid var(--line); border-radius: 999px; background: var(--field);
+                          font: 700 .8rem var(--font-sans); color: var(--ink); }
+  .ss-dpad-key.is-extra svg { width: 18px; height: 18px; }
   .ss-dpad-rocker { display: grid; justify-items: center; gap: .55rem; width: 3.5rem; padding: .3rem 0; border: 1px solid var(--line); border-radius: 999px;
                     background: var(--field); color: var(--muted); font-size: .7rem; font-weight: 800; }
   .ss-dpad-key.is-rock { width: 3rem; height: 3rem; }
@@ -217,6 +258,8 @@
   .ss-wx-loc { color: var(--muted); font-size: .75rem; font-weight: 700; }
   .ss-wx-temp { font-size: 3.25rem; font-weight: 500; line-height: 1.05; letter-spacing: -.03em; }
   .ss-wx-cond { color: var(--ink-2); font-weight: 700; }
+  .ss-wx-rain { display: inline-flex; align-items: center; gap: .15rem; margin-left: .5rem; color: var(--ss-info); font-size: .82rem; font-weight: 700; vertical-align: 1px; }
+  .ss-wx-rain svg { width: 14px; height: 14px; }
   .ss-wx-minmax { color: var(--muted); font-size: .75rem; margin-top: .15rem; }
   .ss-wx-ico { flex: none; overflow: visible; }
   .ss-wx-sun { fill: #e0952a; stroke: #e0952a; }
@@ -240,6 +283,9 @@
   .ss-wx-strip b { font-size: .82rem; font-weight: 500; }
   .ss-wx-strip small { color: var(--muted); font-size: .7rem; }
   .ss-wx-strip small.is-rain { color: var(--ss-info); }
+  .ss-wx-strip small.is-rain { display: inline-flex; align-items: center; gap: .1rem; }
+  .ss-wx-strip small.is-rain svg { width: 11px; height: 11px; }
+  .ss-wx-strip li { align-content: start; }
 
   /* ── Relógio (Ss::ClockComponent) ── */
   .ss-clock { --clock-size: 4rem; display: inline-grid; justify-items: center; gap: calc(var(--clock-size) * .1); }
@@ -248,7 +294,16 @@
   .ss-clock-dot { width: .14em; height: .14em; margin-left: .16em; border-radius: 50%; background: var(--accent); opacity: .2; transition: opacity .24s; }
   .ss-clock-dot[data-on="true"] { opacity: 1; }
   .ss-clock-ampm { margin-left: .12em; color: var(--muted); font-size: .28em; }
+  /* seconds: :digits: os segundos menores, na linha de base dos minutos. */
+  .ss-clock-sec { align-self: flex-end; margin-left: .12em; padding-bottom: .1em; color: var(--muted); font-size: .36em; font-variant-numeric: tabular-nums; }
   .ss-clock-date { color: var(--muted); font-weight: 700; font-size: max(.85rem, calc(var(--clock-size) * .22)); }
+  .ss-clock { max-width: 100%; }
+  .ss-clock-date { text-align: center; overflow-wrap: anywhere; }
+  /* fit: a hora cabe na largura da caixa ("12:34" ≈ 2,7 em; com segundos/AM-PM, um pouco mais). */
+  .ss-clock.is-fit { display: grid; width: 100%; container-type: inline-size; }
+  .ss-clock.is-fit .ss-clock-time { font-size: min(var(--clock-size), 34cqi); }
+  .ss-clock.is-fit.is-seconds .ss-clock-time, .ss-clock.is-fit:has(.ss-clock-ampm) .ss-clock-time { font-size: min(var(--clock-size), 30cqi); }
+  .ss-clock.is-fit .ss-clock-date { font-size: min(max(.85rem, calc(var(--clock-size) * .22)), 9cqi); }
 
   /* ── Radar de busca (Ss::ScanRadarComponent) ── */
   .ss-radar { --size: 240px; display: inline-grid; justify-items: center; gap: .6rem; }
@@ -282,6 +337,15 @@
   .ss-radar[data-state="empty"] .ss-radar-status { color: var(--muted); }
   .ss-radar-form { display: contents; }
   .ss-radar .ss-btn svg { width: 16px; height: 16px; }
+  /* compact: em linha, radar pequeno ao lado do texto; os achados em fila embaixo do texto. */
+  .ss-radar.is-compact { display: flex; align-items: center; justify-items: initial; gap: .9rem; text-align: start; }
+  .ss-radar.is-compact .ss-radar-field { flex: none; }
+  .ss-radar.is-compact .ss-radar-grid { background: radial-gradient(circle, transparent calc(60% - 1px), var(--line) 60%, transparent calc(60% + 1px)); }
+  .ss-radar.is-compact .ss-radar-sweep { mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px)); }
+  .ss-radar-side { display: grid; justify-items: start; gap: .4rem; min-width: 0; }
+  .ss-radar.is-compact .ss-radar-items { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .ss-radar.is-compact .ss-radar-items li { position: static; translate: none; }
+  .ss-radar.is-compact .ss-radar-chip { box-shadow: none; }
 
   /* Entrada com pulinho (nome próprio: não mexe no ss-iv-pop dos v09). */
   @keyframes ss-casa-pop { from { opacity: 0; scale: .6; } }
@@ -297,5 +361,5 @@
   .ss-mic-ring, .ss-clock-dot { transition: none; }
   .ss-clock-dot { opacity: 1; }
   .ss-notice, .ss-notice.is-leaving, .ss-radar-chip, .ss-wx-strip li, .ss-media-play svg { animation: none; }
-  .ss-cam-retry, .ss-cam-actions > *, .ss-media-btn, .ss-media-play, .ss-notice-x, .ss-mic-btn, .ss-dpad-key, .ss-radar-chip { transition: none; }
+  .ss-cam-retry, .ss-cam-actions > *, .ss-media-btn, .ss-media-play, .ss-notice-x, .ss-notice.is-link, .ss-mic-btn, .ss-dpad-key, .ss-radar-chip { transition: none; }
 }

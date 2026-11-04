@@ -15,6 +15,7 @@
 @import "./v10_casa.css";
 @import "./v10_estrutura.css";
 @import "./v10_web.css";
+@import "./v10_1_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -667,6 +668,11 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
                 font-size: .82rem; font-weight: 700; animation: ss-drop .3s cubic-bezier(.2, .8, .2, 1); }
   .ss-offline svg { width: 1rem; height: 1rem; }
   .ss-offline[hidden] { display: none; }
+  /* v0.10.1: ação na faixa (Tentar de novo): <a|button class="ss-offline-action">. A mensagem é o texto do app. */
+  .ss-offline-action { margin-left: .25rem; padding: .15rem .6rem; border: 1px solid color-mix(in srgb, currentColor 45%, transparent); border-radius: 999px;
+                       background: transparent; color: inherit; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; white-space: nowrap; }
+  .ss-offline-action:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+  .ss-offline-action:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
   /* Toast com contagem: <span class="ss-toast-timer">5</span> + <button>Desfazer</button>; o anel se esvazia em 5 s. */
   .ss-toast-timer { position: relative; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; flex: none;

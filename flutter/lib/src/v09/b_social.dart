@@ -699,8 +699,21 @@ class _SsCelebrateState extends State<SsCelebrate> with SingleTickerProviderStat
 // ---------------------------------------------------------------------------
 
 /// Um botão do [SsCallControls].
+///
+/// Segurar para falar: com [onHoldStart]/[onHoldEnd], encostar o dedo chama
+/// [onHoldStart] (com vibração) e o botão fica aceso e cresce enquanto o dedo
+/// está lá; soltar (onde for) chama [onHoldEnd].
 class SsCallAction {
-  const SsCallAction(this.icon, this.label, {this.onTap, this.active = false, this.activeIcon, this.danger = false});
+  const SsCallAction(
+    this.icon,
+    this.label, {
+    this.onTap,
+    this.active = false,
+    this.activeIcon,
+    this.danger = false,
+    this.onHoldStart,
+    this.onHoldEnd,
+  });
 
   final IconData icon;
   final String label;
@@ -712,11 +725,20 @@ class SsCallAction {
 
   /// Ação de encerrar: vermelho e maior.
   final bool danger;
+
+  /// Dedo encostou (começa a falar).
+  final VoidCallback? onHoldStart;
+
+  /// Dedo saiu (para de falar).
+  final VoidCallback? onHoldEnd;
+
+  bool get _hold => onHoldStart != null || onHoldEnd != null;
 }
 
 /// Fileira de botões redondos grandes de chamada ou ação ao vivo (vídeo,
 /// microfone, encerrar). O de [SsCallAction.danger] é vermelho e maior;
-/// ligado fica na cor da marca. Com [labels], o nome vai embaixo.
+/// ligado fica na cor da marca. Com [labels], o nome vai embaixo. Botão de
+/// segurar ([SsCallAction.onHoldStart]) acende e cresce enquanto pressionado.
 class SsCallControls extends StatelessWidget {
   const SsCallControls({super.key, required this.actions, this.size = 60, this.labels = false});
 
@@ -725,70 +747,129 @@ class SsCallControls extends StatelessWidget {
   final bool labels;
 
   @override
+  Widget build(BuildContext context) => Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [for (final a in actions) _CallButton(action: a, size: size, labels: labels)],
+  );
+}
+
+class _CallButton extends StatefulWidget {
+  const _CallButton({required this.action, required this.size, required this.labels});
+  final SsCallAction action;
+  final double size;
+  final bool labels;
+
+  @override
+  State<_CallButton> createState() => _CallButtonState();
+}
+
+class _CallButtonState extends State<_CallButton> {
+  bool _segurando = false;
+
+  void _comeca() {
+    if (_segurando) return;
+    SsHaptics.tick();
+    setState(() => _segurando = true);
+    widget.action.onHoldStart?.call();
+  }
+
+  void _termina() {
+    if (!_segurando) return;
+    setState(() => _segurando = false);
+    widget.action.onHoldEnd?.call();
+  }
+
+  @override
+  void dispose() {
+    // Saiu da tela com o dedo encostado: encerra a fala.
+    if (_segurando) widget.action.onHoldEnd?.call();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final a = widget.action;
+    final size = widget.size;
     final c = SsColors.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        for (final a in actions)
-          Semantics(
-            button: true,
-            toggled: a.danger ? null : a.active,
-            enabled: a.onTap != null,
-            label: a.label,
-            excludeSemantics: true,
-            child: SsPressable(
-              onTap: a.onTap,
-              scale: .92,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedContainer(
-                    duration: dur,
-                    curve: SsMotion.spring,
-                    width: a.danger ? size * 1.2 : size,
-                    height: a.danger ? size * 1.2 : size,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: a.danger
-                          ? AppColors.danger
-                          : a.active
-                          ? c.accent
-                          : c.surface,
-                      border: !a.danger && !a.active ? Border.all(color: c.line) : null,
-                      boxShadow: a.danger
-                          ? [
-                              BoxShadow(
-                                color: AppColors.danger.withValues(alpha: .4),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                                spreadRadius: -8,
-                              ),
-                            ]
-                          : a.active
-                          ? c.primaryShadow
-                          : AppShadows.card,
-                    ),
-                    child: Icon(
-                      a.active ? (a.activeIcon ?? a.icon) : a.icon,
-                      size: size * (a.danger ? .46 : .4),
-                      color: a.danger || a.active ? AppColors.onDark : (a.onTap == null ? c.muted2 : c.ink),
-                    ),
-                  ),
-                  if (labels) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      a.label,
-                      style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ],
+    final aceso = a.active || _segurando;
+    final habilitado = a.onTap != null || a._hold;
+    final grande = a.danger ? size * 1.2 : size;
+    Widget botao = SsPressable(
+      onTap: a.onTap,
+      enabled: habilitado,
+      scale: a._hold ? 1 : .92,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Segurando, cresce por escala (sem empurrar o rótulo nem os vizinhos).
+          AnimatedScale(
+            scale: _segurando ? 1.12 : 1,
+            duration: dur,
+            curve: SsMotion.spring,
+            child: AnimatedContainer(
+              duration: dur,
+              curve: SsMotion.spring,
+              width: grande,
+              height: grande,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: a.danger
+                    ? AppColors.danger
+                    : aceso
+                    ? c.accent
+                    : c.surface,
+                border: !a.danger && !aceso ? Border.all(color: c.line) : null,
+                boxShadow: a.danger
+                    ? [
+                        BoxShadow(
+                          color: AppColors.danger.withValues(alpha: .4),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                          spreadRadius: -8,
+                        ),
+                      ]
+                    : _segurando
+                    // Segurando: halo na cor da marca em volta.
+                    ? [BoxShadow(color: c.accent.withValues(alpha: .45), blurRadius: 22, spreadRadius: 4)]
+                    : aceso
+                    ? c.primaryShadow
+                    : AppShadows.card,
+              ),
+              child: Icon(
+                aceso ? (a.activeIcon ?? a.icon) : a.icon,
+                size: size * (a.danger ? .46 : .4),
+                color: a.danger || aceso ? AppColors.onDark : (habilitado ? c.ink : c.muted2),
               ),
             ),
           ),
-      ],
+          if (widget.labels) ...[
+            const SizedBox(height: 8),
+            Text(
+              a.label,
+              style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (a._hold) {
+      botao = Listener(
+        onPointerDown: (_) => _comeca(),
+        onPointerUp: (_) => _termina(),
+        onPointerCancel: (_) => _termina(),
+        child: botao,
+      );
+    }
+    return Semantics(
+      button: true,
+      toggled: a.danger || a._hold ? null : a.active,
+      enabled: habilitado,
+      label: a.label,
+      hint: a._hold ? SsStrings.of(context).holdToTalk : null,
+      excludeSemantics: true,
+      child: botao,
     );
   }
 }

@@ -10,7 +10,7 @@ import 'ss_strings.dart';
 /// Tela com título grande que encolhe ao rolar: monta um `CustomScrollView`
 /// com o [SsSliverHeader] e os seus [slivers]. Vai no `body` do Scaffold
 /// (sem AppBar).
-class SsScreenHeader extends StatelessWidget {
+class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
   const SsScreenHeader({
     super.key,
     required this.title,
@@ -23,6 +23,8 @@ class SsScreenHeader extends StatelessWidget {
     this.leading,
     this.onRefresh,
     required this.slivers,
+    this.titleLeading,
+    this.titleWidget,
   });
 
   final String title;
@@ -35,6 +37,12 @@ class SsScreenHeader extends StatelessWidget {
 
   /// Ver [SsSliverHeader.leading].
   final Widget? leading;
+
+  /// Ver [SsSliverHeader.titleLeading].
+  final Widget? titleLeading;
+
+  /// Ver [SsSliverHeader.titleWidget].
+  final Widget? titleWidget;
 
   /// Puxar para atualizar (o [SsPullToRefresh] por fora da rolagem).
   final Future<void> Function()? onRefresh;
@@ -57,6 +65,8 @@ class SsScreenHeader extends StatelessWidget {
         bottom: bottom,
         bottomHeight: bottomHeight,
         leading: leading,
+        titleLeading: titleLeading,
+        titleWidget: titleWidget,
       ),
       ...slivers,
     ],
@@ -78,9 +88,20 @@ class SsSliverHeader extends StatelessWidget {
     this.bottom,
     this.bottomHeight = 52,
     this.leading,
+    this.titleLeading,
+    this.titleWidget,
   });
 
   final String title;
+
+  /// Antes do título grande (ícone tonal, avatar, herói pequeno): até 40 px
+  /// de altura, centrado no bloco do título. Some junto com o título ao rolar.
+  final Widget? titleLeading;
+
+  /// No lugar do título grande (ícone + texto, marca): ocupa a área do
+  /// título (52 px; 74 com [subtitle], que então não aparece). A barra
+  /// compacta e o leitor de tela continuam com [title].
+  final Widget? titleWidget;
   final String? subtitle;
 
   /// À esquerda da barra. Sem ele, a tela aberta por cima de outra ganha o
@@ -167,33 +188,38 @@ class _Delegate extends SliverPersistentHeaderDelegate {
               opacity: 1 - t,
               child: Semantics(
                 header: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      h.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: c.ink,
-                        fontSize: AppType.screenTitle,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.01 * AppType.screenTitle,
-                        height: 1.2,
-                      ),
-                    ),
-                    if (h.subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          h.subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                label: h.titleWidget == null ? null : h.title,
+                child: h.titleWidget != null
+                    ? Align(alignment: Alignment.centerLeft, child: h.titleWidget)
+                    : _comLeading(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              h.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: c.ink,
+                                fontSize: AppType.screenTitle,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.01 * AppType.screenTitle,
+                                height: 1.2,
+                              ),
+                            ),
+                            if (h.subtitle != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  h.subtitle!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -234,6 +260,22 @@ class _Delegate extends SliverPersistentHeaderDelegate {
           if (h.bottom != null) Positioned(left: 0, right: 0, bottom: 0, height: _bottom, child: h.bottom!),
         ],
       ),
+    );
+  }
+
+  /// Título grande com o [SsSliverHeader.titleLeading] na frente.
+  Widget _comLeading(Widget titulo) {
+    final l = header.titleLeading;
+    if (l == null) return titulo;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: ConstrainedBox(constraints: const BoxConstraints(maxHeight: 40, maxWidth: 56), child: l),
+        ),
+        Expanded(child: titulo),
+      ],
     );
   }
 

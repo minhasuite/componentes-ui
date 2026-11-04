@@ -7,6 +7,8 @@ import { reduced } from "componentes_ui/controllers/ss_motion_controller"
 // Veio do servidor com error: treme e limpa ao conectar. Evento ss-code-keypad:error também
 // dispara o erro (ex.: resposta por turbo stream que não troca o bloco); ss-code-keypad:reset
 // limpa e destrava.
+// De fora: o hidden (name:) tem o código e o evento ss-code-keypad:change (detail: { code,
+// length }) sai a cada mudança. Botão com data-ss-free (actions_need_code: false) não espera código.
 export default class extends Controller {
   static targets = ["dots", "msg", "input", "key", "back", "submit"]
   static values = { length: Number, max: { type: Number, default: 8 }, obscure: { type: Boolean, default: true }, errorText: String, successText: String }
@@ -128,7 +130,12 @@ export default class extends Controller {
     const locked = this.locked
     this.keyTargets.forEach((k) => (k.disabled = locked || n >= this.maxValue))
     if (this.hasBackTarget) this.backTarget.disabled = locked || n === 0
-    this.submitTargets.forEach((b) => (b.disabled = locked || n === 0))
+    this.submitTargets.forEach((b) => (b.disabled = locked || (n === 0 && !b.hasAttribute("data-ss-free"))))
+    if (this.code !== this.lastCode) {
+      const first = this.lastCode === undefined
+      this.lastCode = this.code
+      if (!first) this.dispatch("change", { detail: { code: this.code, length: n } })
+    }
     if (pop && !reduced()) dots.children[n - 1]?.animate([{ scale: 0.6 }, { scale: 1.25 }, { scale: 1 }], { duration: 320, easing: "ease-out" })
   }
 }

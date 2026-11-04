@@ -10,18 +10,25 @@ module Ss
   # Estados: vazio, digitando, error: "Código incorreto" (treme e limpa ao conectar; também se o
   # envio pelo Turbo falhar), busy: true (travado, enviando) e success: true (✓).
   # Sem url:, é só o bloco dentro do form de quem chama. obscure: false mostra os dígitos.
+  # v0.10.1: actions_need_code: false deixa os botões de actions: usáveis com o código vazio
+  # (ex.: "Desarmar" sem PIN). Ler o código de fora: o hidden name: (sempre atualizado) e o
+  # evento "ss-code-keypad:change" (detail: { code, length }) a cada dígito, apagar ou limpar.
   class CodeKeypadComponent < BaseComponent
     BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>'.freeze
 
     attr_reader :name, :length, :max_length, :url, :http_method, :title, :actions, :id
 
     def initialize(name: "code", length: nil, max_length: 8, obscure: true, url: nil, method: :post, actions: [],
-                   title: nil, error: nil, busy: false, success: false, submit_label: nil, labels: {}, id: nil, **rest)
+                   title: nil, error: nil, busy: false, success: false, submit_label: nil, labels: {}, id: nil,
+                   actions_need_code: true, **rest)
       super(**rest)
       @name, @length, @max_length, @obscure, @url, @http_method = name, length, max_length, obscure, url, method
       @actions, @title, @error, @busy, @success, @submit_label, @labels = actions, title, error, busy, success, submit_label, labels
       @id = id || "ss-keypad-#{SecureRandom.hex(3)}"
+      @actions_need_code = actions_need_code != false
     end
+
+    def actions_need_code? = @actions_need_code
 
     def tx(key, default) = @labels[key.to_sym] || I18n.t("componentes_ui.code_keypad.#{key}", default:)
 

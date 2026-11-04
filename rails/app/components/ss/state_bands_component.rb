@@ -13,13 +13,14 @@ module Ss
   # label_position: :top põe o nome em cima e a faixa na largura toda (alinha com o
   # Ss::TimeSeriesChartComponent, que também aceita bands: e as desenha dentro dele).
   # Tons: accent, success, warn, danger, info, neutral (o resto vai para a paleta de séries).
+  # time_zone: "America/Sao_Paulo" (v0.10.1): eixo e balões nesse fuso (padrão: o do navegador).
   class StateBandsComponent < BaseComponent
     include InView
 
     attr_reader :rows, :from, :to
 
     def initialize(rows:, from: nil, to: nil, tones: {}, label_position: :side, axis: true, title: nil,
-                   locale: nil, embedded: false, texts: {}, **opts)
+                   locale: nil, embedded: false, texts: {}, time_zone: nil, **opts)
       super(**opts)
       @rows = rows.map { |r| normalize(r) }
       @tones = tones.to_h.transform_keys(&:to_s)
@@ -27,6 +28,7 @@ module Ss
       @axis = axis && !embedded
       @title = title
       @locale = locale
+      @zone = TimeData.zone(time_zone)
       @embedded = embedded
       @texts = texts.to_h.transform_keys(&:to_sym)
       segs = @rows.flat_map { _1[:segments] }
@@ -56,7 +58,7 @@ module Ss
     end
 
     def seg_title(seg)
-      "#{seg[:label]} · #{when_text(seg[:from])} – #{ss_date(seg[:to].in_time_zone, :time)} · " \
+      "#{seg[:label]} · #{when_text(seg[:from])} – #{ss_date(TimeData.local(seg[:to], @zone), :time)} · " \
         "#{TimeData.duration(seg[:to] - seg[:from], locale_now)}"
     end
 
@@ -75,12 +77,13 @@ module Ss
     end
 
     def lang = @locale&.to_s
+    def iana_zone = TimeData.iana(@zone)
 
     private
 
     def locale_now = @locale || ss_number_locale
 
-    def when_text(t) = ss_date(t.in_time_zone, :day_month_time)
+    def when_text(t) = ss_date(TimeData.local(t, @zone), :day_month_time)
 
     def normalize(r)
       segs = Array(r[:segments]).map do |s|

@@ -7,6 +7,8 @@ module Ss
   #
   # state: :searching | :found | :empty. Até 6 itens em volta. As ondas são o laço da busca: param
   # quando acha e com prefers-reduced-motion. retry_url: vira button_to (POST).
+  # compact: true (v0.10.1, como o SsScanRadar(compact:)): em linha, radar pequeno (72 px por
+  # padrão) ao lado do texto; os itens viram chips em fila embaixo do texto, não em volta.
   class ScanRadarComponent < BaseComponent
     STATES = %i[searching found empty].freeze
     DEFAULTS = { searching: "Procurando…", found_one: "1 encontrado", found: "%{n} encontrados",
@@ -14,11 +16,12 @@ module Ss
 
     attr_reader :state, :items, :retry_url, :size
 
-    def initialize(state: :searching, items: [], icon: nil, retry_url: nil, size: 240, labels: {}, **rest)
+    def initialize(state: :searching, items: [], icon: nil, retry_url: nil, size: nil, labels: {}, compact: false, **rest)
       super(**rest)
       @state = STATES.include?(state.to_s.to_sym) ? state.to_s.to_sym : :searching
       @items = Array(items).map { |i| i.to_h.transform_keys(&:to_sym) }
-      @icon, @retry_url, @size = icon, retry_url, size.to_i
+      @compact = compact
+      @icon, @retry_url, @size = icon, retry_url, (size || (compact ? 72 : 240)).to_i
       @labels = labels.to_h.transform_keys(&:to_sym)
     end
 
@@ -34,6 +37,8 @@ module Ss
       else items.size == 1 ? label(:found_one, n: 1) : label(:found, n: items.size)
       end
     end
+
+    def compact? = !!@compact
 
     def icon = (@icon || Ss::CasaIcons.svg(:home)).html_safe
 

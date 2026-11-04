@@ -28,6 +28,26 @@
   <% end %>
 </div>
 
+<%= demo "Ss::AgendaListComponent (v0.10.1)", "Agenda de vários dias em lista: o cabeçalho do dia gruda no topo, cada compromisso tem a hora, a barra da cor (tone: ou color:) e o link. Dia sem nada: “Nada neste dia”. week_strip: true põe a faixa da semana em cima (ponto nos dias com compromisso; clicar leva ao dia).",
+      uso: 'render Ss::AgendaListComponent.new(week_strip: true, selected: Date.current, days: [{ date:, label: "Hoje", events: [{ time: "08:30", title:, detail:, tone: :info, url: }] }])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1rem;align-items:start">
+    <div class="ss-card" style="padding:0;max-height:26rem;overflow:auto" id="vt-agl">
+      <%= render Ss::AgendaListComponent.new(now: agora, week_strip: true, selected: hoje, days: [
+            { date: hoje, events: [{ time: "08:30", title: "Web design", detail: "Projeto do cliente", tone: :success, url: "#" },
+                                   { time: "10:30", title: "Visita: Mercado Bom Preço", detail: "Zona Sul", url: "#" },
+                                   { time: "11:00", title: "Ligação fornecedor", tone: :warn },
+                                   { time: "12:15", title: "Almoço", tone: :info },
+                                   { time: "14:30", title: "Revisão de títulos", detail: "Financeiro", tone: :danger }] },
+            { date: hoje + 1, events: [] },
+            { date: hoje + 2, events: [{ time: "Dia todo", title: "Feira do setor", detail: "Expo Center Norte", color: "#14b8a6" }] },
+            { date: hoje + 3, label: "Fim de semana", events: [{ time: "09:00", title: "Corrida no parque", tone: :neutral }] }]) %>
+    </div>
+    <div class="ss-card" style="padding:0">
+      <%= render Ss::AgendaListComponent.new(now: agora, days: [{ date: hoje + 1, events: [] }], empty_label: "Livre o dia todo") %>
+    </div>
+  </div>
+<% end %>
+
 <%= demo "Ss::TimelineHorizontalComponent", "Marcos numa linha horizontal com rolagem (encaixa no marco).",
       uso: 'render Ss::TimelineHorizontalComponent.new(items: [{ title:, date:, text:, state: :done }])' do %>
   <div class="ss-card ss-card-pad">
@@ -49,4 +69,15 @@
         { label: "Compras", from: hoje + 1, to: hoje + 6, progress: 0.1, tone: :warn },
         { label: "Obra", from: hoje + 4, to: hoje + 11, progress: 0, tone: :info },
         { label: "Inauguração", from: hoje + 11, to: hoje + 11, progress: 0, tone: :danger }]) %>
+<% end %>
+
+<%= demo "Ss::AgendaComponent (v0.10.1: dia inteiro)", "Evento com all_day: true sai na faixa de cima, em cada dia que cobre (starts_at pode ser Date; ends_at é o último dia, inclusive). O texto da faixa vem do idioma (agenda.all_day).",
+      uso: 'Ss::AgendaComponent.new(days:, events: [{ title: "Feriado", starts_at: Date.new(2026, 11, 15), all_day: true, tone: :warn }, { title: "Feira", starts_at: d1, ends_at: d3, all_day: true }, …])' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::AgendaComponent.new(days: semana, from: 8, to: 13, now: agora, hour_height: 40, label: "Semana com eventos de dia inteiro",
+          events: [{ title: "Feira do setor", sub: "Expo Center", starts_at: semana[1], ends_at: semana[3], all_day: true, tone: :success },
+                   { title: "Aniversário da Ana", starts_at: semana[0], all_day: true, tone: :info },
+                   { title: "Feriado municipal", starts_at: semana[4], all_day: true, tone: :warn },
+                   *ev_semana.select { _1[:starts_at].hour < 12 }]) %>
+  </div>
 <% end %>

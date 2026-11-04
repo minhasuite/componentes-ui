@@ -22,6 +22,14 @@
   <%= render Ss::SkeletonComponent.new(shape: :list, rows: 3, frame: { id: "ultimos-demo", src: vitrine_path("retorno_carregando", lazy: 1) }) %>
 <% end %>
 
+<%= demo ".ss-offline (v0.10.1: ação)", "Faixa de sem conexão (some com [hidden]). A mensagem é o texto do app; .ss-offline-action põe a ação (Tentar de novo) na faixa, como link ou botão.",
+      uso: '<div class="ss-offline" role="status">…mensagem… <button type="button" class="ss-offline-action" data-action="app#retry">ss_t("common.retry")</button></div>' do %>
+  <div style="display:grid;gap:.75rem">
+    <div class="ss-offline" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5.1A15 15 0 0 1 22 8.8M5 12.9a10 10 0 0 1 5.2-2.8M16.9 11a10 10 0 0 1 2.1 1.9M8.5 16.4a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"/></svg>Sem conexão · o que fizer fica na fila</div>
+    <div class="ss-offline" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5.1A15 15 0 0 1 22 8.8M5 12.9a10 10 0 0 1 5.2-2.8M16.9 11a10 10 0 0 1 2.1 1.9M8.5 16.4a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"/></svg>O servidor não respondeu<button type="button" class="ss-offline-action"><%= ss_t("common.retry", default: "Tentar de novo") %></button></div>
+  </div>
+<% end %>
+
 <%= demo "Ss::EmptyStateComponent", "Ilustração em linha (muda com a marca e o tema), título, texto e ações. Variantes: nada ainda, sem resultado da busca, erro.",
       uso: 'render Ss::EmptyStateComponent.new(variant: :busca, title:, text:, primary: { label:, url: }, secondary: { … })' do %>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem">
@@ -30,4 +38,18 @@
     <div class="ss-card"><%= render Ss::EmptyStateComponent.new(variant: :erro, title: "Não deu para carregar", text: "O servidor não respondeu. Seus dados estão salvos.", primary: { label: "Tentar de novo", url: "#" }) %></div>
   </div>
 <% end %>
+<% end %>
+
+<%= demo "Ss::EmptyStateComponent (v0.10.1: arte do app)", "with_art troca a ilustração da suíte pela do produto (imagem ou SVG); art: false tira a ilustração e fica só o texto, bom para cards pequenos.",
+         uso: 'render Ss::EmptyStateComponent.new(title: "Nenhuma planta") { |e| e.with_art { image_tag "vazio-plantas.svg", alt: "" } }  ·  Ss::EmptyStateComponent.new(title: "Sem avisos", art: false, compact: true)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::EmptyStateComponent.new(title: "Nenhuma planta ainda", text: "Cadastre a primeira pela foto.", primary: { label: "Cadastrar", url: "#" }) do |e| %>
+        <% e.with_art do %><svg viewBox="0 0 160 120" aria-hidden="true"><ellipse cx="80" cy="106" rx="50" ry="7" fill="var(--field)"/><path d="M60 104h40l-5-26H65z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/><path d="M80 78V44" stroke="var(--success)" stroke-width="3" stroke-linecap="round"/><path d="M80 58c-14 0-22-8-22-20 12 0 22 7 22 20zM80 50c0-14 9-22 22-22 0 13-9 22-22 22z" fill="color-mix(in srgb, var(--success) 30%, transparent)" stroke="var(--success)" stroke-width="2.5" stroke-linejoin="round"/></svg><% end %>
+      <% end %>
+    </div>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::EmptyStateComponent.new(title: "Sem avisos", text: "Quando algo pedir sua atenção, aparece aqui.", art: false, compact: true) %>
+    </div>
+  </div>
 <% end %>

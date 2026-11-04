@@ -62,7 +62,7 @@ class V10WebTest < ComponentTest
 
   test "paginação: params:, borda e página única" do
     render_inline Ss::PaginationComponent.new(page: 1, pages: 3, params: { "q" => "luz" })
-    assert_selector "span[aria-disabled]", text: "‹"
+    assert_selector "span[aria-disabled] svg.ss-pg-ico" # v0.10.1: ícone SVG, sem ‹ em Unicode
     assert_selector "a[rel='next'][href='?page=2&q=luz']"
     render_inline Ss::PaginationComponent.new(page: 1, pages: 1, params: {})
     assert_no_selector "nav"

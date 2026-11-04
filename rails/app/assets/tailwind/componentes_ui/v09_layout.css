@@ -22,7 +22,7 @@
 
   /* ── Moldura do app ── */
   .ss-shell { --side-w: 16.5rem; display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100dvh; }
-  .ss-shell[data-collapsed] { --side-w: 4.75rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) { --side-w: 4.75rem; }
   .ss-shell-side { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; gap: .5rem; padding: .9rem .7rem; overflow: visible;
                    transition: width .25s cubic-bezier(.2, .8, .2, 1); z-index: 30; }
   .ss-shell-brand { display: flex; align-items: center; gap: .6rem; padding: .25rem .35rem .5rem; min-height: 2.75rem; }
@@ -38,7 +38,7 @@
   /* Item sem ícone: a inicial, que só aparece com o menu recolhido. */
   .ss-shell-initial { display: none; place-items: center; width: 1.6rem; height: 1.6rem; flex: none; border-radius: 8px; font-weight: 800; font-size: .8rem;
                       background: rgba(255, 255, 255, .07); }
-  .ss-shell[data-collapsed] .ss-shell-initial { display: grid; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-initial { display: grid; }
   .ss-shell-tenant { position: relative; }
   .ss-shell-tenant > summary { list-style: none; display: flex; align-items: center; gap: .6rem; padding: .5rem .55rem; border-radius: 12px; cursor: pointer;
                                background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); color: var(--side-ink); font-weight: 700; font-size: .85rem; }
@@ -70,17 +70,17 @@
   .ss-shell-scrim { display: none; }
 
   /* Recolhido (desktop): só ícones, nome no title. */
-  .ss-shell[data-collapsed] .ss-shell-label { display: none; }
-  .ss-shell[data-collapsed] .ss-shell-brand { flex-direction: column; padding-inline: 0; }
-  .ss-shell[data-collapsed] .ss-shell-collapse { rotate: 180deg; }
-  .ss-shell[data-collapsed] .ss-shell-nav a, .ss-shell[data-collapsed] .ss-shell-nav summary { justify-content: center; padding-inline: 0; }
-  .ss-shell[data-collapsed] .ss-shell-nav summary { height: .9rem; margin-top: .5rem; padding: 0; overflow: hidden; }
-  .ss-shell[data-collapsed] .ss-shell-nav summary::before { content: ""; width: 1.4rem; height: 1px; background: rgba(255, 255, 255, .12); }
-  .ss-shell[data-collapsed] .ss-shell-nav summary .ss-chev { display: none; }
-  .ss-shell[data-collapsed] .ss-shell-nav details:not([open]) > a { display: flex; }
-  .ss-shell[data-collapsed] .ss-shell-badge { position: absolute; top: .2rem; right: .45rem; min-width: .55rem; height: .55rem; padding: 0; font-size: 0; }
-  .ss-shell[data-collapsed] .ss-shell-tenant > summary { justify-content: center; padding-inline: 0; }
-  .ss-shell[data-collapsed] .ss-shell-tenant-menu { left: 0; right: auto; width: 14rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-label { display: none; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-brand { flex-direction: column; padding-inline: 0; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-collapse { rotate: 180deg; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav a, :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary { justify-content: center; padding-inline: 0; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary { height: .9rem; margin-top: .5rem; padding: 0; overflow: hidden; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary::before { content: ""; width: 1.4rem; height: 1px; background: rgba(255, 255, 255, .12); }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary .ss-chev { display: none; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav details:not([open]) > a { display: flex; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-badge { position: absolute; top: .2rem; right: .45rem; min-width: .55rem; height: .55rem; padding: 0; font-size: 0; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-tenant > summary { justify-content: center; padding-inline: 0; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-tenant-menu { left: 0; right: auto; width: 14rem; }
   .ss-shell-collapse:active { scale: .88; transition: background .2s, rotate .25s, scale 80ms ease-out; }
   .ss-shell-collapse { transition: background .2s, rotate .25s, scale var(--ss-dur-indicator) var(--ss-bounce); }
 
@@ -100,12 +100,12 @@
 
 /* Celular/tablet: o menu vira gaveta (fora das camadas para vencer o grid). */
 @media (max-width: 1023px) {
-  .ss-shell, .ss-shell[data-collapsed] { grid-template-columns: minmax(0, 1fr); --side-w: min(18rem, 86vw); }
+  .ss-shell, :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) { grid-template-columns: minmax(0, 1fr); --side-w: min(18rem, 86vw); }
   .ss-shell-side { position: fixed; inset: 0 auto 0 0; width: var(--side-w); translate: -105% 0; transition: translate .3s cubic-bezier(.2, .8, .2, 1); z-index: 60;
                    visibility: hidden; transition: translate .3s cubic-bezier(.2, .8, .2, 1), visibility 0s .3s; }
   .ss-shell[data-open] .ss-shell-side { translate: 0 0; visibility: visible; transition: translate .3s cubic-bezier(.2, .8, .2, 1); box-shadow: 20px 0 50px -20px rgba(0, 0, 0, .5); }
-  .ss-shell[data-collapsed] .ss-shell-label { display: revert; }
-  .ss-shell[data-collapsed] .ss-shell-nav a { justify-content: flex-start; padding-inline: .75rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-label { display: revert; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav a { justify-content: flex-start; padding-inline: .75rem; }
   .ss-shell-scrim { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(14, 13, 22, .45); opacity: 0; pointer-events: none; transition: opacity .3s; }
   .ss-shell[data-open] .ss-shell-scrim { opacity: 1; pointer-events: auto; }
   .ss-shell .ss-shell-burger { display: inline-flex; flex: none; }
@@ -257,6 +257,10 @@ dialog.ss-drawer-panel[aria-busy="true"] .ss-drawer-body { opacity: .5; transiti
   /* A cor do rótulo cruza (a nova vai para a da marca, a antiga volta ao muted); o pulo de 2 px é do ss-tabs. */
   .ss-tab { transition: color .3s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-tab:active { scale: .95; transition: color .3s ease, scale 80ms ease-out; }
+  /* v0.10.1: ícone da aba e faixa que rola sem quebrar (a aba não encolhe). */
+  .ss-tab { flex: none; }
+  .ss-tab-ico { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; }
+  .ss-tab-ico svg { width: 100%; height: 100%; }
   .ss-tab-panel { padding-top: 1rem; }
   .ss-tab-panel:focus-visible { outline-offset: 4px; border-radius: 8px; }
   .ss-tab-panel[hidden] { display: none; }

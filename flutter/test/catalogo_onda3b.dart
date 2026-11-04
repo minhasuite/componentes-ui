@@ -304,6 +304,8 @@ final catalogoOnda3b = <Componente>[
       'Vazio com as iniciais do nome ou com o ícone.',
       'Decodifica no tamanho da tela (cacheWidth pelo devicePixelRatio).',
       'Sem cache em disco: só o de memória do Flutter.',
+      'image: qualquer ImageProvider; SsNetImage.bytes(() => api.foto(id), cacheKey:) carrega os bytes por uma função assíncrona (imagem atrás de login), com o mesmo vazio e erro (SsBytesImage).',
+      'Sem altura (Column, ListView), a altura sai da largura por aspectRatio (padrão 4:3); sem nenhuma das duas, 96 × 96. Não estoura mais.',
     ],
     estados: [
       Estado(
@@ -321,6 +323,25 @@ final catalogoOnda3b = <Componente>[
             ],
           ),
         ),
+      ),
+      Estado(
+        'sem-altura',
+        'sem altura numa coluna: 4:3 pela largura (antes estourava); .bytes com sessão',
+        (_) => _pad(
+          SizedBox(
+            width: 200,
+            child: Column(
+              children: [
+                SsNetImage.bytes(
+                  () async => throw StateError('sem sessão'),
+                  cacheKey: 'catalogo-sem-sessao',
+                  name: 'Garagem',
+                ),
+              ],
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 200),
       ),
     ],
   ),

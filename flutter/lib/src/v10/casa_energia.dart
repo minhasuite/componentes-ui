@@ -60,6 +60,10 @@ class SsFlowLink {
 /// mais rápido quanto maior o valor. É o único laço de animação contínuo da
 /// suíte; para com [animate] falso e com "reduzir movimento" (aí a ligação
 /// mostra uma seta parada no sentido).
+///
+/// Responsivo: abaixo de ~400 px os discos encolhem (até 75%), os nós dos
+/// lados encostam na borda e o nome embaixo de cada nó ganha só a largura que
+/// cabe sem encostar no vizinho (corta com reticências).
 class SsFlowDiagram extends StatefulWidget {
   const SsFlowDiagram({
     super.key,
@@ -166,16 +170,39 @@ class _SsFlowDiagramState extends State<SsFlowDiagram> with SingleTickerProvider
         child: LayoutBuilder(
           builder: (context, box) {
             final w = box.maxWidth, h = box.maxHeight;
-            const rCentro = 44.0, rNo = 34.0;
+            // Estreito (celular, card): discos menores.
+            final k = (w / 400).clamp(.75, 1.0);
+            final rCentro = 44.0 * k, rNo = 34.0 * k;
+            final lado = rNo + (k < 1 ? 6 : 12);
             Offset pos(String id) {
               if (id == widget.center.id) return Offset(w / 2, h / 2);
               return switch (slots[id]) {
                 SsFlowSlot.top => Offset(w / 2, rNo + 4),
                 SsFlowSlot.bottom => Offset(w / 2, h - rNo - 18),
-                SsFlowSlot.left => Offset(math.max(rNo + 12, w / 2 - h * .42 - 30), h / 2),
-                SsFlowSlot.right => Offset(math.min(w - rNo - 12, w / 2 + h * .42 + 30), h / 2),
+                SsFlowSlot.left => Offset(math.max(lado, w / 2 - h * .42 - 30), h / 2),
+                SsFlowSlot.right => Offset(math.min(w - lado, w / 2 + h * .42 + 30), h / 2),
                 null => Offset(w / 2, h / 2),
               };
+            }
+
+            // Largura do nome embaixo de cada nó: os dos lados não passam da
+            // borda; o do centro não encosta nos dos lados (mesma altura).
+            final ladosX = [
+              for (final n in _around)
+                if (slots[n.id] == SsFlowSlot.left || slots[n.id] == SsFlowSlot.right) pos(n.id).dx,
+            ];
+            double larguraLado(double x) => math.max(rNo * 2 + 4, math.min(120.0, 2 * math.min(x, w - x)));
+            var larguraCentro = 120.0;
+            for (final x in ladosX) {
+              final gap = (x - w / 2).abs();
+              larguraCentro = math.min(larguraCentro, 2 * (gap - larguraLado(x) / 2 - 4));
+            }
+            larguraCentro = math.max(larguraCentro, rCentro * 2);
+            double largura(SsFlowNode n) {
+              if (n.id == widget.center.id) return larguraCentro;
+              final sl = slots[n.id];
+              if (sl == SsFlowSlot.left || sl == SsFlowSlot.right) return larguraLado(pos(n.id).dx);
+              return 120;
             }
 
             final linhas = [
@@ -195,10 +222,11 @@ class _SsFlowDiagramState extends State<SsFlowDiagram> with SingleTickerProvider
             Widget no(SsFlowNode n, double r) {
               final p = pos(n.id);
               final cor = cores[n.id]!;
+              final lw = largura(n);
               return Positioned(
-                left: p.dx - 60,
+                left: p.dx - lw / 2,
                 top: p.dy - r,
-                width: 120,
+                width: lw,
                 child: Column(
                   children: [
                     Container(
@@ -238,7 +266,11 @@ class _SsFlowDiagramState extends State<SsFlowDiagram> with SingleTickerProvider
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: c.muted,
+                        fontSize: k < 1 ? AppType.label - 1 : AppType.label,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -421,22 +453,62 @@ class SsDPadLabels {
   }
 }
 
+/// Botão aprendido do [SsDPad] (IR/RF gravado: "Netflix", "Entrada", "Zoom +"):
+/// o [name] vai para [SsDPad.onCommand] ao apertar.
+@immutable
+class SsDPadButton {
+  const SsDPadButton(this.name, this.label, {this.icon});
+
+  /// Nome do comando enviado ("netflix", "KEY_INPUT").
+  final String name;
+
+  /// Texto do botão (e do leitor de tela).
+  final String label;
+
+  /// Ícone opcional antes do texto.
+  final IconData? icon;
+}
+
 /// Controle remoto: cruz (cima, baixo, esquerda, direita) com OK no meio,
 /// voltar/início/menu embaixo e, opcional, as gangorras de volume e canal.
 /// Com foco, as setas do teclado, Enter e Esc também apertam.
+///
+/// [onKey] recebe a tecla ([SsDPadKey]); [onCommand] recebe o nome do
+/// comando: o de [keys] para aquela tecla (padrão: o nome do enum, "up",
+/// "volumeUp") ou o [SsDPadButton.name] dos [extraButtons], que ficam numa
+/// grade embaixo. [showNavRow] falso tira voltar/início/menu (câmera PTZ).
 class SsDPad extends StatelessWidget {
   const SsDPad({
     super.key,
-    required this.onKey,
+    this.onKey,
     this.showVolume = false,
     this.showChannel = false,
     this.showMute = false,
     this.enabled = true,
     this.size = 210,
     this.labels = const SsDPadLabels(),
+    this.showNavRow = true,
+    this.keys,
+    this.extraButtons = const [],
+    this.onCommand,
   });
 
-  final ValueChanged<SsDPadKey> onKey;
+  final ValueChanged<SsDPadKey>? onKey;
+
+  /// Falso esconde a linha voltar/início/menu (e o mudo que fica nela).
+  final bool showNavRow;
+
+  /// Nome do comando de cada tecla, para [onCommand] ({up: 'KEY_UP'}).
+  final Map<SsDPadKey, String>? keys;
+
+  /// Botões aprendidos, numa grade embaixo do controle.
+  final List<SsDPadButton> extraButtons;
+
+  /// Nome do comando apertado (tecla mapeada por [keys] ou botão extra).
+  final ValueChanged<String>? onCommand;
+
+  /// Nome do comando de [k]: o de [keys] ou o nome do enum.
+  String commandOf(SsDPadKey k) => keys?[k] ?? k.name;
   final bool showVolume;
   final bool showChannel;
   final bool showMute;
@@ -449,7 +521,14 @@ class SsDPad extends StatelessWidget {
   void _aperta(SsDPadKey k) {
     if (!enabled) return;
     SsHaptics.tick();
-    onKey(k);
+    onKey?.call(k);
+    onCommand?.call(commandOf(k));
+  }
+
+  void _extra(SsDPadButton b) {
+    if (!enabled) return;
+    SsHaptics.tick();
+    onCommand?.call(b.name);
   }
 
   @override
@@ -586,18 +665,84 @@ class SsDPad extends StatelessWidget {
                   ],
                 ],
               ),
-              const SizedBox(height: 18),
-              Row(
+              if (showNavRow) ...[
+                const SizedBox(height: 18),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 18,
+                  children: [
+                    redondo(SsDPadKey.back, Icons.arrow_back_rounded),
+                    redondo(SsDPadKey.home, Icons.home_outlined),
+                    redondo(SsDPadKey.menu, Icons.menu_rounded),
+                    if (showMute) redondo(SsDPadKey.mute, Icons.volume_off_outlined),
+                  ],
+                ),
+              ] else if (showMute) ...[
+                const SizedBox(height: 18),
+                redondo(SsDPadKey.mute, Icons.volume_off_outlined),
+              ],
+              if (extraButtons.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: math.max(s + 148, 280)),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final b in extraButtons)
+                        _BotaoExtra(botao: b, onTap: enabled && onCommand != null ? () => _extra(b) : null),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Botão aprendido em pílula (ícone opcional e texto), alvo de 44 dp.
+class _BotaoExtra extends StatelessWidget {
+  const _BotaoExtra({required this.botao, this.onTap});
+  final SsDPadButton botao;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: botao.label,
+      excludeSemantics: true,
+      child: SsPressable(
+        enabled: onTap != null,
+        scale: .94,
+        child: Material(
+          color: c.field,
+          shape: StadiumBorder(side: BorderSide(color: c.line)),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: onTap,
+            splashColor: c.accent.withValues(alpha: .18),
+            highlightColor: c.accent.withValues(alpha: .1),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 44),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 18,
                 children: [
-                  redondo(SsDPadKey.back, Icons.arrow_back_rounded),
-                  redondo(SsDPadKey.home, Icons.home_outlined),
-                  redondo(SsDPadKey.menu, Icons.menu_rounded),
-                  if (showMute) redondo(SsDPadKey.mute, Icons.volume_off_outlined),
+                  if (botao.icon != null) ...[Icon(botao.icon, size: 18, color: c.ink2), const SizedBox(width: 6)],
+                  Text(
+                    botao.label,
+                    style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.sub),
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),

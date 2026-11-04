@@ -4,8 +4,15 @@
 pt-BR:
   componentes_ui:
     agenda:
+      all_day: Dia todo
       label: Agenda
       now: Agora, %{time}
+    agenda_list:
+      empty: Nada neste dia
+      label: Agenda
+      today: Hoje
+      tomorrow: Amanhã
+      week: Semana
     ai_insight:
       apply: Aplicar
       badge: IA
@@ -217,6 +224,7 @@ pt-BR:
       turn_off: Desligar %{name}
       turn_on: Ligar %{name}
       unavailable: Indisponível
+      run: Acionar %{name}
     file_drop:
       any_type: Qualquer tipo de arquivo
       hint: Arraste aqui ou clique para escolher
@@ -257,6 +265,12 @@ pt-BR:
         failed: Falhou
         queued: Na fila
         running: Rodando
+      stage_states:
+        done: Concluída
+        failed: Falhou
+        running: Rodando
+        skipped: Pulada
+      total: Total
     kpi_strip:
       bad: " (ruim)"
       delta: Variação %{delta}%{sense}
@@ -274,9 +288,11 @@ pt-BR:
       transaction: Transação
     locale_picker:
       label: Idioma
+      system: Seguir o sistema
     logbook:
       empty: Nada registrado ainda
       end: Início do registro
+      end_link: Ver um período maior
       error: Não deu para carregar mais.
       label: Registro de eventos
       load_more: Carregar mais
@@ -288,13 +304,19 @@ pt-BR:
     media_player:
       buffering: Carregando
       idle: Nada tocando
+      mute: Silenciar
       next: Próxima
       pause: Pausar
       play: Tocar
+      power_off: Desligar
+      power_on: Ligar
       previous: Anterior
       progress: Posição
       unavailable: Indisponível
+      unmute: Tirar do mudo
       volume: Volume
+      volume_down: Diminuir volume
+      volume_up: Aumentar volume
     mic_button:
       error: Erro no microfone, toque para tentar de novo
       idle: Falar
@@ -304,6 +326,7 @@ pt-BR:
       format: "%u %n"
     notice_card:
       dismiss: Dispensar
+      unread: não lido
     number:
       delimiter: "."
       separator: ","
@@ -480,6 +503,7 @@ pt-BR:
       clear: Céu limpo
       clear_night: Noite limpa
       cloudy: Nublado
+      feels_like: Sensação
       fog: Neblina
       forecast: Previsão
       humidity: Umidade
@@ -487,6 +511,7 @@ pt-BR:
       min: Mín
       partly_cloudy: Parcialmente nublado
       rain: Chuva
+      rain_chance: Chance de chuva
       snow: Neve
       storm: Tempestade
       wind: Ventania

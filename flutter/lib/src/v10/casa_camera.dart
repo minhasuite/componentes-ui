@@ -13,6 +13,10 @@ enum SsCameraState { loading, live, stale, error, offline }
 /// Não faz WebRTC: o app põe o player dele em [child].
 ///
 /// `SsCameraTile(title: 'Garagem', state: SsCameraState.stale, image: NetworkImage(url), age: Duration(seconds: 12))`
+///
+/// [status] (ou [statusWidget]) põe um selo de situação no canto de baixo
+/// ("Gravando", "Movimento há 2 min"). Offline e erro cobrem o quadro, mas o
+/// título continua por cima, e a mensagem encolhe para caber em tile pequeno.
 class SsCameraTile extends StatelessWidget {
   const SsCameraTile({
     super.key,
@@ -31,9 +35,17 @@ class SsCameraTile extends StatelessWidget {
     this.offlineLabel,
     this.retryLabel,
     this.ageFormat,
+    this.status,
+    this.statusWidget,
   });
 
   final String title;
+
+  /// Situação em texto, num selo no canto de baixo ("Gravando").
+  final String? status;
+
+  /// Selo próprio no lugar de [status] (ícone, cor).
+  final Widget? statusWidget;
   final SsCameraState state;
 
   /// Quadro parado (snapshot). Ignorado quando há [child].
@@ -100,13 +112,18 @@ class SsCameraTile extends StatelessWidget {
     }
     if (apagado) quadro = ColoredBox(color: c.isDark ? c.field : AppColors.inkLight);
 
-    final semantica = switch (state) {
-      SsCameraState.loading => '$title, $loadingLabel',
-      SsCameraState.live => '$title, $liveLabel',
-      SsCameraState.stale => '$title, ${age == null ? '' : ageFormat(age!)}',
-      SsCameraState.error => '$title, $errorLabel',
-      SsCameraState.offline => '$title, $offlineLabel',
-    };
+    final semantica = [
+      switch (state) {
+        SsCameraState.loading => '$title, $loadingLabel',
+        SsCameraState.live => '$title, $liveLabel',
+        SsCameraState.stale => '$title, ${age == null ? '' : ageFormat(age!)}',
+        SsCameraState.error => '$title, $errorLabel',
+        SsCameraState.offline => '$title, $offlineLabel',
+      },
+      ?status,
+    ].join(', ');
+    final selo = statusWidget ?? (status == null ? null : _Selo.status(status!));
+    final idadeEmbaixo = state == SsCameraState.live && age != null;
 
     return Semantics(
       container: true,
@@ -135,6 +152,104 @@ class SsCameraTile extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (idadeEmbaixo || selo != null)
+                  Positioned(
+                    left: 12,
+                    bottom: 10,
+                    right: actions.isNotEmpty && !apagado ? 12 + 44.0 * actions.length : 12,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 6,
+                      children: [
+                        if (idadeEmbaixo) _Selo.age(ageFormat(age!)),
+                        if (selo != null) Flexible(child: selo),
+                      ],
+                    ),
+                  ),
+                if (apagado)
+                  // Abaixo da faixa do título e acima do selo. Sem altura para o
+                  // bloco (tile pequeno de grade), vira uma linha: ícone, texto e
+                  // o "tentar de novo" só com o ícone.
+                  Positioned.fill(
+                    top: 34,
+                    bottom: selo != null ? 38 : 8,
+                    child: LayoutBuilder(
+                      builder: (context, box) {
+                        final icone = state == SsCameraState.offline
+                            ? Icons.videocam_off_rounded
+                            : Icons.broken_image_rounded;
+                        final msg = state == SsCameraState.offline ? offlineLabel : errorLabel;
+                        const estiloMsg = TextStyle(
+                          color: AppColors.onDark,
+                          fontSize: AppType.meta,
+                          fontWeight: FontWeight.w700,
+                        );
+                        final retryStyle = TextButton.styleFrom(
+                          foregroundColor: AppColors.onDark,
+                          backgroundColor: AppColors.onDark.withValues(alpha: .16),
+                          shape: const StadiumBorder(),
+                          visualDensity: VisualDensity.compact,
+                        );
+                        if (box.maxHeight < 110) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(icone, color: AppColors.onDarkMuted, size: 18),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(msg, maxLines: 1, style: estiloMsg),
+                                  ),
+                                ),
+                                if (onRetry != null) ...[
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    tooltip: retryLabel,
+                                    onPressed: onRetry,
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: AppColors.onDark,
+                                      backgroundColor: AppColors.onDark.withValues(alpha: .16),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        }
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(icone, color: AppColors.onDarkMuted, size: 30),
+                                const SizedBox(height: 6),
+                                Text(msg, textAlign: TextAlign.center, style: estiloMsg),
+                                if (onRetry != null) ...[
+                                  const SizedBox(height: 10),
+                                  SsPressable(
+                                    child: TextButton.icon(
+                                      onPressed: onRetry,
+                                      style: retryStyle,
+                                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                                      label: Text(retryLabel),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                // O título fica por cima de tudo (até do aviso de offline).
                 Positioned(
                   left: 12,
                   top: 10,
@@ -159,50 +274,6 @@ class SsCameraTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (state == SsCameraState.live && age != null)
-                  Positioned(left: 12, bottom: 10, child: _Selo.age(ageFormat(age!))),
-                if (apagado)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            state == SsCameraState.offline ? Icons.videocam_off_rounded : Icons.broken_image_rounded,
-                            color: AppColors.onDarkMuted,
-                            size: 30,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            state == SsCameraState.offline ? offlineLabel : errorLabel,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.onDark,
-                              fontSize: AppType.meta,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          if (onRetry != null) ...[
-                            const SizedBox(height: 10),
-                            SsPressable(
-                              child: TextButton.icon(
-                                onPressed: onRetry,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.onDark,
-                                  backgroundColor: AppColors.onDark.withValues(alpha: .16),
-                                  shape: const StadiumBorder(),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                icon: const Icon(Icons.refresh_rounded, size: 18),
-                                label: Text(retryLabel),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
                 if (actions.isNotEmpty && !apagado && state != SsCameraState.loading)
                   Positioned(
                     right: 8,
@@ -229,10 +300,14 @@ class SsCameraTile extends StatelessWidget {
 
 /// Selo sobre o quadro: "AO VIVO" (ponto vermelho) ou a idade (relógio).
 class _Selo extends StatelessWidget {
-  const _Selo.live(this.text) : live = true;
-  const _Selo.age(this.text) : live = false;
+  const _Selo.live(this.text) : live = true, status = false;
+  const _Selo.age(this.text) : live = false, status = false;
+  const _Selo.status(this.text) : live = false, status = true;
   final String text;
   final bool live;
+
+  /// Situação em texto (sem ícone).
+  final bool status;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -251,18 +326,22 @@ class _Selo extends StatelessWidget {
             margin: const EdgeInsets.only(right: 5),
             decoration: const BoxDecoration(color: AppColors.onDark, shape: BoxShape.circle),
           )
-        else
+        else if (!status)
           const Padding(
             padding: EdgeInsets.only(right: 4),
             child: Icon(Icons.schedule_rounded, size: 12, color: AppColors.onDark),
           ),
-        Text(
-          text,
-          style: TextStyle(
-            color: AppColors.onDark,
-            fontSize: AppType.micro,
-            fontWeight: FontWeight.w800,
-            letterSpacing: live ? .6 : 0,
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: AppColors.onDark,
+              fontSize: AppType.micro,
+              fontWeight: FontWeight.w800,
+              letterSpacing: live ? .6 : 0,
+            ),
           ),
         ),
       ],
@@ -329,6 +408,12 @@ enum SsMediaState { idle, playing, paused, buffering, unavailable }
 /// Player de mídia: capa, título, subtítulo, anterior/tocar/próxima,
 /// progresso com tempos, volume e a fonte ("Spotify · Sala").
 /// O app manda os comandos ao aparelho pelos callbacks.
+///
+/// [onVolume] anda com o dedo; [onVolumeEnd] só ao soltar (um comando).
+/// [onVolumeUp]/[onVolumeDown] põem os botões − e + do volume (aparelho sem
+/// volume absoluto: aí a linha aparece mesmo sem [volume]); [onMute] com
+/// [muted] liga e desliga o som. [power] não nulo mostra o botão de ligar no
+/// canto ([onPower]); [mediaPicker] fica embaixo (escolher o que tocar).
 class SsMediaPlayer extends StatelessWidget {
   const SsMediaPlayer({
     super.key,
@@ -354,7 +439,32 @@ class SsMediaPlayer extends StatelessWidget {
     this.idleLabel,
     this.unavailableLabel,
     this.bufferingLabel,
+    this.onVolumeEnd,
+    this.onVolumeUp,
+    this.onVolumeDown,
+    this.muted,
+    this.onMute,
+    this.power,
+    this.onPower,
+    this.mediaPicker,
   });
+
+  /// Volume escolhido ao soltar o dedo (manda um comando só).
+  final ValueChanged<double>? onVolumeEnd;
+
+  /// Botões − e + do volume.
+  final VoidCallback? onVolumeUp, onVolumeDown;
+
+  /// Sem som agora (nulo: sem botão de mudo).
+  final bool? muted;
+  final VoidCallback? onMute;
+
+  /// Ligado (verdadeiro) ou desligado; nulo esconde o botão de ligar.
+  final bool? power;
+  final VoidCallback? onPower;
+
+  /// Escolher o que tocar (fontes, playlists, favoritos), embaixo do player.
+  final Widget? mediaPicker;
 
   final String? title;
   final String? subtitle;
@@ -499,6 +609,18 @@ class SsMediaPlayer extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (power != null)
+                  IconButton(
+                    tooltip: power! ? ssText.turnOff : ssText.turnOn,
+                    onPressed: off || onPower == null ? null : onPower,
+                    isSelected: power,
+                    icon: const Icon(Icons.power_settings_new_rounded),
+                    style: IconButton.styleFrom(
+                      foregroundColor: power! ? AppColors.onDark : c.ink2,
+                      backgroundColor: power! ? c.accent : c.field,
+                      disabledForegroundColor: c.muted2,
+                    ),
+                  ),
               ],
             ),
             if (dur != null && ativo) ...[
@@ -542,23 +664,58 @@ class SsMediaPlayer extends StatelessWidget {
                 botao(Icons.skip_next_rounded, nextLabel, onNext),
               ],
             ),
-            if (volume != null) ...[
+            if (volume != null || onVolumeUp != null || onVolumeDown != null || onMute != null) ...[
               const SizedBox(height: 4),
               Row(
+                // Sem volume absoluto (TV por IR): mudo, − e + juntos no meio.
+                mainAxisAlignment: volume == null ? MainAxisAlignment.center : MainAxisAlignment.start,
+                spacing: volume == null ? 12 : 0,
                 children: [
-                  Icon(volume! <= 0 ? Icons.volume_off_rounded : Icons.volume_down_rounded, size: 20, color: c.muted),
-                  Expanded(
-                    child: _Trilha(
-                      value: volume!.clamp(0, 1),
-                      label: volumeLabel,
-                      valueText: '${(volume!.clamp(0, 1) * 100).round()}%',
-                      onChanged: off ? null : onVolume,
+                  if (onMute != null)
+                    IconButton(
+                      tooltip: muted == true ? ssText.unmute : ssText.mute,
+                      onPressed: off ? null : onMute,
+                      isSelected: muted == true,
+                      icon: Icon(
+                        muted == true ? Icons.volume_off_rounded : Icons.volume_off_outlined,
+                        color: muted == true ? c.dangerText : c.ink2,
+                      ),
+                    )
+                  else if (volume != null && onVolumeDown == null)
+                    Icon(
+                      volume! <= 0 || muted == true ? Icons.volume_off_rounded : Icons.volume_down_rounded,
+                      size: 20,
+                      color: c.muted,
                     ),
-                  ),
-                  Icon(Icons.volume_up_rounded, size: 20, color: c.muted),
+                  if (onVolumeDown != null)
+                    IconButton(
+                      tooltip: ssText.volumeDown,
+                      onPressed: off ? null : onVolumeDown,
+                      icon: Icon(Icons.volume_down_rounded, color: c.ink2),
+                    ),
+                  if (volume != null)
+                    Expanded(
+                      child: _Trilha(
+                        value: volume!.clamp(0, 1),
+                        label: volumeLabel,
+                        valueText: '${(volume!.clamp(0, 1) * 100).round()}%',
+                        dim: muted == true,
+                        onChanged: off ? null : (onVolume ?? (onVolumeEnd == null ? null : (_) {})),
+                        onChangeEnd: off ? null : onVolumeEnd,
+                      ),
+                    ),
+                  if (onVolumeUp != null)
+                    IconButton(
+                      tooltip: ssText.volumeUp,
+                      onPressed: off ? null : onVolumeUp,
+                      icon: Icon(Icons.volume_up_rounded, color: c.ink2),
+                    )
+                  else if (volume != null)
+                    Icon(Icons.volume_up_rounded, size: 20, color: c.muted),
                 ],
               ),
             ],
+            if (mediaPicker != null) ...[const SizedBox(height: 8), mediaPicker!],
           ],
         ),
       ),
@@ -567,32 +724,65 @@ class SsMediaPlayer extends StatelessWidget {
 }
 
 /// Trilha fina com bolinha (progresso e volume), na cor da marca.
-class _Trilha extends StatelessWidget {
-  const _Trilha({required this.value, required this.label, required this.valueText, this.onChanged});
+class _Trilha extends StatefulWidget {
+  const _Trilha({
+    required this.value,
+    required this.label,
+    required this.valueText,
+    this.onChanged,
+    this.onChangeEnd,
+    this.dim = false,
+  });
   final double value;
   final String label;
   final String valueText;
   final ValueChanged<double>? onChanged;
+  final ValueChanged<double>? onChangeEnd;
+
+  /// Apagada (volume no mudo).
+  final bool dim;
+
+  @override
+  State<_Trilha> createState() => _TrilhaState();
+}
+
+// Guarda o valor enquanto arrasta: só com onChangeEnd o pai não acompanha o dedo.
+class _TrilhaState extends State<_Trilha> {
+  double? _arrasto;
 
   @override
   Widget build(BuildContext context) {
+    final w = widget;
     final c = SsColors.of(context);
+    final cor = w.dim ? c.muted2 : c.accent;
     return Semantics(
-      label: label,
-      value: valueText,
+      label: w.label,
+      value: w.valueText,
       child: SliderTheme(
         data: SliderTheme.of(context).copyWith(
           trackHeight: 4,
-          activeTrackColor: c.accent,
+          activeTrackColor: cor,
           inactiveTrackColor: c.field,
-          thumbColor: c.accent,
-          overlayColor: c.accent.withValues(alpha: .12),
+          thumbColor: cor,
+          overlayColor: cor.withValues(alpha: .12),
           disabledActiveTrackColor: c.muted2,
           disabledThumbColor: c.muted2,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
         ),
-        child: Slider(value: value, onChanged: onChanged),
+        child: Slider(
+          value: _arrasto ?? w.value,
+          onChanged: w.onChanged == null
+              ? null
+              : (v) {
+                  setState(() => _arrasto = v);
+                  w.onChanged!(v);
+                },
+          onChangeEnd: (v) {
+            setState(() => _arrasto = null);
+            w.onChangeEnd?.call(v);
+          },
+        ),
       ),
     );
   }

@@ -59,6 +59,8 @@ final catalogoV06 = <Componente>[
     comportamentos: [
       'O toque abre o relógio do sistema em 24 h.',
       'Sem valor, mostra o texto de ajuda; clearable põe um × para limpar.',
+      'validator: vale dentro de Form e mostra o erro embaixo com borda vermelha; helperText é a dica fixa.',
+      'SsFieldLabel e SsFieldHelper são o rótulo e a dica dos campos, públicos para campos próprios.',
     ],
     estados: [
       Estado(
@@ -87,6 +89,25 @@ final catalogoV06 = <Componente>[
           ),
         ),
         tamanho: const Size(360, 120),
+      ),
+      Estado(
+        'erro',
+        'validator dentro de Form (erro embaixo, borda vermelha)',
+        (_) => _pad(const _HoraComErro()),
+        tamanho: const Size(360, 160),
+      ),
+      Estado(
+        'dica',
+        'helperText',
+        (_) => _pad(
+          SsTimeField(
+            label: 'Lembrete',
+            value: const TimeOfDay(hour: 7, minute: 30),
+            onChanged: (_) {},
+            helperText: 'Todos os dias.',
+          ),
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),
@@ -128,3 +149,32 @@ final catalogoV06 = <Componente>[
     ],
   ),
 ];
+
+/// SsTimeField num Form já validado (mostra o erro).
+class _HoraComErro extends StatefulWidget {
+  const _HoraComErro();
+
+  @override
+  State<_HoraComErro> createState() => _HoraComErroState();
+}
+
+class _HoraComErroState extends State<_HoraComErro> {
+  final _form = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _form.currentState?.validate());
+  }
+
+  @override
+  Widget build(BuildContext context) => Form(
+    key: _form,
+    child: SsTimeField(
+      label: 'Horário',
+      value: null,
+      onChanged: (_) {},
+      validator: (v) => v == null ? 'Escolha o horário' : null,
+    ),
+  );
+}

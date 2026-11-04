@@ -2,13 +2,15 @@ import { Controller } from "@hotwired/stimulus"
 
 // Controle remoto (Ss::DPadComponent): cada tecla dispara "ss-dpad:key" (detail: { key }); com
 // url, o button_to também manda o formulário. Com foco no controle, setas, Enter e Esc apertam
-// a tecla certa (o mesmo que clicar nela, com o afundar da mola).
+// a tecla certa (o mesmo que clicar nela, com o afundar da mola). detail.value é o nome que o
+// app deu à tecla (keys:) ou o do botão extra (extra_buttons:); sem isso, igual ao key.
 const KEYS = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", Enter: "ok", Escape: "back" }
 
 export default class extends Controller {
   press(e) {
     const key = e.currentTarget.dataset.key
-    this.dispatch("key", { prefix: "ss-dpad", detail: { key } })
+    const value = e.currentTarget.dataset.value || key
+    this.dispatch("key", { prefix: "ss-dpad", detail: { key, value } })
   }
 
   keydown(e) {

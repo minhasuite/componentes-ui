@@ -30,6 +30,12 @@ class SsCodeAction {
 /// [onSubmit] devolve se o código valeu: enquanto espera, fica ocupado;
 /// falso treme as bolinhas em vermelho e limpa; verdadeiro mostra o ✓.
 /// [status] força a situação vinda de fora (ex.: o servidor ainda armando).
+///
+/// [onChanged] avisa cada dígito (e o apagar); com [controller], o código
+/// pode ser lido e trocado de fora (`controller.clear()` limpa e, depois do
+/// ✓, recomeça). Com
+/// [actionsNeedCode] falso, os botões de [actions] valem com o código vazio
+/// (ex.: "Desarmar" que não pede senha).
 class SsCodeKeypad extends StatefulWidget {
   const SsCodeKeypad({
     super.key,
@@ -46,6 +52,9 @@ class SsCodeKeypad extends StatefulWidget {
     this.errorText,
     this.successText,
     this.digitsLabel,
+    this.onChanged,
+    this.controller,
+    this.actionsNeedCode = true,
   });
 
   final Future<bool> Function(String code)? onSubmit;
@@ -60,13 +69,58 @@ class SsCodeKeypad extends StatefulWidget {
   final String? title;
   final String? submitLabel, backspaceLabel, errorText, successText, digitsLabel;
 
+  /// Código a cada mudança feita no teclado (dígito, apagar, limpar depois do erro).
+  final ValueChanged<String>? onChanged;
+
+  /// Guarda o código: ler (`controller.text`) e trocar de fora. Começa com
+  /// [initialCode] quando vem vazio.
+  final TextEditingController? controller;
+
+  /// Falso: os botões de [actions] funcionam mesmo sem código digitado.
+  final bool actionsNeedCode;
+
   @override
   State<SsCodeKeypad> createState() => _SsCodeKeypadState();
 }
 
 class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderStateMixin {
   SsStrings get _s => SsStrings.of(context);
-  late String _code = widget.initialCode;
+  late String _local = widget.initialCode;
+
+  String get _code => widget.controller?.text ?? _local;
+  set _code(String v) {
+    if (v == _code) return;
+    final ctl = widget.controller;
+    if (ctl != null) {
+      ctl.value = TextEditingValue(
+        text: v,
+        selection: TextSelection.collapsed(offset: v.length),
+      );
+    } else {
+      _local = v;
+    }
+    widget.onChanged?.call(v);
+  }
+
+  // O controller mudou (de fora ou por nós): redesenha.
+  void _ouve() {
+    if (!mounted) return;
+    setState(() {
+      // controller.clear() depois do ✓ recomeça o teclado.
+      if (widget.controller!.text.isEmpty && _status == SsCodeStatus.success) _status = SsCodeStatus.idle;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final ctl = widget.controller;
+    if (ctl != null) {
+      if (ctl.text.isEmpty && widget.initialCode.isNotEmpty) ctl.text = widget.initialCode;
+      ctl.addListener(_ouve);
+    }
+  }
+
   SsCodeStatus _status = SsCodeStatus.idle;
   late final _shake = AnimationController(vsync: this, duration: const Duration(milliseconds: 480));
   final _focus = FocusNode();
@@ -79,11 +133,17 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
   @override
   void didUpdateWidget(SsCodeKeypad old) {
     super.didUpdateWidget(old);
+    if (old.controller != widget.controller) {
+      old.controller?.removeListener(_ouve);
+      widget.controller?.addListener(_ouve);
+      if (old.controller != null && widget.controller == null) _local = old.controller!.text;
+    }
     if (widget.status == SsCodeStatus.error && old.status != SsCodeStatus.error) _erro();
   }
 
   @override
   void dispose() {
+    widget.controller?.removeListener(_ouve);
     _limpa?.cancel();
     _shake.dispose();
     _focus.dispose();
@@ -108,8 +168,8 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
     setState(() => _code = _code.substring(0, _code.length - 1));
   }
 
-  Future<void> _enviar(Future<bool> Function(String)? f) async {
-    if (f == null || _code.isEmpty || _travado) return;
+  Future<void> _enviar(Future<bool> Function(String)? f, {bool allowEmpty = false}) async {
+    if (f == null || (_code.isEmpty && !allowEmpty) || _travado) return;
     setState(() => _status = SsCodeStatus.busy);
     bool ok;
     try {
@@ -325,7 +385,9 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
                         label: a.label,
                         icon: a.icon,
                         variant: a.primary ? SsButtonVariant.primary : SsButtonVariant.ghost,
-                        onPressed: _code.isEmpty || _travado ? null : () => _enviar(a.onPressed),
+                        onPressed: (_code.isEmpty && widget.actionsNeedCode) || _travado
+                            ? null
+                            : () => _enviar(a.onPressed, allowEmpty: !widget.actionsNeedCode),
                       ),
                   ];
                   if (box.maxWidth / botoes.length >= 180) {

@@ -2,7 +2,9 @@ import { Controller } from "@hotwired/stimulus"
 
 // Ss::CommandPaletteComponent: Ctrl/⌘ + atalho abre; filtra ignorando acento e caixa,
 // destaca o trecho com <mark>; ↑/↓ andam, Enter abre, Esc fecha (o próprio <dialog>).
-// src: busca no servidor (GET src?q=) que devolve HTML com a.ss-command-item.
+// src: busca no servidor (GET src?q=) que devolve HTML com a.ss-command-item, soltos ou em
+// .ss-command-group com título (.ss-command-group-title ou h2–h4), que fica (v0.10.1).
+// Item com data-ss-command-fill (sugestão) põe o texto na busca em vez de navegar.
 const norm = (s) => (s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase()
 
 export default class extends Controller {
@@ -49,7 +51,18 @@ export default class extends Controller {
 
   // Item escolhido (clique ou Enter): fecha antes de navegar, para o cache do Turbo não guardar aberta.
   picked(event) {
-    if (event.target.closest(".ss-command-item")) this.element.close()
+    const it = event.target.closest(".ss-command-item")
+    if (!it) return
+    if (it.dataset.ssCommandFill != null) return this.fill(event, it)
+    this.element.close()
+  }
+
+  // Sugestão: o texto vai para a busca, filtra de novo e o foco volta ao campo.
+  fill(event, it) {
+    event.preventDefault()
+    this.inputTarget.value = it.dataset.ssCommandFill || it.dataset.text || ""
+    this.filter()
+    this.inputTarget.focus()
   }
 
   hover(event) {
@@ -112,7 +125,24 @@ export default class extends Controller {
           a.dataset.text ??= a.querySelector("[data-ss-command-label]")?.textContent ?? ""
           this.mark(a, norm(q))
         })
-        this.remoteTarget.replaceChildren(...found)
+        // Grupos com título (na ordem do HTML); itens soltos vêm antes, sem título.
+        const loose = found.filter((a) => !a.closest(".ss-command-group"))
+        const groups = [...doc.querySelectorAll(".ss-command-group")].map((g, gi) => {
+          const items = [...g.querySelectorAll(".ss-command-item")]
+          if (!items.length) return null
+          const box = document.createElement("div")
+          box.className = "ss-command-group"; box.setAttribute("role", "group")
+          const title = g.querySelector(".ss-command-group-title, h2, h3, h4")?.textContent.trim()
+          if (title) {
+            const p = document.createElement("p")
+            p.className = "ss-command-group-title"; p.id = `${this.element.id}-rg${gi}`; p.textContent = title
+            box.setAttribute("aria-labelledby", p.id); box.append(p)
+          }
+          box.append(...items)
+          return box
+        }).filter(Boolean)
+        this.remoteTarget.setAttribute("role", groups.length ? "presentation" : "group")
+        this.remoteTarget.replaceChildren(...loose, ...groups)
         this.remoteTarget.hidden = !found.length
         this.refresh()
       } catch (_) { /* abortada ou sem rede: fica o que já tinha */ }

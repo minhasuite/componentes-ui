@@ -16,6 +16,12 @@ import '../ss_strings.dart';
 /// e volta com mola enquanto a cor passa para a da marca; o antigo apaga.
 /// [uppercase] usa versalete espaçado ("DESCOBRIR"); [onDark] para dentro de
 /// cabeçalho escuro ([SsCurvedHeader]).
+///
+/// Cabendo, as abas dividem a largura por igual. Quando não cabem (muitas
+/// abas, nomes longos, fonte grande), a faixa rola na horizontal, cada aba
+/// com a largura do nome, e a escolhida é trazida para a vista ao mudar.
+/// [scrollable] `true` força a rolagem; `false`, a divisão por igual.
+/// [icons] põe um ícone antes de cada nome (nulo na posição = sem ícone).
 class SsTabsUnderline extends StatefulWidget {
   const SsTabsUnderline({
     super.key,
@@ -24,7 +30,10 @@ class SsTabsUnderline extends StatefulWidget {
     required this.onChanged,
     this.uppercase = false,
     this.onDark = false,
-  }) : assert(tabs.length >= 2);
+    this.icons,
+    this.scrollable,
+  }) : assert(tabs.length >= 2),
+       assert(icons == null || icons.length == tabs.length);
 
   final List<String> tabs;
   final int index;
@@ -32,11 +41,91 @@ class SsTabsUnderline extends StatefulWidget {
   final bool uppercase;
   final bool onDark;
 
+  /// Um ícone por aba, antes do nome.
+  final List<IconData?>? icons;
+
+  /// Nulo = rola só quando as abas não cabem.
+  final bool? scrollable;
+
   @override
   State<SsTabsUnderline> createState() => _SsTabsUnderlineState();
 }
 
 class _SsTabsUnderlineState extends State<SsTabsUnderline> {
+  static const _pad = 16.0; // folga de cada lado do nome, no modo rolável
+  static const _icone = 18.0;
+  final _rolagem = ScrollController();
+
+  // Posição de cada aba no modo rolável (do último layout), para trazer a
+  // escolhida para a vista.
+  List<double> _esq = const [];
+  List<double> _larg = const [];
+
+  @override
+  void didUpdateWidget(SsTabsUnderline old) {
+    super.didUpdateWidget(old);
+    if (old.index != widget.index) WidgetsBinding.instance.addPostFrameCallback((_) => _mostra(animar: true));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _mostra(animar: false));
+  }
+
+  @override
+  void dispose() {
+    _rolagem.dispose();
+    super.dispose();
+  }
+
+  /// Centraliza a aba escolhida na faixa (sem passar das pontas).
+  void _mostra({required bool animar}) {
+    if (!mounted || !_rolagem.hasClients || widget.index >= _esq.length) return;
+    final p = _rolagem.position;
+    final alvo = (_esq[widget.index] + _larg[widget.index] / 2 - p.viewportDimension / 2).clamp(
+      p.minScrollExtent,
+      p.maxScrollExtent,
+    );
+    if ((alvo - p.pixels).abs() < 1) return;
+    if (!animar || reduceMotion(context)) {
+      _rolagem.jumpTo(alvo);
+    } else {
+      _rolagem.animateTo(alvo, duration: SsMotion.base, curve: Curves.easeOutCubic);
+    }
+  }
+
+  TextStyle _estilo(BuildContext context, {required bool selected, required Color cor}) => TextStyle(
+    fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+    color: cor,
+    fontSize: widget.uppercase ? AppType.meta : AppType.set,
+    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+    letterSpacing: widget.uppercase ? 2.4 : 0,
+  );
+
+  String _nome(int i) => widget.uppercase ? widget.tabs[i].toUpperCase() : widget.tabs[i];
+
+  /// Largura natural de cada aba (no peso da escolhida, para não pular).
+  List<double> _naturais(BuildContext context) {
+    final escala = MediaQuery.textScalerOf(context);
+    final estilo = _estilo(context, selected: true, cor: const Color(0xFF000000));
+    return [
+      for (var i = 0; i < widget.tabs.length; i++)
+        () {
+          final tp = TextPainter(
+            text: TextSpan(text: _nome(i), style: estilo),
+            textDirection: TextDirection.ltr,
+            textScaler: escala,
+            maxLines: 1,
+          )..layout();
+          final ic = widget.icons?[i] == null ? 0.0 : escala.scale(_icone) + 6;
+          final w = tp.width + ic + 2 * _pad;
+          tp.dispose();
+          return w.ceilToDouble();
+        }(),
+    ];
+  }
+
   /// O traço no instante: afina esticado, amassa ao chegar; o rastro vai atrás.
   Widget _traco(SsIndicatorFrame f, Color bar, double base) {
     final r = f.rect;
@@ -87,6 +176,45 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
     return Stack(clipBehavior: Clip.none, children: filhos);
   }
 
+  Widget _aba(BuildContext context, int i, Color on, Color off) {
+    final sel = i == widget.index;
+    final icone = widget.icons?[i];
+    final texto = Text(_nome(i), maxLines: 1, overflow: TextOverflow.ellipsis);
+    return Semantics(
+      button: true,
+      selected: sel,
+      child: InkWell(
+        onTap: () {
+          if (!sel) SsHaptics.tick();
+          widget.onChanged(i);
+        },
+        child: Center(
+          child: _TabLabel(
+            selected: sel,
+            child: AnimatedDefaultTextStyle(
+              duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
+              curve: Curves.easeOut,
+              style: _estilo(context, selected: sel, cor: sel ? on : off),
+              child: icone == null
+                  ? texto
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(icone, size: _icone, color: sel ? on : off),
+                          const SizedBox(width: 6),
+                          Flexible(child: texto),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -96,65 +224,77 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
     final off = widget.onDark ? AppColors.onDarkMuted : c.muted;
     final bar = widget.onDark ? c.accentBright : c.accent;
     final n = widget.tabs.length;
+    final linha = Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(height: 1, color: widget.onDark ? AppColors.onDark.withValues(alpha: .08) : c.line),
+    );
     return SizedBox(
       height: 48,
       child: LayoutBuilder(
         builder: (context, box) {
-          final w = box.maxWidth / n;
+          final naturais = _naturais(context);
+          final soma = naturais.fold(0.0, (a, b) => a + b);
+          final rola = widget.scrollable ?? soma > box.maxWidth;
+          if (!rola) {
+            _esq = const [];
+            _larg = const [];
+            final w = box.maxWidth / n;
+            return Stack(
+              children: [
+                linha,
+                Row(children: [for (var i = 0; i < n; i++) Expanded(child: _aba(context, i, on, off))]),
+                // O traço viaja como minhoca: a frente dispara, a de trás alcança,
+                // afina no caminho e amassa ao chegar.
+                Positioned.fill(
+                  child: SsSlidingIndicator(
+                    index: widget.index,
+                    duration: SsMotion.worm,
+                    rectOf: (i, size) => Rect.fromLTWH(i * w + 14, size.height - 3, w - 28, 3),
+                    frameBuilder: (context, f) => _traco(f, bar, box.maxHeight),
+                  ),
+                ),
+              ],
+            );
+          }
+          // Rolável: cada aba com a largura do nome (sobra repartida se couber).
+          final extra = soma < box.maxWidth ? (box.maxWidth - soma) / n : 0.0;
+          final larg = [for (final w in naturais) w + extra];
+          final esq = <double>[];
+          var x = 0.0;
+          for (final w in larg) {
+            esq.add(x);
+            x += w;
+          }
+          _esq = esq;
+          _larg = larg;
           return Stack(
             children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(height: 1, color: widget.onDark ? AppColors.onDark.withValues(alpha: .08) : c.line),
-              ),
-              Row(
-                children: [
-                  for (var i = 0; i < n; i++)
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        selected: i == widget.index,
-                        child: InkWell(
-                          onTap: () {
-                            if (i != widget.index) SsHaptics.tick();
-                            widget.onChanged(i);
-                          },
-                          child: Center(
-                            child: _TabLabel(
-                              selected: i == widget.index,
-                              child: AnimatedDefaultTextStyle(
-                                duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
-                                curve: Curves.easeOut,
-                                style: TextStyle(
-                                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                                  color: i == widget.index ? on : off,
-                                  fontSize: widget.uppercase ? AppType.meta : AppType.set,
-                                  fontWeight: i == widget.index ? FontWeight.w800 : FontWeight.w600,
-                                  letterSpacing: widget.uppercase ? 2.4 : 0,
-                                ),
-                                child: Text(
-                                  widget.uppercase ? widget.tabs[i].toUpperCase() : widget.tabs[i],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ),
+              linha,
+              SingleChildScrollView(
+                controller: _rolagem,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: x,
+                  height: box.maxHeight,
+                  child: Stack(
+                    children: [
+                      Row(
+                        children: [
+                          for (var i = 0; i < n; i++) SizedBox(width: larg[i], child: _aba(context, i, on, off)),
+                        ],
+                      ),
+                      Positioned.fill(
+                        child: SsSlidingIndicator(
+                          index: widget.index,
+                          duration: SsMotion.worm,
+                          rectOf: (i, size) => Rect.fromLTWH(esq[i] + 12, size.height - 3, larg[i] - 24, 3),
+                          frameBuilder: (context, f) => _traco(f, bar, box.maxHeight),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              // O traço viaja como minhoca: a frente dispara, a de trás alcança,
-              // afina no caminho e amassa ao chegar.
-              Positioned.fill(
-                child: SsSlidingIndicator(
-                  index: widget.index,
-                  duration: SsMotion.worm,
-                  rectOf: (i, size) => Rect.fromLTWH(i * w + 14, size.height - 3, w - 28, 3),
-                  frameBuilder: (context, f) => _traco(f, bar, box.maxHeight),
+                    ],
+                  ),
                 ),
               ),
             ],

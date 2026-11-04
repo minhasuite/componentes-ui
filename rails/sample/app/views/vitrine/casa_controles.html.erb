@@ -60,6 +60,15 @@
   </div>
 <% end %>
 
+<%= demo "Ss::SwitchComponent (form_data, params)", "Modo B com params: (campos ocultos do form) e form_data: (atributos do <form> gerado: data-turbo-frame, target, class; o data-controller soma com o ss-switch). Abra o inspetor para ver o form.",
+      uso: 'render Ss::SwitchComponent.new(url: comando_path(p), on:, label:, params: { cmd: "toggle" }, form_data: { data: { turbo_frame: "luzes" } })' do %>
+  <div class="ss-card ss-card-pad" style="display:flex;flex-wrap:wrap;gap:1.5rem 2.5rem;align-items:center">
+    <%= render Ss::SwitchComponent.new(url: aqui, on: true, label: "Luz do quarto", show_label: true, params: { cmd: "toggle", ponto: 7 },
+          form_data: { data: { turbo_frame: "luzes" } }) %>
+    <%= render Ss::SwitchComponent.new(url: aqui, on: false, label: "Portão (confirm_title:)", show_label: true, confirm: "Abrir o portão da garagem?", confirm_title: "Portão") %>
+  </div>
+<% end %>
+
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
 <%= demo "Ss::RangeComponent (v0.10)", "Trilha em gradiente (track: :brightness, :kelvin, :hue; o seletor pega a cor do ponto), bolha com o valor arrastando (bubble: true) e envio do form ao soltar (submit: :release, com debounce). Sem as opções novas, a marcação é a de antes.",
       uso: 'render Ss::RangeComponent.new(name: "value", label: "Temperatura de cor", value: 2700, min: 2000, max: 6500, step: 100, format: "%d K", track: :kelvin, bubble: true, submit: :release)' do %>
@@ -106,6 +115,16 @@
   </div>
 <% end %>
 
+<%= demo "Ss::ThermostatComponent (v0.10.1)", "color: (qualquer cor CSS) ou tone: pinta o anel sem depender do modo; show_modes: false esconde os chips; current_label: troca a linha da atual; adjust_when_off: true deixa mexer no alvo desligado; format: com %% vira % também no JS.",
+      uso: 'render Ss::ThermostatComponent.new(target: 60, unit: "%", format: "%d%%", color: "rgb(255,180,90)", show_modes: false, current_label: "Umidade agora 54%")  ·  mode: "off", adjust_when_off: true' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:1rem;max-width:56rem">
+    <div class="ss-card ss-card-pad"><%= render Ss::ThermostatComponent.new(name: "value", target: 60, current: 54, min: 30, max: 80, step: 5, unit: "%", format: "%d%%",
+          color: "rgb(255,180,90)", show_modes: false, current_label: "Umidade agora 54%", label: "Umidade alvo", url: aqui) %></div>
+    <div class="ss-card ss-card-pad"><%= render Ss::ThermostatComponent.new(name: "value", target: 22, current: 24, mode: "cool", tone: :success, show_modes: false, url: aqui) %></div>
+    <div class="ss-card ss-card-pad"><%= render Ss::ThermostatComponent.new(name: "value", target: 20, current: 18, mode: "off", adjust_when_off: true, url: aqui) %></div>
+  </div>
+<% end %>
+
 <%= demo "Ss::CodeKeypadComponent", "PIN do alarme: bolinhas, teclado 3×4 (e o teclado físico: números, Backspace, Enter), apagar. Com length: envia ao completar; senão, o botão ou as ações (Armar ausente/em casa). Errado treme e limpa; enviando trava; certo mostra o ✓. Aqui o PIN certo é 1234.",
       uso: 'render Ss::CodeKeypadComponent.new(url: alarme_path, name: "code", length: 4)  ·  actions: [{ label: "Armar ausente", name: "cmd", value: "arm_away", primary: true }, …]' do %>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr));gap:1rem;max-width:62rem">
@@ -117,6 +136,20 @@
   </div>
 <% end %>
 
+<%= demo "Ss::CodeKeypadComponent (actions_need_code: false)", "As ações ficam usáveis com o código vazio (Desarmar sem PIN, Pânico). De fora, o código está no hidden name: e sai no evento ss-code-keypad:change (detail.code) a cada tecla.",
+      uso: 'render Ss::CodeKeypadComponent.new(url:, actions: [{ label: "Pânico", name: "cmd", value: "panic" }], actions_need_code: false)  ·  addEventListener("ss-code-keypad:change", (e) => e.detail.code)' do %>
+  <div class="ss-card ss-card-pad" style="max-width:20rem">
+    <%= render Ss::CodeKeypadComponent.new(url: aqui, title: "Alarme", actions_need_code: false, id: "vt-keypad-free",
+          actions: [{ label: "Desarmar", name: "cmd", value: "disarm", primary: true }, { label: "Pânico", name: "cmd", value: "panic" }]) %>
+    <p style="margin-top:.5rem"><output class="ss-badge" id="vt-keypad-out">código: —</output></p>
+  </div>
+  <script>
+    document.getElementById("vt-keypad-free")?.addEventListener("ss-code-keypad:change", (e) => {
+      document.getElementById("vt-keypad-out").textContent = `código: ${e.detail.code || "—"}`
+    })
+  </script>
+<% end %>
+
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
 <%= demo "Ss::StepperInputComponent", "Número com −/+ em volta de um input de verdade (digita também). Segurar −/+ repete; nos limites o botão trava.",
       uso: 'render Ss::StepperInputComponent.new(name: "regra[minutos]", label: "Atraso", value: 5, min: 0, max: 60, step: 5, unit: "min")' do %>
@@ -124,6 +157,8 @@
     <%= render Ss::StepperInputComponent.new(name: "atraso", label: "Atraso", value: 0, min: 0, max: 60, step: 5, unit: "min") %>
     <%= render Ss::StepperInputComponent.new(name: "alvo", label: "Temperatura alvo", value: 30, min: 16, max: 30, step: 0.5, unit: "°C") %>
     <%= render Ss::StepperInputComponent.new(name: "trava", label: "Repetições (sem permissão)", value: 3, min: 1, max: 9, disabled: true) %>
+    <%= render Ss::StepperInputComponent.new(name: "pessoas", label: "Pessoas (decrease_label:/increase_label:)", value: 2, min: 1, max: 8,
+          decrease_label: "Uma pessoa a menos", increase_label: "Uma pessoa a mais") %>
   </div>
 <% end %>
 
@@ -165,3 +200,23 @@
     }, true)
   })()
 </script>
+
+<%= demo "Ss::DeviceTileComponent (v0.10.1: aperto, link_data, cor da luz)", "action_url: liga o modo aperto (comando, portão, script, botão): tocar no tile faz POST com action_params:, em vez de ligar/desligar ou abrir os detalhes; confirm: + confirm_title: perguntam antes pela caixa da suíte. confirm_title: também vale para a chave. link_data: vai no link de detalhes (ex. turbo_frame: \"_top\"). A cor real da luz entra em tone: como cor CSS.",
+      uso: 'render Ss::DeviceTileComponent.new(name: "Portão", state: "Fechado", icon: svg, action_url: comando_path(p), action_params: { cmd: "abrir" }, confirm: "Abrir o portão?", confirm_title: "Portão")  ·  …(name: "Abajur", on: true, tone: "rgb(255, 196, 120)", url:, link_data: { turbo_frame: "_top" })' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:12px">
+    <%= render Ss::DeviceTileComponent.new(name: "Portão da garagem", state: "Fechado", icon: gate, action_url: aqui, action_method: :get, action_params: { cmd: "abrir" },
+          confirm: "Abrir o portão da garagem?", confirm_title: "Portão") %>
+    <%= render Ss::DeviceTileComponent.new(name: "Cena Cinema", state: "Script", icon: tv, tone: :info, action_url: aqui, action_method: :get, action_params: { cena: "cinema" }) %>
+    <%= render Ss::DeviceTileComponent.new(name: "Abajur", state: "Ligado · 2700 K", on: true, icon: bulb, tone: "rgb(255, 176, 92)", url: aqui, link_data: { turbo_frame: "_top" }, toggle_url: aqui) %>
+    <%= render Ss::DeviceTileComponent.new(name: "Fita LED", state: "Ligada · lilás", on: true, icon: bulb, tone: "rgb(176, 120, 255)", url: aqui, toggle_url: aqui,
+          confirm: "Desligar a fita LED?", confirm_title: "Fita LED") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::RangeComponent (v0.10.1: número no idioma)", "format: segue o sprintf (%s, %d, %.1f, %%), mas o número sai com o separador decimal do idioma, no servidor e ao arrastar (Intl): \"%.1f °C\" vira 21,5 °C em português e 21.5 °C em inglês. Sem separador de milhar.",
+      uso: 'render Ss::RangeComponent.new(name: "alvo", label: "Temperatura", value: 21.5, min: 16, max: 30, step: 0.5, format: "%.1f °C")' do %>
+  <div class="ss-card ss-card-pad" style="max-width:26rem;display:grid;gap:14px">
+    <%= render Ss::RangeComponent.new(name: "vt_alvo", label: "Temperatura", value: 21.5, min: 16, max: 30, step: 0.5, format: "%.1f °C") %>
+    <%= render Ss::RangeComponent.new(name: "vt_ph", label: "pH da água", value: 6.85, min: 4, max: 9, step: 0.05, format: "pH %.2f") %>
+  </div>
+<% end %>

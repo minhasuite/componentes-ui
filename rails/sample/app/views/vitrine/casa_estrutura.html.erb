@@ -58,6 +58,17 @@
   </div>
 <% end %>
 
+<%= demo "Ss::LocalePickerComponent (system_option)", "system_option: true: primeiro “Seguir o sistema”, com valor vazio, marcado quando o value é nil ou vazio (o app usa o idioma do navegador). O texto vem de locale_picker.system.",
+      uso: 'render Ss::LocalePickerComponent.new(value: current_user.locale, name: "user[locale]", system_option: true)' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1.25rem;align-items:start">
+    <form data-vt-form>
+      <%= render Ss::LocalePickerComponent.new(value: nil, name: "user[locale_sys]", system_option: true) %>
+      <p style="margin-top:.5rem"><output class="ss-badge" data-vt-out>user[locale_sys]=</output></p>
+    </form>
+    <form data-vt-form><%= render Ss::LocalePickerComponent.new(value: "es", name: "loc_sys2", system_option: true, segmented: true) %></form>
+  </div>
+<% end %>
+
 <%= demo "Ss::BlockListComponent", "Blocos recolhíveis em <details> (abrem com a mola), cada um com ícone, resumo, chave de ligar, ⋮ (mover, duplicar, excluir) e o corpo do app. Mover troca no DOM e renumera as posições; aninha. Erro: borda vermelha; foco: anel.",
       uso: 'render Ss::BlockListComponent.new(name: "automacao[passos]") { |l| l.with_block(id:, title:, summary:, icon:, tone: :warn, open: true, error:, delete_url:) { campos } }' do %>
   <form data-vt-form data-vt-blocks style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.25rem;align-items:start">
@@ -117,3 +128,35 @@
     init()
   })()
 </script>
+
+<%= demo "Ss::IconPickerComponent (v0.10.1: rótulo por ícone)", "Cada ícone pode ter um rótulo (vai no title e no aria-label, e entra na busca: \"ventilador\" acha o fan). Vale [nome, svg, rótulo], { name:, svg:, label: } ou icon_labels: { \"fan\" => \"Ventilador\" } com os pares de sempre. O valor gravado continua o nome.",
+      uso: 'render Ss::IconPickerComponent.new(name: "ponto[icone]", icons: [["fan", svg, "Ventilador"], { name: "door", svg:, label: "Porta" }])  ·  …(icons: pares, icon_labels: { "fan" => "Ventilador" })' do %>
+  <div class="ss-card ss-card-pad" style="max-width:30rem">
+    <% rotulos = { "lightbulb" => "Lâmpada", "power-socket" => "Tomada", "fan" => "Ventilador", "thermometer" => "Termômetro", "door" => "Porta", "window" => "Janela",
+                   "lock" => "Fechadura", "camera" => "Câmera", "television" => "Televisão", "speaker" => "Caixa de som", "water" => "Água", "garage" => "Garagem" } %>
+    <%= render Ss::IconPickerComponent.new(name: "ponto[icone_rotulo]", value: "fan", icons: icones.first(12), icon_labels: rotulos, id: "vt-ip-rotulos") %>
+  </div>
+<% end %>
+
+<%= demo "Ss::LocalePickerComponent (v0.10.1: form: e button_data:)", "Com url:, form: vai em cada <form> do button_to (ex. { data: { turbo: false } } para recarregar a página inteira e trocar o idioma de tudo) e button_data: nos botões.",
+      uso: 'render Ss::LocalePickerComponent.new(value: I18n.locale, url: idioma_path, form: { data: { turbo: false } }, button_data: { action: "analytics#idioma" })' do %>
+  <div class="ss-card ss-card-pad" style="max-width:24rem">
+    <%= render Ss::LocalePickerComponent.new(value: I18n.locale.to_s, url: vitrine_path("casa_estrutura"), method: :get, form: { data: { turbo: false } }) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::BlockListComponent (v0.10.1: servidor)", "html_id: separa o id do <li> do id do dado. move_url: faz o mover ir ao servidor (button_to com direction=up|down; move_method:, move_param:). toggle_method:/toggle_params: na chave do toggle_url:. delete_confirm: (e delete_confirm_title:) pergunta pela caixa da suíte com tom de perigo. duplicable: false tira o Duplicar.",
+      uso: 'l.with_block(id: p.id, html_id: dom_id(p), title:, move_url: mover_passo_path(p), toggle_url: passo_path(p), toggle_method: :patch, toggle_params: { campo: "ativo" }, delete_url: passo_path(p), delete_confirm: "Excluir este passo?", duplicable: false)' do %>
+  <div style="max-width:30rem">
+    <%= render Ss::BlockListComponent.new(name: "srv[passos]") do |l| %>
+      <% here = vitrine_path("casa_estrutura") %>
+      <% l.with_block(id: 41, html_id: "passo_41", title: "Ligar a cafeteira", summary: "Cozinha · 06:30", tone: :warn, icon: passo.("M5 8h12v6a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5zM17 10h2a2 2 0 0 1 0 4h-2"),
+                      move_url: here, move_method: :get, toggle_url: here, toggle_method: :get, toggle_params: { campo: "ativo" },
+                      delete_url: here, delete_method: :post, delete_confirm: "Excluir o passo “Ligar a cafeteira”?", delete_confirm_title: "Excluir passo", duplicable: false) do %>
+        <p class="text-muted" style="margin:0">Mover, ligar e excluir vão ao servidor.</p>
+      <% end %>
+      <% l.with_block(id: 42, html_id: "passo_42", title: "Abrir a persiana", summary: "Quarto · 07:00", tone: :info, icon: passo.("M4 4h16M5 4v12h14V4M9 20h6"),
+                      move_url: here, move_method: :get, delete_url: here, delete_method: :post, delete_confirm: "Excluir o passo “Abrir a persiana”?", duplicable: false) %>
+    <% end %>
+  </div>
+<% end %>

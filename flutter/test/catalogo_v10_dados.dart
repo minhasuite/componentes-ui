@@ -255,6 +255,8 @@ final catalogoV10Dados = <Componente>[
       'Desenha-se da esquerda para a direita quando entra na tela (SsTweenInView); com menos movimento, aparece pronto.',
       'Números e datas no idioma do Localizations (pt, en, es) ou de locale:.',
       'Leitor de tela: resumo com o período e o mínimo, máximo e último de cada série; legenda com botões alternáveis.',
+      'showValues: a legenda mostra o valor de cada série (o do cursor enquanto arrasta, senão a última leitura); legendAlways: legenda mesmo com uma série.',
+      'utcOffset: horas e datas (eixo, balão, resumo) no fuso fixo do site, não no do aparelho (o time_zone: do Rails).',
     ],
     estados: [
       Estado(
@@ -360,6 +362,39 @@ final catalogoV10Dados = <Componente>[
         tamanho: const Size(360, 260),
         aguarde: 1200,
       ),
+      Estado(
+        'valores-na-legenda',
+        'showValues + legendAlways: série única com o valor atual na legenda',
+        (_) => _pad(
+          SsTimeChart(
+            series: [seriesClima().first],
+            to: agoraDemo,
+            locale: _pt,
+            height: 150,
+            showValues: true,
+            legendAlways: true,
+          ),
+        ),
+        tamanho: const Size(360, 260),
+        aguarde: 1200,
+      ),
+      Estado(
+        'valores-no-cursor',
+        'showValues: a legenda acompanha o cursor; fuso fixo (utcOffset −3 h)',
+        (_) => _pad(
+          SsTimeChart(
+            series: seriesClima().take(2).toList(),
+            to: agoraDemo,
+            locale: _pt,
+            height: 150,
+            showValues: true,
+            utcOffset: const Duration(hours: -3),
+            initialCursor: agoraDemo.subtract(const Duration(hours: 6)),
+          ),
+        ),
+        tamanho: const Size(360, 280),
+        aguarde: 1200,
+      ),
     ],
   ),
   Componente(
@@ -374,6 +409,7 @@ final catalogoV10Dados = <Componente>[
       'As faixas entram da esquerda para a direita, em cascata por linha, quando aparecem na tela.',
       'Nome longo corta com reticências; trecho curto tem pelo menos 1 px.',
       'Leitor de tela: cada linha diz o tempo em cada estado e o estado de agora.',
+      'utcOffset: o eixo e o balão no fuso fixo do site (o time_zone: do Rails).',
     ],
     estados: [
       Estado(
@@ -415,6 +451,13 @@ final catalogoV10Dados = <Componente>[
         tamanho: const Size(360, 210),
         aguarde: 1000,
       ),
+      Estado(
+        'fuso-do-site',
+        'utcOffset: eixo e balão no fuso do site (UTC−3), não no do aparelho',
+        (_) => _pad(SsStateBands(rows: faixasDemo(), utcOffset: const Duration(hours: -3), locale: _pt)),
+        tamanho: const Size(360, 260),
+        aguarde: 900,
+      ),
     ],
   ),
   Componente(
@@ -431,6 +474,10 @@ final catalogoV10Dados = <Componente>[
       'loading: linhas-fantasma; vazio: SsEmptyState compacto.',
       'As linhas sobem em cascata quando aparecem; com menos movimento, aparecem prontas.',
       'Hora e data no idioma do Localizations (ou locale:).',
+      'SsLogbook.sliver: a mesma peça como sliver (num CustomScrollView ou nos slivers do SsScreenHeader); o "carregar mais" escuta a rolagem de fora.',
+      'É SsSelfScrolling: dentro do SsPullToRefresh vai direto (antes era embrulhado num SingleChildScrollView e estourava).',
+      'endAction: link ou botão no fim do registro ("Ver um período maior"); showEnd: false tira a marca "Início do registro".',
+      'utcOffset: hora e agrupamento por dia no fuso fixo do site.',
     ],
     estados: [
       Estado(
@@ -497,6 +544,54 @@ final catalogoV10Dados = <Componente>[
         'carrega a página 2 de verdade (600 ms)',
         (_) => const LogbookDemo(),
         tamanho: const Size(360, 640),
+        aguarde: 1200,
+      ),
+      Estado(
+        'fim-com-acao',
+        'endAction: link no fim do registro',
+        (_) => SsLogbook(
+          entries: eventosDemo(dias: 1, porDia: 2),
+          now: agoraDemo,
+          locale: _pt,
+          endAction: SsButton.text(label: 'Ver um período maior', icon: Icons.history_rounded, onPressed: () {}),
+        ),
+        tamanho: const Size(360, 300),
+        aguarde: 1200,
+      ),
+      Estado(
+        'sem-marca-fim',
+        'showEnd: false (sem "Início do registro")',
+        (_) => SsLogbook(entries: eventosDemo(dias: 1, porDia: 2), now: agoraDemo, locale: _pt, showEnd: false),
+        tamanho: const Size(360, 240),
+        aguarde: 1200,
+      ),
+      Estado(
+        'sliver-no-cabecalho',
+        'SsLogbook.sliver nos slivers do SsScreenHeader (dias grudam abaixo do cabeçalho)',
+        (_) => SsScreenHeader(
+          title: 'Histórico',
+          subtitle: 'Sala de estar',
+          slivers: [
+            SsLogbook.sliver(
+              entries: eventosDemo(dias: 2, porDia: 3),
+              now: agoraDemo,
+              locale: _pt,
+              hasMore: true,
+              autoLoad: false,
+            ),
+          ],
+        ),
+        tamanho: const Size(360, 640),
+        aguarde: 1200,
+      ),
+      Estado(
+        'puxar-para-atualizar',
+        'dentro do SsPullToRefresh (vai direto, sem SingleChildScrollView)',
+        (_) => SsPullToRefresh(
+          onRefresh: () async {},
+          child: SsLogbook(entries: eventosDemo(dias: 1, porDia: 3), now: agoraDemo, locale: _pt),
+        ),
+        tamanho: const Size(360, 360),
         aguarde: 1200,
       ),
     ],

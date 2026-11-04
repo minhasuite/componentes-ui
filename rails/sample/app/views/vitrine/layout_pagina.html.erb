@@ -55,6 +55,17 @@
   </div>
 <% end %>
 
+<%= demo "Ss::TabsComponent (v0.10.1: ícone e muitas abas)", "icon: (svg) antes do rótulo. Com mais abas que a largura, a faixa rola na horizontal (sem quebrar linha) e a marcada entra na vista ao abrir e ao trocar; o sublinhado acompanha a rolagem.",
+         uso: 't.with_tab(label: "Sala", icon: Ss::CasaIcons.svg(:home)) { … }' do %>
+  <div class="ss-card ss-card-pad" style="max-width:30rem">
+    <%= render Ss::TabsComponent.new(label: "Cômodos", id: "comodos") do |t| %>
+      <% [["Sala", :home], ["Cozinha", :drop], ["Quarto", :clock], ["Escritório", :bolt], ["Garagem", :lock], ["Varanda", :wind], ["Lavanderia", :drop]].each_with_index do |(nome, ico), i| %>
+        <% t.with_tab(label: nome, icon: (Ss::CasaIcons.svg(ico) if Ss::CasaIcons::PATHS.key?(ico)), selected: i == 5) do %><p>Aparelhos da <%= nome.downcase %>.</p><% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
 <%= demo "Ss::StickyActionBarComponent", "Mude um campo: a barra “Salvar · Cancelar” aparece fixa embaixo; Cancelar volta ao original; sair da página com alteração pede confirmação (ss-dirty).",
          uso: 'form_with … do |f| … render Ss::StickyActionBarComponent.new end' do %>
   <form class="ss-card ss-card-pad" action="<%= vitrine_path("layout_pagina") %>" method="get" style="display:grid;gap:14px;max-width:560px" onsubmit="event.preventDefault()">
@@ -63,4 +74,30 @@
     <label class="ss-switch-row"><span>Aceitar fiado<small>Clientes com cadastro completo</small></span><input type="checkbox" role="switch" name="fiado"></label>
     <%= render Ss::StickyActionBarComponent.new %>
   </form>
+<% end %>
+
+<%= demo "Ss::PageComponent (v0.10.1: só cabeçalho)", "Sem bloco (ou com bloco vazio), não sai o .ss-page-body nem o espaço do gap: serve de cabeçalho solto, com o conteúdo vindo de outro lugar (frame, parcial).",
+         uso: 'render Ss::PageComponent.new(title: "Relatórios", subtitle: "Escolha um") { |p| p.with_actions { … } }' do %>
+  <div class="ss-card ss-card-pad" style="display:grid;gap:12px">
+    <%= render Ss::PageComponent.new(title: "Relatórios", subtitle: "Só o cabeçalho: sem corpo embaixo") do |p| %>
+      <% p.with_actions do %><button class="ss-btn ss-btn-outline ss-btn-sm">Exportar</button><% end %>
+    <% end %>
+    <p style="color:var(--muted);font-size:.85rem;border-top:1px dashed var(--line);padding-top:10px">(fim do componente: nenhum espaço sobrando acima desta linha)</p>
+  </div>
+<% end %>
+
+<%= demo ".ss-menu (v0.10.1: botão de texto e button_to)", "summary.ss-menu-btn faz do gatilho um botão com texto (a lista abre para a direita; .ss-menu.is-end abre para a esquerda). Itens que são form > button (o que o button_to gera) ficam iguais aos links.",
+         uso: '<details class="ss-menu"><summary class="ss-menu-btn">Ações <svg…/></summary><div><a href="…">Editar</a> button_to("Arquivar", arquivar_path) <hr> button_to("Excluir", item_path, method: :delete, class: "is-danger")</div></details>' do %>
+  <div class="ss-card ss-card-pad" style="display:flex;gap:16px;align-items:flex-start;min-height:220px">
+    <details class="ss-menu" open>
+      <summary class="ss-menu-btn">Ações <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg></summary>
+      <div>
+        <a href="#">Editar</a>
+        <%= button_to "Arquivar", vitrine_path("layout_pagina"), method: :get %>
+        <hr>
+        <%= button_to "Excluir", vitrine_path("layout_pagina"), method: :get, class: "is-danger", form: { data: { turbo_confirm: "Excluir o item?", turbo_confirm_tone: "danger" } } %>
+      </div>
+    </details>
+    <details class="ss-menu"><summary aria-label="Mais ações">⋮</summary><div><a href="#">Duplicar</a><%= button_to "Mover", vitrine_path("layout_pagina"), method: :get %></div></details>
+  </div>
 <% end %>

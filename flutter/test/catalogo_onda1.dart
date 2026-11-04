@@ -122,6 +122,8 @@ final catalogoOnda1 = <Componente>[
       'Enquanto puxa, um brilho de aurora acende no topo na medida do arraste.',
       'Ao disparar dá um toque firme (haptic) e o brilho pulsa leve até terminar.',
       'Com menos movimento, o brilho fica parado.',
+      'O que já rola por dentro vai direto: ScrollView, SingleChildScrollView, NestedScrollView, PageView e as peças SsSelfScrolling (SsLogbook, SsPagedList, SsScreenHeader, SsMenuView). Outro widget vira rolável.',
+      'scrollable: true para um widget próprio que monta a sua rolagem; false força o embrulho.',
     ],
     estados: [
       Estado(
@@ -129,6 +131,32 @@ final catalogoOnda1 = <Componente>[
         'parado',
         (_) => SsPullToRefresh(onRefresh: _nadaAsync, child: _lista(_itens.take(2).toList())),
         tamanho: const Size(360, 240),
+      ),
+      Estado(
+        'logbook',
+        'filho que rola sozinho (SsLogbook) vai direto',
+        (_) => SsPullToRefresh(
+          onRefresh: _nadaAsync,
+          child: SsLogbook(
+            entries: [
+              SsLogEntry(
+                at: DateTime(2026, 11, 4, 14, 2),
+                title: 'Luz da sala',
+                state: 'Ligada',
+                icon: Icons.lightbulb_outline,
+              ),
+              SsLogEntry(
+                at: DateTime(2026, 11, 4, 13, 40),
+                title: 'Porta da frente',
+                state: 'Fechada',
+                icon: Icons.door_front_door_outlined,
+              ),
+            ],
+            now: DateTime(2026, 11, 4, 15),
+          ),
+        ),
+        tamanho: const Size(360, 260),
+        aguarde: 1200,
       ),
     ],
   ),
@@ -141,6 +169,7 @@ final catalogoOnda1 = <Componente>[
       'Se a página falhar, para de insistir e deixa o "Carregar mais".',
       'Com onRefresh, ganha o SsPullToRefresh.',
       'Padding de lista que respeita a barra do sistema (safeListPadding).',
+      'SsLoadMore(endLabel:) troca o "Fim da lista".',
     ],
     estados: [
       Estado(
@@ -175,6 +204,12 @@ final catalogoOnda1 = <Componente>[
         'rodape-mais',
         'rodapé "Carregar mais"',
         (_) => _pad(const SsLoadMore(hasMore: true, onLoadMore: _nada)),
+        tamanho: const Size(360, 88),
+      ),
+      Estado(
+        'rodape-fim',
+        'endLabel: texto próprio do fim',
+        (_) => _pad(const SsLoadMore(hasMore: false, endLabel: 'Sem mais avisos')),
         tamanho: const Size(360, 88),
       ),
     ],
@@ -234,12 +269,28 @@ final catalogoOnda1 = <Componente>[
       'Devolve o texto aparado; cancelar ou vazio devolve null.',
       'validator mostra o erro embaixo do campo e segura o "Salvar".',
       'Enter no teclado salva.',
+      'autofillHints liga o autopreenchimento; icon vai no começo do campo; textCapitalization troca o padrão (sentences).',
     ],
     estados: [
       Estado(
         'padrao',
         'padrão',
         (_) => const SsPromptDialog(title: 'Nova lista', label: 'Nome da lista', initial: 'Mercado do mês'),
+        tamanho: _dialogo,
+      ),
+      Estado(
+        'email',
+        'icon + autofillHints + textCapitalization.none (e-mail)',
+        (_) => const SsPromptDialog(
+          title: 'Convidar pessoa',
+          label: 'E-mail',
+          hint: 'nome@exemplo.com',
+          keyboardType: TextInputType.emailAddress,
+          icon: Icons.alternate_email_rounded,
+          autofillHints: [AutofillHints.email],
+          textCapitalization: TextCapitalization.none,
+          confirmLabel: 'Convidar',
+        ),
         tamanho: _dialogo,
       ),
     ],
@@ -383,10 +434,22 @@ final catalogoOnda1 = <Componente>[
       'Ao voltar a rede, mostra "De volta online" em verde por 2 s e recolhe.',
       'Leitor de tela anuncia a mudança (liveRegion); ícone junto com a cor.',
       'Com menos movimento, aparece e some sem animar.',
+      'message troca o texto offline; onAction (com actionLabel, padrão "Tentar de novo") põe um botão à direita enquanto está offline.',
     ],
     estados: [
       Estado('offline', 'sem conexão', (_) => const _OfflineDemo(volta: false), tamanho: const Size(360, 200)),
       Estado('volta', 'de volta online', (_) => const _OfflineDemo(volta: true), tamanho: const Size(360, 200)),
+      Estado(
+        'mensagem-e-acao',
+        'message + "Tentar de novo"',
+        (_) => SsOfflineBanner(
+          offline: true,
+          message: 'Sem conexão — mostrando o último painel salvo',
+          onAction: _nada,
+          child: _lista(_itens),
+        ),
+        tamanho: const Size(360, 200),
+      ),
     ],
   ),
   Componente(

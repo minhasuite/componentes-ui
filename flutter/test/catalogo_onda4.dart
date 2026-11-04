@@ -136,6 +136,8 @@ final catalogoOnda4 = <Componente>[
       'SsHeaderAction: botão redondo de 40 px (alvo de 48) com tooltip e selo opcional.',
       'Tela aberta por cima de outra ganha o voltar sozinha (como a AppBar); leading troca o botão.',
       'onRefresh liga o puxar para atualizar por fora da rolagem.',
+      'titleLeading: ícone, avatar ou herói pequeno (até 40 px) antes do título grande; titleWidget troca o título grande por um widget (a barra compacta e o leitor de tela usam title).',
+      'SsScreenHeader é SsSelfScrolling: dentro de um SsPullToRefresh vai direto.',
     ],
     estados: [
       Estado('aberto', 'aberto', (_) => _cabecalho(), tamanho: const Size(360, 360)),
@@ -145,6 +147,42 @@ final catalogoOnda4 = <Componente>[
         'com voltar, rolado',
         (_) => _cabecalho(rolado: 200, voltar: true),
         tamanho: const Size(360, 360),
+      ),
+      Estado(
+        'titulo-com-icone',
+        'titleLeading: ícone tonal antes do título grande',
+        (_) => SsScreenHeader(
+          title: 'Sala de estar',
+          subtitle: '4 dispositivos',
+          titleLeading: const SsIconTile(Icons.weekend_outlined, size: 40),
+          slivers: const [SliverToBoxAdapter(child: SizedBox(height: 400))],
+        ),
+        tamanho: const Size(360, 200),
+      ),
+      Estado(
+        'titulo-widget',
+        'titleWidget: herói no lugar do título (a barra compacta usa title)',
+        (context) => SsScreenHeader(
+          title: 'Casa da praia',
+          titleWidget: Row(
+            children: [
+              Icon(Icons.cottage_rounded, size: 30, color: SsColors.of(context).accent),
+              const SizedBox(width: 10),
+              Text(
+                'Casa da praia',
+                style: TextStyle(
+                  fontSize: AppType.screenTitle,
+                  fontWeight: FontWeight.w800,
+                  color: SsColors.of(context).ink,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const SsBadge('online', variant: SsBadgeVariant.success),
+            ],
+          ),
+          slivers: const [SliverToBoxAdapter(child: SizedBox(height: 400))],
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),

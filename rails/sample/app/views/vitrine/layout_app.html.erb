@@ -1,4 +1,6 @@
 <%# titulo: Moldura, lista e painel | grupo: Layout | ordem: 2 %>
+<%# v0.10.1: esta página usa o morph do Turbo (o "Recarregar com morph" abaixo prova que o menu recolhido fica). %>
+<% content_for :head, tag.meta(name: "turbo-refresh-method", content: "morph") %>
 <%
   ic = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe }
   pedidos = [
@@ -67,4 +69,26 @@
     <% if (p = pedidos.find { _1[:id] == params[:painel].to_i }) %><%= detalhe.(p) %><% else %><p style="color:var(--muted)">Escolha um pedido na tabela.</p><% end %>
     <% d.with_footer do %><form method="dialog" style="display:contents"><button class="ss-btn ss-btn-ghost">Fechar</button><button class="ss-btn ss-btn-primary">Salvar</button></form><% end %>
   <% end %>
+<% end %>
+
+<%= demo "Ss::AppShellComponent (v0.10.1)", "collapsed: true começa recolhido já no servidor; a escolha do usuário vale por cima (localStorage + cookie ss_shell_collapsed, que o componente lê) e fica no <html data-ss-shell-collapsed>, que o morph do Turbo não apaga. Com ss_app_shell_head no <head>, o atributo entra antes da 1ª pintura: o menu não pisca aberto. with_mark troca o quadrado pela marca do app, brand_url: faz dela um link e a marca aparece na barra de cima no celular. Itens com class:, { separator: true } e badge 0 escondido; o <main> tem tabindex=-1 e main_max:.",
+         uso: 'no <head>: ss_app_shell_head  ·  render Ss::AppShellComponent.new(brand: "Minhas Vendas", brand_url: root_path, collapsed: true, main_max: "60rem", main_class: "pb-24", nav: [{ items: [{ label: "Painel", href: "/", class: "is-x" }, { separator: true }, { label: "Pedidos", href: "/p", badge: 0 }] }]) { |s| s.with_mark { image_tag "logo.svg", alt: "" } }' do %>
+  <p style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+    <button type="button" class="ss-btn ss-btn-outline ss-btn-sm" id="vt-morph" onclick="Turbo.visit(location.href, { action: 'replace' })">Recarregar com morph</button>
+    <span style="color:var(--muted);font-size:.85rem">Recolha o menu da vitrine (seta ao lado de “Lista Clara”) e recarregue: continua recolhido.</span>
+  </p>
+  <div style="transform:translateZ(0);height:420px;overflow:hidden;border-radius:20px;border:1px solid var(--line)">
+    <%= render Ss::AppShellComponent.new(brand: "Meu Gestor", brand_url: vitrine_path("layout_app"), search: false, main_max: "34rem", css: "vt-shell-demo vt-shell-v101",
+          nav: [{ items: [{ label: "Painel", href: "#", icon: ic.("M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 4v3h6V4z"), current: true, class: "vt-item-destaque" },
+                          { label: "Fluxos", href: "#", icon: ic.("M5 6h14M5 12h10M5 18h6"), badge: 0 },
+                          { separator: true },
+                          { label: "Recebimento", href: "#", icon: ic.("M3 7h18v13H3zM3 7l9 6 9-6"), badge: 4 }] },
+                { divider: true },
+                { title: "Equipe", items: [{ label: "Escala", href: "#", icon: ic.("M7 3v4M17 3v4M4 9h16v11H4z") }] }]) do |s| %>
+      <% s.with_mark do %><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--success)"/><path d="M9 21V11l7 6 7-6v10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><% end %>
+      <% s.with_user do %><%= ss_avatar("Rui Lima", size: 34) %><% end %>
+      <h2 style="font-size:1.2rem">Conteúdo com main_max: "34rem"</h2>
+      <p style="color:var(--muted)">O conteúdo fica centralizado até 34rem. “Fluxos” tem badge 0 (não aparece); a linha entre os itens é o separador.</p>
+    <% end %>
+  </div>
 <% end %>

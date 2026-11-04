@@ -34,6 +34,29 @@ class V10EstruturaTest < ComponentTest
     assert_selector ".ss-loc-badge", text: "🇧🇷"
   end
 
+  test "seletor de idioma v0.10.1: seguir o sistema (valor vazio) primeiro" do
+    render_inline(Ss::LocalePickerComponent.new(value: nil, name: "user[locale]", system_option: true))
+    assert_selector "input[type=radio][name='user[locale]']", count: 4, visible: :all
+    first = page.all("input[type=radio]", visible: :all).first
+    assert_equal "", first["value"].to_s
+    assert first.checked?
+    assert_selector ".ss-loc-opt:first-child .ss-loc-badge.is-system svg"
+    assert_selector ".ss-loc-name", text: "Seguir o sistema"
+    render_inline(Ss::LocalePickerComponent.new(value: "es", name: "l", system_option: true))
+    assert_selector "input[value=es][checked]", visible: :all
+    assert_no_selector "input#ss-loc-l-system[checked]", visible: :all
+    render_inline(Ss::LocalePickerComponent.new(value: "", url: "/idioma", system_option: true, system_label: "Automático"))
+    assert_selector "form[action='/idioma'] input[name=locale][value='']", visible: :all
+    assert_selector "button.ss-loc-opt[aria-current=true]", text: "Automático"
+    I18n.with_locale(:en) do
+      render_inline(Ss::LocalePickerComponent.new(value: nil, name: "l", system_option: true))
+      assert_selector ".ss-loc-name", text: "Follow system"
+    end
+    render_inline(Ss::LocalePickerComponent.new(value: nil, name: "l"))
+    assert_selector "input[type=radio]", count: 3, visible: :all
+    assert_no_selector "input[checked]", visible: :all
+  end
+
   test "lista de blocos: details, posição, chave, menu, erro, foco e aninhada" do
     render_inline(Ss::BlockListComponent.new(name: "auto[passos]")) do |l|
       l.with_block(id: "g1", title: "Quando", summary: "A porta abrir", tone: :warn, open: true) { "CORPO" }

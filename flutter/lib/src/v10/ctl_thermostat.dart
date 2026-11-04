@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../app_theme.dart';
 import '../format.dart';
 import '../motion.dart';
+import '../ss_badge.dart';
 import '../ss_strings.dart';
 import 'ctl_comum.dart';
 
@@ -72,6 +73,11 @@ class SsThermostatMode {
 /// O valor anda na hora (−/+, arrasto, teclado) e [onChanged] só é chamado
 /// depois de [debounce] parado: vários toques viram um comando.
 /// Sem [onChanged], fica apagado. [pending] mostra que o comando está indo.
+///
+/// Cor do anel sem depender de modo: [color] (cor livre) ou [tone] (tom da
+/// suíte); [showModes] falso esconde os chips de modo. A linha da atual sai
+/// de [currentText] (texto pronto, "Agora 22°"), de [currentFormat] ou, por
+/// padrão, de "[currentLabel] [format]" ("Agora 21,5°").
 class SsThermostat extends StatefulWidget {
   const SsThermostat({
     super.key,
@@ -101,6 +107,12 @@ class SsThermostat extends StatefulWidget {
     this.idleLabel,
     this.pendingLabel,
     this.modesLabel,
+    this.color,
+    this.tone,
+    this.showModes = true,
+    this.currentText,
+    this.currentFormat,
+    this.adjustWhenOff = false,
   });
 
   /// Temperatura alvo.
@@ -131,6 +143,25 @@ class SsThermostat extends StatefulWidget {
 
   final String? label, currentLabel, lessLabel, moreLabel, modesLabel;
   final String? offLabel, heatingLabel, coolingLabel, idleLabel, pendingLabel;
+
+  /// Cor do anel; ganha de [tone] e da cor do modo.
+  final Color? color;
+
+  /// Tom da suíte para o anel (sólido do tom); ganha da cor do modo.
+  final SsTone? tone;
+
+  /// Falso esconde os chips de [modes] (o [mode] ainda vale para a cor e o "desligado").
+  final bool showModes;
+
+  /// Linha da atual inteira, usada como veio ("Agora 22°"). Ganha de [currentFormat].
+  final String? currentText;
+
+  /// Monta a linha da atual a partir de [current] ("Sala: 22,0 °C").
+  final String Function(double current)? currentFormat;
+
+  /// Verdadeiro deixa mudar o alvo com o modo desligado (programar antes de
+  /// ligar): o anel fica cinza, mas o seletor e o −/+ continuam valendo.
+  final bool adjustWhenOff;
 
   static const _start = 135.0;
   static const _sweep = 270.0;
@@ -176,7 +207,7 @@ class _SsThermostatState extends State<SsThermostat> {
     super.dispose();
   }
 
-  bool get _enabled => widget.onChanged != null && widget.mode != 'off';
+  bool get _enabled => widget.onChanged != null && (widget.mode != 'off' || widget.adjustWhenOff);
   String _fmt(double v) => widget.format?.call(v) ?? '${qty(v, SsFormats.of(context))}°';
 
   void _set(double v) {
@@ -212,6 +243,8 @@ class _SsThermostatState extends State<SsThermostat> {
   }
 
   Color _tone(SsColors c) {
+    if (widget.color != null) return widget.color!;
+    if (widget.tone != null) return widget.tone!.colors(context).solid;
     final m = widget.modes.where((m) => m.value == widget.mode).firstOrNull;
     if (m?.tone != null) return m!.tone!;
     return switch (widget.mode) {
@@ -222,10 +255,20 @@ class _SsThermostatState extends State<SsThermostat> {
     };
   }
 
+  /// "Agora 21,5°" (com espaço), ou o texto/formatador que veio.
+  String? _currentLine() {
+    if (widget.currentText != null) return widget.currentText;
+    final cur = widget.current;
+    if (cur == null) return null;
+    if (widget.currentFormat != null) return widget.currentFormat!(cur);
+    return '${(widget.currentLabel ?? _s.thermostatCurrent).trimRight()} ${_fmt(cur)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final tone = _tone(c);
+    final linhaAtual = _currentLine();
     final off = widget.mode == 'off';
     final action = widget.action ?? SsThermostat.resolveAction(widget.mode, _v, widget.current);
     final reduce = reduceMotion(context);
@@ -261,7 +304,8 @@ class _SsThermostatState extends State<SsThermostat> {
             track: Color.alphaBlend(c.muted.withValues(alpha: .18), c.field),
             knob: c.surface,
             mark: c.ink2,
-            off: off,
+            // Desligado mas ajustável: arco cinza com o seletor.
+            off: off && !widget.adjustWhenOff,
             stroke: widget.size * .065,
           ),
           child: Center(
@@ -292,17 +336,17 @@ class _SsThermostatState extends State<SsThermostat> {
                   ),
                   const SizedBox(height: 4),
                   AnimatedOpacity(
-                    opacity: off ? .45 : 1,
+                    opacity: off && !widget.adjustWhenOff ? .45 : 1,
                     duration: reduce ? Duration.zero : SsMotion.fast,
                     child: Text(
                       _fmt(_v),
                       style: AppTheme.number(context, size: widget.size * .2, color: c.ink),
                     ),
                   ),
-                  if (widget.current != null) ...[
+                  if (linhaAtual != null) ...[
                     const SizedBox(height: 6),
                     Text(
-                      '${widget.currentLabel ?? _s.thermostatCurrent} ${_fmt(widget.current!)}',
+                      linhaAtual,
                       style: TextStyle(color: c.ink2, fontSize: AppType.sub, fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -326,9 +370,7 @@ class _SsThermostatState extends State<SsThermostat> {
             slider: true,
             label: widget.label ?? _s.thermostatLabel,
             value: off ? widget.offLabel ?? _s.thermostatOff : _fmt(_v),
-            hint: widget.current != null
-                ? '${widget.currentLabel ?? _s.thermostatCurrent} ${_fmt(widget.current!)} · $legenda'
-                : legenda,
+            hint: linhaAtual != null ? '$linhaAtual · $legenda' : legenda,
             increasedValue: _fmt(math.min(widget.max, _v + widget.step)),
             decreasedValue: _fmt(math.max(widget.min, _v - widget.step)),
             onIncrease: podeMais ? () => _set(_v + widget.step) : null,
@@ -373,7 +415,7 @@ class _SsThermostatState extends State<SsThermostat> {
               ),
             ],
           ),
-          if (widget.modes.isNotEmpty) ...[
+          if (widget.showModes && widget.modes.isNotEmpty) ...[
             const SizedBox(height: 14),
             Semantics(
               label: widget.modesLabel ?? _s.thermostatMode,

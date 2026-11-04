@@ -23,7 +23,8 @@
       <% end %>
       <% actions.each do |a| %>
         <% a = a.transform_keys(&:to_sym) %>
-        <button type="submit" class="ss-btn <%= a[:primary] ? 'ss-btn-primary' : 'ss-btn-ghost' %>" data-ss-code-keypad-target="submit" disabled
+        <button type="submit" class="ss-btn <%= a[:primary] ? 'ss-btn-primary' : 'ss-btn-ghost' %>" data-ss-code-keypad-target="submit"
+                <% if actions_need_code? %>disabled<% else %>data-ss-free<% end %>
                 <% if a[:name] %>name="<%= a[:name] %>" value="<%= a[:value] %>"<% end %>
                 <% if a[:url] %>formaction="<%= a[:url] %>"<% end %>><% if a[:icon] %><%= a[:icon].html_safe %><% end %><%= a[:label] %></button>
       <% end %>

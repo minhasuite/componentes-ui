@@ -4,11 +4,7 @@
     <% if frame? %><%= frame %><% elsif image_url %><img src="<%= image_url %>" alt="" loading="lazy" decoding="async"><% end %>
     <span class="ss-cam-skel" aria-hidden="true"></span>
   </div>
-  <figcaption class="ss-cam-top">
-    <% if url %><a class="ss-cam-title" href="<%= url %>"><%= title %></a><% else %><span class="ss-cam-title"><%= title %></span><% end %>
-    <span class="ss-cam-live"><i aria-hidden="true"></i><%= label(:live) %></span>
-  </figcaption>
-  <% if age_text %><span class="ss-cam-age"><%= icon(:clock) %><span data-ss-camera-target="age"><%= age_text %></span></span><% end %>
+  <%# O aviso de falha vem antes do título: o título fica por cima dele (v0.10.1). %>
   <div class="ss-cam-fail" role="status">
     <span class="ss-cam-fail-off"><%= icon(:camera_off) %><b><%= label(:offline) %></b></span>
     <span class="ss-cam-fail-err"><%= icon(:broken) %><b><%= label(:error) %></b></span>
@@ -18,5 +14,11 @@
       <button type="button" class="ss-cam-retry" data-action="ss-camera#retry"><%= icon(:refresh) %><%= label(:retry) %></button>
     <% end %>
   </div>
+  <figcaption class="ss-cam-top">
+    <% if url %><a class="ss-cam-title" href="<%= url %>"><%= title %></a><% else %><span class="ss-cam-title"><%= title %></span><% end %>
+    <% if status_text %><span class="ss-cam-status"><%= status_text %></span><% end %>
+    <span class="ss-cam-live"><i aria-hidden="true"></i><%= label(:live) %></span>
+  </figcaption>
+  <% if age_text %><span class="ss-cam-age"><%= icon(:clock) %><span data-ss-camera-target="age"><%= age_text %></span></span><% end %>
   <% if actions? %><div class="ss-cam-actions"><% actions.each do |a| %><%= a %><% end %></div><% end %>
 <% end %>

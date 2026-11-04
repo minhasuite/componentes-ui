@@ -40,3 +40,16 @@
   </div>
 <% end %>
 </div>
+
+<%= demo "Ss::OptionCardComponent (v0.10.1: link)", "url: faz do card um link (escolher num catálogo por link, sem rádio), com a seta à direita; checked: true marca o atual (aria-current). name:/value: só no modo rádio/checkbox.",
+      uso: 'render Ss::OptionCardComponent.new(url: novo_dispositivo_path(tipo: "tuya"), title: "Tuya / Smart Life", description: "Tomadas, lâmpadas e sensores", icon: svg)' do %>
+  <div class="ss-option-grid" style="grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))">
+    <% cat = params[:integracao] %>
+    <%= render Ss::OptionCardComponent.new(url: vitrine_path("formularios_escolha", integracao: "tuya"), title: "Tuya / Smart Life", description: "Tomadas, lâmpadas e sensores.", checked: cat == "tuya",
+          icon: ic.('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>')) %>
+    <%= render Ss::OptionCardComponent.new(url: vitrine_path("formularios_escolha", integracao: "shelly"), title: "Shelly", description: "Relés e medidores de energia na rede local.", checked: cat == "shelly", badge: "Local",
+          icon: ic.('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12h6M12 9v6"/>')) %>
+    <%= render Ss::OptionCardComponent.new(url: vitrine_path("formularios_escolha", integracao: "cam"), title: "Câmera RTSP", description: "Qualquer câmera com endereço rtsp://.", checked: cat == "cam",
+          icon: ic.('<path d="M3 7h12v10H3zM15 10l6-3v10l-6-3"/>')) %>
+  </div>
+<% end %>

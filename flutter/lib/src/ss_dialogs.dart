@@ -148,6 +148,9 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
 /// deixou vazio (com [allowEmpty], vazio volta `''`: apagar a observação).
 /// [validator] devolve a mensagem de erro (ou `null` se ok). [message] é um
 /// texto acima do campo; [maxLines] > 1 vira campo de várias linhas.
+/// [autofillHints] liga o autopreenchimento (ex.: `[AutofillHints.email]`),
+/// [icon] vai no começo do campo e [textCapitalization] troca o padrão
+/// (`sentences`; use `none` para e-mail, código e endereço).
 Future<String?> showSsPrompt(
   BuildContext context, {
   required String title,
@@ -161,6 +164,9 @@ Future<String?> showSsPrompt(
   int maxLines = 1,
   int? maxLength,
   String? message,
+  Iterable<String>? autofillHints,
+  IconData? icon,
+  TextCapitalization textCapitalization = TextCapitalization.sentences,
 }) async {
   final r = await showDialog<String>(
     context: context,
@@ -176,6 +182,9 @@ Future<String?> showSsPrompt(
       maxLines: maxLines,
       maxLength: maxLength,
       message: message,
+      autofillHints: autofillHints,
+      icon: icon,
+      textCapitalization: textCapitalization,
     ),
   );
   return (r == null || (r.isEmpty && !allowEmpty)) ? null : r;
@@ -195,6 +204,9 @@ class SsPromptDialog extends StatefulWidget {
     this.maxLines = 1,
     this.maxLength,
     this.message,
+    this.autofillHints,
+    this.icon,
+    this.textCapitalization = TextCapitalization.sentences,
   });
 
   final String title;
@@ -211,6 +223,11 @@ class SsPromptDialog extends StatefulWidget {
   final int maxLines;
   final int? maxLength;
   final String? message;
+  final Iterable<String>? autofillHints;
+
+  /// Ícone no começo do campo.
+  final IconData? icon;
+  final TextCapitalization textCapitalization;
 
   @override
   State<SsPromptDialog> createState() => _SsPromptDialogState();
@@ -252,11 +269,16 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
             controller: _texto,
             autofocus: true,
             keyboardType: widget.maxLines > 1 ? TextInputType.multiline : widget.keyboardType,
-            textCapitalization: TextCapitalization.sentences,
+            textCapitalization: widget.textCapitalization,
+            autofillHints: widget.autofillHints,
             maxLines: widget.maxLines,
             minLines: 1,
             maxLength: widget.maxLength,
-            decoration: InputDecoration(labelText: widget.label ?? SsStrings.of(context).name, hintText: widget.hint),
+            decoration: InputDecoration(
+              labelText: widget.label ?? SsStrings.of(context).name,
+              hintText: widget.hint,
+              prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: 21),
+            ),
             validator: widget.validator == null ? null : (v) => widget.validator!((v ?? '').trim()),
             onFieldSubmitted: widget.maxLines > 1 ? null : (_) => _salvar(),
           ),

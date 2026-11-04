@@ -11,13 +11,19 @@ module Ss
   #     t.with_tab(label: "Histórico", frame_src: historico_pedido_path(@pedido))
   #     t.with_tab(label: "Notas", href: notas_path, current: false)
   #   end
+  #
+  # v0.10.1: icon: (svg, como nos outros componentes da gem; Ss::CasaIcons.svg(:home) serve)
+  # antes do rótulo. Muitas abas: a faixa rola na horizontal (sem quebrar linha nem barra
+  # visível) e a aba marcada entra na vista ao abrir a página e ao trocar (só a faixa rola;
+  # com menos movimento, sem animação). O sublinhado acompanha a rolagem.
   class TabsComponent < BaseComponent
     class Tab < ViewComponent::Base
-      attr_reader :label, :href, :frame_src, :badge
+      attr_reader :label, :href, :frame_src, :badge, :icon
       attr_accessor :key, :selected
 
-      def initialize(label:, href: nil, frame_src: nil, selected: false, current: false, badge: nil, id: nil)
+      def initialize(label:, href: nil, frame_src: nil, selected: false, current: false, badge: nil, id: nil, icon: nil)
         @label = label
+        @icon = icon
         @href = href
         @frame_src = frame_src
         @selected = selected || current

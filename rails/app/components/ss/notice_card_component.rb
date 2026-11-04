@@ -9,20 +9,40 @@ module Ss
   # tone: :info | :warn | :critical | :success. Cada ação: label:, url:, method: (:post; :get vira
   # link), params:, icon: (svg). dismiss_url: vira button_to (DELETE); dismissible: true sem URL só
   # tira da tela (controller ss-notice, evento "ss-notice:dismiss"). critical é role="alert".
+  #
+  # v0.10.1 (mesmo nome do SsNoticeCard: onTap, image, unread, footer):
+  # - url: o card inteiro vira link (link "esticado" no título; ações e dispensar continuam
+  #   clicáveis por cima, sem <a>/<button> dentro de <a>). É sempre GET.
+  # - image_url: (+ image_alt:) imagem na largura do texto, embaixo dele, 16:9, cantos redondos.
+  # - unread: true ponto da cor do tom antes do título e borda mais forte (cor do tom, 2 px).
+  # - footer: "Respondido: Sim" (texto) ou o slot with_footer { … }: rodapé miúdo e apagado
+  #   com um fio em cima (o slot ganha do texto).
+  #
+  #   render Ss::NoticeCardComponent.new(title: "Nova mensagem", text: "…", url: aviso_path(a), unread: true,
+  #            image_url: a.foto_url, image_alt: "Foto da portaria", footer: "Respondido: Sim")
   class NoticeCardComponent < BaseComponent
     TONES = %i[info warn critical success].freeze
     DEFAULTS = { dismiss: "Dispensar" }.freeze
 
-    attr_reader :title, :text, :tone, :time, :actions, :dismiss_url
+    attr_reader :title, :text, :tone, :time, :actions, :dismiss_url, :url, :image_url, :image_alt, :footer_text
+
+    renders_one :footer
 
     def initialize(title:, text: nil, tone: :info, icon: nil, time: nil, actions: [], dismiss_url: nil,
-                   dismiss_method: :delete, dismissible: false, dismiss_label: nil, **rest)
+                   dismiss_method: :delete, dismissible: false, dismiss_label: nil, url: nil, image_url: nil, image_alt: nil,
+                   unread: false, footer: nil, **rest)
       super(**rest)
       @title, @text, @icon, @time = title, text, icon, time
       @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :info
       @actions = Array(actions).map { |a| a.to_h.transform_keys(&:to_sym) }
       @dismiss_url, @dismiss_method, @dismissible, @dismiss_label = dismiss_url, dismiss_method, dismissible, dismiss_label
+      @url, @image_url, @image_alt, @unread, @footer_text = url.presence, image_url.presence, image_alt, unread, footer.presence
     end
+
+    def link? = url.present?
+    def unread? = !!@unread
+    def footer_any? = footer? || footer_text.present?
+    def root_classes = classes("ss-notice", ("is-link" if link?), ("is-unread" if unread?))
 
     def icon = (@icon || Ss::CasaIcons.svg(tone)).html_safe
     def dismiss_label = @dismiss_label || ss_t("notice_card.dismiss", default: DEFAULTS[:dismiss])

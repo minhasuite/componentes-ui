@@ -5,8 +5,13 @@ module Ss
   #     text: "Confira a grafia ou tire filtros.", primary: { label: "Limpar busca", url: "?" },
   #     secondary: { label: "Novo cliente", url: new_cliente_path })
   # Bloco opcional: ações próprias (forms, botões) no lugar de primary/secondary.
+  #
+  # v0.10.1: with_art { image_tag "vazio.svg", alt: "" } troca a ilustração pela do app;
+  # art: false tira a ilustração (fica só título, texto e ações).
   class EmptyStateComponent < BaseComponent
     include InView
+
+    renders_one :art
     ART = {
       nada: <<~SVG,
         <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -40,8 +45,9 @@ module Ss
       SVG
     }.freeze
 
-    def initialize(title:, text: nil, variant: :nada, primary: nil, secondary: nil, compact: false, **opts)
+    def initialize(title:, text: nil, variant: :nada, primary: nil, secondary: nil, compact: false, art: true, **opts)
       super(**opts)
+      @show_art = art != false
       @title = title
       @text = text
       @variant = ART.key?(variant.to_sym) ? variant.to_sym : :nada
@@ -53,7 +59,7 @@ module Ss
     def call
       tag.div(**root_attrs(class: classes("ss-empty-state", ("is-compact" if @compact)), data: in_view_data(variant: @variant), role: (@variant == :erro ? "alert" : nil))) do
         safe_join([
-          tag.div(ART[@variant].html_safe, class: "ss-empty-art"),
+          art_tag,
           tag.h3(@title),
           (tag.p(@text) if @text),
           actions
@@ -62,6 +68,13 @@ module Ss
     end
 
     private
+
+    def art_tag
+      return nil unless @show_art
+      return tag.div(art, class: "ss-empty-art is-custom") if art?
+
+      tag.div(ART[@variant].html_safe, class: "ss-empty-art")
+    end
 
     def actions
       return tag.div(content, class: "ss-empty-actions") if content.present?

@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.10.0
+      ref: v0.10.1
 ```
 
 ```dart
@@ -52,7 +52,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.1"
 ```
 
 ```css
@@ -324,6 +324,80 @@ Flutter: `SsStrings` (veja "Idioma (pt/en/es)" acima) e `SsFormats` para moeda.
 **Tokens.** `--accent-solid` / `SsColors.accentSolid` (destaque sólido com 4,5:1 para
 texto branco, gerado por paleta); sucesso e perigo do claro mais escuros (AA).
 
+## v0.10.1: o que a migração do minha-automacao pediu
+
+Tudo opcional e aditivo; nada quebra da v0.10.0. Mesmo nome nos dois lados quando a
+peça existe nos dois. Os estados novos estão no catálogo (Flutter e `rails/catalogo`)
+e nas vitrines.
+
+**Rolagem e listas.** `SsLogbook.sliver(...)` (num `CustomScrollView` / nos `slivers` do
+`SsScreenHeader`), `SsLogbook(endAction:, showEnd:)` / `LogbookComponent(end_url:,
+end_link_label:, with_end, end_marker: false)`. `SsPullToRefresh(scrollable:)` e a marca
+`SsSelfScrolling` (`SsLogbook`, `SsPagedList`, `SsScreenHeader`, `SsMenuView` vão direto,
+sem `SingleChildScrollView`). `SsLoadMore(endLabel:)`. `SsTabsUnderline(icons:,
+scrollable:)` rola quando não cabe e traz a escolhida para a vista / `TabsComponent`
+`icon:` por aba. Novo `SsAgendaList` (`SsAgendaDay`, `SsAgendaItem`, `.sliver`) /
+`Ss::AgendaListComponent(days:, week_strip:, selected:, day_url:, empty_label:)`.
+
+**Fuso.** `utcOffset:` em `SsTimeChart`, `SsStateBands`, `SsTimeAxis`, `SsLogbook` e
+`SsTimeFormat` (deslocamento fixo: o pacote não tem base de fusos) / `time_zone:` (IANA)
+em `TimeSeriesChart`, `StateBands`, `Logbook`. Gráfico: `SsTimeChart(showValues:,
+legendAlways:)` / `TimeSeriesChartComponent(show_values:, legend: :always)`.
+
+**Avisos e imagem.** `SsNoticeCard(onTap:, image:, unread:, footer:)` /
+`NoticeCardComponent(url:, image_url:, unread:, footer:, with_footer)`.
+`SsOfflineBanner(message:, actionLabel:, onAction:)` (no web, `.ss-offline-action`).
+`SsNetImage(image:, aspectRatio:)`, `SsNetImage.bytes(load, cacheKey:)` e `SsBytesImage`;
+sem altura não estoura (4:3 pela largura). `SsLinearLoader` (o `.ss-loading-bar`).
+
+**Menu, botões, cabeçalho.** `SsMenuView(onDeleteAccount:` opcional`, appearance:,
+appearanceOpen:)`, `SsMenuSection(top:)`, `SsMenuCard` público, tema com `SsSegmented`;
+`SsMenuSwitch(icon:)`. `SsButton.text(...)` (link). `SsScreenHeader`/`SsSliverHeader
+(titleLeading:, titleWidget:)`.
+
+**Campos.** `helperText:` em `SsChoiceField`, `SsDateField`, `SsDateTimeField`,
+`SsTimeField`, `SsSlider`; `SsTimeField(validator:)`; `SsFieldLabel`/`SsFieldHelper`
+públicos; `SsTextField(autocorrect:, enableSuggestions:)`; `showSsPrompt(autofillHints:,
+icon:, textCapitalization:)`; `SsChatInput(maxLength:, sendTooltip:)`;
+`SsSlider(decimals:, unit:)` / `RangeComponent` `format:` com a vírgula do idioma.
+Novo `SsColorPicker(free:)` + `showSsColorSheet` (o `SwatchPickerComponent(free:)`).
+`SsLocalePicker(systemOption:, onSystem:)` / `LocalePickerComponent(system_option:,
+form:, button_data:)`. `SsIconPicker(labels:)` / `IconPickerComponent` com rótulo.
+`SsBlockList(deleteConfirm:)`, `SsBlock(duplicable:)` / `BlockComponent(html_id:,
+move_url:, toggle_method:, toggle_params:, delete_confirm:, duplicable:)`.
+`SsStepper` (`onChanged` nulo = apagado, `decreaseLabel`, `increaseLabel`, `debounce`) /
+`StepperInputComponent(decrease_label:, increase_label:)`. `SsFilterChip` (`onTap` nulo,
+`color:`, `swatch:`).
+
+**Casa.** `SsThermostat(color:, tone:, showModes:, currentText:, currentFormat:,
+adjustWhenOff:)` / `ThermostatComponent(color:, tone:, show_modes:, current_label:,
+adjust_when_off:)`. `SsCodeKeypad(onChanged:, controller:, actionsNeedCode:)` /
+`CodeKeypadComponent(actions_need_code:)` + evento `ss-code-keypad:change`.
+`SsDPad(showNavRow:, keys:, extraButtons:, onCommand:)` / `DPadComponent(nav_row:, keys:,
+extra_buttons:)`. `SsCallAction(onHoldStart:, onHoldEnd:)`. `SsMediaPlayer(onVolumeEnd:,
+onVolumeUp:, onVolumeDown:, muted:, onMute:, power:, onPower:, mediaPicker:)` /
+`MediaPlayerComponent(power:, power_url:, volume_param:, volume_up_url:, volume_down_url:,
+mute_url:, muted:, with_media_picker)`. `SsWeatherCard(rainChance:, feelsLike:)` /
+`WeatherCardComponent(rain_chance:, feels_like:)` (e chuva na previsão diária).
+`SsClock(seconds: SsClockSeconds.digits)` e encolhe em caixa estreita /
+`ClockComponent(seconds: :digits, fit: true)`. `SsScanRadar(compact:)` /
+`ScanRadarComponent(compact:)`. `SsFlowDiagram`/`FlowDiagramComponent` sem sobrepor
+rótulos a ~330 px. `SsDeviceTile(onPress:, confirm:, confirmTitle:)` /
+`DeviceTileComponent(action_url:, action_params:, confirm_title:, link_data:)`.
+`SsCameraTile(status:)` / `CameraTileComponent(status:, with_status)`.
+
+**Só no web.** `AppShellComponent(collapsed:, brand_url:, mobile_brand:, main_class:,
+main_max:, with_mark)`, separador e `class:` nos itens, selo 0 some, e o recolhido fica em
+`<html data-ss-shell-collapsed>` com o helper `ss_app_shell_head` no `<head>` (sobrevive ao
+morph do Turbo, sem piscar). `PageComponent` só com cabeçalho. `CommandPaletteComponent`:
+grupos no `src:`, `subtitle:`, `fill:`. `PaginationComponent` com SVG (`prev_icon:`,
+`next_icon:`). `EmptyStateComponent(with_art, art: false)`. `WizardComponent(current:,
+done:)` com passos por `url:`. `.ss-menu-btn` e `form > button` no `.ss-menu`.
+`ToastComponent(role:)` e `position:` por aviso. `SwitchComponent(form_data:,
+confirm_title:)`. `OptionCardComponent(url:)`. `JobProgressComponent(stages:, total:)`
+(só no web: o Flutter não tem peça de etapas). `AgendaComponent` com `all_day:`.
+`Ss::BaseComponent` junta `class:` com `css:` (antes descartava).
+
 ## Verificar
 
 ```bash
@@ -346,6 +420,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.10.1` (04/11/2026): o que a migração do minha-automacao pediu (seção "v0.10.1"). Nada quebra; no web, a marca passa a aparecer na barra do celular do `AppShell` (`mobile_brand: false` desliga) e as regras de `.ss-shell[data-collapsed]` ganharam o seletor do `<html>`.
 - `v0.10.0` (04/11/2026): peças de casa e automação (tabela da seção "v0.10"), idioma pt/en/es nos dois lados, `--accent-solid`, sucesso/perigo AA. Nada quebra: parâmetros de texto que tinham padrão em português ficaram opcionais (passar String continua valendo); no web, o checkbox e o switch ligado usam `--accent-solid`.
 - `v0.9.0` (04/11/2026): paletas, OLED, 58 peças Flutter e 60 componentes Rails (`Ss::*Component` + Stimulus + `ss_form_with`), vitrines Flutter e Rails (seção "v0.9"), movimento com a mola do menu do app em tudo e 28 paletas geradas de `paletas/paletas.json` para os dois lados. A gem passa a depender do `view_component`. Nada quebra da v0.8; no web o `.ss-check` passa a ser desenhado pelo CSS e quatro paletas antigas mudam um pouco de cor (alinhadas ao Flutter).
 - `v0.8.0` (02/11/2026): parâmetros que as migrações pediram. `SsListItem(trailing:, dimmed:, onLongPress:, maxLines:)`, `SsTextField(helperText:, minLines:)`, `showSsPrompt(allowEmpty:, maxLines:, maxLength:, message:)`, `SsSearchField(debounce:, suffix:)`, `SsDateField(initialDate:, validator:, showShortcuts:)`, `ssRunBlocking(onCancel:)`, `SsUnsavedGuard(isDirty:)`, `SsSegmented(icons:, disabled:)`, `SsFilterChip(icon:)`, `SsSwitchRow(icon:)`, `SsBadge(icon:)`, `SsCard(tint:)`, `SsMenuAction(checked:, subtitle:)`, `SsOverflowMenu(icon:)`, `SsEmptyState(art:)`, `SsProgress(null)` (indeterminado), `SsChatInput(enabled:, leading:)`, `SsOnboardingPage(action:)`, `showSsPlanLimit(secondaryLabel:, onSecondary:)`, `showSsPicker(initialQuery:)`, `SsCountdownRing(format:, onDark:)` e `SsCountdownRing.mmss`, `SsColors.series` (a 1ª cor é a marca do produto; `AppColors.series[0]` segue violeta). Só Flutter. Nada quebra da v0.7.

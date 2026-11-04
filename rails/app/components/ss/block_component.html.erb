@@ -1,5 +1,5 @@
 <%= tag.li(**root_attrs(class: classes("ss-blk", ("is-off" unless enabled?), ("is-invalid" if invalid?), ("is-focused" if focused?)),
-                        data: { id: id, tone: tone, ss_block_list_target: "block" }, aria: { invalid: (invalid? ? "true" : nil) })) do %>
+                        id: html_id, data: { id: id, tone: tone, ss_block_list_target: "block" }, aria: { invalid: (invalid? ? "true" : nil) })) do %>
   <input type="hidden" name="<%= field(:position) %>" value="<%= position %>" data-ss-block-list-target="position">
   <details class="ss-blk-d"<%= " open" if open? %>>
     <summary class="ss-blk-head">
@@ -15,10 +15,10 @@
     <details class="ss-blk-more">
       <summary class="ss-blk-more-btn" title="<%= l(:more) %>" aria-label="<%= l(:more) %>"><%= svg(:dots) %></summary>
       <div class="ss-blk-menu" role="menu">
-        <%= menu_item(:move_up, :arrow_up) %>
-        <%= menu_item(:move_down, :arrow_down) %>
-        <%= menu_item(:duplicate, :copy, url: @duplicate_url, method: :post) %>
-        <%= menu_item(:delete, :trash, url: @delete_url, method: :delete, danger: true) %>
+        <%= move_item(:up) %>
+        <%= move_item(:down) %>
+        <% if duplicable? %><%= menu_item(:duplicate, :copy, url: @duplicate_url, method: :post) %><% end %>
+        <% if deletable? %><%= delete_item %><% end %>
       </div>
     </details>
   </div>

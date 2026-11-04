@@ -10,11 +10,29 @@ import 'ss_strings.dart';
 /// `true` ("Sem conexão — mostrando o que já foi baixado") e, quando a rede
 /// volta, troca por um "De volta online" que some em 2 s. Anuncia a mudança
 /// para leitor de tela. Bom no `MaterialApp.builder`.
+///
+/// [message] troca o texto offline ("Sem conexão — mostrando o último painel
+/// salvo"); [actionLabel] + [onAction] põem um botão à direita enquanto está
+/// offline ("Tentar de novo").
 class SsOfflineBanner extends StatefulWidget {
-  const SsOfflineBanner({super.key, required this.offline, required this.child});
+  const SsOfflineBanner({
+    super.key,
+    required this.offline,
+    required this.child,
+    this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
   final bool offline;
   final Widget child;
+
+  /// Texto offline. Padrão: [SsStrings.offlineBanner].
+  final String? message;
+
+  /// Rótulo do botão (padrão: [SsStrings.retry] quando há [onAction]).
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   State<SsOfflineBanner> createState() => _SsOfflineBannerState();
@@ -61,7 +79,9 @@ class _SsOfflineBannerState extends State<SsOfflineBanner> with SingleTickerProv
     final c = SsColors.of(context);
     final off = widget.offline;
     final fg = off ? c.aquecText : c.successText;
-    final texto = off ? SsStrings.of(context).offlineBanner : SsStrings.of(context).backOnline;
+    final s = SsStrings.of(context);
+    final texto = off ? widget.message ?? s.offlineBanner : s.backOnline;
+    final acao = off && widget.onAction != null;
     return AnimatedBuilder(
       animation: _c,
       builder: (context, child) {
@@ -81,25 +101,50 @@ class _SsOfflineBannerState extends State<SsOfflineBanner> with SingleTickerProv
                     color: off ? c.aquecSoft : AppColors.success.withValues(alpha: c.isDark ? .18 : .14),
                     child: SafeArea(
                       bottom: false,
-                      child: Semantics(
-                        liveRegion: true,
-                        label: texto,
-                        child: ExcludeSemantics(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                            child: Row(
-                              children: [
-                                Icon(off ? Icons.cloud_off_rounded : Icons.cloud_done_rounded, size: 17, color: fg),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    texto,
-                                    style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: AppType.sub),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16, acao ? 2 : 7, acao ? 6 : 16, acao ? 2 : 7),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Semantics(
+                                liveRegion: true,
+                                label: texto,
+                                child: ExcludeSemantics(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        off ? Icons.cloud_off_rounded : Icons.cloud_done_rounded,
+                                        size: 17,
+                                        color: fg,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          texto,
+                                          style: TextStyle(
+                                            color: fg,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: AppType.sub,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                            if (acao)
+                              TextButton.icon(
+                                onPressed: widget.onAction,
+                                icon: const Icon(Icons.refresh_rounded, size: 17),
+                                label: Text(widget.actionLabel ?? s.retry),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: fg,
+                                  visualDensity: VisualDensity.compact,
+                                  textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: AppType.sub),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),

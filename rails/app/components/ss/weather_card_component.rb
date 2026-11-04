@@ -8,11 +8,17 @@ module Ss
   #
   # condition: :clear | :clear_night | :partly_cloudy | :cloudy | :rain | :storm | :snow | :fog | :wind.
   # Ícones em SVG simples (cores semânticas: sol âmbar, chuva azul, nuvem neutra).
+  # rain_chance: 70 (v0.10.1, SsWeatherCard(rainChance:)): chance de chuva de agora, com a gota,
+  # ao lado da condição (texto para o leitor: weather_card.rain_chance).
+  # feels_like: 30 (SsWeatherCard(feelsLike:)) entra na linha de mín/máx ("Sensação 30°").
+  # Previsão: cada item aceita rain_chance: (igual ao precip:); no diário (com min:) a chance
+  # aparece numa linha a mais, com a gota.
   class WeatherCardComponent < BaseComponent
     CONDITIONS = %i[clear clear_night partly_cloudy cloudy rain storm snow fog wind].freeze
     DEFAULTS = { clear: "Céu limpo", clear_night: "Noite limpa", partly_cloudy: "Parcialmente nublado",
                  cloudy: "Nublado", rain: "Chuva", storm: "Tempestade", snow: "Neve", fog: "Neblina", wind: "Ventania",
-                 min: "Mín", max: "Máx", humidity: "Umidade", wind_label: "Vento", forecast: "Previsão" }.freeze
+                 min: "Mín", max: "Máx", humidity: "Umidade", wind_label: "Vento", forecast: "Previsão",
+                 rain_chance: "Chance de chuva", feels_like: "Sensação" }.freeze
 
     SUN = '<circle class="ss-wx-sun" cx="12" cy="12" r="4.5"/><g class="ss-wx-sun-l"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g>'.freeze
     CLOUD = '<path class="ss-wx-cloud" d="M7 19h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.6 10.2 4.4 4.4 0 0 0 7 19z"/>'.freeze
@@ -31,21 +37,31 @@ module Ss
     attr_reader :location, :humidity, :wind, :forecast, :unit, :wind_unit
 
     def initialize(temperature:, condition:, condition_text: nil, location: nil, min: nil, max: nil, humidity: nil,
-                   wind: nil, forecast: [], unit: "°", wind_unit: "km/h", labels: {}, **rest)
+                   wind: nil, forecast: [], unit: "°", wind_unit: "km/h", labels: {}, rain_chance: nil, feels_like: nil, **rest)
       super(**rest)
       @temperature, @condition_text, @location = temperature, condition_text, location
       @condition = cond(condition)
       @min, @max, @humidity, @wind, @unit, @wind_unit = min, max, humidity, wind, unit, wind_unit
       @forecast = Array(forecast).map { |f| f.to_h.transform_keys(&:to_sym).merge(condition: cond(f.to_h.transform_keys(&:to_sym)[:condition])) }
       @labels = labels.to_h.transform_keys(&:to_sym)
+      @rain_chance = rain_chance.nil? ? nil : rain_chance.to_i.clamp(0, 100)
+      @feels_like = feels_like
     end
+
+    attr_reader :rain_chance
+
+    def rain_text = "#{label(:rain_chance)} #{rain_chance}%"
 
     def label(key) = @labels[key] || ss_t("weather_card.#{key}", default: DEFAULTS[key])
     def t(v) = "#{v.to_f.round}#{unit}"
     def temperature = t(@temperature)
     def condition = @condition
     def condition_text = @condition_text || label(@condition)
-    def min_max = [("#{label(:max)} #{t(@max)}" if @max), ("#{label(:min)} #{t(@min)}" if @min)].compact.join("  ·  ")
+    def min_max = [("#{label(:max)} #{t(@max)}" if @max), ("#{label(:min)} #{t(@min)}" if @min),
+                   ("#{label(:feels_like)} #{t(@feels_like)}" unless @feels_like.nil?)].compact.join("  ·  ")
+
+    # Chance de chuva do item da previsão (rain_chance: ou precip:).
+    def rain_of(f) = f[:rain_chance] || f[:precip]
 
     def self.icon(condition, size: 32)
       c = CONDITIONS.include?(condition.to_s.to_sym) ? condition.to_s.to_sym : :cloudy
@@ -55,7 +71,7 @@ module Ss
     def icon(c, size: 32) = self.class.icon(c, size:)
 
     def forecast_aria(f)
-      [f[:label], label(f[:condition]), t(f[:temp]) + (f[:min] ? " / #{t(f[:min])}" : ""), ("#{f[:precip]}%" if f[:precip] && !f[:min])].compact.join(", ")
+      [f[:label], label(f[:condition]), t(f[:temp]) + (f[:min] ? " / #{t(f[:min])}" : ""), ("#{rain_of(f)}%" if rain_of(f))].compact.join(", ")
     end
 
     private

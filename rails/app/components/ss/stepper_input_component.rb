@@ -1,15 +1,19 @@
 module Ss
   # Campo numérico com −/+ em volta (o .ss-stepper do engine com um input de verdade).
   #   render Ss::StepperInputComponent.new(name: "regra[minutos]", label: "Minutos", value: 5, min: 0, max: 120, step: 5, unit: "min")
-  # Nos limites, o botão do lado trava; segurar −/+ repete. disabled: true apaga tudo.
+  # Nos limites, o botão do lado trava; segurar −/+ repete. disabled: true apaga tudo (botões
+  # travados, só o valor). Rótulos dos botões (aria-label/title): decrease_label:/increase_label:
+  # (v0.10.1, nomes do SsStepper; less_label:/more_label: continuam), padrão stepper_input.less/more.
+  # Não envia sozinho: o form é de quem chama (escute o change do input).
   class StepperInputComponent < BaseComponent
     attr_reader :name, :label, :value, :min, :max, :step, :unit, :id
 
     def initialize(name:, value: 0, min: nil, max: nil, step: 1, unit: nil, label: nil, disabled: false, hide_label: false,
-                   less_label: nil, more_label: nil, id: nil, **rest)
+                   less_label: nil, more_label: nil, decrease_label: nil, increase_label: nil, id: nil, **rest)
       super(**rest)
       @name, @value, @min, @max, @step, @unit, @label = name, value, min, max, step, unit, label
-      @disabled, @hide_label, @less_label, @more_label = disabled, hide_label, less_label, more_label
+      @disabled, @hide_label = disabled, hide_label
+      @less_label, @more_label = decrease_label || less_label, increase_label || more_label
       @id = id || "ss-stp-#{SecureRandom.hex(3)}"
     end
 

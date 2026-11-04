@@ -599,6 +599,7 @@ final catalogoMovA = <Componente>[
       'Haptic de seleção no toque. Trocar no meio continua de onde a bolinha e a cor estão.',
       'SsSwitchRow e SsMenuSwitch usam o SsSwitch; tocar na linha alterna. onChanged nulo deixa apagado.',
       'Leitor de tela: interruptor com estado ligado/desligado. Com menos movimento, pula direto.',
+      'SsMenuSwitch(icon:) põe a bolha de ícone das linhas do menu à esquerda.',
     ],
     estados: [
       Estado('toque', 'toque para alternar', (_) => _Vivo<bool>(false, _toggles), tamanho: const Size(360, 240)),
@@ -615,6 +616,20 @@ final catalogoMovA = <Componente>[
         (_) => _Vivo<bool>(false, _toggles, para: true),
         tamanho: const Size(360, 240),
         aguarde: 300,
+      ),
+      Estado(
+        'menu-com-icone',
+        'SsMenuSwitch com icon',
+        (_) => _pad(
+          SsMenuSwitch(
+            label: 'Notificações',
+            subtitle: 'Avisos da casa',
+            icon: Icons.notifications_none_rounded,
+            value: true,
+            onChanged: (_) {},
+          ),
+        ),
+        tamanho: const Size(360, 110),
       ),
     ],
   ),

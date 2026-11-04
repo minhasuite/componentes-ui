@@ -7,10 +7,10 @@ import { formatter, langOf, renderAxis, escapeHtml } from "componentes_ui/contro
 // com o ss-in-view.
 export default class extends Controller {
   static targets = ["bar", "axis", "tip", "live"]
-  static values = { from: Number, to: Number, lang: String }
+  static values = { from: Number, to: Number, lang: String, timeZone: String }
 
   connect() {
-    this.f = formatter(langOf(this.element, this.langValue))
+    this.f = formatter(langOf(this.element, this.langValue), this.timeZoneValue || undefined)
     this.drawAxis()
     this.ro = new ResizeObserver(() => this.drawAxis())
     this.ro.observe(this.element)

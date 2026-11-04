@@ -8,7 +8,7 @@
     <% end %>
   </svg>
   <% nodes.each_value do |n| %>
-    <div class="ss-flow-node<%= " is-center" if n.r == R_CENTER %>" data-kind="<%= n.kind %>" style="<%= pos_style(n) %>" aria-hidden="true">
+    <div class="ss-flow-node<%= " is-center" if n.r == R_CENTER %>" data-kind="<%= n.kind %>" data-slot="<%= n.slot %>" style="<%= pos_style(n) %>" aria-hidden="true">
       <span class="ss-flow-disc"><%= node_icon(n) %><% if n.value %><b class="num"><%= n.value %></b><% end %></span>
       <span class="ss-flow-label"><%= [n.label, n.caption].compact.join(" · ") %></span>
     </div>

@@ -14,5 +14,5 @@
   </header>
   <% if tabs? %><div class="ss-page-tabs"><%= tabs %></div><% end %>
   <% if filters? %><div class="ss-page-filters"><%= filters %></div><% end %>
-  <div class="ss-page-body"><%= content %></div>
+  <% if body? %><div class="ss-page-body"><%= content %></div><% end %>
 <% end %>

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
@@ -289,6 +290,8 @@ class _SsThinkingState extends State<SsThinking> with SingleTickerProviderStateM
 /// (para devolver o texto se o envio falhar). [sending] troca o ícone por
 /// carregando e trava o envio. [enabled] falso trava campo e botão (sem
 /// cota, sem rede). [leading] vai antes do campo (anexar foto, microfone).
+/// [maxLength] corta a digitação no limite e mostra a contagem quando passa
+/// de 80%; [sendTooltip] é a dica do botão (padrão: [SsStrings.send]).
 class SsChatInput extends StatelessWidget {
   const SsChatInput({
     super.key,
@@ -298,6 +301,8 @@ class SsChatInput extends StatelessWidget {
     this.sending = false,
     this.enabled = true,
     this.leading,
+    this.maxLength,
+    this.sendTooltip,
   });
 
   final TextEditingController controller;
@@ -308,6 +313,12 @@ class SsChatInput extends StatelessWidget {
   final bool sending;
   final bool enabled;
   final Widget? leading;
+
+  /// Limite de caracteres da mensagem.
+  final int? maxLength;
+
+  /// Dica do botão de enviar (toque longo / mouse por cima).
+  final String? sendTooltip;
 
   void _enviar() {
     final t = controller.text.trim();
@@ -336,6 +347,22 @@ class SsChatInput extends StatelessWidget {
                 textCapitalization: TextCapitalization.sentences,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _enviar(),
+                maxLength: maxLength,
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                // A contagem só aparece perto do limite (sem ocupar espaço antes).
+                buildCounter: maxLength == null
+                    ? null
+                    : (context, {required currentLength, required isFocused, required maxLength}) =>
+                          maxLength == null || currentLength < maxLength * .8
+                          ? null
+                          : Text(
+                              '$currentLength/$maxLength',
+                              style: AppTheme.number(
+                                context,
+                                size: AppType.label,
+                                color: currentLength >= maxLength ? c.dangerText : c.muted,
+                              ),
+                            ),
                 decoration: InputDecoration(
                   hintText: hint ?? SsStrings.of(context).chatHint,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
@@ -361,27 +388,30 @@ class SsChatInput extends StatelessWidget {
                   enabled: pode,
                   label: SsStrings.of(context).send,
                   child: ExcludeSemantics(
-                    child: AnimatedScale(
-                      scale: pode || reduceMotion(context) ? 1 : .9,
-                      duration: SsMotion.fast,
-                      curve: SsMotion.spring,
-                      child: Material(
-                        color: pode ? c.accent : c.field,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: pode ? _enviar : null,
-                          child: SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Center(
-                              child: sending
-                                  ? SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: c.muted),
-                                    )
-                                  : Icon(Icons.arrow_upward_rounded, color: pode ? AppColors.onDark : c.muted),
+                    child: Tooltip(
+                      message: sendTooltip ?? SsStrings.of(context).send,
+                      child: AnimatedScale(
+                        scale: pode || reduceMotion(context) ? 1 : .9,
+                        duration: SsMotion.fast,
+                        curve: SsMotion.spring,
+                        child: Material(
+                          color: pode ? c.accent : c.field,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: pode ? _enviar : null,
+                            child: SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Center(
+                                child: sending
+                                    ? SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: c.muted),
+                                      )
+                                    : Icon(Icons.arrow_upward_rounded, color: pode ? AppColors.onDark : c.muted),
+                              ),
                             ),
                           ),
                         ),

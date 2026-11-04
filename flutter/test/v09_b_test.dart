@@ -224,6 +224,109 @@ void main() {
     });
   });
 
+  group('SsAgendaList', () {
+    testWidgets('dias, vazio, toque e cabeçalho escolhe o dia', (t) async {
+      final log = <String>[];
+      DateTime? dia;
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: SsAgendaList(
+              onSelectDay: (d) => dia = d,
+              days: [
+                SsAgendaDay(
+                  DateTime(2026, 11, 4),
+                  label: 'Hoje',
+                  events: [SsAgendaItem(time: '09:00', title: 'Reunião', detail: 'Sala 3', onTap: () => log.add('r'))],
+                ),
+                SsAgendaDay(DateTime(2026, 11, 5)),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Reunião'), findsOneWidget);
+      expect(find.text('Nada neste dia'), findsOneWidget);
+      expect(find.bySemanticsLabel('09:00, Reunião, Sala 3'), findsOneWidget);
+      await t.tap(find.text('Reunião'));
+      await t.pumpAndSettle();
+      expect(log, ['r']);
+      await t.tap(find.text('Quinta, 5 de novembro'));
+      await t.pumpAndSettle();
+      expect(dia, DateTime(2026, 11, 5));
+    });
+
+    testWidgets('faixa de dias e sliver; vazio em inglês', (t) async {
+      DateTime? dia;
+      await t.pumpWidget(
+        _app(
+          CustomScrollView(
+            slivers: [
+              SsAgendaList.sliver(
+                weekStrip: true,
+                today: DateTime(2026, 11, 4),
+                selected: DateTime(2026, 11, 4),
+                onSelectDay: (d) => dia = d,
+                days: [
+                  SsAgendaDay(
+                    DateTime(2026, 11, 4),
+                    events: const [SsAgendaItem(time: '9', title: 'x')],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.byType(SsDateStrip), findsOneWidget);
+      await t.tap(find.text('5').first);
+      await t.pumpAndSettle();
+      expect(dia, DateTime(2026, 11, 5));
+      await t.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: const [
+            SsStrings.delegate,
+            DefaultMaterialLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('pt')],
+          home: Scaffold(body: SsAgendaList(days: [SsAgendaDay(DateTime(2026, 11, 5))])),
+        ),
+      );
+      expect(find.text('Nothing this day'), findsOneWidget);
+    });
+  });
+
+  group('SsCallControls (segurar)', () {
+    testWidgets('segurar chama início e fim', (t) async {
+      final log = <String>[];
+      await t.pumpWidget(
+        _app(
+          Center(
+            child: SsCallControls(
+              actions: [
+                SsCallAction(
+                  Icons.mic_none_rounded,
+                  'Falar',
+                  onHoldStart: () => log.add('ini'),
+                  onHoldEnd: () => log.add('fim'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      final g = await t.startGesture(t.getCenter(find.byIcon(Icons.mic_none_rounded)));
+      await t.pump(const Duration(milliseconds: 300));
+      expect(log, ['ini']);
+      await g.up();
+      await t.pumpAndSettle();
+      expect(log, ['ini', 'fim']);
+    });
+  });
+
   group('SsDayAgenda', () {
     test('lanes divide só os que se sobrepõem', () {
       const e = [

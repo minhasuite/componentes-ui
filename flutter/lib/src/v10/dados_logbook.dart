@@ -3,11 +3,13 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../app_theme.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../skeleton.dart';
+import '../ss_async.dart' show SsSelfScrolling;
 import '../ss_badge.dart';
 import '../ss_button.dart';
 import '../ss_empty_state.dart';
@@ -49,9 +51,15 @@ class SsLogEntry {
 /// - As linhas entram em cascata quando aparecem na tela.
 ///
 /// É uma lista rolável (CustomScrollView); [header] vai em cima (filtros).
+/// Dentro do [SsPullToRefresh] vai direto (é [SsSelfScrolling]).
+///
+/// [SsLogbook.sliver] é a mesma peça como sliver, para ir num
+/// `CustomScrollView` com outros slivers (ex.: nos `slivers` do
+/// [SsScreenHeader], abaixo do [SsSliverHeader]): os dias grudam abaixo do
+/// cabeçalho e o "carregar mais" sozinho escuta a rolagem de fora.
 ///
 /// `SsLogbook(entries: eventos, hasMore: true, loadingMore: carregando, onLoadMore: proxima)`
-class SsLogbook extends StatefulWidget {
+class SsLogbook extends StatefulWidget implements SsSelfScrolling {
   const SsLogbook({
     super.key,
     required this.entries,
@@ -79,7 +87,47 @@ class SsLogbook extends StatefulWidget {
     this.emptySubtitle,
     this.retryLabel,
     this.label,
-  });
+    this.utcOffset,
+    this.endAction,
+    this.showEnd = true,
+  }) : _sliver = false;
+
+  /// O logbook como sliver (sem rolagem própria): vai num `CustomScrollView`
+  /// junto de outros slivers. `SsScreenHeader(title: 'Histórico',
+  /// slivers: [SsLogbook.sliver(entries: eventos, hasMore: true, onLoadMore: proxima)])`.
+  const SsLogbook.sliver({
+    super.key,
+    required this.entries,
+    this.loading = false,
+    this.loadingMore = false,
+    this.hasMore = false,
+    this.error,
+    this.onLoadMore,
+    this.onRetry,
+    this.header,
+    this.now,
+    this.locale,
+    this.background,
+    this.padding = const EdgeInsets.only(bottom: 24),
+    this.autoLoad = true,
+    this.todayLabel,
+    this.yesterdayLabel,
+    this.loadMoreLabel,
+    this.loadingMoreLabel,
+    this.endLabel,
+    this.emptyTitle,
+    this.emptySubtitle,
+    this.retryLabel,
+    this.label,
+    this.utcOffset,
+    this.endAction,
+    this.showEnd = true,
+  }) : _sliver = true,
+       shrinkWrap = false,
+       physics = null,
+       controller = null;
+
+  final bool _sliver;
 
   final List<SsLogEntry> entries;
   final bool loading;
@@ -105,6 +153,8 @@ class SsLogbook extends StatefulWidget {
   final EdgeInsets padding;
   final bool shrinkWrap;
   final ScrollPhysics? physics;
+
+  /// Só na forma em caixa (no [SsLogbook.sliver], a rolagem é a de fora).
   final ScrollController? controller;
 
   /// Pede a próxima página sozinho quando falta pouco para o fim.
@@ -122,12 +172,25 @@ class SsLogbook extends StatefulWidget {
   /// Nome da lista para o leitor de tela.
   final String? label;
 
-  /// Agrupa [entries] por dia local, na ordem em que vieram.
-  static List<(DateTime, List<SsLogEntry>)> groupByDay(List<SsLogEntry> entries) {
+  /// Fuso fixo da hora e do dia (ex.: `Duration(hours: -3)`, o do site);
+  /// nulo = o do aparelho. Ver [SsTimeFormat.utcOffset].
+  final Duration? utcOffset;
+
+  /// No fim do registro (sem [hasMore]), abaixo do [endLabel]: um link ou
+  /// botão, como `SsButton.text(label: 'Ver um período maior', onPressed: …)`.
+  final Widget? endAction;
+
+  /// Falso esconde a marca "Início do registro" do fim (o [endAction], se
+  /// houver, continua).
+  final bool showEnd;
+
+  /// Agrupa [entries] por dia (do aparelho, ou no [utcOffset]), na ordem
+  /// em que vieram.
+  static List<(DateTime, List<SsLogEntry>)> groupByDay(List<SsLogEntry> entries, {Duration? utcOffset}) {
     final out = <(DateTime, List<SsLogEntry>)>[];
+    final fmt = SsTimeFormat(null, utcOffset: utcOffset);
     for (final e in entries) {
-      final l = e.at.toLocal();
-      final d = DateTime(l.year, l.month, l.day);
+      final d = fmt.dateOf(e.at);
       if (out.isEmpty || out.last.$1 != d) out.add((d, <SsLogEntry>[]));
       out.last.$2.add(e);
     }
@@ -141,6 +204,37 @@ class SsLogbook extends StatefulWidget {
 class _SsLogbookState extends State<SsLogbook> {
   SsStrings get _s => SsStrings.of(context);
   bool _pedido = false;
+
+  // Na forma sliver: a rolagem de fora, escutada para o "carregar mais".
+  ScrollPosition? _posicao;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final p = widget._sliver ? Scrollable.maybeOf(context)?.position : null;
+    if (p == _posicao) return;
+    _posicao?.removeListener(_rolou);
+    _posicao = p?..addListener(_rolou);
+  }
+
+  @override
+  void dispose() {
+    _posicao?.removeListener(_rolou);
+    super.dispose();
+  }
+
+  void _rolou() {
+    final p = _posicao;
+    if (p == null || !p.hasContentDimensions) return;
+    // A rolagem pode avisar no meio do layout: o pedido vai depois do quadro.
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      _talvezCarregue(p);
+    } else {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _posicao != null) _talvezCarregue(_posicao!);
+      });
+    }
+  }
 
   @override
   void didUpdateWidget(SsLogbook old) {
@@ -157,7 +251,7 @@ class _SsLogbookState extends State<SsLogbook> {
   }
 
   String _dia(DateTime d, SsTimeFormat fmt) {
-    final agora = (widget.now ?? DateTime.now()).toLocal();
+    final agora = fmt.wall(widget.now ?? DateTime.now());
     final hoje = DateTime(agora.year, agora.month, agora.day);
     if (d == hoje) return widget.todayLabel ?? _s.today;
     if (d == DateTime(hoje.year, hoje.month, hoje.day - 1)) return widget.yesterdayLabel ?? _s.yesterday;
@@ -167,7 +261,7 @@ class _SsLogbookState extends State<SsLogbook> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final fmt = SsTimeFormat.of(context, widget.locale);
+    final fmt = SsTimeFormat.of(context, widget.locale, widget.utcOffset);
     final fundo = widget.background ?? c.page;
     final slivers = <Widget>[if (widget.header != null) SliverToBoxAdapter(child: widget.header)];
 
@@ -181,17 +275,11 @@ class _SsLogbookState extends State<SsLogbook> {
         ),
       );
     } else if (widget.entries.isEmpty && widget.error != null) {
-      slivers.add(
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: _Erro(widget.error!, widget.onRetry, widget.retryLabel ?? _s.retry),
-        ),
-      );
+      slivers.add(_preenche(_Erro(widget.error!, widget.onRetry, widget.retryLabel ?? _s.retry)));
     } else if (widget.entries.isEmpty) {
       slivers.add(
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
+        _preenche(
+          Center(
             child: SsEmptyState(
               compact: true,
               icon: Icons.history_rounded,
@@ -202,7 +290,7 @@ class _SsLogbookState extends State<SsLogbook> {
         ),
       );
     } else {
-      for (final (dia, itens) in SsLogbook.groupByDay(widget.entries)) {
+      for (final (dia, itens) in SsLogbook.groupByDay(widget.entries, utcOffset: widget.utcOffset)) {
         final titulo = _dia(dia, fmt);
         slivers.add(
           SliverMainAxisGroup(
@@ -224,6 +312,9 @@ class _SsLogbookState extends State<SsLogbook> {
     }
     slivers.add(SliverPadding(padding: widget.padding));
 
+    // Sliver: sem rolagem própria (o "carregar mais" escuta a de fora).
+    if (widget._sliver) return SliverMainAxisGroup(slivers: slivers);
+
     return Semantics(
       label: widget.label ?? _s.logbookLabel,
       container: true,
@@ -241,6 +332,13 @@ class _SsLogbookState extends State<SsLogbook> {
       ),
     );
   }
+
+  // Vazio e erro: ocupam o resto da tela na caixa; no sliver, um bloco com folga.
+  Widget _preenche(Widget filho) => widget._sliver
+      ? SliverToBoxAdapter(
+          child: Padding(padding: const EdgeInsets.symmetric(vertical: 32), child: filho),
+        )
+      : SliverFillRemaining(hasScrollBody: false, child: filho);
 
   Widget _rodape(BuildContext context) {
     final c = SsColors.of(context);
@@ -289,12 +387,20 @@ class _SsLogbookState extends State<SsLogbook> {
         onPressed: widget.onLoadMore,
       );
     } else {
-      filho = Row(
+      final fim = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.flag_outlined, size: 16, color: c.muted2),
           const SizedBox(width: 6),
           Text(widget.endLabel ?? _s.logbookEnd, style: estilo),
+        ],
+      );
+      filho = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.showEnd) fim,
+          if (widget.showEnd && widget.endAction != null) const SizedBox(height: 6),
+          ?widget.endAction,
         ],
       );
     }
@@ -348,7 +454,7 @@ class _Linha extends StatelessWidget {
     final c = SsColors.of(context);
     final tom = e.tone.colors(context);
     final neutro = e.tone == SsTone.neutral;
-    final hora = fmt.hm(e.at.toLocal());
+    final hora = fmt.hm(e.at);
     final corpo = IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,

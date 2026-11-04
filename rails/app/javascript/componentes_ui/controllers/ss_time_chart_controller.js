@@ -9,7 +9,9 @@ import { formatter, langOf, ticks, niceRange, valueAt, renderAxis, placeSegments
 // - Arrastar com o mouse marca um trecho e aproxima; duplo clique ou "Ver tudo" volta.
 //   Com zoom-url, pede a janela ao servidor pelo Turbo (turbo-frame em volta, o
 //   zoom-frame ou uma visita).
-// - Legenda: botões aria-pressed ligam e desligam a série (o eixo Y se ajusta).
+// - Legenda: botões aria-pressed ligam e desligam a série (o eixo Y se ajusta). Com
+//   show_values, cada botão mostra o valor da série: o do instante do cursor enquanto ele
+//   está no gráfico e o último (vindo do servidor, data-last) quando sai.
 // - Teclado no gráfico: ← → andam no tempo, Home End, + aproxima, 0 ou - volta, Esc solta.
 // - Entrada: as linhas se desenham da esquerda para a direita quando entram na tela.
 const NS = "http://www.w3.org/2000/svg"
@@ -17,12 +19,12 @@ const TOP = 14
 const BOTTOM = 4
 
 export default class extends Controller {
-  static targets = ["stage", "plot", "svg", "axis", "cursor", "brush", "tip", "reset", "key", "live", "bands"]
+  static targets = ["stage", "plot", "svg", "axis", "cursor", "brush", "tip", "reset", "key", "live", "bands", "reading"]
   static values = { series: Array, from: Number, to: Number, mode: String, dual: Boolean, zoomUrl: String, zoomFrame: String,
-                    resetUrl: String, lang: String, empty: String }
+                    resetUrl: String, lang: String, timeZone: String, empty: String }
 
   connect() {
-    this.f = formatter(langOf(this.element, this.langValue))
+    this.f = formatter(langOf(this.element, this.langValue), this.timeZoneValue || undefined)
     this.hidden = new Set()
     this.win = [this.fromValue, this.toValue]
     // Veio aproximado do servidor (zoomed: true): o "Ver tudo" fica e leva ao reset-url.
@@ -195,6 +197,10 @@ export default class extends Controller {
       rows.push(`<li><span class="ss-tc-key is-band" data-tone="${seg?.dataset.tone || ""}"></span><span>${escapeHtml(name)}</span><strong>${escapeHtml(seg?.dataset.label || "—")}</strong></li>`)
       plain.push(`${name} ${seg?.dataset.label || "—"}`)
     })
+    this.readingTargets.forEach((el) => {
+      const s = this.seriesValue[+el.dataset.index]
+      if (s) el.textContent = this.f.value(valueAt(s.pts, t, this.modeOf(s)), s.unit, s.decimals ?? undefined, this.emptyValue || "—")
+    })
     this.tipTarget.innerHTML = `<p class="num">${this.f.when(t)}</p><ul>${rows.join("")}</ul>`
     this.tipTarget.hidden = false
     const right = x > this.w * 0.55
@@ -208,6 +214,7 @@ export default class extends Controller {
     this.cursorTarget.hidden = true
     this.tipTarget.hidden = true
     this.dots?.replaceChildren()
+    this.readingTargets.forEach((el) => { el.textContent = el.dataset.last })
   }
 
   move(e) {

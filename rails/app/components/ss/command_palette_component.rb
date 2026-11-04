@@ -11,6 +11,15 @@ module Ss
   # - Abrir de outro lugar: [data-ss-command-open="busca"] em qualquer botão, o evento
   #   "ss-command:open" no <dialog>, ou Ss::AppShellComponent.new(search_action: "busca").
   # icon: SVG já seguro (html_safe). Textos do I18n (componentes_ui.command_palette.*).
+  #
+  # v0.10.1:
+  # - subtitle: segunda linha do item (além do hint:, que fica à direita); entra na busca.
+  # - fill: sugestão que preenche a busca em vez de navegar: fill: "texto" põe esse texto
+  #   no campo (fill: true põe o label) e filtra de novo (o src: busca de novo também).
+  # - src: o HTML do servidor pode vir em grupos: <div class="ss-command-group"><p
+  #   class="ss-command-group-title">Clientes</p><a class="ss-command-item">…</a></div>
+  #   (h2–h4 no lugar do <p> também vale); os títulos ficam. Item com data-ss-command-fill
+  #   também preenche.
   class CommandPaletteComponent < BaseComponent
     attr_reader :id, :groups
 
@@ -37,8 +46,18 @@ module Ss
 
     def item_attrs(it, gi, ii)
       it = it.to_h.transform_keys(&:to_sym)
-      { href: it[:url] || it[:href], class: "ss-command-item", id: "#{id}-o#{gi}-#{ii}", role: "option", tabindex: "-1",
-        data: { ss_command_target: "item", text: it[:label], keywords: it[:keywords] } }
+      fill = fill_text(it)
+      keywords = [it[:keywords], it[:subtitle]].compact.join(" ").presence
+      { href: (fill ? nil : it[:url] || it[:href]), class: ["ss-command-item", ("is-fill" if fill)].compact.join(" "), id: "#{id}-o#{gi}-#{ii}",
+        role: "option", tabindex: "-1", data: { ss_command_target: "item", text: it[:label], keywords:, ss_command_fill: fill }.compact }
+    end
+
+    # Texto que a sugestão põe na busca (nil = item que navega).
+    def fill_text(it)
+      f = it[:fill]
+      return nil if f.nil? || f == false
+
+      f == true ? it[:label].to_s : f.to_s
     end
 
     def icon(svg) = (svg if svg.respond_to?(:html_safe?) && svg.html_safe?)

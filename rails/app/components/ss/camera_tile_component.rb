@@ -14,6 +14,9 @@ module Ss
   # conecta, sem render de novo. age: segundos (ou Duration) do quadro; o controller ss-camera faz a
   # idade andar de segundo em segundo (quadro novo: el.dataset.ssCameraAgeValue = 0). retry_url:
   # vira button_to; sem ele, retry_button: true mostra um botão que dispara "ss-camera:retry" (bubbles).
+  #
+  # v0.10.1: status: "Gravando" (ou with_status { … }) põe um selo de texto ao lado do título,
+  # em qualquer estado. O título continua à vista com a câmera offline/com erro.
   class CameraTileComponent < BaseComponent
     STATES = %i[loading live stale error offline].freeze
     DEFAULTS = { live: "AO VIVO", loading: "Carregando imagem", error: "Não deu para carregar a imagem",
@@ -21,13 +24,15 @@ module Ss
                  age_h: "há %{n} h", age_d: "há %{n} d" }.freeze
 
     renders_one :frame
+    renders_one :status
     renders_many :actions
 
     attr_reader :title, :state, :image_url, :retry_url, :url
 
     def initialize(title:, state: :live, image_url: nil, age: nil, retry_url: nil, retry_button: false, url: nil,
-                   aspect: "16 / 9", labels: {}, **rest)
+                   aspect: "16 / 9", labels: {}, status: nil, **rest)
       super(**rest)
+      @status_text = status
       @title, @image_url, @retry_url, @retry, @url, @aspect = title, image_url, retry_url, retry_button, url, aspect
       @state = STATES.include?(state.to_s.to_sym) ? state.to_s.to_sym : :live
       @age = age&.to_i
@@ -49,6 +54,8 @@ module Ss
 
       label(:age_d, n: s / 86_400)
     end
+
+    def status_text = status? ? status : @status_text.presence
 
     def retry? = retry_url.present? || @retry
     def aspect_css = @aspect.to_s.match?(%r{\A[\d.\s/]+\z}) ? @aspect : "16 / 9"

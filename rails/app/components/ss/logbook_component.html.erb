@@ -31,9 +31,12 @@
         </p>
       <% end %>
     <% end %>
-  <% else %>
+  <% elsif end_slot? %>
+    <div class="ss-lb-foot is-end"><%= end_slot %></div>
+  <% elsif end_marker? || end_url %>
     <p class="ss-lb-foot is-end">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg><%= text(:end, "Início do registro") %>
+      <% if end_marker? %><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg><%= text(:end, "Início do registro") %><% end %>
+      <% if end_url %><%= link_to end_link_label, end_url, class: "ss-lb-end-link", data: { turbo_frame: "_top" } %><% end %>
     </p>
   <% end %>
 <% end %>

@@ -8,6 +8,8 @@ import '../ss_strings.dart';
 
 /// Grade de ícones com busca e anel no escolhido. Os ícones vêm do app como
 /// `(nome, IconData)` (o produto usa a fonte MDI dele). Devolve o nome.
+/// [labels] dá o nome legível de cada ícone (nome → "Lâmpada"): vai na dica,
+/// no leitor de tela e na busca, no lugar do nome cru.
 ///
 /// `SsIconPicker(icons: [('lightbulb', Icons.lightbulb), ...], value: 'lightbulb', onChanged: (n) => ...)`
 class SsIconPicker extends StatefulWidget {
@@ -22,9 +24,13 @@ class SsIconPicker extends StatefulWidget {
     this.noneLabel,
     this.emptyText,
     this.initialQuery = '',
+    this.labels = const {},
   });
 
   final List<(String, IconData)> icons;
+
+  /// Nome do ícone → rótulo legível ("lightbulb" → "Lâmpada").
+  final Map<String, String> labels;
 
   /// Nome escolhido; nulo = nenhum.
   final String? value;
@@ -77,7 +83,13 @@ class _SsIconPickerState extends State<SsIconPicker> {
     final q = SsIconPicker.normalize(_q.text);
     final lista = q.isEmpty
         ? widget.icons
-        : widget.icons.where((e) => SsIconPicker.normalize(e.$1).contains(q)).toList();
+        : widget.icons
+              .where(
+                (e) =>
+                    SsIconPicker.normalize(e.$1).contains(q) ||
+                    SsIconPicker.normalize(widget.labels[e.$1] ?? '').contains(q),
+              )
+              .toList();
     final itens = <(String?, IconData?)>[if (widget.allowNone && q.isEmpty) (null, null), ...lista];
 
     return Column(
@@ -108,7 +120,7 @@ class _SsIconPickerState extends State<SsIconPicker> {
                     final (nome, icone) = itens[i];
                     final sel = nome == widget.value;
                     return _Celula(
-                      label: nome ?? widget.noneLabel ?? s.noIcon,
+                      label: nome == null ? widget.noneLabel ?? s.noIcon : widget.labels[nome] ?? nome,
                       selected: sel,
                       onTap: () {
                         SsHaptics.tick();
@@ -177,6 +189,10 @@ class SsLocale {
 
 /// Escolha de idioma: lista com o atual marcado (✓) ou segmented compacto.
 /// Os nomes ficam sempre no próprio idioma (Português, English, Español).
+///
+/// [systemOption] põe no começo "Seguir o sistema" (no segmented, "Auto"):
+/// marcada quando [value] é nulo, e o toque chama [onSystem] (o app apaga o
+/// idioma salvo e volta ao do aparelho).
 class SsLocalePicker extends StatelessWidget {
   const SsLocalePicker({
     super.key,
@@ -185,7 +201,10 @@ class SsLocalePicker extends StatelessWidget {
     this.locales = SsLocalePicker.suite,
     this.segmented = false,
     this.showFlag = true,
-  });
+    this.systemOption = false,
+    this.onSystem,
+    this.systemLabel,
+  }) : assert(!systemOption || onSystem != null, 'systemOption precisa de onSystem');
 
   /// Os 3 da suíte.
   static const suite = [
@@ -194,9 +213,20 @@ class SsLocalePicker extends StatelessWidget {
     SsLocale('es', 'Español', flag: '🇪🇸'),
   ];
 
-  final String value;
+  /// Código escolhido; nulo = segue o sistema (com [systemOption]).
+  final String? value;
   final ValueChanged<String> onChanged;
   final List<SsLocale> locales;
+
+  /// Opção "Seguir o sistema" no começo.
+  final bool systemOption;
+
+  /// Toque em "Seguir o sistema".
+  final VoidCallback? onSystem;
+
+  /// Padrão: [SsStrings.localeSystem] (lista) ou [SsStrings.localeSystemShort]
+  /// (segmented).
+  final String? systemLabel;
 
   /// Segmented (cabe numa linha de configuração) em vez da lista.
   final bool segmented;
@@ -209,14 +239,18 @@ class SsLocalePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    final sistema = systemOption && onSystem != null;
     if (segmented) {
+      // O sistema entra como '' no segmented (os códigos nunca são vazios).
       return SsSegmented<String>(
         segments: [
+          if (sistema) ('', systemLabel ?? s.localeSystemShort),
           for (final l in locales)
             (l.code, showFlag && l.flag != null ? '${l.flag} ${shortCode(l.code)}' : shortCode(l.code)),
         ],
-        value: value,
-        onChanged: onChanged,
+        value: value ?? '',
+        onChanged: (v) => v.isEmpty ? onSystem!() : onChanged(v),
       );
     }
     return Container(
@@ -230,6 +264,10 @@ class SsLocalePicker extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (sistema) ...[
+            _linhaSistema(context, c, systemLabel ?? s.localeSystem),
+            Divider(height: 1, indent: 60, color: c.line),
+          ],
           for (final (i, l) in locales.indexed) ...[
             if (i > 0) Divider(height: 1, indent: 60, color: c.line),
             Semantics(
@@ -278,6 +316,49 @@ class SsLocalePicker extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _linhaSistema(BuildContext context, SsColors c, String rotulo) {
+    final sel = value == null;
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: sel,
+      button: true,
+      label: rotulo,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () {
+          SsHaptics.tick();
+          onSystem!();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(10)),
+                child: Icon(Icons.phone_android_rounded, size: 18, color: c.ink2),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  rotulo,
+                  style: TextStyle(
+                    color: c.ink,
+                    fontSize: AppType.body,
+                    fontWeight: sel ? FontWeight.w800 : FontWeight.w600,
+                  ),
+                ),
+              ),
+              SsCheckMark(value: sel, size: 20, color: c.accent),
+            ],
+          ),
+        ),
       ),
     );
   }

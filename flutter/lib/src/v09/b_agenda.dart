@@ -1,4 +1,4 @@
-// v0.9 (lote b): agenda — faixa de dias e blocos do dia.
+// v0.9 (lote b): agenda — faixa de dias, blocos do dia e lista de vários dias.
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../format.dart';
 import '../motion.dart';
+import '../ss_badge.dart' show SsTone;
 import '../ss_calendar.dart';
 import '../ss_sheet.dart';
 import '../ss_strings.dart';
@@ -540,4 +541,291 @@ class _GradePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GradePainter old) => old.horas != horas || old.color != color || old.hourHeight != hourHeight;
+}
+
+// ---------------------------------------------------------------------------
+// SsAgendaList (v0.10.1)
+// ---------------------------------------------------------------------------
+
+/// Um compromisso da [SsAgendaList]. [time] vem formatado pelo app
+/// ("09:30", "Dia todo", "9h–10h").
+@immutable
+class SsAgendaItem {
+  const SsAgendaItem({required this.time, required this.title, this.detail, this.color, this.tone, this.onTap});
+
+  final String time;
+  final String title;
+
+  /// Linha menor (lugar, pessoa, "Sala 3").
+  final String? detail;
+
+  /// Cor da barrinha; ganha de [tone]. Padrão: a cor da marca.
+  final Color? color;
+  final SsTone? tone;
+  final VoidCallback? onTap;
+}
+
+/// Um dia da [SsAgendaList]: a data, um rótulo opcional ("Hoje", "Amanhã")
+/// e os compromissos (vazio mostra "Nada neste dia").
+@immutable
+class SsAgendaDay {
+  const SsAgendaDay(this.date, {this.label, this.events = const []});
+
+  final DateTime date;
+
+  /// Vai antes da data no cabeçalho ("Hoje · quarta, 4 de novembro").
+  final String? label;
+  final List<SsAgendaItem> events;
+}
+
+/// Agenda de vários dias em lista: cabeçalho de cada dia (rótulo e data por
+/// extenso) e as linhas dos compromissos com a hora em DM Mono e a barrinha
+/// de cor; dia sem nada mostra [emptyLabel] ("Nada neste dia").
+///
+/// [weekStrip] põe em cima a faixa de dias ([SsDateStrip], sem o cabeçalho do
+/// mês) com pontinho nos dias com compromisso; tocar num dia (na faixa ou no
+/// cabeçalho) chama [onSelectDay]. [selected] destaca o dia na faixa e no
+/// cabeçalho. [SsAgendaList.sliver] é a mesma lista como sliver (para um
+/// `CustomScrollView`).
+class SsAgendaList extends StatelessWidget {
+  const SsAgendaList({
+    super.key,
+    required this.days,
+    this.weekStrip = false,
+    this.selected,
+    this.onSelectDay,
+    this.emptyLabel,
+    this.today,
+    this.padding = EdgeInsets.zero,
+  }) : _sliver = false;
+
+  /// A mesma lista como sliver.
+  const SsAgendaList.sliver({
+    super.key,
+    required this.days,
+    this.weekStrip = false,
+    this.selected,
+    this.onSelectDay,
+    this.emptyLabel,
+    this.today,
+    this.padding = EdgeInsets.zero,
+  }) : _sliver = true;
+
+  final List<SsAgendaDay> days;
+  final bool weekStrip;
+  final DateTime? selected;
+  final ValueChanged<DateTime>? onSelectDay;
+
+  /// Texto do dia vazio (padrão: "Nada neste dia" do [SsStrings]).
+  final String? emptyLabel;
+
+  /// Hoje da faixa de dias (padrão: o relógio).
+  final DateTime? today;
+  final EdgeInsetsGeometry padding;
+  final bool _sliver;
+
+  List<Widget> _linhas(BuildContext context) {
+    final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    final sel = selected == null ? null : _dia(selected!);
+    final out = <Widget>[];
+    if (weekStrip) {
+      final base = sel ?? (days.isEmpty ? _dia(today ?? DateTime.now()) : _dia(days.first.date));
+      out.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SsDateStrip(
+            selected: base,
+            today: today,
+            showHeader: false,
+            markers: {
+              for (final d in days)
+                if (d.events.isNotEmpty) _dia(d.date): [for (final e in d.events.take(3)) _cor(context, e)],
+            },
+            onChanged: (d) => onSelectDay?.call(d),
+          ),
+        ),
+      );
+    }
+    for (final (i, d) in days.indexed) {
+      final dia = _dia(d.date);
+      final eSel = sel != null && dia == sel;
+      final extenso = s.longDate(dia);
+      // "Quarta, 4 de novembro" quando abre o cabeçalho.
+      final data = d.label == null && extenso.isNotEmpty ? extenso[0].toUpperCase() + extenso.substring(1) : extenso;
+      out.add(
+        _CabecalhoDia(
+          titulo: d.label == null ? data : '${d.label} · $data',
+          selecionado: eSel,
+          primeiro: i == 0,
+          onTap: onSelectDay == null ? null : () => onSelectDay!(dia),
+        ),
+      );
+      if (d.events.isEmpty) {
+        out.add(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 2, 4, 6),
+            child: Text(
+              emptyLabel ?? s.agendaEmptyDay,
+              style: TextStyle(color: c.muted, fontSize: AppType.sub, fontStyle: FontStyle.italic),
+            ),
+          ),
+        );
+      } else {
+        for (final e in d.events) {
+          out.add(_LinhaAgenda(e, _cor(context, e)));
+        }
+      }
+    }
+    return out;
+  }
+
+  static Color _cor(BuildContext context, SsAgendaItem e) =>
+      e.color ?? e.tone?.colors(context).solid ?? SsColors.of(context).accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final linhas = _linhas(context);
+    if (_sliver) {
+      return SliverPadding(
+        padding: padding,
+        sliver: SliverList.list(children: linhas),
+      );
+    }
+    return Padding(
+      padding: padding,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: linhas),
+    );
+  }
+}
+
+class _CabecalhoDia extends StatelessWidget {
+  const _CabecalhoDia({required this.titulo, required this.selecionado, required this.primeiro, this.onTap});
+  final String titulo;
+  final bool selecionado, primeiro;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final texto = Padding(
+      padding: EdgeInsets.fromLTRB(4, primeiro ? 4 : 14, 4, 6),
+      child: Row(
+        children: [
+          if (selecionado) ...[
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Expanded(
+            child: Text(
+              titulo,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: selecionado ? c.accentText : c.ink2,
+                fontSize: AppType.sub,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return Semantics(
+      header: true,
+      selected: selecionado,
+      button: onTap != null,
+      label: titulo,
+      excludeSemantics: true,
+      child: onTap == null ? texto : SsPressable(onTap: onTap, child: texto),
+    );
+  }
+}
+
+class _LinhaAgenda extends StatelessWidget {
+  const _LinhaAgenda(this.e, this.cor);
+  final SsAgendaItem e;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Semantics(
+        button: e.onTap != null,
+        label: [e.time, e.title, ?e.detail].join(', '),
+        excludeSemantics: true,
+        child: SsPressable(
+          onTap: e.onTap,
+          enabled: e.onTap != null,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 52),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(AppRadius.field),
+              border: Border.all(color: c.line),
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(width: 4, color: cor),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 0, 10),
+                    child: Container(
+                      width: 56,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        e.time,
+                        maxLines: 2,
+                        style: AppTheme.number(context, size: AppType.sub, weight: FontWeight.w600, color: c.ink2),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            e.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: c.ink, fontSize: AppType.set, fontWeight: FontWeight.w700),
+                          ),
+                          if (e.detail != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                e.detail!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (e.onTap != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Icon(Icons.chevron_right_rounded, color: c.muted2, size: 20),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

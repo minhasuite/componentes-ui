@@ -25,15 +25,48 @@ class SsTimeTick {
 /// - [hm]: `15:00` (pt, es), `3:00 PM` (en).
 /// - [dm]: `04/11` (pt, es), `11/04` (en).
 /// - [when] (balão do cursor): `04/11 15:00`.
+///
+/// Fuso: sem [utcOffset], hora e data saem no fuso do aparelho
+/// (`toLocal`). Com ele (ex.: `Duration(hours: -3)`, o fuso do site da casa
+/// que o servidor informa), saem na hora daquele lugar, seja qual for o fuso
+/// do aparelho. É um deslocamento fixo: o pacote não tem a base de fusos,
+/// então horário de verão é o app que resolve (mandando o deslocamento da
+/// janela que mostra).
 class SsTimeFormat {
-  SsTimeFormat(Locale? locale) : lang = _lang(locale);
+  SsTimeFormat(Locale? locale, {this.utcOffset}) : lang = _lang(locale);
 
   /// Idioma do contexto (o `Localizations` do app); [override] ganha.
-  factory SsTimeFormat.of(BuildContext context, [Locale? override]) =>
-      SsTimeFormat(override ?? Localizations.maybeLocaleOf(context));
+  factory SsTimeFormat.of(BuildContext context, [Locale? override, Duration? utcOffset]) =>
+      SsTimeFormat(override ?? Localizations.maybeLocaleOf(context), utcOffset: utcOffset);
 
   /// 'pt', 'en' ou 'es'.
   final String lang;
+
+  /// Fuso fixo das horas e datas (nulo = o do aparelho).
+  final Duration? utcOffset;
+
+  /// Hora de parede de [t] (o que o relógio do lugar mostra): no fuso do
+  /// aparelho ou em [utcOffset]. Os campos (`hour`, `day`…) são os do lugar.
+  DateTime wall(DateTime t) {
+    final o = utcOffset;
+    if (o == null) return t.toLocal();
+    final u = t.toUtc().add(o);
+    return DateTime.utc(u.year, u.month, u.day, u.hour, u.minute, u.second, u.millisecond);
+  }
+
+  /// Instante de uma hora de parede (o inverso de [wall]): campos no lugar
+  /// → o momento real.
+  DateTime instant(int year, [int month = 1, int day = 1, int hour = 0, int minute = 0]) {
+    final o = utcOffset;
+    if (o == null) return DateTime(year, month, day, hour, minute);
+    return DateTime.utc(year, month, day, hour, minute).subtract(o);
+  }
+
+  /// Dia de parede de [t] (meia-noite, sem hora), para agrupar por dia.
+  DateTime dateOf(DateTime t) {
+    final w = wall(t);
+    return DateTime(w.year, w.month, w.day);
+  }
 
   static String _lang(Locale? l) {
     final c = l?.languageCode.toLowerCase() ?? 'pt';
@@ -92,33 +125,47 @@ class SsTimeFormat {
     return unit == '%' ? '$n%' : '$n $unit';
   }
 
-  /// Hora: `15:00` ou `3:00 PM`.
-  String hm(DateTime t) {
+  /// Hora: `15:00` ou `3:00 PM` (no fuso: ver [wall]).
+  String hm(DateTime t) => _hm(wall(t));
+
+  String _hm(DateTime t) {
     if (lang != 'en') return '${_two(t.hour)}:${_two(t.minute)}';
     final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
     return '$h:${_two(t.minute)} ${t.hour < 12 ? 'AM' : 'PM'}';
   }
 
   /// Dia e mês: `04/11` ou `11/04`.
-  String dm(DateTime t) => lang == 'en' ? '${_two(t.month)}/${_two(t.day)}' : '${_two(t.day)}/${_two(t.month)}';
+  String dm(DateTime t) => _dm(wall(t));
+
+  String _dm(DateTime t) => lang == 'en' ? '${_two(t.month)}/${_two(t.day)}' : '${_two(t.day)}/${_two(t.month)}';
 
   /// Data completa curta: `04/11/2026` ou `11/04/2026`.
-  String dmy(DateTime t) => '${dm(t)}/${t.year}';
+  String dmy(DateTime t) => _dmy(wall(t));
+
+  String _dmy(DateTime t) => '${_dm(t)}/${t.year}';
 
   /// Mês abreviado: `nov.`, `Nov`, `nov`.
-  String month(DateTime t) => _meses[lang]![t.month - 1];
+  String month(DateTime t) => _month(wall(t));
+
+  String _month(DateTime t) => _meses[lang]![t.month - 1];
 
   /// Dia da semana abreviado: `qua.`, `Wed`, `mié`.
-  String weekday(DateTime t) => _semana[lang]![t.weekday - 1];
+  String weekday(DateTime t) => _weekday(wall(t));
+
+  String _weekday(DateTime t) => _semana[lang]![t.weekday - 1];
 
   /// Instante do balão do cursor: `04/11 15:00`.
-  String when(DateTime t) => '${dm(t)} ${hm(t)}';
+  String when(DateTime t) {
+    final w = wall(t);
+    return '${_dm(w)} ${_hm(w)}';
+  }
 
   /// Cabeçalho de dia do logbook fora de hoje/ontem: `qua, 04/11` (sem o
   /// ponto da abreviação, como o Rails; com o ano quando não é o de [now]).
+  /// [t] é a data do calendário (de [dateOf]), sem conversão de fuso.
   String day(DateTime t, {DateTime? now}) {
     final ano = now != null && now.year != t.year;
-    return '${weekday(t).replaceAll('.', '')}, ${ano ? dmy(t) : dm(t)}';
+    return '${_weekday(t).replaceAll('.', '')}, ${ano ? _dmy(t) : _dm(t)}';
   }
 
   /// Duração curta: `2 h 30 min`, `3 d 4 h`, `45 min` (en: `2h 30m`).
@@ -179,50 +226,56 @@ class SsTimeFormat {
     if (!to.isAfter(from)) return const [];
     final p = passo(to.difference(from), math.max(2, maxTicks));
     final out = <SsTimeTick>[];
-    final f = from.toLocal();
+    // As contas são na hora de parede ([wall]); cada marca volta a instante.
+    final f = wall(from);
+    final fim = wall(to);
+    DateTime w(int y, [int m = 1, int d = 1, int h = 0, int min = 0]) =>
+        utcOffset == null ? DateTime(y, m, d, h, min) : DateTime.utc(y, m, d, h, min);
+    SsTimeTick tick(DateTime t, String label, {bool major = false}) =>
+        SsTimeTick(instant(t.year, t.month, t.day, t.hour, t.minute), label, major: major);
     if (p < _dia) {
       final minutos = p ~/ _min;
-      final base = DateTime(f.year, f.month, f.day);
+      final base = w(f.year, f.month, f.day);
       var k = ((f.hour * 60 + f.minute) / minutos).ceil() * minutos;
-      var t = DateTime(base.year, base.month, base.day, 0, k);
-      if (t.isBefore(f)) t = DateTime(base.year, base.month, base.day, 0, k += minutos);
-      while (!t.isAfter(to)) {
+      var t = w(base.year, base.month, base.day, 0, k);
+      if (t.isBefore(f)) t = w(base.year, base.month, base.day, 0, k += minutos);
+      while (!t.isAfter(fim)) {
         final meiaNoite = t.hour == 0 && t.minute == 0;
-        out.add(SsTimeTick(t, meiaNoite ? dm(t) : hm(t), major: meiaNoite));
+        out.add(tick(t, meiaNoite ? _dm(t) : _hm(t), major: meiaNoite));
         k += minutos;
-        t = DateTime(base.year, base.month, base.day, 0, k);
+        t = w(base.year, base.month, base.day, 0, k);
       }
     } else if (p < 30 * _dia) {
       final dias = p ~/ _dia;
-      var t = DateTime(f.year, f.month, f.day);
-      if (t.isBefore(f)) t = DateTime(f.year, f.month, f.day + 1);
+      var t = w(f.year, f.month, f.day);
+      if (t.isBefore(f)) t = w(f.year, f.month, f.day + 1);
       final ini = t;
       var i = 0;
-      while (!t.isAfter(to)) {
+      while (!t.isAfter(fim)) {
         // Até ~8 dias: dia da semana + dia; mais: dia/mês.
         final curto = to.difference(from).inDays <= 8;
-        out.add(SsTimeTick(t, curto ? '${weekday(t)} ${t.day}' : dm(t), major: t.day == 1));
+        out.add(tick(t, curto ? '${_weekday(t)} ${t.day}' : _dm(t), major: t.day == 1));
         i += dias;
-        t = DateTime(ini.year, ini.month, ini.day + i);
+        t = w(ini.year, ini.month, ini.day + i);
       }
     } else if (p < 365 * _dia) {
       final meses = (p / (30.44 * _dia)).round();
-      var t = DateTime(f.year, f.month);
-      if (t.isBefore(f)) t = DateTime(f.year, f.month + 1);
+      var t = w(f.year, f.month);
+      if (t.isBefore(f)) t = w(f.year, f.month + 1);
       // Alinha ao múltiplo do passo (trimestre, semestre).
       while ((t.month - 1) % meses != 0) {
-        t = DateTime(t.year, t.month + 1);
+        t = w(t.year, t.month + 1);
       }
-      while (!t.isAfter(to)) {
-        out.add(SsTimeTick(t, t.month == 1 ? '${t.year}' : month(t), major: t.month == 1));
-        t = DateTime(t.year, t.month + meses);
+      while (!t.isAfter(fim)) {
+        out.add(tick(t, t.month == 1 ? '${t.year}' : _month(t), major: t.month == 1));
+        t = w(t.year, t.month + meses);
       }
     } else {
-      var t = DateTime(f.year);
-      if (t.isBefore(f)) t = DateTime(f.year + 1);
-      while (!t.isAfter(to)) {
-        out.add(SsTimeTick(t, '${t.year}', major: true));
-        t = DateTime(t.year + 1);
+      var t = w(f.year);
+      if (t.isBefore(f)) t = w(f.year + 1);
+      while (!t.isAfter(fim)) {
+        out.add(tick(t, '${t.year}', major: true));
+        t = w(t.year + 1);
       }
     }
     return out;

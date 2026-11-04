@@ -17,6 +17,12 @@ module Ss
   #
   # Estados: loading: true (linhas-fantasma), sem entries (vazio), error: "…" (com
   # retry_url:), sem more_url (fim: "Início do registro").
+  # v0.10.1 (SsLogbook(timeZone:, endAction:)):
+  # - time_zone: "America/Sao_Paulo": hora e agrupamento por dia nesse fuso (padrão: Time.zone).
+  # - Fim do registro com ação: end_url: + end_link_label: ("Ver um período maior") viram um
+  #   link no rodapé do fim; o slot with_end { … } troca o rodapé do fim inteiro.
+  # - end_marker: false (SsLogbook(showEnd: false)) tira o "Início do registro" (o end_url:,
+  #   se houver, fica sozinho).
   # icon: SVG html_safe do app ou um destes nomes: dot power light door lock alert check user
   # thermo motion. tone: accent success warn danger info neutral.
   class LogbookComponent < BaseComponent
@@ -36,8 +42,11 @@ module Ss
     }.freeze
     TONES = %w[accent success warn danger info neutral].freeze
 
+    renders_one :end_slot
+    alias with_end with_end_slot
+
     def initialize(entries:, more_url: nil, frame: nil, lazy: true, loading: false, error: nil, retry_url: nil,
-                   now: nil, label: nil, texts: {}, **opts)
+                   now: nil, label: nil, texts: {}, time_zone: nil, end_url: nil, end_link_label: nil, end_marker: true, **opts)
       super(**opts)
       @entries = entries.to_a
       @more_url = more_url
@@ -49,7 +58,15 @@ module Ss
       @now = now
       @label = label
       @texts = texts.to_h.transform_keys(&:to_sym)
+      @zone = TimeData.zone(time_zone)
+      @end_url, @end_link_label = end_url, end_link_label
+      @end_marker = end_marker != false
     end
+
+    def end_url = @end_url
+    def end_marker? = @end_marker
+    def end_link_label = @end_link_label || text(:end_link, "Ver um período maior")
+    def local(t) = TimeData.local(t, @zone)
 
     def text(key, default) = @texts[key] || ss_t("logbook.#{key}", default:)
 
@@ -65,12 +82,12 @@ module Ss
     # Id do turbo-frame da próxima página (estável para o mesmo more_url).
     def next_frame_id = "ss-lb-#{Digest::MD5.hexdigest(@more_url.to_s)[0, 10]}"
 
-    def today = (@now || Time.zone.now).in_time_zone.to_date
+    def today = local(@now || Time.zone.now).to_date
 
     # [[data, [entradas]]] na ordem em que vieram (o mais novo primeiro).
     def days
-      @entries.chunk_while { |a, b| a[:at].in_time_zone.to_date == b[:at].in_time_zone.to_date }
-              .map { |g| [g.first[:at].in_time_zone.to_date, g] }
+      @entries.chunk_while { |a, b| local(a[:at]).to_date == local(b[:at]).to_date }
+              .map { |g| [local(g.first[:at]).to_date, g] }
     end
 
     def day_label(d)
@@ -96,6 +113,6 @@ module Ss
       %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">#{path}</svg>).html_safe
     end
 
-    def time_of(e) = ss_date(e[:at].in_time_zone, :time)
+    def time_of(e) = ss_date(local(e[:at]), :time)
   end
 end

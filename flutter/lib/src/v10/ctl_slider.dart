@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../app_theme.dart';
 import '../format.dart';
 import '../motion.dart';
+import '../ss_fields.dart' show SsFieldHelper;
 import '../ss_strings.dart';
 import 'ctl_comum.dart';
 
@@ -49,6 +50,9 @@ class SsSlider extends StatefulWidget {
     this.icon,
     this.showBubble = true,
     this.showValue = false,
+    this.helperText,
+    this.decimals,
+    this.unit,
   });
 
   final double value;
@@ -66,8 +70,16 @@ class SsSlider extends StatefulWidget {
   /// Nome para o leitor de tela e, na variante [fill], escrito na barra.
   final String? label;
 
-  /// Texto do valor ("80%", "2700 K"). Padrão: [qty].
+  /// Texto do valor ("80%", "2700 K"). Padrão: [qty], ou [decimals] e
+  /// [unit] quando dados.
   final String Function(double value)? format;
+
+  /// Casas fixas do valor no formato padrão, com a vírgula ou o ponto do
+  /// idioma ([SsFormats]): `decimals: 1` → "21,5" (o `%.1f` do Rails).
+  final int? decimals;
+
+  /// Unidade depois do valor no formato padrão ("°C", "%": o % vai colado).
+  final String? unit;
   final SsSliderTrack track;
 
   /// Gradiente próprio (vence o [track]).
@@ -83,6 +95,9 @@ class SsSlider extends StatefulWidget {
 
   /// Rótulo e valor numa linha acima da trilha (fora da variante [fill]).
   final bool showValue;
+
+  /// Dica fixa embaixo da trilha (como a dos campos: [SsFieldHelper]).
+  final String? helperText;
 
   /// Cor aproximada de uma temperatura de cor (1000–40000 K), para a trilha
   /// em kelvin e o seletor (aproximação de Tanner Helland).
@@ -124,7 +139,16 @@ class _SsSliderState extends State<SsSlider> {
   bool _drag = false;
   bool _focus = false;
 
-  String _fmt(double v) => widget.format?.call(v) ?? qty(v, SsFormats.of(context));
+  String _fmt(double v) {
+    if (widget.format != null) return widget.format!(v);
+    final f = SsFormats.of(context);
+    final d = widget.decimals;
+    final n = d == null ? qty(v, f) : v.toStringAsFixed(d).replaceAll('.', f.decimalSeparator);
+    final u = widget.unit;
+    if (u == null || u.isEmpty) return n;
+    return u == '%' ? '$n%' : '$n $u';
+  }
+
   bool get _enabled => widget.onChanged != null;
   double get _span => widget.max - widget.min;
   double get _f => _span == 0 ? 0 : ((widget.value - widget.min) / _span).clamp(0.0, 1.0);
@@ -243,6 +267,14 @@ class _SsSliderState extends State<SsSlider> {
           ),
           corpo,
         ],
+      );
+    }
+
+    if (widget.helperText != null) {
+      corpo = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [corpo, SsFieldHelper(widget.helperText!)],
       );
     }
 

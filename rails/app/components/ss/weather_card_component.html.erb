@@ -1,9 +1,9 @@
 <%= tag.div(**root_attrs(class: classes("ss-card", "ss-wx"), data: { condition: condition })) do %>
-  <div class="ss-wx-now" role="group" aria-label="<%= [location, temperature, condition_text].compact.join(", ") %>">
+  <div class="ss-wx-now" role="group" aria-label="<%= [location, temperature, condition_text, (rain_text if rain_chance)].compact.join(", ") %>">
     <div class="ss-wx-main">
       <% if location %><span class="ss-wx-loc"><%= location %></span><% end %>
       <b class="ss-wx-temp num"><%= temperature %></b>
-      <span class="ss-wx-cond"><%= condition_text %></span>
+      <span class="ss-wx-cond"><%= condition_text %><% if rain_chance %><span class="ss-wx-rain num" title="<%= rain_text %>"><%= Ss::CasaIcons.svg(:drop) %><%= rain_chance %>%</span><% end %></span>
       <% if min_max.present? %><span class="ss-wx-minmax num"><%= min_max %></span><% end %>
     </div>
     <%= icon(condition, size: 64) %>
@@ -21,7 +21,8 @@
           <span class="ss-wx-when" aria-hidden="true"><%= f[:label] %></span>
           <%= icon(f[:condition], size: 26) %>
           <b class="num" aria-hidden="true"><%= t(f[:temp]) %></b>
-          <% if f[:min] %><small class="num" aria-hidden="true"><%= t(f[:min]) %></small><% elsif f[:precip] %><small class="num is-rain" aria-hidden="true"><%= f[:precip] %>%</small><% end %>
+          <% if f[:min] %><small class="num" aria-hidden="true"><%= t(f[:min]) %></small><% end %>
+          <% if rain_of(f) %><small class="num is-rain" aria-hidden="true"><% if f[:min] %><%= Ss::CasaIcons.svg(:drop) %><% end %><%= rain_of(f) %>%</small><% end %>
         </li>
       <% end %>
     </ol>

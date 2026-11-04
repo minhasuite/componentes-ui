@@ -3,10 +3,10 @@
        data-controller="ss-indicator" data-ss-indicator-kind-value="line" data-ss-indicator-selector-value=".ss-tab">
     <% tabs.each do |t| %>
       <% if t.link? %>
-        <%= link_to t.href, class: "ss-tab", "aria-current": (t.selected ? "page" : nil), data: { ss_tabs_target: "tab" } do %><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %><% end %>
+        <%= link_to t.href, class: "ss-tab", "aria-current": (t.selected ? "page" : nil), data: { ss_tabs_target: "tab" } do %><% if t.icon %><span class="ss-tab-ico" aria-hidden="true"><%= t.icon.to_s.html_safe %></span><% end %><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %><% end %>
       <% else %>
         <button type="button" class="ss-tab" role="tab" id="<%= t.key %>-tab" aria-controls="<%= t.key %>" aria-selected="<%= t.selected %>" tabindex="<%= t.selected ? 0 : -1 %>"
-                data-ss-tabs-target="tab" data-action="ss-tabs#select"><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %></button>
+                data-ss-tabs-target="tab" data-action="ss-tabs#select"><% if t.icon %><span class="ss-tab-ico" aria-hidden="true"><%= t.icon.to_s.html_safe %></span><% end %><%= t.label %><% if t.badge %><span class="ss-tab-badge num"><%= t.badge %></span><% end %></button>
       <% end %>
     <% end %>
     <span class="ss-tabs-ink" aria-hidden="true" data-ss-indicator-target="ink"></span>

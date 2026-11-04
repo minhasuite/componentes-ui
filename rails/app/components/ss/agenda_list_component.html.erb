@@ -1,0 +1,32 @@
+<%= tag.div(**root_attrs(class: classes("ss-agl"), role: "region", "aria-label": label)) do %>
+  <% if week_strip? %>
+    <nav class="ss-agl-week" aria-label="<%= week_label %>">
+      <% week.each do |date| %>
+        <% inner = capture do %><small><%= ss_weekdays[date.wday].to_s.delete(".") %></small><b class="num"><%= date.day %></b><i class="ss-agl-mark<%= " is-on" if events_on?(date) %>" aria-hidden="true"></i><% end %>
+        <% attrs = { class: ["ss-agl-wd", ("is-today" if date == today)].compact.join(" "), "aria-current": (date == selected ? "date" : nil), title: ss_date(date, :date) } %>
+        <% if (href = week_href(date)) %><%= link_to inner, href, **attrs %><% else %><%= tag.span(inner, **attrs, "aria-disabled": "true") %><% end %>
+      <% end %>
+    </nav>
+  <% end %>
+  <% days.each do |d| %>
+    <section class="ss-agl-day" id="<%= anchor(d[:date]) %>" aria-labelledby="<%= anchor(d[:date]) %>-h">
+      <h3 class="ss-agl-head" id="<%= anchor(d[:date]) %>-h"><span><%= day_label(d) %></span><small class="num"><%= short_date(d[:date]) %></small></h3>
+      <% if d[:events].any? %>
+        <ul class="ss-agl-list">
+          <% d[:events].each_with_index do |e, i| %>
+            <li class="ss-agl-ev" style="--c: <%= color(e) %>; --i: <%= [i, 8].min %>">
+              <span class="ss-agl-time num"><%= e[:time] %></span>
+              <span class="ss-agl-bar" aria-hidden="true"></span>
+              <div class="ss-agl-body">
+                <% if e[:url] %><%= link_to e[:title], e[:url], class: "ss-agl-title ss-agl-link" %><% else %><span class="ss-agl-title"><%= e[:title] %></span><% end %>
+                <% if e[:detail].present? %><small class="ss-agl-detail"><%= e[:detail] %></small><% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="ss-agl-empty"><%= empty_label %></p>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>

@@ -1,9 +1,8 @@
 <%= tag.div(**root_attrs(class: classes("ss-shell"), data: shell_data)) do %>
   <aside class="ss-shell-side ss-side" id="ss-shell-side" data-ss-shell-target="side" aria-label="<%= side_label %>">
     <div class="ss-shell-brand">
-      <span class="ss-shell-logo" aria-hidden="true"></span>
-      <span class="ss-shell-label ss-shell-brand-name"><%= logo? ? logo : @brand %></span>
-      <button type="button" class="ss-shell-collapse" data-action="ss-shell#toggle" data-ss-shell-target="collapse" aria-expanded="true" aria-controls="ss-shell-side" aria-label="<%= collapse_label %>" title="<%= collapse_label %>">
+      <%= brand_tag("") %>
+      <button type="button" class="ss-shell-collapse" data-action="ss-shell#toggle" data-ss-shell-target="collapse" aria-expanded="<%= !collapsed? %>" aria-controls="ss-shell-side" aria-label="<%= collapse_button_label %>" title="<%= collapse_button_label %>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg>
       </button>
     </div>
@@ -25,11 +24,13 @@
     <% end %>
     <nav class="ss-nav ss-shell-nav ss-side-scroll" aria-label="<%= side_label %>" data-controller="ss-indicator" data-ss-indicator-selector-value="a" data-ss-indicator-key-value="shell">
       <% nav.each do |group| %>
+        <% if separator?(group) %><hr class="ss-shell-sep"><% next %><% end %>
         <% items = capture do %>
-          <% group[:items].each do |it| %>
-            <%= link_to it[:href], "aria-current": (it[:current] ? "page" : nil), title: it[:label] do %>
+          <% Array(group[:items]).each do |it| %>
+            <% if separator?(it) %><hr class="ss-shell-sep"><% next %><% end %>
+            <%= link_to it[:href], class: it[:class], "aria-current": (it[:current] ? "page" : nil), title: it[:label] do %>
               <%= icon(it[:icon]) || tag.span(it[:label].to_s[0], class: "ss-shell-initial", "aria-hidden": "true") %><span class="ss-shell-label"><%= it[:label] %></span>
-              <% if it[:badge] %><span class="ss-nav-badge ss-shell-badge" aria-label="<%= badge_label(it[:badge]) %>"><%= it[:badge] %></span><% end %>
+              <% if badge?(it[:badge]) %><span class="ss-nav-badge ss-shell-badge" aria-label="<%= badge_label(it[:badge]) %>"><%= it[:badge] %></span><% end %>
             <% end %>
           <% end %>
         <% end %>
@@ -51,6 +52,7 @@
       <button type="button" class="ss-shell-burger ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-shell#open" aria-controls="ss-shell-side" aria-expanded="false" data-ss-shell-target="burger" aria-label="<%= open_label %>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></svg>
       </button>
+      <% if mobile_brand? %><%= brand_tag("ss-shell-top-brand") %><% end %>
       <% if @search %>
         <button type="button" class="ss-shell-search" data-action="ss-shell#search"<% if @search_action %> aria-controls="<%= @search_action %>" aria-haspopup="dialog"<% end %>>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
@@ -62,6 +64,6 @@
         <%= user if user? %>
       </div>
     </header>
-    <main class="ss-shell-content" id="conteudo"><%= content %></main>
+    <%= tag.main(content, **main_attrs) %>
   </div>
 <% end %>

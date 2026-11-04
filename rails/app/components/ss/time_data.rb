@@ -9,6 +9,20 @@ module Ss
 
     module_function
 
+    # time_zone: dos componentes (v0.10.1): nome IANA ("America/Sao_Paulo") ou do Rails
+    # ("Brasilia"). nil = o Time.zone do app (e, no JS, o fuso do navegador).
+    def zone(name)
+      return nil if name.blank?
+
+      ActiveSupport::TimeZone[name.to_s] || raise(ArgumentError, "time_zone desconhecido: #{name}")
+    end
+
+    # O instante no fuso (ou no Time.zone).
+    def local(t, zone) = zone ? t.in_time_zone(zone) : t.in_time_zone
+
+    # Nome IANA para o Intl do JS.
+    def iana(zone) = zone&.tzinfo&.name
+
     # Instante em ms desde a época (o que o JS usa).
     def ms(t) = (t.to_time.to_f * 1000).round
 

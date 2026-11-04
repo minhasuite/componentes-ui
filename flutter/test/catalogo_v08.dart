@@ -213,8 +213,21 @@ final Map<String, (List<String>, List<Estado>)> _v08 = {
     ],
   ),
   'ss-chat': (
-    ['SsChatInput: enabled falso trava campo e botão; leading vai antes do campo (anexar).'],
     [
+      'SsChatInput: enabled falso trava campo e botão; leading vai antes do campo (anexar).',
+      'SsChatInput: maxLength corta no limite e mostra a contagem perto dele (80%); sendTooltip é a dica do botão.',
+    ],
+    [
+      Estado(
+        'input-limite',
+        'maxLength: contagem perto do limite',
+        (_) => SsChatInput(
+          controller: TextEditingController(text: 'Liga a luz da sala às 18h e desliga às 23h'),
+          onSend: (_) {},
+          maxLength: 48,
+        ),
+        tamanho: const Size(360, 100),
+      ),
       Estado(
         'input-anexo-travado',
         'campo travado com botão de anexar',

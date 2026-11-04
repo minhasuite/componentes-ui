@@ -92,6 +92,7 @@ final catalogoOnda2 = <Componente>[
       'O erro aparece embaixo com ícone e o campo dá uma sacudida curta no envio do formulário.',
       'É um TextFormField: funciona dentro de Form.',
       'suffixText põe a unidade ("kg") depois do valor; maxLength limita sem contador; textCapitalization para nome e título.',
+      'autocorrect e enableSuggestions (padrão true) desligam a correção e as sugestões do teclado.',
     ],
     estados: [
       Estado(
@@ -127,6 +128,21 @@ final catalogoOnda2 = <Componente>[
         ),
         tamanho: const Size(360, 140),
         aguarde: 700,
+      ),
+      Estado(
+        'sem-correcao',
+        'autocorrect e enableSuggestions falsos (código, usuário)',
+        (_) => _pad(
+          const SsTextField(
+            label: 'Código do hub',
+            initialValue: 'HUB-7F3A',
+            icon: Icons.qr_code_2_rounded,
+            autocorrect: false,
+            enableSuggestions: false,
+            helperText: 'O teclado não corrige nem sugere.',
+          ),
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),
@@ -196,6 +212,7 @@ final catalogoOnda2 = <Componente>[
       'Atalhos fora de firstDate/lastDate somem.',
       '"Outra…" abre o calendário em pt-BR e passa a mostrar a data escolhida.',
       'Com clearable, um ✕ limpa a data.',
+      'helperText: dica fixa embaixo (some enquanto há erro). Vale também no SsDateTimeField.',
     ],
     estados: [
       Estado(
@@ -215,6 +232,14 @@ final catalogoOnda2 = <Componente>[
         'vazio',
         (_) => _pad(SsDateField(label: 'Vencimento', value: null, onChanged: (_) {})),
         tamanho: _data,
+      ),
+      Estado(
+        'dica',
+        'helperText embaixo dos chips',
+        (_) => _pad(
+          SsDateField(label: 'Vencimento', value: null, onChanged: (_) {}, helperText: 'Avisamos 3 dias antes.'),
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),
@@ -243,6 +268,7 @@ final catalogoOnda2 = <Componente>[
       'A folha marca a opção atual com ✓.',
       'Com mais de 8 opções aparece a busca, que ignora acento.',
       'É um FormField: aceita validator dentro de Form.',
+      'helperText: dica fixa embaixo (some enquanto há erro).',
     ],
     estados: [
       Estado(
@@ -292,6 +318,20 @@ final catalogoOnda2 = <Componente>[
         ),
         tamanho: _tela,
       ),
+      Estado(
+        'dica',
+        'helperText embaixo do campo',
+        (_) => _pad(
+          SsChoiceField<String>(
+            label: 'Cômodo',
+            value: null,
+            options: const {'sala': 'Sala', 'quarto': 'Quarto'},
+            onChanged: (_) {},
+            helperText: 'Onde o dispositivo fica.',
+          ),
+        ),
+        tamanho: const Size(360, 160),
+      ),
     ],
   ),
   Componente(
@@ -331,6 +371,9 @@ final catalogoOnda2 = <Componente>[
       'No limite o botão apaga e vibra forte ("bateu").',
       'Tocar no número abre para digitar.',
       'label põe o rótulo pequeno em maiúsculas em cima (e no leitor de tela).',
+      'onChanged nulo desabilita: mostra só o valor, botões bem apagados, sem digitar.',
+      'decreaseLabel/increaseLabel dão o nome do − e do + no leitor de tela (padrão Diminuir/Aumentar).',
+      'debounce: o número muda na hora, mas onChanged recebe só o valor final depois da pausa (e o pendente ao sair da tela).',
     ],
     estados: [
       Estado('meio', 'no meio', (_) => _pad(const SizedBox(width: 200, child: _Stepper(3, unit: 'pessoas')))),
@@ -342,6 +385,17 @@ final catalogoOnda2 = <Componente>[
           const SizedBox(
             width: 200,
             child: _Stepper(20, max: 20, decimals: 1, step: .5, unit: 'kg', label: 'Peso'),
+          ),
+        ),
+        tamanho: const Size(360, 120),
+      ),
+      Estado(
+        'desabilitado',
+        'desabilitado (onChanged nulo)',
+        (_) => _pad(
+          const SizedBox(
+            width: 200,
+            child: SsStepper(value: 4, onChanged: null, unit: 'pessoas', label: 'Lugares'),
           ),
         ),
         tamanho: const Size(360, 120),

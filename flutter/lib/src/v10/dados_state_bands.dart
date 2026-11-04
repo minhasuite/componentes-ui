@@ -77,7 +77,7 @@ Map<String, Color> ssStateColors(BuildContext context, List<SsStateRow> rows, Ma
 /// ([SsTimeFormat.ticks]): horas num dia, dias numa semana, meses num ano.
 /// A meia-noite (ou janeiro) sai em negrito. Uma marca a cada ~72 px.
 class SsTimeAxis extends StatelessWidget {
-  const SsTimeAxis({super.key, required this.from, required this.to, this.locale, this.height = 18});
+  const SsTimeAxis({super.key, required this.from, required this.to, this.locale, this.height = 18, this.utcOffset});
 
   final DateTime from;
   final DateTime to;
@@ -86,10 +86,14 @@ class SsTimeAxis extends StatelessWidget {
   final Locale? locale;
   final double height;
 
+  /// Fuso fixo das horas e datas (ex.: `Duration(hours: -3)`, o do site);
+  /// nulo = o do aparelho. Ver [SsTimeFormat.utcOffset].
+  final Duration? utcOffset;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final fmt = SsTimeFormat.of(context, locale);
+    final fmt = SsTimeFormat.of(context, locale, utcOffset);
     return ExcludeSemantics(
       child: SizedBox(
         height: height,
@@ -164,9 +168,14 @@ class SsStateBands extends StatefulWidget {
     this.title,
     this.emptyText,
     this.noDataText,
+    this.utcOffset,
   });
 
   final List<SsStateRow> rows;
+
+  /// Fuso fixo das horas e datas (ex.: `Duration(hours: -3)`, o do site);
+  /// nulo = o do aparelho. Ver [SsTimeFormat.utcOffset].
+  final Duration? utcOffset;
 
   /// Intervalo do eixo (padrão: do 1º trecho ao último).
   final DateTime? from;
@@ -240,7 +249,7 @@ class _SsStateBandsState extends State<SsStateBands> {
     }
     final (from, to) = range;
     final cores = ssStateColors(context, widget.rows, widget.tones);
-    final fmt = SsTimeFormat.of(context, widget.locale);
+    final fmt = SsTimeFormat.of(context, widget.locale, widget.utcOffset);
     // Estreito (celular): o nome vai em cima, como no Rails abaixo de 640 px.
     return LayoutBuilder(
       builder: (context, box) {
@@ -291,7 +300,7 @@ class _SsStateBandsState extends State<SsStateBands> {
                 right: top || widget.rows.every((r) => r.current == null) ? 0 : 84 + 10,
                 top: 6,
               ),
-              child: SsTimeAxis(from: from, to: to, locale: widget.locale),
+              child: SsTimeAxis(from: from, to: to, locale: widget.locale, utcOffset: widget.utcOffset),
             ),
         ],
       ),

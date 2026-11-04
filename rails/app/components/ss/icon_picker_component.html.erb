@@ -11,10 +11,10 @@
       <button type="button" role="radio" class="ss-iconpick-cell is-none" aria-checked="<%= none_selected? %>" tabindex="<%= none_selected? ? 0 : -1 %>"
               title="<%= label(:none) %>" aria-label="<%= label(:none) %>" data-name="" data-search="" data-action="ss-icon-picker#pick"><%= Ss::CasaIcons.svg(:block) %></button>
     <% end %>
-    <% icons.each_with_index do |(n, svg), i| %>
+    <% icons.each_with_index do |(n, svg, lbl), i| %>
       <button type="button" role="radio" class="ss-iconpick-cell" aria-checked="<%= selected?(n) %>"
               tabindex="<%= selected?(n) || (i.zero? && !allow_none? && icons.none? { |(x, _)| selected?(x) }) ? 0 : -1 %>"
-              title="<%= n %>" aria-label="<%= n %>" data-name="<%= n %>" data-search="<%= search_key(n) %>" data-action="ss-icon-picker#pick"><%= svg.html_safe %></button>
+              title="<%= lbl %>" aria-label="<%= lbl %>" data-name="<%= n %>" data-search="<%= search_key(n, lbl) %>" data-action="ss-icon-picker#pick"><%= svg.html_safe %></button>
     <% end %>
   </div>
   <p class="ss-iconpick-empty" hidden data-ss-icon-picker-target="empty" data-template="<%= label(:empty) %>"></p>

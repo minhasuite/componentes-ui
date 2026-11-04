@@ -9,7 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <%# Só o tailwind.css (o builds/tailwind/componentes_ui.css é fonte do build, não vai ao navegador). %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%# v0.10.1: menu recolhido já no <html> antes da 1ª pintura (sem piscar aberto). %>
+    <%= ss_app_shell_head %>
     <%= javascript_importmap_tags %>
+    <%= yield :head %>
   </head>
   <body>
     <%# A moldura da vitrine é o próprio Ss::AppShellComponent, com o menu gerado das páginas. %>

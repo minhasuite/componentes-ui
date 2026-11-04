@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../motion.dart';
 import '../ss_badge.dart';
+import '../ss_dialogs.dart' show showSsConfirm;
 import '../ss_fields.dart';
 import '../ss_menu.dart';
 import '../ss_strings.dart';
@@ -83,6 +84,7 @@ class SsBlock {
     this.body,
     this.children = const [],
     this.initiallyExpanded = false,
+    this.duplicable = true,
   });
 
   final String id;
@@ -107,6 +109,9 @@ class SsBlock {
   /// Blocos aninhados (dentro de um "se", de um "repetir").
   final List<SsBlock> children;
   final bool initiallyExpanded;
+
+  /// Falso tira "Duplicar" do ⋮ só deste bloco (gatilho único, por exemplo).
+  final bool duplicable;
 }
 
 /// Textos do [SsBlockList]; o que ficar nulo vem do [SsStrings] do idioma.
@@ -154,6 +159,7 @@ class SsBlockList extends StatefulWidget {
     this.focusedId,
     this.draggable = true,
     this.labels = const SsBlockListLabels(),
+    this.deleteConfirm,
   });
 
   final List<SsBlock> blocks;
@@ -168,6 +174,10 @@ class SsBlockList extends StatefulWidget {
   /// Alça de arrastar (precisa de [onMove]).
   final bool draggable;
   final SsBlockListLabels labels;
+
+  /// Pergunta antes de excluir (diálogo de perigo com o título do bloco e
+  /// este texto); nulo = exclui direto (o app pode oferecer "Desfazer").
+  final String? deleteConfirm;
 
   @override
   State<SsBlockList> createState() => _SsBlockListState();
@@ -263,9 +273,24 @@ class _BlocoView extends StatelessWidget {
         SsMenuAction(Icons.arrow_upward_rounded, l.moveUp!, () => list.onMove!(b, index - 1)),
       if (list.onMove != null && index < count - 1)
         SsMenuAction(Icons.arrow_downward_rounded, l.moveDown!, () => list.onMove!(b, index + 1)),
-      if (list.onDuplicate != null) SsMenuAction(Icons.copy_rounded, l.duplicate!, () => list.onDuplicate!(b)),
+      if (list.onDuplicate != null && b.duplicable)
+        SsMenuAction(Icons.copy_rounded, l.duplicate!, () => list.onDuplicate!(b)),
       if (list.onDelete != null)
-        SsMenuAction(Icons.delete_outline_rounded, l.delete!, () => list.onDelete!(b), destructive: true),
+        SsMenuAction(Icons.delete_outline_rounded, l.delete!, () async {
+          final pergunta = list.deleteConfirm;
+          if (pergunta != null) {
+            final ok = await showSsConfirm(
+              context,
+              title: b.title,
+              message: pergunta,
+              confirmLabel: l.delete,
+              danger: true,
+              icon: Icons.delete_outline_rounded,
+            );
+            if (!ok) return;
+          }
+          list.onDelete!(b);
+        }, destructive: true),
     ];
 
     return AnimatedContainer(
@@ -406,6 +431,7 @@ class _BlocoView extends StatelessWidget {
                             focusedId: list.focusedId,
                             draggable: list.draggable,
                             labels: list.labels,
+                            deleteConfirm: list.deleteConfirm,
                           ),
                         ),
                     ],

@@ -5,11 +5,21 @@ module Ss
   #   render Ss::PaginationComponent.new(page: 3, pages: 12, params: request.query_parameters, total: 230)
   # Sem url: nem params:, usa a query da requisição e troca só o param (padrão :page).
   # Com 1 página ou menos, não renderiza nada. Textos do I18n (componentes_ui.pagination.*).
+  #
+  # v0.10.1: anterior/próxima e as reticências são SVG (a suíte não usa ‹ › … em Unicode).
+  # prev_icon:/next_icon: trocam o ícone (SVG ou HTML já seguro). As mesmas constantes
+  # (PREV, NEXT, GAP) servem o pager da DataTable.
   class PaginationComponent < BaseComponent
+    PREV = %(<svg class="ss-pg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg>).html_safe.freeze
+    NEXT = %(<svg class="ss-pg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>).html_safe.freeze
+    GAP = %(<svg class="ss-pg-dots" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>).html_safe.freeze
+
     attr_reader :page, :pages
 
-    def initialize(page:, pages:, url: nil, params: nil, param: :page, total: nil, around: 1, label: nil, **opts)
+    def initialize(page:, pages:, url: nil, params: nil, param: :page, total: nil, around: 1, label: nil, prev_icon: nil, next_icon: nil, **opts)
       super(**opts)
+      @prev_icon = safe_icon(prev_icon) || PREV
+      @next_icon = safe_icon(next_icon) || NEXT
       @pages = pages.to_i
       @page = page.to_i.clamp(1, [@pages, 1].max)
       @url = url
@@ -45,6 +55,8 @@ module Ss
 
     private
 
+    def safe_icon(html) = (html if html.respond_to?(:html_safe?) && html.html_safe?)
+
     def total_tag
       return unless @total
 
@@ -53,16 +65,16 @@ module Ss
 
     def prev_tag
       label = ss_t("pagination.previous", default: "Página anterior")
-      page > 1 ? link_to("‹", href(page - 1), rel: "prev", "aria-label": label) : tag.span("‹", "aria-disabled": "true", "aria-label": label)
+      page > 1 ? link_to(@prev_icon, href(page - 1), rel: "prev", "aria-label": label) : tag.span(@prev_icon, "aria-disabled": "true", "aria-label": label)
     end
 
     def next_tag
       label = ss_t("pagination.next", default: "Próxima página")
-      page < pages ? link_to("›", href(page + 1), rel: "next", "aria-label": label) : tag.span("›", "aria-disabled": "true", "aria-label": label)
+      page < pages ? link_to(@next_icon, href(page + 1), rel: "next", "aria-label": label) : tag.span(@next_icon, "aria-disabled": "true", "aria-label": label)
     end
 
     def item_tag(n)
-      return tag.span("…", class: "ss-dt-gap", "aria-hidden": "true") if n == :gap
+      return tag.span(GAP, class: "ss-dt-gap", "aria-hidden": "true") if n == :gap
 
       aria = ss_t("pagination.page", page: n, default: "Página %{page}")
       tag.a(n, href: href(n), class: "num", "aria-label": aria, "aria-current": (n == page ? "page" : nil))

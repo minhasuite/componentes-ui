@@ -8,7 +8,7 @@
         <% if g[:title] %><p class="ss-command-group-title" id="<%= id %>-g<%= gi %>"><%= g[:title] %></p><% end %>
         <% Array(g[:items]).each_with_index do |it, ii| %>
           <%= tag.a(**item_attrs(it, gi, ii)) do %>
-            <%= icon(it[:icon]) %><span data-ss-command-label><%= it[:label] %></span><% if it[:hint] %><small><%= it[:hint] %></small><% end %>
+            <%= icon(it[:icon]) %><% if it[:subtitle].present? %><span class="ss-command-text"><span data-ss-command-label><%= it[:label] %></span><span class="ss-command-sub"><%= it[:subtitle] %></span></span><% else %><span data-ss-command-label><%= it[:label] %></span><% end %><% if it[:hint] %><small><%= it[:hint] %></small><% end %>
           <% end %>
         <% end %>
       </div>

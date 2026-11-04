@@ -2,8 +2,15 @@
 en:
   componentes_ui:
     agenda:
+      all_day: All day
       label: Schedule
       now: Now, %{time}
+    agenda_list:
+      empty: Nothing this day
+      label: Schedule
+      today: Today
+      tomorrow: Tomorrow
+      week: Week
     ai_insight:
       apply: Apply
       badge: AI
@@ -215,6 +222,7 @@ en:
       turn_off: Turn off %{name}
       turn_on: Turn on %{name}
       unavailable: Unavailable
+      run: Run %{name}
     file_drop:
       any_type: Any file type
       hint: Drag here or click to choose
@@ -255,6 +263,12 @@ en:
         failed: Failed
         queued: Queued
         running: Running
+      stage_states:
+        done: Done
+        failed: Failed
+        running: Running
+        skipped: Skipped
+      total: Total
     kpi_strip:
       bad: " (bad)"
       delta: Change %{delta}%{sense}
@@ -272,9 +286,11 @@ en:
       transaction: Transaction
     locale_picker:
       label: Language
+      system: Follow system
     logbook:
       empty: Nothing logged yet
       end: Start of the log
+      end_link: See a longer period
       error: Couldn't load more.
       label: Event log
       load_more: Load more
@@ -286,13 +302,19 @@ en:
     media_player:
       buffering: Loading
       idle: Nothing playing
+      mute: Mute
       next: Next
       pause: Pause
       play: Play
+      power_off: Turn off
+      power_on: Turn on
       previous: Previous
       progress: Position
       unavailable: Unavailable
+      unmute: Unmute
       volume: Volume
+      volume_down: Volume down
+      volume_up: Volume up
     mic_button:
       error: Microphone error, tap to try again
       idle: Speak
@@ -302,6 +324,7 @@ en:
       format: "%u%n"
     notice_card:
       dismiss: Dismiss
+      unread: unread
     number:
       delimiter: ","
       separator: "."
@@ -478,6 +501,7 @@ en:
       clear: Clear sky
       clear_night: Clear night
       cloudy: Cloudy
+      feels_like: Feels like
       fog: Fog
       forecast: Forecast
       humidity: Humidity
@@ -485,6 +509,7 @@ en:
       min: Min
       partly_cloudy: Partly cloudy
       rain: Rain
+      rain_chance: Chance of rain
       snow: Snow
       storm: Storm
       wind: Windy

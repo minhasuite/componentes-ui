@@ -126,85 +126,175 @@ class SsSegmented<T> extends StatelessWidget {
 /// Filtro em pílula: marcado fica na cor da marca a 12%, dá um pulinho com
 /// mola e o ✓ se desenha no lugar do ícone; [count] aparece em DM Mono.
 class SsFilterChip extends StatelessWidget {
-  const SsFilterChip(this.label, {super.key, required this.selected, required this.onTap, this.count, this.icon});
+  const SsFilterChip(
+    this.label, {
+    super.key,
+    required this.selected,
+    required this.onTap,
+    this.count,
+    this.icon,
+    this.color,
+    this.swatch = false,
+  });
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Nulo desabilita: o chip apaga e não responde ao toque.
+  final VoidCallback? onTap;
   final int? count;
 
   /// Ícone antes do texto; marcado, dá lugar ao ✓.
   final IconData? icon;
 
+  /// Amostra de cor (escolher cor de luz, etiqueta): uma bolinha antes do
+  /// texto, com borda para a cor clara não sumir no fundo. Marcado, o ✓
+  /// aparece dentro da bolinha.
+  final Color? color;
+
+  /// Com [color], pinta o chip inteiro com a cor (texto claro ou escuro
+  /// conforme a cor) em vez da bolinha; marcado ganha o anel da marca.
+  final bool swatch;
+
+  bool get _enabled => onTap != null;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final fg = selected ? c.accentText : c.ink2;
     final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 220);
-    final temIcone = selected || icon != null;
+    final cor = color;
+    final cheio = swatch && cor != null;
+    // Texto sobre a cor cheia: escuro em cor clara, branco em cor escura.
+    final sobreCor = cor == null
+        ? null
+        : (ThemeData.estimateBrightnessForColor(cor) == Brightness.light ? const Color(0xFF1A1A2E) : Colors.white);
+    final fg = cheio ? sobreCor! : (selected ? c.accentText : c.ink2);
+    final temIcone = cor == null && (selected || icon != null);
+    // Borda que separa a cor do fundo (cor clara no claro, escura no escuro).
+    final bordaCor = c.isDark ? Colors.white.withValues(alpha: .28) : Colors.black.withValues(alpha: .22);
+
+    Widget marca;
+    if (cor != null && !cheio) {
+      // Bolinha da cor, com o ✓ dentro quando marcada.
+      marca = Padding(
+        padding: const EdgeInsets.only(right: 7),
+        child: Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: cor,
+            shape: BoxShape.circle,
+            border: Border.all(color: bordaCor),
+          ),
+          alignment: Alignment.center,
+          child: SsCheckMark(value: selected, size: 12, color: sobreCor!, strokeWidth: 2.2),
+        ),
+      );
+    } else if (cheio) {
+      marca = ClipRect(
+        child: AnimatedContainer(
+          duration: dur,
+          curve: Curves.easeOutCubic,
+          width: selected ? 21 : 0,
+          child: OverflowBox(
+            minWidth: 21,
+            maxWidth: 21,
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: SsCheckMark(value: selected, size: 16, color: fg, strokeWidth: 2.2),
+            ),
+          ),
+        ),
+      );
+    } else {
+      // A vaga do ícone abre (sem ícone) e o ✓ toma o lugar dele.
+      marca = ClipRect(
+        child: AnimatedContainer(
+          duration: dur,
+          curve: Curves.easeOutCubic,
+          width: temIcone ? 21 : 0,
+          child: OverflowBox(
+            minWidth: 21,
+            maxWidth: 21,
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: SizedBox.square(
+                dimension: 16,
+                child: Stack(
+                  children: [
+                    if (icon != null)
+                      AnimatedScale(
+                        duration: dur,
+                        scale: selected ? 0 : 1,
+                        child: Icon(icon, size: 16, color: fg),
+                      ),
+                    SsCheckMark(value: selected, size: 16, color: fg, strokeWidth: 2.2),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final Color fundo;
+    final Border borda;
+    if (cheio) {
+      fundo = cor;
+      // Marcado: anel da marca por fora; senão, a borda que separa a cor clara.
+      borda = selected ? Border.all(color: c.accent, width: 2) : Border.all(color: bordaCor);
+    } else {
+      fundo = selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface;
+      borda = Border.all(color: selected ? c.accent.withValues(alpha: .35) : c.line);
+    }
+
     return Semantics(
       button: true,
       selected: selected,
+      enabled: _enabled,
       child: SsPressable(
         onTap: onTap,
+        enabled: _enabled,
         // Marcou: o chip dá um pulinho com mola e o ✓ se desenha.
-        child: SsPop(
-          active: selected,
-          from: .9,
-          child: AnimatedContainer(
-            duration: dur,
-            height: 34,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-              border: Border.all(color: selected ? c.accent.withValues(alpha: .35) : c.line),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // A vaga do ícone abre (sem ícone) e o ✓ toma o lugar dele.
-                ClipRect(
-                  child: AnimatedContainer(
-                    duration: dur,
-                    curve: Curves.easeOutCubic,
-                    width: temIcone ? 21 : 0,
-                    child: OverflowBox(
-                      minWidth: 21,
-                      maxWidth: 21,
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 5),
-                        child: SizedBox.square(
-                          dimension: 16,
-                          child: Stack(
-                            children: [
-                              if (icon != null)
-                                AnimatedScale(
-                                  duration: dur,
-                                  scale: selected ? 0 : 1,
-                                  child: Icon(icon, size: 16, color: fg),
-                                ),
-                              SsCheckMark(value: selected, size: 16, color: fg, strokeWidth: 2.2),
-                            ],
-                          ),
-                        ),
+        child: AnimatedOpacity(
+          duration: dur,
+          opacity: _enabled ? 1 : .45,
+          child: SsPop(
+            active: selected,
+            from: .9,
+            child: AnimatedContainer(
+              duration: dur,
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: fundo,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: borda,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  marca,
+                  Text(
+                    label,
+                    style: TextStyle(color: fg, fontSize: AppType.sub, fontWeight: FontWeight.w700),
+                  ),
+                  if (count != null) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      '$count',
+                      style: AppTheme.number(
+                        context,
+                        size: AppType.meta,
+                        color: cheio ? fg.withValues(alpha: .75) : (selected ? fg : c.muted),
                       ),
                     ),
-                  ),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(color: fg, fontSize: AppType.sub, fontWeight: FontWeight.w700),
-                ),
-                if (count != null) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    '$count',
-                    style: AppTheme.number(context, size: AppType.meta, color: selected ? fg : c.muted),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

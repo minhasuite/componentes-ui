@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
 import '../motion.dart';
+import '../ss_dialogs.dart' show showSsConfirm;
 import '../ss_strings.dart';
 import '../ss_fields.dart' show SsSwitch;
 import 'ctl_comum.dart';
@@ -32,7 +33,12 @@ enum SsDeviceStatus {
 /// Ligado ([on]), o tile tinge com [color] (padrão: a cor da marca), o ícone
 /// fica cheio e ganha um brilho na mesma cor. [wide] deita o tile (ícone, texto
 /// e chave numa linha); o padrão é o compacto (ícone e chave em cima, texto
-/// embaixo), para grades de 2 colunas no celular.
+/// embaixo, para grades de 2 colunas no celular.
+///
+/// Modo ação: com [onPress], tocar no tile executa um comando (portão, cena,
+/// botão) no lugar de abrir os detalhes, depois de confirmar quando há
+/// [confirm]. [color] aceita a cor real da luz, mesmo clara (amarelo-claro,
+/// branco quente): o ícone troca para tinta escura para continuar legível.
 class SsDeviceTile extends StatelessWidget {
   const SsDeviceTile({
     super.key,
@@ -54,6 +60,10 @@ class SsDeviceTile extends StatelessWidget {
     this.turnOnLabel,
     this.turnOffLabel,
     this.detailsLabel,
+    this.onPress,
+    this.confirm,
+    this.confirmTitle,
+    this.pressLabel,
   });
 
   final IconData icon;
@@ -71,6 +81,18 @@ class SsDeviceTile extends StatelessWidget {
   /// Abre os detalhes do aparelho.
   final VoidCallback? onTap;
 
+  /// Executa o comando ao tocar no tile (ganha de [onTap]). Só vale pronto
+  /// ou com erro (não indisponível, enviando ou sem permissão).
+  final VoidCallback? onPress;
+
+  /// Pergunta antes de [onPress] ("Abrir o portão da garagem?"). Com
+  /// [confirmTitle], vira a mensagem embaixo do título.
+  final String? confirm;
+  final String? confirmTitle;
+
+  /// Dica do leitor de tela no modo ação (padrão: "Acionar").
+  final String? pressLabel;
+
   /// Chave rápida: recebe o estado pedido. Sem ela, não há chave.
   final ValueChanged<bool>? onToggle;
   final Widget? footer;
@@ -85,6 +107,21 @@ class SsDeviceTile extends StatelessWidget {
 
   bool get _available => status != SsDeviceStatus.unavailable;
   bool get _lit => on && _available;
+  bool get _pressable => status == SsDeviceStatus.ready || status == SsDeviceStatus.error;
+
+  Future<void> _press(BuildContext context) async {
+    if (confirm != null || confirmTitle != null) {
+      final ok = await showSsConfirm(
+        context,
+        title: confirmTitle ?? confirm!,
+        message: confirmTitle == null ? null : confirm,
+        icon: icon,
+      );
+      if (!ok) return;
+    }
+    SsHaptics.tick();
+    onPress?.call();
+  }
 
   /// Texto que aparece embaixo do nome no estado atual (textos de [strings],
   /// padrão: pt).
@@ -192,6 +229,9 @@ class SsDeviceTile extends StatelessWidget {
           );
 
     final semantica = '$name: $texto';
+    // Modo ação: o toque executa; senão, abre os detalhes.
+    final VoidCallback? toque = onPress != null ? (_pressable ? () => _press(context) : null) : onTap;
+    final dica = onPress != null ? pressLabel ?? s.deviceRun : detailsLabel ?? s.openDetails;
     Widget tile = AnimatedContainer(
       duration: dur,
       curve: Curves.easeOut,
@@ -216,10 +256,11 @@ class SsDeviceTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Semantics(
-            button: onTap != null,
+            button: toque != null,
+            enabled: onPress != null ? _pressable : null,
             label: semantica,
-            hint: onTap != null ? detailsLabel ?? s.openDetails : null,
-            onTap: onTap,
+            hint: toque != null ? dica : null,
+            onTap: toque,
             container: true,
             child: corpo,
           ),
@@ -233,7 +274,7 @@ class SsDeviceTile extends StatelessWidget {
         child: tile,
       );
     }
-    final clicavel = onTap == null ? tile : SsPressable(scale: .98, onTap: onTap, child: tile);
+    final clicavel = toque == null ? tile : SsPressable(scale: onPress != null ? .95 : .98, onTap: toque, child: tile);
     return AnimatedOpacity(opacity: _available ? 1 : .72, duration: dur, child: clicavel);
   }
 
@@ -311,7 +352,14 @@ class _Icone extends StatelessWidget {
               ]
             : null,
       ),
-      child: Icon(icon, size: 22, color: lit ? Colors.white : (available ? c.ink2 : c.muted)),
+      child: Icon(
+        icon,
+        size: 22,
+        // Cor de luz clara (amarelo-claro, branco quente): ícone em tinta escura.
+        color: lit
+            ? (ThemeData.estimateBrightnessForColor(tone) == Brightness.light ? const Color(0xFF2A2418) : Colors.white)
+            : (available ? c.ink2 : c.muted),
+      ),
     );
     if (!pending) return bolha;
     return SizedBox(

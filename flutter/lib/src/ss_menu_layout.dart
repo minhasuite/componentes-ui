@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'ss_controls.dart' show SsSegmented;
 import 'ss_fields.dart' show SsSwitch;
+import 'ss_async.dart' show SsSelfScrolling;
 import 'ss_strings.dart';
 
 // Aba "Mais" padrão da suíte (o modelo é o menu do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
-// dos tokens de cada um (a exceção é o [SsSwitch], que recebe a cor primária).
+// dos tokens de cada um (as exceções são o [SsSwitch], que recebe a cor primária,
+// e o [SsSegmented] do tema, que lê o SsColors do pacote).
 // Ao mudar aqui, copie para os outros apps.
 //
 // Ordem fixa: busca, perfil, planos, seções do app, "Aparência e sobre",
-// "Excluir minha conta" e "Sair".
+// "Excluir minha conta" (só com onDeleteAccount) e "Sair".
 
 /// Uma linha do menu. Entra na busca pelo título e pelo subtítulo.
 class SsMenuItem {
@@ -39,17 +42,20 @@ class SsMenuItem {
 }
 
 /// Seção recolhível: as linhas e, depois delas, o que não é linha (switches,
-/// cartões de integração).
+/// cartões de integração). [top] vai antes das linhas (seletor de paleta,
+/// aviso). Widget solto fica sem cartão: embrulhe em [SsMenuCard] para ter o
+/// mesmo cartão das linhas.
 class SsMenuSection {
-  const SsMenuSection(this.title, this.items, {this.extra = const [], this.open = true});
+  const SsMenuSection(this.title, this.items, {this.extra = const [], this.open = true, this.top = const []});
 
   final String title;
   final List<SsMenuItem> items;
   final List<Widget> extra;
+  final List<Widget> top;
   final bool open;
 }
 
-class SsMenuView extends StatefulWidget {
+class SsMenuView extends StatefulWidget implements SsSelfScrolling {
   const SsMenuView({
     super.key,
     required this.name,
@@ -57,7 +63,7 @@ class SsMenuView extends StatefulWidget {
     required this.sections,
     required this.themeMode,
     required this.onThemeMode,
-    required this.onDeleteAccount,
+    this.onDeleteAccount,
     required this.onLogout,
     this.badge,
     this.onProfile,
@@ -66,6 +72,8 @@ class SsMenuView extends StatefulWidget {
     this.about = const [],
     this.searchOnly = const [],
     this.onRefresh,
+    this.appearance = const [],
+    this.appearanceOpen = false,
   });
 
   final String name;
@@ -88,9 +96,20 @@ class SsMenuView extends StatefulWidget {
   /// Termos, privacidade, exclusão de dados, versão: vão em "Aparência e sobre".
   final List<SsMenuItem> about;
 
+  /// Widgets livres em "Aparência e sobre", logo abaixo do tema e antes de
+  /// [about]: seletor de paleta ([SsPalettePicker]), [SsMenuSwitch], linha de
+  /// idioma ([SsLocalePicker] dentro de um [SsMenuCard]).
+  final List<Widget> appearance;
+
+  /// "Aparência e sobre" já aberta (padrão: recolhida).
+  final bool appearanceOpen;
+
   /// Achadas pela busca sem aparecer no menu (telas de outra aba).
   final List<SsMenuItem> searchOnly;
-  final VoidCallback onDeleteAccount;
+
+  /// Nulo = sem o botão "Excluir minha conta" (a exclusão mora noutro lugar,
+  /// ou o app não tem conta própria).
+  final VoidCallback? onDeleteAccount;
   final VoidCallback onLogout;
   final Future<void> Function()? onRefresh;
 
@@ -158,7 +177,7 @@ class _SsMenuViewState extends State<SsMenuView> {
     } else {
       children = [
         searchField,
-        _SsMenuCard(
+        SsMenuCard(
           onTap: w.onProfile,
           child: Row(
             children: [
@@ -217,7 +236,7 @@ class _SsMenuViewState extends State<SsMenuView> {
           ),
         ),
         if (w.onPlans != null)
-          _SsMenuCard(
+          SsMenuCard(
             onTap: w.onPlans,
             child: Row(
               children: [
@@ -241,48 +260,52 @@ class _SsMenuViewState extends State<SsMenuView> {
             ),
           ),
         for (final sec in w.sections)
-          if (sec.items.isNotEmpty || sec.extra.isNotEmpty)
+          if (sec.items.isNotEmpty || sec.extra.isNotEmpty || sec.top.isNotEmpty)
             SsMenuGroup(
               title: sec.title,
               open: sec.open,
-              children: [for (final i in sec.items) SsMenuRow(i), ...sec.extra],
+              children: [...sec.top, for (final i in sec.items) SsMenuRow(i), ...sec.extra],
             ),
         SsMenuGroup(
           title: str.appearanceAndAbout,
-          open: false,
+          open: w.appearanceOpen,
           children: [
-            _SsMenuCard(
+            SsMenuCard(
               padding: const EdgeInsets.all(12),
-              child: SegmentedButton<ThemeMode>(
+              // O segmented da suíte (pílula que desliza com mola).
+              child: SsSegmented<ThemeMode>(
                 segments: [
-                  ButtonSegment(value: ThemeMode.system, label: Text(str.themeSystem)),
-                  ButtonSegment(value: ThemeMode.light, label: Text(str.themeLight)),
-                  ButtonSegment(value: ThemeMode.dark, label: Text(str.themeDark)),
+                  (ThemeMode.system, str.themeSystem),
+                  (ThemeMode.light, str.themeLight),
+                  (ThemeMode.dark, str.themeDark),
                 ],
-                selected: {w.themeMode},
-                onSelectionChanged: (v) => w.onThemeMode(v.first),
-                showSelectedIcon: false,
+                icons: const [Icons.brightness_auto_rounded, Icons.light_mode_rounded, Icons.dark_mode_rounded],
+                value: w.themeMode,
+                onChanged: w.onThemeMode,
               ),
             ),
+            ...w.appearance,
             for (final i in w.about) SsMenuRow(i),
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 50,
-          child: FilledButton.icon(
-            onPressed: w.onDeleteAccount,
-            icon: const Icon(Icons.delete_forever_outlined),
-            label: Text(str.deleteMyAccount),
-            style: FilledButton.styleFrom(
-              backgroundColor: s.error,
-              foregroundColor: s.onError,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
+        if (w.onDeleteAccount != null) ...[
+          SizedBox(
+            height: 50,
+            child: FilledButton.icon(
+              onPressed: w.onDeleteAccount,
+              icon: const Icon(Icons.delete_forever_outlined),
+              label: Text(str.deleteMyAccount),
+              style: FilledButton.styleFrom(
+                backgroundColor: s.error,
+                foregroundColor: s.onError,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         SizedBox(
           height: 50,
           child: OutlinedButton.icon(
@@ -318,18 +341,13 @@ class SsMenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
     final color = item.danger ? s.error : s.primary;
-    return _SsMenuCard(
+    return SsMenuCard(
       onTap: item.onTap,
       onLongPress: item.onLongPress,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
-            child: Icon(item.icon, color: color, size: 20),
-          ),
+          _MenuIcon(item.icon, color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -367,17 +385,26 @@ class SsMenuRow extends StatelessWidget {
 }
 
 /// Interruptor no mesmo cartão das linhas, para as preferências das seções.
+/// [icon] põe a bolha de ícone das linhas ([SsMenuRow]) à esquerda.
 class SsMenuSwitch extends StatelessWidget {
-  const SsMenuSwitch({super.key, required this.label, required this.value, required this.onChanged, this.subtitle});
+  const SsMenuSwitch({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.subtitle,
+    this.icon,
+  });
 
   final String label;
   final String? subtitle;
   final bool value;
   final ValueChanged<bool>? onChanged;
+  final IconData? icon;
 
   @override
-  Widget build(BuildContext context) => _SsMenuCard(
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+  Widget build(BuildContext context) => SsMenuCard(
+    padding: EdgeInsets.symmetric(horizontal: icon == null ? 4 : 0, vertical: 2),
     // O interruptor da suíte (a bolinha estica, amassa no fim e a cor escorre
     // na trilha), na cor primária do tema.
     child: MergeSemantics(
@@ -390,6 +417,7 @@ class SsMenuSwitch extends StatelessWidget {
                 onChanged!(!value);
               },
         enabled: onChanged != null,
+        leading: icon == null ? null : _MenuIcon(icon!, Theme.of(context).colorScheme.primary),
         title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: subtitle == null ? null : Text(subtitle!),
         trailing: SsSwitch(value: value, onChanged: onChanged, activeColor: Theme.of(context).colorScheme.primary),
@@ -427,9 +455,32 @@ class SsMenuGroup extends StatelessWidget {
   }
 }
 
-/// Cartão das linhas: sombra leve no claro, borda no escuro.
-class _SsMenuCard extends StatelessWidget {
-  const _SsMenuCard({required this.child, this.onTap, this.onLongPress, this.padding = const EdgeInsets.all(16)});
+/// Bolha de ícone das linhas do menu (40 px, fundo na cor a 12%).
+class _MenuIcon extends StatelessWidget {
+  const _MenuIcon(this.icon, this.color);
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 40,
+    width: 40,
+    decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
+    child: Icon(icon, color: color, size: 20),
+  );
+}
+
+/// Cartão das linhas do menu: sombra leve no claro, borda no escuro. Público
+/// para os widgets livres do [SsMenuView] (`appearance`, `SsMenuSection.top`
+/// e `extra`) ficarem no mesmo cartão.
+class SsMenuCard extends StatelessWidget {
+  const SsMenuCard({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.onLongPress,
+    this.padding = const EdgeInsets.all(16),
+  });
 
   final Widget child;
   final VoidCallback? onTap;

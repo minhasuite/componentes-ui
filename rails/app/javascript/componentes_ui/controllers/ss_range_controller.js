@@ -1,4 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssLang } from "componentes_ui/controllers/ss_intl"
+
+// Formato estilo sprintf (%s, %d, %.Nf, %%) com o decimal do idioma da página (v0.10.1),
+// igual ao RangeComponent#text: "%.1f °C" → "21,5 °C" em pt. Sem separador de milhar.
+export function ssRangeText(format, value) {
+  const v = Number(value)
+  return format.replace(/%(?:\.(\d+))?([sdf])/, (_, prec, kind) => {
+    if (!Number.isFinite(v)) return String(value)
+    let digits
+    if (kind === "d") return String(Math.trunc(v))
+    if (kind === "f") digits = prec == null ? 6 : Number(prec)
+    else if (prec != null) digits = Number(prec)
+    else digits = (String(value).split(".")[1] || "").length
+    return new Intl.NumberFormat(ssLang(), { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false }).format(v)
+  }).replace("%%", "%")
+}
 
 // Slider com o valor ao lado: atualiza o <output>, a parte preenchida (--p) e o aria-valuetext.
 // Arrastando, marca data-dragging no input (o seletor cresce com mola e o valor ao lado também).
@@ -37,7 +53,7 @@ export default class extends Controller {
     const min = Number(i.min || 0), max = Number(i.max || 100)
     const v = Number(i.value)
     const p = max === min ? 0 : ((v - min) * 100) / (max - min)
-    const text = this.formatValue.replace(/%[sd]/, i.value).replace("%%", "%")
+    const text = ssRangeText(this.formatValue, i.value)
     i.style.setProperty("--p", `${p}%`)
     i.setAttribute("aria-valuetext", text)
     this.outTargets.forEach((o) => (o.textContent = text))

@@ -6,10 +6,13 @@ import { reduced } from "componentes_ui/controllers/ss_motion_controller"
 // (marcação antiga), este controller ainda posiciona o .ss-tabs-ink por --x/--w.
 // Trocou de aba: o rótulo novo sobe 2 px e volta com a mola enquanto a cor vai para a da
 // marca (a cor é transição do CSS; a antiga volta ao muted).
+// Faixa que rola (muitas abas): a aba marcada entra na vista ao conectar e ao trocar. Rola
+// só a faixa (nunca a página) e, com menos movimento, sem animação.
 export default class extends Controller {
   static targets = ["list", "tab", "panel"]
 
   connect() {
+    this.reveal(this.current, false)
     if (this.indicator) return
     this.move()
     this.ro = new ResizeObserver(() => this.move())
@@ -40,6 +43,7 @@ export default class extends Controller {
       if (!p.hidden) p.querySelectorAll('turbo-frame[loading="lazy"]').forEach((f) => f.setAttribute("loading", "eager"))
     })
     this.move()
+    this.reveal(tab, true)
     if (tab !== was) this.lift(tab)
     this.dispatch("change", { detail: { tab } })
   }
@@ -57,6 +61,20 @@ export default class extends Controller {
     event.preventDefault()
     next.focus()
     this.activate(next)
+  }
+
+  // Traz a aba para dentro da faixa (com uma folga para mostrar que há mais ao lado).
+  reveal(tab, smooth) {
+    const list = this.hasListTarget && this.listTarget
+    if (!tab || !list || list.scrollWidth <= list.clientWidth + 1) return
+    const a = list.getBoundingClientRect(), b = tab.getBoundingClientRect()
+    const pad = 24
+    const left = b.left - a.left + list.scrollLeft, right = left + b.width
+    let to = null
+    if (left - pad < list.scrollLeft) to = left - pad
+    else if (right + pad > list.scrollLeft + list.clientWidth) to = right + pad - list.clientWidth
+    if (to == null) return
+    list.scrollTo({ left: Math.max(0, to), behavior: smooth && !reduced() ? "smooth" : "auto" })
   }
 
   lift(tab) {

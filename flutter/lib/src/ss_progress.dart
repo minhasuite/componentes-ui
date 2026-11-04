@@ -289,3 +289,93 @@ class _SsProportionBarState extends State<SsProportionBar> {
     );
   }
 }
+
+/// Barra fina de "carregando" (3 px), o `.ss-loading-bar` do Rails: um
+/// trecho de 40% no gradiente da marca corre da esquerda para a direita sem
+/// parar (1,1 s). Vai no topo de um cartão, de uma lista ou da tela enquanto
+/// algo atualiza sem saber quanto falta. Com menos movimento, fica cheia e
+/// parada a 60%. [track] pinta o fundo (padrão: transparente).
+///
+/// `if (atualizando) const SsLinearLoader()`
+class SsLinearLoader extends StatefulWidget {
+  const SsLinearLoader({super.key, this.height = 3, this.color, this.track, this.label});
+
+  final double height;
+
+  /// Cor única no lugar do gradiente da marca.
+  final Color? color;
+  final Color? track;
+
+  /// Para o leitor de tela. Padrão: [SsStrings.loading].
+  final String? label;
+
+  @override
+  State<SsLinearLoader> createState() => _SsLinearLoaderState();
+}
+
+class _SsLinearLoaderState extends State<SsLinearLoader> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (reduceMotion(context)) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final cores = widget.color == null ? c.brand.gradientColors : [widget.color!, widget.color!];
+    final parado = reduceMotion(context);
+    return Semantics(
+      label: widget.label ?? SsStrings.of(context).loading,
+      child: SizedBox(
+        height: widget.height,
+        width: double.infinity,
+        child: ClipRect(child: CustomPaint(painter: _LoaderPainter(_c, cores, widget.track, parado))),
+      ),
+    );
+  }
+}
+
+class _LoaderPainter extends CustomPainter {
+  _LoaderPainter(this.anim, this.cores, this.track, this.parado) : super(repaint: anim);
+  final Animation<double> anim;
+  final List<Color> cores;
+  final Color? track;
+  final bool parado;
+
+  // A curva do CSS: cubic-bezier(.4, 0, .2, 1).
+  static const _curva = Cubic(.4, 0, .2, 1);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (track != null) canvas.drawRect(Offset.zero & size, Paint()..color = track!);
+    final r = Radius.circular(size.height / 2);
+    final Rect rect;
+    if (parado) {
+      rect = Offset.zero & size;
+    } else {
+      // De -100% a 250% da própria largura (40%), como o `ss-indet`.
+      final w = size.width * .4;
+      final x = -w + _curva.transform(anim.value) * (w * 3.5);
+      rect = Rect.fromLTWH(x, 0, w, size.height);
+    }
+    // Parado (menos movimento): a barra toda, a 60%.
+    final cs = parado ? [for (final c in cores) c.withValues(alpha: .6)] : cores;
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, r), Paint()..shader = LinearGradient(colors: cs).createShader(rect));
+  }
+
+  @override
+  bool shouldRepaint(_LoaderPainter old) => old.cores != cores || old.track != track || old.parado != parado;
+}

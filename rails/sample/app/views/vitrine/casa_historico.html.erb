@@ -118,6 +118,14 @@
   <%= demo "Vazio", "Sem leituras no período." do %>
     <div class="ss-card ss-card-pad"><%= render Ss::TimeSeriesChartComponent.new(title: "Energia", height: 180, series: [{ name: "Consumo", unit: "W", points: [] }]) %></div>
   <% end %>
+  <%= demo "Legenda com valores (v0.10.1)", "legend: :always mostra a legenda mesmo com uma série; show_values: true põe o último valor de cada série nela, que acompanha o cursor. legend: :never (ou false) esconde.",
+        uso: 'render Ss::TimeSeriesChartComponent.new(title:, series: [{ name:, unit:, points: }], legend: :always, show_values: true)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1.25rem">
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Temperatura da sala", mode: :area, height: 160, legend: :always, show_values: true,
+            series: [{ name: "Sala", unit: "°C", decimals: 1, points: leituras.(4, 23, 2.6, 0.4, agora - 24.hours, agora) }]) %>
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Clima nas últimas 48 horas", height: 160, show_values: true, from: janela_de, to: janela_ate, series: clima) %>
+    </div>
+  <% end %>
   <%= demo "Em inglês", "locale: \"en\" (o padrão é o lang da página): 3:00 PM, 1,234.5." do %>
     <div class="ss-card ss-card-pad" lang="en">
       <%= render Ss::TimeSeriesChartComponent.new(title: "Power", height: 180, mode: :area, locale: :en,
@@ -164,6 +172,19 @@
   <% end %>
   <%= demo "Fim", "Sem more_url: “Início do registro”." do %>
     <div class="ss-card" style="padding:0"><%= render Ss::LogbookComponent.new(entries: eventos.(3).last(2)) %></div>
+  <% end %>
+  <%= demo "Fim com ação (v0.10.1)", "end_url: + end_link_label: põe o link no fim; end_marker: false tira o “Início do registro”; o slot with_end troca o rodapé.",
+        uso: 'render Ss::LogbookComponent.new(entries:, end_url: historico_path(dias: 30), end_link_label: "Ver um período maior")  ·  end_marker: false  ·  { |l| l.with_end { … } }' do %>
+    <div class="ss-card" style="padding:0" id="vt-lb-fim"><%= render Ss::LogbookComponent.new(entries: eventos.(3).last(2), end_url: vitrine_path("casa_historico")) %></div>
+    <div class="ss-card" style="padding:0;margin-top:.75rem"><%= render Ss::LogbookComponent.new(entries: eventos.(3).last(1), end_marker: false) %></div>
+  <% end %>
+  <%= demo "Fuso (time_zone:, v0.10.1)", "Hora e dia no fuso dado, não no do navegador nem no Time.zone: abaixo, os mesmos eventos em Tóquio (o gráfico e as faixas também aceitam time_zone:).",
+        uso: 'render Ss::LogbookComponent.new(entries:, time_zone: "Asia/Tokyo")  ·  Ss::TimeSeriesChartComponent.new(…, time_zone: "America/Sao_Paulo")' do %>
+    <div class="ss-card" style="padding:0"><%= render Ss::LogbookComponent.new(entries: eventos.(1).first(3), time_zone: "Asia/Tokyo") %></div>
+    <div class="ss-card ss-card-pad" style="margin-top:.75rem">
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Sala em Tóquio", mode: :area, height: 140, time_zone: "Asia/Tokyo", legend: :always, show_values: true,
+            series: [{ name: "Sala", unit: "°C", decimals: 1, points: leituras.(2, 22, 2, 0.3, agora - 24.hours, agora) }]) %>
+    </div>
   <% end %>
   <%= demo "Carregando", "loading: true." do %>
     <div class="ss-card" style="padding:0"><%= render Ss::LogbookComponent.new(entries: [], loading: true) %></div>

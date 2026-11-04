@@ -119,6 +119,8 @@ final catalogoV10Casa = <Componente>[
       'error e offline: fundo escuro, ícone, mensagem e "Tentar de novo" (onRetry).',
       'Véu escuro em cima e embaixo: título e ações leem sobre qualquer imagem.',
       'Leitor de tela: "Garagem, AO VIVO" / "Garagem, há 12 s".',
+      'status (ou statusWidget): selo de situação no canto de baixo ("Gravando"), também lido pelo leitor de tela.',
+      'Offline e erro nunca escondem o título: a mensagem fica entre o título e o selo e encolhe para caber em tile pequeno.',
     ],
     estados: [
       Estado(
@@ -165,6 +167,31 @@ final catalogoV10Casa = <Componente>[
         (_) => _pad(const SsCameraTile(title: 'Cozinha', state: SsCameraState.error, onRetry: _nada)),
         tamanho: const Size(360, 240),
       ),
+      Estado(
+        'status-pequeno',
+        'selo de situação · offline em tile pequeno (título visível)',
+        (_) => const Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            spacing: 12,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: SsCameraTile(title: 'Garagem', status: 'Gravando', child: _Cena()),
+              ),
+              Expanded(
+                child: SsCameraTile(
+                  title: 'Portão da frente',
+                  state: SsCameraState.offline,
+                  status: 'Visto há 2 h',
+                  onRetry: _nada,
+                ),
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 140),
+      ),
     ],
   ),
   Componente(
@@ -176,6 +203,9 @@ final catalogoV10Casa = <Componente>[
       'idle mostra "Nada tocando"; unavailable apaga tudo e trava os botões.',
       'Progresso e volume são sliders na cor da marca (onSeek, onVolume) com rótulo para leitor de tela.',
       'Tempos em DM Mono (3:07, 1:02:03).',
+      'onVolumeEnd manda o volume só ao soltar o dedo; onVolumeUp/onVolumeDown põem − e + (a linha aparece mesmo sem volume absoluto).',
+      'muted + onMute: botão de mudo (vermelho quando mudo, trilha apagada).',
+      'power não nulo mostra o botão de ligar no canto (onPower), na cor da marca quando ligado; mediaPicker fica embaixo (escolher o que tocar).',
     ],
     estados: [
       Estado(
@@ -248,6 +278,55 @@ final catalogoV10Casa = <Componente>[
         ),
         tamanho: const Size(360, 400),
       ),
+      Estado(
+        'tv-controles',
+        'TV: ligar, mudo, − e + do volume e escolher o que tocar',
+        (_) => _Vivo<(bool, bool)>(
+          (true, false),
+          (v, muda) => _pad(
+            SsMediaPlayer(
+              title: 'Jornal da noite',
+              source: 'TV da sala · HDMI 1',
+              state: v.$1 ? SsMediaState.playing : SsMediaState.idle,
+              power: v.$1,
+              onPower: () => muda((!v.$1, v.$2)),
+              muted: v.$2,
+              onMute: () => muda((v.$1, !v.$2)),
+              onVolumeUp: _nada,
+              onVolumeDown: _nada,
+              onPlayPause: _nada,
+              mediaPicker: SsChipBar(
+                padding: EdgeInsets.zero,
+                children: [
+                  SsFilterChip('Globo', selected: true, onTap: _nada),
+                  SsFilterChip('Netflix', selected: false, onTap: _nada),
+                  SsFilterChip('YouTube', selected: false, onTap: _nada),
+                ],
+              ),
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 290),
+      ),
+      Estado(
+        'volume-mudo',
+        'volume no mudo (trilha apagada, solta = onVolumeEnd)',
+        (_) => _pad(
+          SsMediaPlayer(
+            title: 'Águas de Março',
+            source: 'Sonos · Varanda',
+            state: SsMediaState.paused,
+            volume: .6,
+            muted: true,
+            onMute: _nada,
+            onVolumeEnd: (_) {},
+            onPlayPause: _nada,
+            power: false,
+            onPower: _nada,
+          ),
+        ),
+        tamanho: const Size(360, 260),
+      ),
     ],
   ),
   Componente(
@@ -258,6 +337,10 @@ final catalogoV10Casa = <Componente>[
       'Tom pinta o ícone, a borda e um véu leve no fundo (cores semânticas da suíte).',
       'critical é região viva: o leitor de tela anuncia quando aparece.',
       'Botões quebram linha quando não cabem; o X chama onDismiss.',
+      'onTap torna o cartão tocável (as ações e o X continuam com o próprio toque).',
+      'image: foto na largura do cartão, 16:9, embaixo do texto (instantâneo da câmera).',
+      'unread: ponto na cor do tom antes do título e borda mais forte e grossa.',
+      'footer: rodapé com fio em cima e texto apagado ("Respondido: Sim").',
     ],
     estados: [
       for (final (tom, titulo, texto) in const [
@@ -298,6 +381,45 @@ final catalogoV10Casa = <Componente>[
           child: SsNoticeCard(title: 'Modo férias ligado', text: 'As luzes acendem sozinhas à noite.', time: 'há 2 h'),
         ),
         tamanho: const Size(360, 110),
+      ),
+      Estado(
+        'nao-lido-com-foto',
+        'unread + image + onTap (instantâneo da câmera)',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SsNoticeCard(
+            title: 'Movimento na garagem',
+            text: 'A câmera da garagem viu alguém.',
+            tone: SsNoticeTone.warn,
+            time: '14:32',
+            unread: true,
+            onTap: _nada,
+            image: const SsNetImage(null, fallbackIcon: Icons.videocam_outlined, radius: 0),
+            actions: const [SsNoticeAction('Ver ao vivo', _nada)],
+          ),
+        ),
+        tamanho: const Size(360, 330),
+      ),
+      Estado(
+        'respondido',
+        'footer: respondido (lido, sem ações)',
+        (_) => const Padding(
+          padding: EdgeInsets.all(16),
+          child: SsNoticeCard(
+            title: 'Alguém em casa?',
+            text: 'O alarme vai ligar em 5 minutos.',
+            time: '08:10',
+            onTap: _nada,
+            footer: Row(
+              children: [
+                Icon(Icons.check_circle_outline_rounded),
+                SizedBox(width: 6),
+                Expanded(child: Text('Respondido: Sim · Ana, 08:12')),
+              ],
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 200),
       ),
     ],
   ),
@@ -413,6 +535,7 @@ final catalogoV10Casa = <Componente>[
       'Velocidade proporcional a |power| / maxPower; a cor é a de quem manda a energia.',
       'É o único laço contínuo: para com animate: false e com "reduzir movimento" (aí mostra uma seta parada).',
       'Cores semânticas por tipo (rede azul, solar âmbar, bateria verde); a casa usa a marca.',
+      'Responsivo: abaixo de ~400 px os discos encolhem, os nós dos lados encostam na borda e os nomes ganham só a largura que cabe (reticências), sem se sobrepor.',
     ],
     estados: [
       Estado(
@@ -503,6 +626,27 @@ final catalogoV10Casa = <Componente>[
         ),
         tamanho: const Size(360, 440),
       ),
+      Estado(
+        'estreito',
+        'card de 330 px (nomes sem encostar)',
+        (_) => const Center(
+          child: SizedBox(
+            width: 330,
+            child: SsFlowDiagram(
+              center: _casa,
+              around: [_solar, _rede, _carro, _bat],
+              links: [
+                SsFlowLink('solar', 'casa', 3800),
+                SsFlowLink('casa', 'bat', 1400),
+                SsFlowLink('rede', 'casa', 600),
+                SsFlowLink('carro', 'casa', 0),
+              ],
+              animate: false,
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 320),
+      ),
     ],
   ),
   Componente(
@@ -514,6 +658,8 @@ final catalogoV10Casa = <Componente>[
       'Com foco, setas do teclado, Enter (OK) e Esc (voltar) também apertam.',
       'Rótulos para leitor de tela em SsDPadLabels (pt-BR por padrão).',
       'enabled: false apaga e trava (aparelho offline).',
+      'showNavRow: false tira voltar/início/menu (câmera PTZ).',
+      'onCommand recebe o nome do comando: o de keys para a tecla (padrão o nome do enum) ou o name dos extraButtons (botões aprendidos em pílula, numa grade embaixo).',
     ],
     estados: [
       Estado(
@@ -549,6 +695,32 @@ final catalogoV10Casa = <Componente>[
         ),
         tamanho: const Size(360, 560),
       ),
+      Estado(
+        'ptz-extras',
+        'câmera PTZ sem a linha de navegação · botões aprendidos',
+        (_) => const Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            spacing: 16,
+            children: [
+              SsDPad(onKey: _ignora, size: 130, showNavRow: false),
+              SsDPad(
+                size: 130,
+                showNavRow: false,
+                onCommand: _ignoraCmd,
+                keys: {SsDPadKey.ok: 'KEY_ENTER'},
+                extraButtons: [
+                  SsDPadButton('netflix', 'Netflix', icon: Icons.movie_outlined),
+                  SsDPadButton('input', 'Entrada', icon: Icons.input_rounded),
+                  SsDPadButton('zoom_in', 'Zoom +'),
+                  SsDPadButton('zoom_out', 'Zoom −'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 470),
+      ),
     ],
   ),
   Componente(
@@ -560,6 +732,8 @@ final catalogoV10Casa = <Componente>[
       'Previsão por hora mostra a chance de chuva; por dia, a mínima.',
       'Faixa rola na horizontal; cada ponto tem rótulo completo para o leitor de tela.',
       'Textos (condições, Umidade, Vento, Mín/Máx) são parâmetros.',
+      'rainChance: gota azul com a chance de chuva ao lado da condição atual; feelsLike: "Sensação 24°" embaixo da temperatura.',
+      'Previsão por dia com precip (rainChance) mostra a gota com a % embaixo da mínima.',
     ],
     estados: [
       Estado(
@@ -609,6 +783,31 @@ final catalogoV10Casa = <Componente>[
         ),
         tamanho: const Size(360, 130),
       ),
+      Estado(
+        'agora-chuva',
+        'chance de chuva e sensação agora · chuva por dia',
+        (_) => const Padding(
+          padding: EdgeInsets.all(16),
+          child: SsWeatherCard(
+            location: 'Curitiba',
+            temperature: 18,
+            feelsLike: 15,
+            rainChance: 70,
+            condition: SsWeatherCondition.rain,
+            min: 14,
+            max: 21,
+            humidity: 91,
+            forecast: [
+              SsForecast('Qui', SsWeatherCondition.rain, 21, min: 14, precip: 80),
+              SsForecast('Sex', SsWeatherCondition.cloudy, 22, min: 15, precip: 40),
+              SsForecast('Sáb', SsWeatherCondition.partlyCloudy, 25, min: 16, precip: 10),
+              SsForecast('Dom', SsWeatherCondition.clear, 27, min: 17),
+              SsForecast('Seg', SsWeatherCondition.storm, 23, min: 17, precip: 90),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 400),
+      ),
     ],
   ),
   Componente(
@@ -620,6 +819,8 @@ final catalogoV10Casa = <Componente>[
       'showSeconds: o ponto acende nos segundos pares (fica aceso com "reduzir movimento").',
       'Data em pt-BR por padrão; weekdays, months e dateFormat para en/es.',
       'use24h: false mostra AM/PM.',
+      'seconds: SsClockSeconds.digits mostra os segundos em dígitos menores no lugar do ponto.',
+      'Em caixa estreita (card de grade de ~160 px) as horas encolhem para caber e a data quebra em até 2 linhas.',
     ],
     estados: [
       Estado(
@@ -634,6 +835,36 @@ final catalogoV10Casa = <Componente>[
         (_) => _pad(SsClock(now: DateTime(2026, 11, 4, 21, 5), use24h: false, showDate: false, size: 48)),
         tamanho: const Size(360, 100),
       ),
+      Estado(
+        'digitos',
+        'segundos em dígitos',
+        (_) => _pad(SsClock(now: DateTime(2026, 11, 4, 14, 32, 10), showSeconds: true, seconds: SsClockSeconds.digits)),
+        tamanho: const Size(360, 150),
+      ),
+      Estado(
+        'estreito',
+        'card de grade de 160 px (encolhe)',
+        (_) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+          child: Row(
+            spacing: 12,
+            children: [
+              for (final seg in [false, true])
+                SizedBox(
+                  width: 160,
+                  child: SsCard(
+                    child: SsClock(
+                      now: DateTime(2026, 11, 4, 14, 32, 10),
+                      showSeconds: seg,
+                      seconds: SsClockSeconds.digits,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 170),
+      ),
     ],
   ),
   Componente(
@@ -645,6 +876,7 @@ final catalogoV10Casa = <Componente>[
       'Cada item novo entra com a mola solta (pop); até 6 em volta.',
       'found: ondas param e o texto conta ("4 encontrados"); empty: cinza, mensagem e "Procurar de novo".',
       'O texto de situação é região viva para o leitor de tela.',
+      'compact: em linha (card, lista): radar pequeno (até 72 px) à esquerda e o texto, os achados em chips e o "procurar de novo" ao lado.',
     ],
     estados: [
       Estado(
@@ -674,11 +906,30 @@ final catalogoV10Casa = <Componente>[
         ),
         tamanho: const Size(360, 330),
       ),
+      Estado(
+        'compacto',
+        'em linha: procurando · achou · nada',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            spacing: 14,
+            children: [
+              SsScanRadar(compact: true, items: _achados.take(1).toList()),
+              SsScanRadar(compact: true, state: SsScanState.found, items: _achados.take(3).toList()),
+              SsScanRadar(compact: true, state: SsScanState.empty, onRetry: () {}),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 330),
+        aguarde: 600,
+      ),
     ],
   ),
 ];
 
 void _ignora(SsDPadKey _) {}
+
+void _ignoraCmd(String _) {}
 
 /// PIN de mentira (o app passa o dele).
 class _PinDemo extends StatelessWidget {

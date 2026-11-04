@@ -137,6 +137,18 @@ class ALayoutTest < ComponentTest
     assert_no_selector "[role='tabpanel']"
   end
 
+  test "abas v0.10.1: ícone por aba (svg) antes do rótulo, em botão e link" do
+    svg = Ss::CasaIcons.svg(:home)
+    render_inline(Ss::TabsComponent.new(label: "Casa")) do |t|
+      t.with_tab(label: "Sala", icon: svg) { "a" }
+      t.with_tab(label: "Quarto") { "b" }
+    end
+    assert_selector "button.ss-tab[role=tab] > .ss-tab-ico[aria-hidden=true] svg", count: 1
+    assert_selector "button.ss-tab", text: "Sala"
+    render_inline(Ss::TabsComponent.new(label: "Nav")) { |t| t.with_tab(label: "A", href: "/a", current: true, icon: svg) }
+    assert_selector "a.ss-tab > .ss-tab-ico svg"
+  end
+
   test "barra de salvar: controller ss-dirty e botões padrão" do
     render_inline Ss::StickyActionBarComponent.new(message: "Alterado")
     assert_selector ".ss-sticky-bar[data-controller='ss-dirty'][role='region']", visible: :all

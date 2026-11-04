@@ -6,6 +6,7 @@
       <% if subtitle && active? %><span class="ss-media-sub"><%= subtitle %></span><% end %>
       <% if source %><span class="ss-media-src"><%= icon(:speaker) %><%= source %></span><% end %>
     </div>
+    <% if power? %><%= power_button %><% end %>
   </div>
   <% if duration && active? %>
     <div class="ss-media-progress">
@@ -29,17 +30,21 @@
     <% end %>
     <%= command(:next, :next, css: "ss-media-btn") %>
   </div>
-  <% unless volume.nil? %>
+  <% if volume_row? %>
     <div class="ss-media-vol">
-      <%= icon(volume.zero? ? :volume_off : :volume) %>
-      <% if url(:volume) && !off? %>
+      <%= mute_button %>
+      <% if volume.nil? %>
+        <span class="ss-media-vol-gap"></span>
+      <% elsif url(:volume) && !off? %>
         <%= form_with url: url(:volume), method:, class: "ss-media-form", data: { action: "change->ss-media#submit" } do %>
-          <input type="range" name="volume" min="0" max="100" value="<%= (volume * 100).round %>" class="ss-media-range" style="--pct: <%= (volume * 100).round %>%"
+          <input type="range" name="<%= volume_param %>" min="0" max="100" value="<%= (volume * 100).round %>" class="ss-media-range" style="--pct: <%= (volume * 100).round %>%"
                  aria-label="<%= label(:volume) %>" aria-valuetext="<%= (volume * 100).round %>%" data-action="input->ss-media#paint">
         <% end %>
       <% else %>
         <div class="ss-media-bar" role="meter" aria-label="<%= label(:volume) %>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= (volume * 100).round %>"><i style="width: <%= (volume * 100).round %>%"></i></div>
       <% end %>
+      <%= volume_step(:volume_down, :minus) %><%= volume_step(:volume_up, :plus) %>
     </div>
   <% end %>
+  <% if media_picker? %><div class="ss-media-picker"><%= media_picker %></div><% end %>
 <% end %>

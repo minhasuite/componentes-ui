@@ -103,6 +103,8 @@ final List<Componente> catalogoV10Controles = [
       'Erro: borda e texto em vermelho com o motivo (errorText); a chave volta a funcionar para tentar de novo.',
       'Sem permissão (locked): cadeado no lugar da chave, não liga nem desliga.',
       'Leitor de tela lê "nome: estado" e a dica de abrir detalhes; a chave tem alvo de 48 dp. Menos movimento tira as transições.',
+      'Modo ação (onPress): tocar executa o comando (portão, cena, botão), com confirmação opcional (confirm/confirmTitle → showSsConfirm); dica "Acionar".',
+      'color aceita a cor real da luz: em cor clara (amarelo-claro, branco quente) o ícone vira tinta escura para continuar legível.',
     ],
     estados: [
       Estado(
@@ -153,6 +155,37 @@ final List<Componente> catalogoV10Controles = [
         (_) => const Padding(padding: EdgeInsets.all(16), child: _LuzDemo(wide: true, on: true, footer: true)),
         tamanho: const Size(360, 180),
       ),
+      Estado(
+        'acao-cor-luz',
+        'ação (portão, cena) · luz em cor clara real',
+        (_) => _grade([
+          SsDeviceTile(
+            icon: Icons.garage_outlined,
+            name: 'Portão',
+            state: 'Toque para abrir',
+            onPress: () {},
+            confirm: 'Abrir o portão da garagem?',
+          ),
+          SsDeviceTile(icon: Icons.movie_outlined, name: 'Cena cinema', state: 'Cena', onPress: () {}),
+          SsDeviceTile(
+            icon: Icons.lightbulb_outline_rounded,
+            name: 'Abajur',
+            state: 'Ligada · 2700 K',
+            on: true,
+            color: const Color(0xFFFFE9A8),
+            onToggle: (_) {},
+          ),
+          SsDeviceTile(
+            icon: Icons.lightbulb_outline_rounded,
+            name: 'Fita LED',
+            state: 'Ligada · branco',
+            on: true,
+            color: const Color(0xFFF5F5F0),
+            onToggle: (_) {},
+          ),
+        ]),
+        tamanho: const Size(360, 380),
+      ),
     ],
   ),
   Componente(
@@ -165,6 +198,8 @@ final List<Componente> catalogoV10Controles = [
       'Trilha em gradiente: o seletor pega a cor do ponto (a cor da lâmpada no kelvin e no matiz).',
       'Teclado: setas sobem e descem um passo, Home e End vão às pontas; leitor de tela também.',
       'Sem onChanged fica apagado. Menos movimento tira a mola e o deslizar.',
+      'decimals e unit: formato padrão com casas fixas e a vírgula ou o ponto do idioma (o %.1f do Rails sai "21,5 °C").',
+      'helperText: dica fixa embaixo da trilha (SsFieldHelper).',
     ],
     estados: [
       Estado(
@@ -266,6 +301,25 @@ final List<Componente> catalogoV10Controles = [
         ),
         tamanho: const Size(360, 230),
       ),
+      Estado(
+        'decimais-e-dica',
+        'decimals + unit (vírgula do idioma) e helperText',
+        (_) => _pad(
+          SsSlider(
+            label: 'Temperatura',
+            value: 21.5,
+            min: 16,
+            max: 30,
+            step: .5,
+            decimals: 1,
+            unit: '°C',
+            showValue: true,
+            helperText: 'O ar volta a esta temperatura ao ligar.',
+            onChanged: (_) {},
+          ),
+        ),
+        tamanho: const Size(360, 160),
+      ),
     ],
   ),
   Componente(
@@ -279,6 +333,9 @@ final List<Componente> catalogoV10Controles = [
       'Legenda no anel: Aquecendo, Resfriando, No alvo ou Desligado (action, ou deduzido do modo e da temperatura).',
       'pending mostra "Enviando…" com um anelzinho; sem onChanged, apagado. Nos limites (min/max) o botão trava.',
       'Teclado (setas) e leitor de tela sobem e descem; o seletor desliza com a mola (desliga com menos movimento).',
+      'color (cor livre) ou tone (tom da suíte) pintam o anel sem precisar de modo; showModes: false esconde os chips.',
+      'Linha da atual: "Agora 21,5°" (com espaço), currentText (texto pronto) ou currentFormat (monta a partir da atual).',
+      'adjustWhenOff: desligado, o anel fica cinza mas o alvo ainda muda (programar antes de ligar).',
     ],
     estados: [
       Estado(
@@ -340,6 +397,57 @@ final List<Componente> catalogoV10Controles = [
         ),
         tamanho: const Size(360, 240),
       ),
+      Estado(
+        'desligado-ajustavel',
+        'desligado, mas ajustável (adjustWhenOff)',
+        (_) => const Padding(
+          padding: EdgeInsets.all(8),
+          child: Center(
+            child: SsThermostat(
+              target: 20,
+              current: 18,
+              mode: 'off',
+              size: 170,
+              adjustWhenOff: true,
+              onChanged: _nadaD,
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 400),
+      ),
+      Estado(
+        'cor-sem-modos',
+        'cor própria sem chips de modo · texto da atual pronto',
+        (_) => Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              const SsThermostat(
+                target: 22,
+                current: 22,
+                mode: 'auto',
+                size: 150,
+                showModes: false,
+                color: Color(0xFF14B8A6),
+                currentText: 'Sala 22°',
+                onChanged: _nadaD,
+              ),
+              SsThermostat(
+                target: 19,
+                current: 24,
+                mode: 'auto',
+                size: 150,
+                showModes: false,
+                tone: SsTone.danger,
+                currentFormat: (v) => 'Fora ${v.round()}°',
+                onChanged: _nadaD,
+              ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 240),
+      ),
     ],
   ),
   Componente(
@@ -352,6 +460,8 @@ final List<Componente> catalogoV10Controles = [
       'obscure falso mostra os dígitos no lugar das bolinhas.',
       'Teclado físico: números, Backspace e Enter. Teclas de 64 dp; leitor de tela anuncia quantos dígitos.',
       'status força a situação vinda de fora (ex.: o servidor ainda armando). Menos movimento tira o tremor e a mola.',
+      'onChanged avisa cada dígito; controller lê e troca o código de fora (clear() limpa e recomeça depois do ✓).',
+      'actionsNeedCode: false deixa os botões de ações valerem com o código vazio (ex.: Desarmar sem senha).',
     ],
     estados: [
       Estado(
@@ -418,6 +528,21 @@ final List<Componente> catalogoV10Controles = [
           child: SsCodeKeypad(initialCode: '908', obscure: false, onSubmit: (c) async => c == '9081'),
         ),
         tamanho: const Size(360, 490),
+      ),
+      Estado(
+        'acoes-sem-codigo',
+        'vazio com ações que não pedem código',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SsCodeKeypad(
+            actionsNeedCode: false,
+            actions: [
+              SsCodeAction('Desarmar', (_) async => true, icon: Icons.lock_open_rounded, primary: true),
+              SsCodeAction('Pânico', (_) async => true, icon: Icons.warning_amber_rounded),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 540),
       ),
     ],
   ),

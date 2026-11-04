@@ -90,6 +90,41 @@ void main() {
     }
   });
 
+  group('SsDeviceTile (ação)', () {
+    testWidgets('onPress executa; com confirm pergunta antes', (t) async {
+      var n = 0;
+      await t.pumpWidget(
+        _app(
+          Column(
+            children: [
+              SsDeviceTile(icon: Icons.movie_outlined, name: 'Cena', onPress: () => n++),
+              SsDeviceTile(icon: Icons.garage_outlined, name: 'Portão', onPress: () => n += 10, confirm: 'Abrir?'),
+              SsDeviceTile(
+                icon: Icons.garage_outlined,
+                name: 'Travado',
+                status: SsDeviceStatus.pending,
+                onPress: () => n += 100,
+              ),
+            ],
+          ),
+        ),
+      );
+      await t.tap(find.text('Cena'));
+      await t.pump(const Duration(milliseconds: 500));
+      expect(n, 1);
+      await t.tap(find.text('Travado'));
+      await t.pump(const Duration(milliseconds: 500));
+      expect(n, 1);
+      await t.tap(find.text('Portão'));
+      await t.pump(const Duration(milliseconds: 500));
+      expect(find.text('Abrir?'), findsOneWidget);
+      expect(n, 1);
+      await t.tap(find.text('Confirmar'));
+      await t.pump(const Duration(milliseconds: 500));
+      expect(n, 11);
+    });
+  });
+
   group('SsDeviceTile', () {
     testWidgets('toque abre detalhes e a chave pede o estado contrário', (t) async {
       var aberto = 0;
@@ -265,6 +300,68 @@ void main() {
       expect(modo, 'cool');
     });
 
+    testWidgets('cor sem modos, linha da atual com espaço e texto pronto', (t) async {
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                SsThermostat(
+                  target: 21,
+                  current: 20,
+                  color: const Color(0xFF14B8A6),
+                  showModes: false,
+                  onChanged: (_) {},
+                ),
+                SsThermostat(target: 21, current: 20, tone: SsTone.danger, currentText: 'Sala 20°', onChanged: (_) {}),
+                SsThermostat(target: 21, current: 19, currentFormat: (v) => 'Fora ${v.round()}', onChanged: (_) {}),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Agora 20°'), findsOneWidget);
+      expect(find.text('Sala 20°'), findsOneWidget);
+      expect(find.text('Fora 19'), findsOneWidget);
+      // Só o segundo e o terceiro mostram os chips.
+      expect(find.text('Resfriar'), findsNWidgets(2));
+    });
+
+    testWidgets('adjustWhenOff deixa mudar o alvo desligado', (t) async {
+      final vistos = <double>[];
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                SsThermostat(target: 20, mode: 'off', modes: const [], debounce: Duration.zero, onChanged: vistos.add),
+              ],
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.bySemanticsLabel('Aumentar'));
+      await t.pumpAndSettle();
+      expect(vistos, isEmpty);
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: SsThermostat(
+              target: 20,
+              mode: 'off',
+              modes: const [],
+              adjustWhenOff: true,
+              debounce: Duration.zero,
+              onChanged: vistos.add,
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.bySemanticsLabel('Aumentar'));
+      await t.pumpAndSettle();
+      expect(vistos, [20.5]);
+    });
+
     test('ação deduzida', () {
       expect(SsThermostat.resolveAction('off', 21, 18), SsThermostatAction.off);
       expect(SsThermostat.resolveAction('heat', 21, 18), SsThermostatAction.heating);
@@ -354,6 +451,69 @@ void main() {
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await t.pumpAndSettle();
       expect(enviado, '12');
+    });
+  });
+
+  group('SsCodeKeypad (v0.10.1)', () {
+    testWidgets('onChanged, controller de fora e ações sem código', (t) async {
+      final vistos = <String>[];
+      final ctl = TextEditingController();
+      String? acao;
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: SsCodeKeypad(
+              controller: ctl,
+              onChanged: vistos.add,
+              actionsNeedCode: false,
+              actions: [
+                SsCodeAction('Desarmar', (c) async {
+                  acao = c;
+                  return true;
+                }),
+              ],
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.text('Desarmar'));
+      await t.pumpAndSettle();
+      expect(acao, '');
+      // Depois do ✓, limpar de fora recomeça o teclado.
+      ctl.text = '1';
+      ctl.clear();
+      await t.pump();
+      await t.tap(find.text('4'));
+      await t.tap(find.text('2'));
+      await t.pump();
+      expect(vistos, ['4', '42']);
+      expect(ctl.text, '42');
+      ctl.text = '7';
+      await t.pump();
+      await t.tap(find.text('Desarmar'));
+      await t.pumpAndSettle();
+      expect(acao, '7');
+    });
+
+    testWidgets('actionsNeedCode padrão: ação apagada com código vazio', (t) async {
+      var n = 0;
+      await t.pumpWidget(
+        _app(
+          SingleChildScrollView(
+            child: SsCodeKeypad(
+              actions: [
+                SsCodeAction('Armar', (c) async {
+                  n++;
+                  return true;
+                }),
+              ],
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.text('Armar'));
+      await t.pumpAndSettle();
+      expect(n, 0);
     });
   });
 

@@ -1,3 +1,16 @@
+<% if server? %>
+<%= tag.div(class: classes("ss-wizard", "is-server"), **root_attrs) do %>
+  <ol class="ss-wizard-steps" style="--n:<%= steps.size %>" data-controller="ss-indicator" data-ss-indicator-selector-value="li > span" data-ss-indicator-active-value="[aria-current=step] > span" data-ss-indicator-motion-value="pop">
+    <% steps.each_with_index do |s, i| %>
+      <li <% if i == current %>aria-current="step"<% end %> <% if done?(i) %>data-done<% end %>><span class="num"><%= i + 1 %></span><b><% if s.url && i != current %><%= link_to s.title, s.url, class: "ss-wizard-link" %><% else %><%= s.title %><% end %></b></li>
+    <% end %>
+  </ol>
+  <div class="ss-progress ss-wizard-progress" role="progressbar" aria-label="<%= ss_t("status_tab_card.progress", default: "Progresso") %>" aria-valuemin="1" aria-valuemax="<%= steps.size %>" aria-valuenow="<%= current + 1 %>">
+    <div class="ss-progress-bar" style="width:<%= progress_width %>%"></div>
+  </div>
+  <section class="ss-wizard-panel" aria-label="<%= ss_t("wizard.step", default: "Passo %{n}: %{title}", n: current + 1, title: steps[current]&.title) %>"><%= server_body %></section>
+<% end %>
+<% else %>
 <%= tag.div(class: classes("ss-wizard"), **root_attrs(data: { controller: "ss-wizard", ss_wizard_key_value: draft_key }.compact)) do %>
   <ol class="ss-wizard-steps" style="--n:<%= steps.size %>" data-controller="ss-indicator" data-ss-indicator-selector-value="li > span" data-ss-indicator-active-value="[aria-current=step] > span" data-ss-indicator-motion-value="pop">
     <% steps.each_with_index do |s, i| %>
@@ -15,4 +28,5 @@
     <button type="button" class="ss-btn ss-btn-primary" data-ss-wizard-target="next" data-action="ss-wizard#next"><%= ss_t("wizard.next", default: "Avançar") %></button>
     <button type="submit" class="ss-btn ss-btn-primary" data-ss-wizard-target="submit" data-action="ss-wizard#finish" hidden><%= submit_label %></button>
   </div>
+<% end %>
 <% end %>

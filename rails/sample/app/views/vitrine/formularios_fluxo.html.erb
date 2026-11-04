@@ -36,3 +36,32 @@
     <% end %>
   </form>
 <% end %>
+
+<% wz = params[:passo].to_i.clamp(0, 2) %>
+<%= demo "Ss::WizardComponent (v0.10.1: modo servidor)", "current: liga o modo servidor: cada passo é uma página (aqui ?passo=0..2: novo → conectar → encontrado), sem painéis escondidos nem JS de passos. done: marca os feitos (sem ele, os anteriores ao atual); passo com url: vira link de volta. O corpo é o bloco do wizard (ou o do passo atual); os botões são do app.",
+         uso: 'render Ss::WizardComponent.new(current: 1, done: [0]) { |w| w.with_step(title: "Novo", url: novo_path); w.with_step(title: "Conectar"); w.with_step(title: "Encontrado"); render "form_conectar" }' do %>
+  <div class="ss-card ss-card-pad" style="max-width:36rem" id="vt-wizard-srv">
+    <%= render Ss::WizardComponent.new(current: wz, done: (0...wz).to_a) do |w| %>
+      <% w.with_step(title: "Novo", url: vitrine_path("formularios_fluxo", passo: 0, anchor: "vt-wizard-srv")) %>
+      <% w.with_step(title: "Conectar", url: vitrine_path("formularios_fluxo", passo: 1, anchor: "vt-wizard-srv")) %>
+      <% w.with_step(title: "Encontrado") %>
+      <% case wz %>
+      <% when 0 %>
+        <%= form_with url: vitrine_path("formularios_fluxo", anchor: "vt-wizard-srv"), method: :get, class: "ss-form", style: "display:grid;gap:12px" do %>
+          <%= hidden_field_tag :passo, 1 %>
+          <div class="ss-field"><label class="ss-label" for="vt-wz-nome">Nome do aparelho</label><input id="vt-wz-nome" class="ss-input" name="nome" value="Tomada da sala" required></div>
+          <div><button class="ss-btn ss-btn-primary">Procurar na rede</button></div>
+        <% end %>
+      <% when 1 %>
+        <%= form_with url: vitrine_path("formularios_fluxo", anchor: "vt-wizard-srv"), method: :get, style: "display:grid;gap:12px" do %>
+          <%= hidden_field_tag :passo, 2 %>
+          <p style="margin:0">Aperte o botão do aparelho por 5 segundos até a luz piscar.</p>
+          <div style="display:flex;gap:8px"><%= link_to "Voltar", vitrine_path("formularios_fluxo", passo: 0, anchor: "vt-wizard-srv"), class: "ss-btn ss-btn-ghost" %><button class="ss-btn ss-btn-primary">Já pisca</button></div>
+        <% end %>
+      <% else %>
+        <p style="margin:0"><b>Tomada da sala</b> encontrada e conectada.</p>
+        <div><%= link_to "Começar de novo", vitrine_path("formularios_fluxo", passo: 0, anchor: "vt-wizard-srv"), class: "ss-btn ss-btn-outline" %></div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

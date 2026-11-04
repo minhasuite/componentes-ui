@@ -163,6 +163,9 @@
   .ss-thermo-now { margin-top: .4rem; font-size: .82rem; font-weight: 600; color: var(--ink-2); }
   .ss-thermo[data-mode="off"] :is(.ss-thermo-bar, .ss-thermo-knob) { opacity: 0; }
   .ss-thermo[data-mode="off"] .ss-thermo-value { opacity: .45; }
+  /* adjust_when_off: desligado, mas o alvo ainda muda (o botão do anel aparece apagado). */
+  .ss-thermo.is-adjust-off[data-mode="off"] .ss-thermo-knob { opacity: .55; }
+  .ss-thermo.is-adjust-off[data-mode="off"] .ss-thermo-value { opacity: .7; }
   .ss-thermo[aria-busy="true"] .ss-thermo-legend::before { content: ""; width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--thermo-c);
                                                            border-right-color: transparent; animation: ss-spin .8s linear infinite; }
   .ss-thermo-steps { display: flex; gap: 4.5rem; margin-top: -.4rem; }

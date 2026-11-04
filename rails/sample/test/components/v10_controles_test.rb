@@ -25,6 +25,22 @@ class V10ControlesTest < ComponentTest
     assert_raises(ArgumentError) { Ss::SwitchComponent.new(label: "sem nada") }
   end
 
+  test "chave modo B v0.10.1: form_data: no form gerado e params: como campos ocultos" do
+    render_inline(Ss::SwitchComponent.new(url: "/luz", on: false, label: "Luz", params: { cmd: "toggle", id: 3 },
+                                          form_data: { data: { turbo_frame: "luzes", controller: "app-x" }, class: "minha", target: "_top" }))
+    form = page.find("form[action='/luz']")
+    assert_equal "luzes", form["data-turbo-frame"]
+    assert_equal "app-x ss-switch", form["data-controller"]
+    assert_equal "_top", form["target"]
+    assert_includes form["class"].split, "ss-switch-form"
+    assert_includes form["class"].split, "minha"
+    assert form["data-ss-switch-on-label-value"].present?
+    assert_selector "form input[type=hidden][name=cmd][value=toggle]", visible: :all
+    assert_selector "form input[type=hidden][name=id][value='3']", visible: :all
+    render_inline(Ss::SwitchComponent.new(url: "/luz", label: "Luz", form_data: { "data" => { "turbo_frame" => "f" } }))
+    assert_selector "form.ss-switch-form[data-turbo-frame=f][data-controller=ss-switch]"
+  end
+
   test "tile de aparelho: ligado com tom, link de detalhes e chave" do
     render_inline(Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada · 80%", on: true, tone: :heat,
                                               url: "/pontos/1", toggle_url: "/pontos/1/toggle")) { |t| t.with_footer { "rodapé" } }
@@ -144,5 +160,49 @@ class V10ControlesTest < ComponentTest
     render_inline(Ss::WeekdayPickerComponent.new(name: "d", first_day: 7, values: %w[mon tue wed thu fri sat sun], selected: %w[sun], shortcuts: false))
     assert_selector ".ss-weekday-day:first-child input[value=sun][checked][aria-label=Domingo]"
     assert_no_selector ".ss-weekday-shortcuts"
+  end
+  test "chave v0.10.1: confirm_title no form (Modo B) e no controller (Modo A)" do
+    render_inline(Ss::SwitchComponent.new(url: "/l", label: "L", confirm: "Desligar?", confirm_title: "Luz da sala"))
+    assert_selector "form[data-turbo-confirm='Desligar?'][data-turbo-confirm-title='Luz da sala']"
+    render_inline(Ss::SwitchComponent.new(name: "x", label: "X", confirm: "Certeza?", confirm_title: "Regra"))
+    assert_selector "label[data-ss-switch-confirm-value='Certeza?'][data-ss-switch-confirm-title-value=Regra]"
+    render_inline(Ss::SwitchComponent.new(url: "/l", label: "L", confirm_title: "sem confirm"))
+    assert_no_selector "[data-turbo-confirm-title]"
+  end
+
+  test "termostato v0.10.1: color/tone, sem modos, current_label e mexer desligado" do
+    render_inline(Ss::ThermostatComponent.new(target: 22, current: 21, mode: "heat", color: "rgb(255,180,90)", show_modes: false, current_label: "Agora 21° na sala"))
+    root = page.find(".ss-thermo")
+    assert_includes root["style"], "--thermo-c:rgb(255,180,90)"
+    assert_equal "rgb(255,180,90)", root["data-ss-thermostat-color-value"]
+    assert_no_selector ".ss-thermo-modes"
+    assert_selector "input[type=hidden][name=mode][value=heat]", visible: :all
+    assert_selector ".ss-thermo-now", text: "Agora 21° na sala"
+    render_inline(Ss::ThermostatComponent.new(target: 22, tone: :success, mode: "cool"))
+    assert_includes page.find(".ss-thermo")["style"], "--thermo-c:var(--success)"
+    render_inline(Ss::ThermostatComponent.new(target: 22, current: 20))
+    assert_selector ".ss-thermo-now", text: "Agora 20°"
+    render_inline(Ss::ThermostatComponent.new(target: 21, mode: "off", adjust_when_off: true))
+    assert_selector ".ss-thermo.is-adjust-off[data-ss-thermostat-adjust-when-off-value=true] .ss-thermo-dial[tabindex='0']"
+    assert_no_selector ".ss-thermo-steps button[disabled]"
+    render_inline(Ss::ThermostatComponent.new(target: 21, mode: "off"))
+    assert_selector ".ss-thermo-steps button[disabled]", count: 2
+    render_inline(Ss::ThermostatComponent.new(target: 50, format: "%d%%", unit: "%"))
+    assert_selector ".ss-thermo-value", text: "50%"
+  end
+
+  test "teclado v0.10.1: ações sem código (actions_need_code: false)" do
+    render_inline(Ss::CodeKeypadComponent.new(url: "/a", actions: [{ label: "Desarmar", name: "cmd", value: "disarm" }], actions_need_code: false))
+    assert_selector "button[type=submit][name=cmd][data-ss-free]:not([disabled])", text: "Desarmar"
+    assert_selector "input[type=hidden][name=code]", visible: :all
+    render_inline(Ss::CodeKeypadComponent.new(url: "/a", actions: [{ label: "Armar", name: "cmd", value: "arm" }]))
+    assert_selector "button[type=submit][disabled]:not([data-ss-free])", text: "Armar"
+  end
+
+  test "campo −/+ v0.10.1: decrease_label/increase_label e desabilitado" do
+    render_inline(Ss::StepperInputComponent.new(name: "n", value: 2, decrease_label: "Menos um", increase_label: "Mais um", disabled: true))
+    assert_selector "button[aria-label='Menos um'][disabled]"
+    assert_selector "button[aria-label='Mais um'][disabled]"
+    assert_selector "input[type=number][disabled][value='2']"
   end
 end

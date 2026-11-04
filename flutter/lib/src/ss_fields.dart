@@ -37,8 +37,10 @@ abstract final class SsValidators {
   };
 }
 
-class _Label extends StatelessWidget {
-  const _Label(this.text);
+/// Rótulo acima dos campos `Ss*` (o mesmo de [SsTextField]). Público para o
+/// campo próprio do produto ficar igual aos do pacote.
+class SsFieldLabel extends StatelessWidget {
+  const SsFieldLabel(this.text, {super.key});
   final String text;
 
   @override
@@ -47,6 +49,24 @@ class _Label extends StatelessWidget {
     child: Text(
       text,
       style: TextStyle(color: SsColors.of(context).ink2, fontSize: AppType.sub, fontWeight: FontWeight.w700),
+    ),
+  );
+}
+
+/// Dica fixa embaixo do campo (o `helperText` dos campos `Ss*`): texto
+/// apagado, até 3 linhas. Os campos a escondem enquanto há erro.
+class SsFieldHelper extends StatelessWidget {
+  const SsFieldHelper(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 6, left: 2),
+    child: Text(
+      text,
+      maxLines: 3,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: SsColors.of(context).muted, fontSize: AppType.meta),
     ),
   );
 }
@@ -115,6 +135,8 @@ class SsTextField extends StatefulWidget {
     this.maxLength,
     this.autofillHints,
     this.focusNode,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
   });
 
   final String? label;
@@ -162,6 +184,13 @@ class SsTextField extends StatefulWidget {
 
   /// Foco de fora (pular para o próximo campo); sem ele, o campo cria o seu.
   final FocusNode? focusNode;
+
+  /// Correção automática do teclado. Falso em código, usuário, endereço,
+  /// nome de dispositivo (o teclado não "conserta" o que foi digitado).
+  final bool autocorrect;
+
+  /// Sugestões do teclado acima das teclas (falso junto com [autocorrect]).
+  final bool enableSuggestions;
 
   @override
   State<SsTextField> createState() => _SsTextFieldState();
@@ -236,6 +265,8 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       ],
       textCapitalization: widget.textCapitalization,
       autofillHints: widget.autofillHints,
+      autocorrect: widget.autocorrect,
+      enableSuggestions: widget.enableSuggestions,
       obscureText: widget.obscureText,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       minLines: widget.obscureText ? null : widget.minLines,
@@ -278,7 +309,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.label != null) _Label(widget.label!),
+          if (widget.label != null) SsFieldLabel(widget.label!),
           // O halo só sem erro: com erro, a caixa ganharia a altura da mensagem.
           AnimatedContainer(
             duration: dur,
@@ -493,6 +524,7 @@ class SsDateField extends StatelessWidget {
     this.initialDate,
     this.validator,
     this.showShortcuts = true,
+    this.helperText,
   }) : _hora = false;
 
   const SsDateField._hora({
@@ -506,6 +538,7 @@ class SsDateField extends StatelessWidget {
     this.initialDate,
     this.validator,
     this.showShortcuts = true,
+    this.helperText,
   }) : _hora = true;
 
   final String? label;
@@ -517,6 +550,9 @@ class SsDateField extends StatelessWidget {
   final DateTime? initialDate;
   final String? Function(DateTime? value)? validator;
   final bool showShortcuts;
+
+  /// Dica fixa embaixo dos chips (some enquanto há erro).
+  final String? helperText;
   final bool _hora;
 
   /// Os 3 atalhos a partir de [today]: (rótulo, dia). Sem [strings], em
@@ -585,7 +621,7 @@ class SsDateField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label != null) _Label(label!),
+        if (label != null) SsFieldLabel(label!),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -615,13 +651,21 @@ class SsDateField extends StatelessWidget {
         ),
       ],
     );
-    if (validator == null) return campo;
+    final dica = helperText;
+    if (validator == null) {
+      if (dica == null) return campo;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [campo, SsFieldHelper(dica)],
+      );
+    }
     return FormField<DateTime>(
       validator: (_) => validator!(value),
       builder: (f) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [campo, if (f.errorText != null) _ErrorLine(f.errorText!)],
+        children: [campo, if (f.errorText != null) _ErrorLine(f.errorText!) else if (dica != null) SsFieldHelper(dica)],
       ),
     );
   }
@@ -641,6 +685,7 @@ class SsDateTimeField extends SsDateField {
     super.initialDate,
     super.validator,
     super.showShortcuts,
+    super.helperText,
   }) : super._hora();
 }
 
@@ -659,6 +704,7 @@ class SsChoiceField<T> extends StatelessWidget {
     this.icon,
     this.validator,
     this.enabled = true,
+    this.helperText,
   });
 
   final String? label;
@@ -673,6 +719,9 @@ class SsChoiceField<T> extends StatelessWidget {
   final IconData? icon;
   final FormFieldValidator<T>? validator;
   final bool enabled;
+
+  /// Dica fixa embaixo do campo (some enquanto há erro).
+  final String? helperText;
 
   Future<void> _abrir(BuildContext context, FormFieldState<T> field) async {
     final r = await showSsSheet<(T,)>(
@@ -701,7 +750,7 @@ class SsChoiceField<T> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (label != null) _Label(label!),
+            if (label != null) SsFieldLabel(label!),
             Semantics(
               button: true,
               enabled: enabled,
@@ -743,7 +792,7 @@ class SsChoiceField<T> extends StatelessWidget {
                 ),
               ),
             ),
-            if (erro != null) _ErrorLine(erro),
+            if (erro != null) _ErrorLine(erro) else if (helperText != null) SsFieldHelper(helperText!),
           ],
         );
       },
@@ -1134,7 +1183,8 @@ class _SwitchTrackPainter extends CustomPainter {
 
 /// Campo só de hora (lembrete, horário de treino): mostra "07:30" em DM Mono
 /// e o toque abre o relógio do sistema (24 h). [clearable] põe um × para
-/// voltar a "sem horário".
+/// voltar a "sem horário". Com [validator], vale dentro de [Form] e mostra o
+/// erro embaixo (borda vermelha); [helperText] é a dica fixa embaixo.
 class SsTimeField extends StatelessWidget {
   const SsTimeField({
     super.key,
@@ -1144,6 +1194,8 @@ class SsTimeField extends StatelessWidget {
     this.hint,
     this.clearable = false,
     this.enabled = true,
+    this.validator,
+    this.helperText,
   });
 
   final String? label;
@@ -1154,6 +1206,12 @@ class SsTimeField extends StatelessWidget {
   final String? hint;
   final bool clearable;
   final bool enabled;
+
+  /// Ex.: `(v) => SsValidators.required(v, SsStrings.of(context))`.
+  final FormFieldValidator<TimeOfDay>? validator;
+
+  /// Dica fixa embaixo do campo (some enquanto há erro).
+  final String? helperText;
 
   /// "07:30".
   static String format(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -1170,6 +1228,17 @@ class SsTimeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (validator == null) return _campo(context, null);
+    // Chave pelo valor: o estado do campo acompanha o valor que vem de fora.
+    return FormField<TimeOfDay>(
+      key: ValueKey(value),
+      initialValue: value,
+      validator: validator,
+      builder: (f) => _campo(context, f.errorText),
+    );
+  }
+
+  Widget _campo(BuildContext context, String? erro) {
     final c = SsColors.of(context);
     final texto = value == null ? null : format(value!);
     final hint = this.hint ?? SsStrings.of(context).noTime;
@@ -1177,7 +1246,7 @@ class SsTimeField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null) _Label(label!),
+        if (label != null) SsFieldLabel(label!),
         Semantics(
           button: true,
           enabled: enabled,
@@ -1190,7 +1259,12 @@ class SsTimeField extends StatelessWidget {
             child: Container(
               height: 52,
               padding: const EdgeInsets.only(left: 14, right: 4),
-              decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.field)),
+              decoration: BoxDecoration(
+                color: c.field,
+                borderRadius: BorderRadius.circular(AppRadius.field),
+                // Sem erro, sem borda: o campo fica igual ao de antes.
+                border: erro == null ? null : Border.all(color: c.danger.withValues(alpha: .55), width: 2),
+              ),
               child: Row(
                 children: [
                   Icon(Icons.schedule_rounded, size: 21, color: c.muted),
@@ -1219,6 +1293,7 @@ class SsTimeField extends StatelessWidget {
             ),
           ),
         ),
+        if (erro != null) _ErrorLine(erro) else if (helperText != null) SsFieldHelper(helperText!),
       ],
     );
   }

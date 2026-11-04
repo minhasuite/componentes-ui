@@ -22,6 +22,18 @@ class _VivoState<T> extends State<_Vivo<T>> {
   Widget build(BuildContext context) => widget.build(v, (n) => setState(() => v = n));
 }
 
+Widget _pad(Widget w) => Padding(padding: const EdgeInsets.all(16), child: w);
+
+/// Fichas de cor de luz do catálogo (cores de lâmpada, não da marca).
+const _coresLuz = [
+  Color(0xFFFFB74D),
+  Color(0xFFFFE8C2),
+  Color(0xFFF4F8FF),
+  Color(0xFFFF8FB1),
+  Color(0xFFB39DFF),
+  Color(0xFF64B5F6),
+];
+
 const _icones = [
   ('lightbulb', Icons.lightbulb_outline_rounded),
   ('lamp', Icons.light_outlined),
@@ -192,6 +204,7 @@ final catalogoV10Estrutura = <Componente>[
       'Escolhido: anel e fundo na cor da marca, com o pulinho da mola (SsPop).',
       'allowNone põe "Sem ícone" no começo; busca sem resultado mostra a mensagem com o termo.',
       'Cada célula tem o nome no tooltip e no leitor de tela (selected).',
+      'labels (nome → rótulo): o rótulo vai na dica e no leitor de tela no lugar do nome cru, e a busca acha pelos dois.',
     ],
     estados: [
       Estado(
@@ -227,6 +240,63 @@ final catalogoV10Estrutura = <Componente>[
         ),
         tamanho: const Size(360, 220),
       ),
+      Estado(
+        'com-rotulos',
+        'labels: nome legível na dica, no leitor de tela e na busca ("lâmpada")',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SsIconPicker(
+            icons: _icones,
+            value: 'lightbulb',
+            onChanged: (_) {},
+            labels: const {'lightbulb': 'Lâmpada'},
+            initialQuery: 'lâmpada',
+            height: 120,
+          ),
+        ),
+        tamanho: const Size(360, 220),
+      ),
+    ],
+  ),
+  Componente(
+    'ss-color-picker',
+    'SsColorPicker',
+    'Escolha de cor por fichas redondas, com a cor livre opcional (free): matiz, saturação, brilho e código hex numa folha. '
+        'No Rails: Ss::SwatchPickerComponent(free: true).',
+    comportamentos: [
+      'Ficha escolhida ganha anel na cor da marca e ✓ no contraste da cor; cor clara tem fio na borda.',
+      'free: a última ficha é a "Personalizada" (arco-íris, ou a cor livre escolhida) e abre a folha (showSsColorSheet).',
+      'Na folha, os sliders e o hex se acompanham; hex inválido mostra "Use o formato #RRGGBB".',
+      'names dá o nome de cada cor para a dica e o leitor de tela.',
+    ],
+    estados: [
+      Estado(
+        'fichas',
+        'fichas com a escolhida',
+        (_) => _pad(
+          SsColorPicker(
+            label: 'Cor da luz',
+            colors: _coresLuz,
+            names: const ['Âmbar', 'Branco quente', 'Branco frio', 'Rosa', 'Lilás', 'Azul'],
+            value: _coresLuz[1],
+            onChanged: (_) {},
+            free: true,
+          ),
+        ),
+        tamanho: const Size(360, 160),
+      ),
+      Estado(
+        'livre-escolhida',
+        'cor livre escolhida (fora das fichas)',
+        (_) => _pad(SsColorPicker(colors: _coresLuz, value: const Color(0xFF2EC4B6), onChanged: (_) {}, free: true)),
+        tamanho: const Size(360, 110),
+      ),
+      Estado(
+        'folha',
+        'folha da cor livre',
+        (_) => _pad(const SsColorPickerSheet(initial: Color(0xFFFF8A3D))),
+        tamanho: const Size(360, 470),
+      ),
     ],
   ),
   Componente(
@@ -238,6 +308,7 @@ final catalogoV10Estrutura = <Componente>[
       'segmented: true usa o SsSegmented com a pílula que desliza.',
       'showFlag: false (ou sem bandeira) mostra o código ("PT", "EN", "ES").',
       'Leitor de tela: grupo exclusivo com "checked" no atual.',
+      'systemOption: true + onSystem: a opção "Seguir o sistema" (no segmented, "Auto") no começo, marcada quando value é nulo.',
     ],
     estados: [
       Estado(
@@ -264,6 +335,37 @@ final catalogoV10Estrutura = <Componente>[
         ),
         tamanho: const Size(360, 80),
       ),
+      Estado(
+        'sistema',
+        'systemOption: "Seguir o sistema" no começo (marcada com value nulo)',
+        (_) => _Vivo<String?>(
+          null,
+          (v, muda) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: SsLocalePicker(value: v, onChanged: muda, systemOption: true, onSystem: () => muda(null)),
+          ),
+        ),
+        tamanho: const Size(360, 280),
+      ),
+      Estado(
+        'sistema-segmented',
+        'systemOption no segmented ("Auto")',
+        (_) => _Vivo<String?>(
+          null,
+          (v, muda) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: SsLocalePicker(
+              value: v,
+              onChanged: muda,
+              segmented: true,
+              showFlag: false,
+              systemOption: true,
+              onSystem: () => muda(null),
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 80),
+      ),
     ],
   ),
   Componente(
@@ -276,6 +378,8 @@ final catalogoV10Estrutura = <Componente>[
       'Desligado: ícone, texto e corpo apagados. Com erro: borda vermelha e a mensagem (região viva).',
       'focusedId: anel na cor da marca no bloco em foco.',
       'Blocos filhos aparecem no corpo, com um fio na cor do tom do pai.',
+      'SsBlock(duplicable: false) tira "Duplicar" do ⋮ só daquele bloco.',
+      'deleteConfirm: pergunta antes de excluir (diálogo de perigo com o título do bloco); vale nos aninhados.',
     ],
     estados: [
       Estado('editor', 'editor completo (interativo)', (_) => const _Editor(), tamanho: const Size(360, 720)),

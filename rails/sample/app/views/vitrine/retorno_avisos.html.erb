@@ -38,3 +38,25 @@
           error: "A imagem está tremida: não deu para ler os valores.") %>
   </div>
 <% end %>
+
+<%= demo "Ss::ToastStackComponent (v0.10.1: role: e position: por aviso)", "Os avisos do servidor (toasts:) aceitam role: (ex. \"alert\" num aviso urgente que não é :bad) e position:. Aviso com posição diferente da pilha sai numa pilha à parte (id ss-toasts-top-center…), que também recebe turbo_stream.append. Posições: bottom_right (padrão), bottom_center, bottom_left, top_right, top_center, top_left.",
+         uso: 'render Ss::ToastStackComponent.new(toasts: [{ message: notice, tone: :good }, { message: "Sessão expira em 1 min", role: "alert", position: :top_center }])' do %>
+  <p style="display:flex;gap:10px;flex-wrap:wrap">
+    <%= link_to "Mostrar aviso no topo", vitrine_path("retorno_avisos", toast_pos: "top_center"), class: "ss-btn ss-btn-outline ss-btn-sm" %>
+    <%= link_to "Embaixo à esquerda", vitrine_path("retorno_avisos", toast_pos: "bottom_left"), class: "ss-btn ss-btn-outline ss-btn-sm" %>
+  </p>
+  <% if %w[top_center bottom_left].include?(params[:toast_pos]) %>
+    <%= render Ss::ToastStackComponent.new(css: "vt-toasts-v101", toasts: [{ message: "Sessão expira em 1 minuto", role: "alert", position: params[:toast_pos].to_sym, duration: 8 }]) %>
+  <% end %>
+<% end %>
+
+<%= demo "Ss::JobProgressComponent (v0.10.1: etapas com tempo)", "stages: lista as etapas de uma execução que já passou (ex. o pipeline de voz), cada uma com nome, duração (ms ou texto pronto), status (:done, :failed, :skipped, :running) e detail: opcional. Concluído ou falho com etapas: a barra sai e entra o total.",
+         uso: 'render Ss::JobProgressComponent.new(id: "run-7", title: "Comando de voz", state: :done, stages: [{ name: "Ouvir", duration: 820, status: :done }, { name: "Executar", status: :skipped, detail: "Nada a fazer" }])' do %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+    <%= render Ss::JobProgressComponent.new(id: "vt-run-7", title: "“Apagar as luzes da sala”", state: :done, stages: [
+          { name: "Ouvir", duration: 820, status: :done }, { name: "Transcrever", duration: 1240, status: :done, detail: "apagar as luzes da sala" },
+          { name: "Entender", duration: 2310, status: :done }, { name: "Executar", duration: 95, status: :done }, { name: "Responder em voz", status: :skipped, detail: "Sem alto-falante na sala" }]) %>
+    <%= render Ss::JobProgressComponent.new(id: "vt-run-8", title: "“Abrir o portão”", state: :failed, error: "O portão não respondeu.", stages: [
+          { name: "Ouvir", duration: 640, status: :done }, { name: "Entender", duration: 1880, status: :done }, { name: "Executar", duration: "10 s (limite)", status: :failed }]) %>
+  </div>
+<% end %>

@@ -298,6 +298,37 @@ final catalogoOnda3 = <Componente>[
     ],
   ),
   Componente(
+    'ss-linear-loader',
+    'SsLinearLoader',
+    'Barra fina de carregando (3 px), o .ss-loading-bar do Rails: um trecho no gradiente da marca corre sem parar.',
+    comportamentos: [
+      'Trecho de 40% corre da esquerda para a direita em 1,1 s (cubic-bezier .4, 0, .2, 1), sem fim.',
+      'Com menos movimento, fica cheia e parada a 60%.',
+      'color troca o gradiente por uma cor; track pinta o fundo; leitor de tela diz "Carregando".',
+    ],
+    estados: [
+      Estado(
+        'correndo',
+        'no topo de um cartão',
+        (_) => _pad(
+          const SsCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SsLinearLoader(),
+                Padding(padding: EdgeInsets.all(16), child: Text('Atualizando o painel…')),
+              ],
+            ),
+          ),
+        ),
+        tamanho: const Size(360, 110),
+        aguarde: 500,
+      ),
+    ],
+  ),
+  Componente(
     'ss-proportion-bar',
     'SsProportionBar',
     'Categorias numa barra só, cantos arredondados, com legenda e % em DM Mono.',

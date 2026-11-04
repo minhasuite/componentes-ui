@@ -22,7 +22,10 @@ class SsNoticeAction {
 }
 
 /// Aviso com ações: ícone, título, texto, tom, hora e N botões (o primeiro
-/// cheio, os outros fantasma) e o "dispensar" opcional.
+/// cheio, os outros fantasma) e o "dispensar" opcional. [onTap] torna o
+/// cartão tocável; [image] mostra a foto embaixo do texto; [unread] marca o
+/// aviso não lido (ponto e borda forte); [footer] é o rodapé ("Respondido:
+/// Sim").
 ///
 /// `SsNoticeCard(title: 'Porta aberta', text: 'Há 10 min', tone: SsNoticeTone.warn,
 ///   actions: [SsNoticeAction('Fechar', fechar), SsNoticeAction('Ignorar', ignorar)], onDismiss: dispensar)`
@@ -37,6 +40,10 @@ class SsNoticeCard extends StatelessWidget {
     this.actions = const [],
     this.onDismiss,
     this.dismissLabel,
+    this.onTap,
+    this.image,
+    this.unread = false,
+    this.footer,
   });
 
   final String title;
@@ -53,6 +60,23 @@ class SsNoticeCard extends StatelessWidget {
 
   /// Padrão: o do [SsStrings] do idioma.
   final String? dismissLabel;
+
+  /// Toque no cartão (abrir o aviso, ir para a câmera). As ações e o ✕
+  /// continuam com o próprio toque.
+  final VoidCallback? onTap;
+
+  /// Imagem embaixo do texto, na largura do cartão (16:9, cantos
+  /// arredondados): instantâneo da câmera, foto do aviso. Ex.:
+  /// `SsNetImage.bytes(...)` ou `Image(image: provider)`.
+  final Widget? image;
+
+  /// Não lido / ativo: ponto na cor do tom antes do título e borda mais
+  /// forte e mais grossa.
+  final bool unread;
+
+  /// Rodapé abaixo de tudo, com um fio em cima: "Respondido: Sim", quem
+  /// confirmou e quando. Texto solto ganha o estilo apagado e pequeno.
+  final Widget? footer;
 
   SsTone get _tone => switch (tone) {
     SsNoticeTone.info => SsTone.info,
@@ -74,92 +98,145 @@ class SsNoticeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final t = _tone.colors(context);
+    final raio = BorderRadius.circular(AppRadius.card);
+    Widget corpo = Padding(
+      padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(12)),
+            child: Icon(_icon, color: t.text, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (unread)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 7, right: 7),
+                        child: Semantics(
+                          label: SsStrings.of(context).unread,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: t.solid, shape: BoxShape.circle),
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: Text(
+                          title,
+                          style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.body),
+                        ),
+                      ),
+                    ),
+                    if (time != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 3),
+                        child: Text(
+                          time!,
+                          style: AppTheme.number(context, size: AppType.label, color: c.muted),
+                        ),
+                      ),
+                  ],
+                ),
+                if (text != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      text!,
+                      style: TextStyle(color: c.ink2, fontSize: AppType.sub, height: 1.35),
+                    ),
+                  ),
+                if (image != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, right: 6),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.thumb),
+                      child: AspectRatio(aspectRatio: 16 / 9, child: image),
+                    ),
+                  ),
+                if (actions.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12, right: 6),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final (i, a) in actions.indexed)
+                          SsButton(
+                            label: a.label,
+                            icon: a.icon,
+                            onPressed: a.onPressed,
+                            small: true,
+                            expand: false,
+                            variant: i == 0 ? SsButtonVariant.primary : SsButtonVariant.ghost,
+                          ),
+                      ],
+                    ),
+                  ),
+                if (footer != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, right: 6),
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: t.solid.withValues(alpha: c.isDark ? .22 : .16)),
+                      ),
+                    ),
+                    child: DefaultTextStyle.merge(
+                      style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
+                      child: IconTheme.merge(
+                        data: IconThemeData(color: c.muted, size: 16),
+                        child: footer!,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (onDismiss != null)
+            IconButton(
+              tooltip: dismissLabel ?? SsStrings.of(context).dismiss,
+              onPressed: onDismiss,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
+            )
+          else
+            const SizedBox(width: 6),
+        ],
+      ),
+    );
+    if (onTap != null) corpo = InkWell(onTap: onTap, borderRadius: raio, child: corpo);
     return Semantics(
       container: true,
       liveRegion: tone == SsNoticeTone.critical,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color.alphaBlend(t.solid.withValues(alpha: c.isDark ? .07 : .05), c.surface),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: t.solid.withValues(alpha: c.isDark ? .35 : .28)),
-        ),
-        padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(12)),
-              child: Icon(_icon, color: t.text, size: 22),
+      button: onTap != null,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Color.alphaBlend(
+              t.solid.withValues(alpha: c.isDark ? (unread ? .11 : .07) : (unread ? .08 : .05)),
+              c.surface,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 1),
-                          child: Text(
-                            title,
-                            style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.body),
-                          ),
-                        ),
-                      ),
-                      if (time != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 3),
-                          child: Text(
-                            time!,
-                            style: AppTheme.number(context, size: AppType.label, color: c.muted),
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (text != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3),
-                      child: Text(
-                        text!,
-                        style: TextStyle(color: c.ink2, fontSize: AppType.sub, height: 1.35),
-                      ),
-                    ),
-                  if (actions.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12, right: 6),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final (i, a) in actions.indexed)
-                            SsButton(
-                              label: a.label,
-                              icon: a.icon,
-                              onPressed: a.onPressed,
-                              small: true,
-                              expand: false,
-                              variant: i == 0 ? SsButtonVariant.primary : SsButtonVariant.ghost,
-                            ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
+            borderRadius: raio,
+            // Não lido: a borda na cor do tom, mais forte e mais grossa.
+            border: Border.all(
+              color: t.solid.withValues(alpha: unread ? (c.isDark ? .75 : .62) : (c.isDark ? .35 : .28)),
+              width: unread ? 1.6 : 1,
             ),
-            if (onDismiss != null)
-              IconButton(
-                tooltip: dismissLabel ?? SsStrings.of(context).dismiss,
-                onPressed: onDismiss,
-                visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
-              )
-            else
-              const SizedBox(width: 6),
-          ],
+          ),
+          child: corpo,
         ),
       ),
     );

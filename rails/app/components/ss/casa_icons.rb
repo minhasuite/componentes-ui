@@ -47,7 +47,8 @@ module Ss
       arrow_up: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
       arrow_down: '<path d="M12 5v14m-6-6 6 6 6-6"/>',
       puzzle: '<path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3z"/>',
-      check: '<path d="M5 13l4 4L19 7"/>'
+      check: '<path d="M5 13l4 4L19 7"/>',
+      power: '<path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>'
     }.freeze
 
     def self.svg(name, css: nil)

@@ -12,7 +12,7 @@ export default class extends Controller {
   static values = {
     min: Number, max: Number, step: { type: Number, default: 0.5 },
     debounce: { type: Number, default: 700 }, draggable: { type: Boolean, default: true },
-    format: String, offLabel: String, pendingLabel: String,
+    format: String, offLabel: String, pendingLabel: String, color: String, adjustWhenOff: Boolean,
   }
 
   connect() {
@@ -31,7 +31,8 @@ export default class extends Controller {
   }
 
   get off() { return this.element.dataset.mode === "off" }
-  get enabled() { return !this.off && !this.element.classList.contains("is-disabled") }
+  // adjust_when_off: o alvo muda mesmo desligado.
+  get enabled() { return (!this.off || this.adjustWhenOffValue) && !this.element.classList.contains("is-disabled") }
 
   minus() { this.set(this.v - this.stepValue) }
   plus() { this.set(this.v + this.stepValue) }
@@ -77,7 +78,8 @@ export default class extends Controller {
   mode(e) {
     const m = e.target.value
     this.element.dataset.mode = m
-    const tone = e.target.dataset.tone
+    // color:/tone: do componente (anel fixo) ganha do tom do modo.
+    const tone = this.colorValue || e.target.dataset.tone
     if (tone) this.element.style.setProperty("--thermo-c", tone)
     else this.element.style.removeProperty("--thermo-c")
     this.render()
@@ -133,7 +135,16 @@ export default class extends Controller {
   frac(v) { return this.maxValue === this.minValue ? 0 : Math.min(1, Math.max(0, (v - this.minValue) / (this.maxValue - this.minValue))) }
 
   text(v) {
-    if (this.formatValue) return this.formatValue.replace(/%(\.\d+)?[fsd]/, (m, p) => (p ? v.toFixed(Number(p.slice(1))) : String(v)))
+    // Como o Kernel.format do servidor: o 1º %d/%s/%.Nf vira o valor e %% vira %.
+    if (this.formatValue) {
+      let used = false
+      return this.formatValue.replace(/%%|%(\.\d+)?[fsd]/g, (m, p) => {
+        if (m === "%%") return "%"
+        if (used) return m
+        used = true
+        return p ? v.toFixed(Number(p.slice(1))) : String(v)
+      })
+    }
     const n = Number.isInteger(v) ? ssNumber(v, 0) : ssNumber(Math.round(v * 10) / 10, 1)
     return `${n}°`
   }

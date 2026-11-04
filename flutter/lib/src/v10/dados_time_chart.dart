@@ -116,6 +116,9 @@ class SsTimeChart extends StatefulWidget {
     this.maxLabel,
     this.lastLabel,
     this.untilText,
+    this.utcOffset,
+    this.showValues = false,
+    this.legendAlways = false,
   });
 
   final List<SsTimeSeries> series;
@@ -166,6 +169,18 @@ class SsTimeChart extends StatefulWidget {
 
   /// Entre as datas do resumo: "04/11 10:00 a 05/11 10:00".
   final String? untilText;
+
+  /// Fuso fixo das horas e datas (ex.: `Duration(hours: -3)`, o do site);
+  /// nulo = o do aparelho. Ver [SsTimeFormat.utcOffset].
+  final Duration? utcOffset;
+
+  /// A legenda mostra o valor de cada série: o do cursor enquanto arrasta,
+  /// senão a última leitura ("Sala 23,4 °C").
+  final bool showValues;
+
+  /// Legenda mesmo com uma série só (com [showValues], vira o "valor
+  /// atual" do gráfico). Sem efeito com [legend] falso.
+  final bool legendAlways;
 
   @override
   State<SsTimeChart> createState() => _SsTimeChartState();
@@ -329,7 +344,7 @@ class _SsTimeChartState extends State<SsTimeChart> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final fmt = SsTimeFormat.of(context, widget.locale);
+    final fmt = SsTimeFormat.of(context, widget.locale, widget.utcOffset);
     if (widget.loading) {
       return Semantics(
         label: widget.loadingLabel ?? _s.chartLoading,
@@ -456,7 +471,12 @@ class _SsTimeChartState extends State<SsTimeChart> {
                                 ),
                               ),
                             const SizedBox(height: 6),
-                            SsTimeAxis(from: janela.$1, to: janela.$2, locale: widget.locale),
+                            SsTimeAxis(
+                              from: janela.$1,
+                              to: janela.$2,
+                              locale: widget.locale,
+                              utcOffset: widget.utcOffset,
+                            ),
                           ],
                         ),
                         if (cur != null)
@@ -489,10 +509,23 @@ class _SsTimeChartState extends State<SsTimeChart> {
               );
             },
           ),
-          if (widget.legend && widget.series.length > 1) ...[const SizedBox(height: 10), _legenda(context, cores, fmt)],
+          if (widget.legend && (widget.series.length > 1 || widget.legendAlways)) ...[
+            const SizedBox(height: 10),
+            _legenda(context, cores, fmt),
+          ],
         ],
       ),
     );
+  }
+
+  /// Valor da série na legenda: no cursor, se houver; senão, a última leitura.
+  double? _valorLegenda(SsTimeSeries s) {
+    final cur = _cursor;
+    if (cur != null) return s.valueAt(cur, _modo(s));
+    for (var k = s.points.length - 1; k >= 0; k--) {
+      if (s.points[k].v != null) return s.points[k].v;
+    }
+    return null;
   }
 
   Widget _legenda(BuildContext context, List<Color> cores, SsTimeFormat fmt) {
@@ -509,7 +542,9 @@ class _SsTimeChartState extends State<SsTimeChart> {
               return Semantics(
                 button: true,
                 toggled: on,
-                label: s.unit == null ? s.name : '${s.name}, ${s.unit}',
+                label: widget.showValues
+                    ? '${s.name}, ${fmt.value(_valorLegenda(s), unit: s.unit, decimals: s.decimals)}'
+                    : (s.unit == null ? s.name : '${s.name}, ${s.unit}'),
                 excludeSemantics: true,
                 child: SsPressable(
                   onTap: () => setState(() => on ? _ocultas.add(i) : _ocultas.remove(i)),
@@ -544,7 +579,13 @@ class _SsTimeChartState extends State<SsTimeChart> {
                             decoration: on ? null : TextDecoration.lineThrough,
                           ),
                         ),
-                        if (s.unit != null) ...[
+                        if (widget.showValues) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            fmt.value(_valorLegenda(s), unit: s.unit, decimals: s.decimals),
+                            style: AppTheme.number(context, size: AppType.meta, color: on ? c.ink : c.muted),
+                          ),
+                        ] else if (s.unit != null) ...[
                           const SizedBox(width: 4),
                           Text(
                             s.unit!,

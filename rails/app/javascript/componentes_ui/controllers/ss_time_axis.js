@@ -16,10 +16,36 @@ export function langOf(el, override) {
 
 const cache = new Map()
 
-// Formatadores no idioma `lang` (as mesmas saídas do SsTimeFormat do Flutter).
-export function formatter(lang) {
-  if (cache.has(lang)) return cache.get(lang)
-  const dt = (o) => { try { return new Intl.DateTimeFormat(lang, o) } catch { return new Intl.DateTimeFormat("pt-BR", o) } }
+// Calendário do fuso: partes (ano, mês 0-11, dia, hora, minuto) de um instante e o instante
+// de uma hora de parede. Sem fuso, o do navegador (Date); com fuso IANA (time_zone: do
+// componente), pela conta do Intl: a "parede" vira um Date.UTC e volta pelo deslocamento.
+const LOCAL = {
+  parts(t) { const d = new Date(t); return { y: d.getFullYear(), m: d.getMonth(), d: d.getDate(), h: d.getHours(), mi: d.getMinutes() } },
+  make: (y, m, d, h = 0, mi = 0) => new Date(y, m, d, h, mi).getTime()
+}
+
+function zoneCal(tz) {
+  let dtf
+  try { dtf = new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" }) } catch { return LOCAL }
+  const wall = (t) => {
+    const p = {}
+    dtf.formatToParts(t).forEach((x) => { p[x.type] = +x.value })
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second)
+  }
+  const off = (t) => wall(t) - (t - (((t % 1000) + 1000) % 1000))
+  return {
+    parts(t) { const d = new Date(wall(t)); return { y: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes() } },
+    make(y, m, d, h = 0, mi = 0) { const w = Date.UTC(y, m, d, h, mi); const t = w - off(w); return w - off(t) }
+  }
+}
+
+// Formatadores no idioma `lang` (as mesmas saídas do SsTimeFormat do Flutter); `tz` (IANA,
+// opcional) põe horas e datas nesse fuso em vez do do navegador.
+export function formatter(lang, tz) {
+  const key = `${lang}|${tz || ""}`
+  if (cache.has(key)) return cache.get(key)
+  const zone = tz ? { timeZone: tz } : {}
+  const dt = (o) => { try { return new Intl.DateTimeFormat(lang, { ...o, ...zone }) } catch { return new Intl.DateTimeFormat("pt-BR", o) } }
   const nums = new Map()
   const short = lang.toLowerCase().slice(0, 2)
   // "15:05" / "02:10" (pt, es) e "3:05 PM" (en), como o Flutter.
@@ -29,6 +55,8 @@ export function formatter(lang) {
   const wd = dt({ weekday: "short" })
   const f = {
     lang,
+    tz,
+    cal: tz ? zoneCal(tz) : LOCAL,
     // Casas automáticas pelo tamanho: ≥ 100 → 0, ≥ 10 → 1, abaixo → 2.
     auto: (v) => (Math.abs(v) >= 100 ? 0 : Math.abs(v) >= 10 ? 1 : 2),
     number(v, decimals) {
@@ -62,7 +90,7 @@ export function formatter(lang) {
       return h % 24 ? `${u(d, "d", "d")} ${u(h % 24, "h", "h")}` : u(d, "d", "d")
     }
   }
-  cache.set(lang, f)
+  cache.set(key, f)
   return f
 }
 
@@ -72,46 +100,49 @@ export function passo(spanMs, maxTicks) {
 }
 
 // Marcas "inteligentes" de from a to (ms): horas num dia (a meia-noite vira a
-// data e é "major"), dias numa semana, meses num ano. Hora local.
+// data e é "major"), dias numa semana, meses num ano. Hora do fuso do formatter
+// (f.cal: o do navegador ou o time_zone: do componente).
 export function ticks(from, to, maxTicks, f) {
   if (!(to > from)) return []
+  const c = f.cal || LOCAL
   const p = passo(to - from, Math.max(2, maxTicks))
   const out = []
-  const ini = new Date(from)
+  const ini = c.parts(from)
   if (p < DIA) {
     const minutos = p / MIN
-    const base = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate())
-    let k = Math.ceil((ini.getHours() * 60 + ini.getMinutes()) / minutos) * minutos
-    const em = (k) => new Date(base.getFullYear(), base.getMonth(), base.getDate(), 0, k)
+    let k = Math.ceil((ini.h * 60 + ini.mi) / minutos) * minutos
+    const em = (k) => c.make(ini.y, ini.m, ini.d, 0, k)
     let t = em(k)
-    if (t < ini) t = em((k += minutos))
+    if (t < from) t = em((k += minutos))
     while (t <= to) {
-      const meia = t.getHours() === 0 && t.getMinutes() === 0
-      out.push({ at: +t, label: meia ? f.dm(t) : f.hm(t), major: meia })
+      const q = c.parts(t)
+      const meia = q.h === 0 && q.mi === 0
+      out.push({ at: t, label: meia ? f.dm(t) : f.hm(t), major: meia })
       k += minutos
       t = em(k)
     }
   } else if (p < 30 * DIA) {
     const dias = p / DIA
-    let t0 = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate())
-    if (t0 < ini) t0 = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() + 1)
+    let d0 = ini.d
+    if (c.make(ini.y, ini.m, d0) < from) d0 += 1
     const curto = (to - from) / DIA <= 8
-    for (let i = 0, t = t0; t <= to; i += dias, t = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + i)) {
-      out.push({ at: +t, label: curto ? `${f.weekday(t)} ${t.getDate()}` : f.dm(t), major: t.getDate() === 1 })
+    for (let i = 0, t = c.make(ini.y, ini.m, d0); t <= to; i += dias, t = c.make(ini.y, ini.m, d0 + i)) {
+      const q = c.parts(t)
+      out.push({ at: t, label: curto ? `${f.weekday(t)} ${q.d}` : f.dm(t), major: q.d === 1 })
     }
   } else if (p < 365 * DIA) {
     const meses = Math.round(p / (30.44 * DIA))
-    let t = new Date(ini.getFullYear(), ini.getMonth(), 1)
-    if (t < ini) t = new Date(ini.getFullYear(), ini.getMonth() + 1, 1)
-    while (t.getMonth() % meses !== 0) t = new Date(t.getFullYear(), t.getMonth() + 1, 1)
-    while (t <= to) {
-      out.push({ at: +t, label: t.getMonth() === 0 ? String(t.getFullYear()) : f.month(t), major: t.getMonth() === 0 })
-      t = new Date(t.getFullYear(), t.getMonth() + meses, 1)
+    let M = ini.y * 12 + ini.m
+    const em = (M) => c.make(Math.floor(M / 12), M % 12, 1)
+    if (em(M) < from) M += 1
+    while ((M % 12) % meses !== 0) M += 1
+    for (let t = em(M); t <= to; M += meses, t = em(M)) {
+      out.push({ at: t, label: M % 12 === 0 ? String(Math.floor(M / 12)) : f.month(t), major: M % 12 === 0 })
     }
   } else {
-    let t = new Date(ini.getFullYear(), 0, 1)
-    if (t < ini) t = new Date(ini.getFullYear() + 1, 0, 1)
-    while (t <= to) { out.push({ at: +t, label: String(t.getFullYear()), major: true }); t = new Date(t.getFullYear() + 1, 0, 1) }
+    let y = ini.y
+    if (c.make(y, 0, 1) < from) y += 1
+    for (let t = c.make(y, 0, 1); t <= to; y += 1, t = c.make(y, 0, 1)) out.push({ at: t, label: String(y), major: true })
   }
   return out
 }

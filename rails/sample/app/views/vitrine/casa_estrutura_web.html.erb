@@ -83,3 +83,24 @@
           { value: "violeta", label: "Violeta", color: "#5a45e8" }, { value: "verde", label: "Verde", color: "#0b7a53" }]) %>
   </div>
 <% end %>
+
+<%= demo "Ss::PaginationComponent (v0.10.1: ícones)", "Anterior/próxima e as reticências agora são SVG (a suíte não usa ‹ › … em Unicode). prev_icon:/next_icon: trocam o ícone por outro SVG já seguro.",
+         uso: 'render Ss::PaginationComponent.new(page:, pages:, url:, prev_icon: icon_svg("arrow-left"), next_icon: icon_svg("arrow-right"))' do %>
+  <div class="ss-card ss-card-pad">
+    <%= render Ss::PaginationComponent.new(page: 6, pages: 20, url: ->(n) { vitrine_path("casa_estrutura_web", p: n) },
+          prev_icon: ico.("M19 12H5m6-6-6 6 6 6"), next_icon: ico.("M5 12h14m-6-6 6 6-6 6")) %>
+  </div>
+<% end %>
+
+<%= demo "Ss::CommandPaletteComponent (v0.10.1)", "subtitle: põe uma 2ª linha no item (o hint: continua à direita) e entra na busca. fill: faz a sugestão preencher a busca em vez de navegar (fill: true usa o label). O src: pode devolver grupos com título (.ss-command-group com .ss-command-group-title ou h2–h4), que ficam; aqui, digite qualquer coisa para ver os grupos do servidor.",
+         uso: 'render Ss::CommandPaletteComponent.new(id: "b", src: busca_path, groups: [{ title: "Clientes", items: [{ label: "Ana", url: cliente_path(a), subtitle: "Loja Centro", hint: "Cliente" }] }, { title: "Sugestões", items: [{ label: "pedidos em aberto", fill: true }] }])' do %>
+  <p><button type="button" class="ss-btn ss-btn-primary" data-ss-command-open="vt-busca-v101"><%= ico.("M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5") %>Abrir a paleta com subtítulos</button></p>
+  <%= render Ss::CommandPaletteComponent.new(id: "vt-busca-v101", shortcut: nil, placeholder: "Buscar cliente ou pedido…", src: "/vitrine-busca.html", groups: [
+        { title: "Clientes", items: [
+          { label: "Ana Souza", url: vitrine_path("casa_estrutura_web", cliente: "ana"), subtitle: "Loja Centro · 3 pedidos", hint: "Cliente", icon: ico.("M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z") },
+          { label: "Bruno Lima", url: vitrine_path("casa_estrutura_web", cliente: "bruno"), subtitle: "Distribuidora · 12 pedidos", hint: "Cliente", icon: ico.("M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z") } ] },
+        { title: "Sugestões", items: [
+          { label: "pedidos em aberto", fill: true, icon: ico.("M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5") },
+          { label: "Clientes sem compra no mês", fill: "sem compra", icon: ico.("M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5") } ] }
+      ]) %>
+<% end %>

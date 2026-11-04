@@ -9,7 +9,7 @@ import { reduced } from "componentes_ui/controllers/ss_motion_controller"
 // Escuta turbo:submit-start/end; com data-turbo="false", vira no submit e a página recarrega.
 export default class extends Controller {
   static targets = ["button"]
-  static values = { confirm: String, onLabel: String, offLabel: String }
+  static values = { confirm: String, confirmTitle: String, onLabel: String, offLabel: String }
 
   connect() {
     if (this.element.tagName !== "FORM") return
@@ -28,10 +28,21 @@ export default class extends Controller {
     this.element.removeEventListener("submit", this.plain)
   }
 
-  // Modo A: pergunta antes de trocar; "não" desfaz.
+  // Modo A: pergunta antes de trocar; "não" desfaz. Com a caixa da suíte na página
+  // (Ss::ConfirmDialogComponent), pergunta nela (com o confirm-title-value); senão, window.confirm.
   confirmChange(e) {
     if (!this.confirmValue) return
-    if (!window.confirm(this.confirmValue)) e.target.checked = !e.target.checked
+    if (this.confirmed) { this.confirmed = false; return } // o change que este método soltou
+    const box = document.querySelector('[data-controller~="ss-confirm-dialog"]')
+    if (!box?.ssConfirm) { if (!window.confirm(this.confirmValue)) e.target.checked = !e.target.checked; return }
+    const input = e.target, want = input.checked
+    input.checked = !want
+    box.ssConfirm(this.confirmValue, this.confirmTitleValue ? { title: this.confirmTitleValue } : {}).then((ok) => {
+      if (!ok) return
+      input.checked = want
+      this.confirmed = true
+      input.dispatchEvent(new Event("change", { bubbles: true }))
+    })
   }
 
   get button() { return this.hasButtonTarget ? this.buttonTarget : this.element.querySelector(".ss-switch") }

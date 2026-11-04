@@ -8,8 +8,11 @@ module Ss
     # o on_load(:action_view) da engine não chega neles.
     include ComponentesUi::Helpers
 
+    # v0.10.1: class: vale como css: (as duas somam). Antes o class: era trocado pela
+    # classe do componente e sumia.
     def initialize(css: nil, **attrs)
-      @css = css
+      extra = attrs.key?(:class) ? attrs.delete(:class) : attrs.delete("class")
+      @css = [css, extra].flatten.compact.reject { |c| c.to_s.strip.empty? }.join(" ").presence
       @attrs = attrs
     end
 

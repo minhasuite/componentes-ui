@@ -13,6 +13,8 @@ module Ss
   # :left | :right | :bottom (padrão pela ordem). power > 0 corre de from para to; < 0 ao contrário;
   # 0 fica só o trilho. Velocidade ∝ |power| / max_power. É o único laço contínuo da suíte: para
   # com animate: false e com prefers-reduced-motion (aí mostra uma seta parada no sentido).
+  # Caixa estreita (≲ 350 px, v0.10.1): nomes menores e o do nó de cima vai para cima do disco,
+  # para não encostar no do centro (data-slot no nó; regra @container no CSS).
   class FlowDiagramComponent < BaseComponent
     W, H = 360, 300
     SLOTS = { top: [180, 46], left: [52, 140], right: [308, 140], bottom: [180, 250] }.freeze
@@ -21,7 +23,7 @@ module Ss
     ICONS = { grid: :grid, solar: :solar, battery: :battery, home: :home, custom: :bolt }.freeze
     R_CENTER, R_NODE = 42, 31
 
-    Node = Struct.new(:id, :kind, :label, :value, :caption, :icon, :color, :x, :y, :r, keyword_init: true)
+    Node = Struct.new(:id, :kind, :label, :value, :caption, :icon, :color, :x, :y, :r, :slot, keyword_init: true)
     Link = Struct.new(:x1, :y1, :x2, :y2, :power, :color, :dur, keyword_init: true)
 
     attr_reader :nodes, :links
@@ -31,13 +33,13 @@ module Ss
       @animate = animate
       @max = max_power.to_f.positive? ? max_power.to_f : 5000.0
       c = center.to_h.transform_keys(&:to_sym)
-      @nodes = { c[:id].to_s => node(c, W / 2, 140, R_CENTER) }
+      @nodes = { c[:id].to_s => node(c, W / 2, 140, R_CENTER, :center) }
       free = SLOTS.keys - around.map { |n| n.to_h.transform_keys(&:to_sym)[:slot]&.to_sym }.compact
       around.first(4).each do |n|
         n = n.to_h.transform_keys(&:to_sym)
         slot = (n[:slot]&.to_sym if SLOTS.key?(n[:slot]&.to_sym)) || free.shift || :bottom
         x, y = SLOTS[slot]
-        @nodes[n[:id].to_s] = node(n, x, y, R_NODE)
+        @nodes[n[:id].to_s] = node(n, x, y, R_NODE, slot)
       end
       @links = Array(links).filter_map { |l| link(l.to_h.transform_keys(&:to_sym)) }
       @label = label
@@ -79,12 +81,12 @@ module Ss
 
     private
 
-    def node(h, x, y, r)
+    def node(h, x, y, r, slot)
       kind = h[:kind].to_s.to_sym
       kind = :custom unless COLORS.key?(kind)
       color = h[:color].to_s.match?(/\A[#\w\s(),.%-]+\z/) ? h[:color].to_s : COLORS[kind]
       Node.new(id: h[:id].to_s, kind:, label: h[:label], value: h[:value], caption: h[:caption], icon: h[:icon],
-               color:, x:, y:, r:)
+               color:, x:, y:, r:, slot:)
     end
 
     def link(h)
@@ -97,7 +99,9 @@ module Ss
       ux, uy = (dst.x - src.x) / len, (dst.y - src.y) / len
       vel = 0.15 + 0.95 * (power.abs / @max).clamp(0, 1)
       # Saindo para baixo, a linha passaria pelo nome do nó (embaixo do disco): começa depois dele.
-      ea, eb = (uy > 0.5 ? 16 : 0), (uy < -0.5 ? 16 : 0)
+      # (O nome do centro é maior em caixa estreita: folga de 20.)
+      gap = ->(n) { n.slot == :center ? 20 : 16 }
+      ea, eb = (uy > 0.5 ? gap.(src) : 0), (uy < -0.5 ? gap.(dst) : 0)
       Link.new(x1: (src.x + ux * (src.r + 3 + ea)).round(2), y1: (src.y + uy * (src.r + 3 + ea)).round(2),
                x2: (dst.x - ux * (dst.r + 3 + eb)).round(2), y2: (dst.y - uy * (dst.r + 3 + eb)).round(2),
                power:, color: src.color, dur: (1 / vel).round(2))

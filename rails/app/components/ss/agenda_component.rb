@@ -5,6 +5,10 @@ module Ss
   #
   #   render Ss::AgendaComponent.new(days: [Date.current], from: 8, to: 20, now: Time.current,
   #     events: [{ title: "Visita", sub: "Mercado Bom Preço", starts_at: t1, ends_at: t2, tone: :success, url: "…" }])
+  #
+  # v0.10.1: evento de dia inteiro (all_day: true; starts_at pode ser Date; ends_at opcional,
+  # o último dia, inclusive) sai numa faixa em cima das horas, em cada dia que cobre. Texto da
+  # faixa: agenda.all_day ("Dia todo").
   class AgendaComponent < BaseComponent
     WEEKDAYS = %w[dom seg ter qua qui sex sáb].freeze
 
@@ -25,7 +29,21 @@ module Ss
     def hours = (@from...@to).to_a
     def total_min = (@to - @from) * 60.0
 
-    def events_on(day) = @events.select { _1[:starts_at].to_date == day }
+    def events_on(day) = @events.select { !_1[:all_day] && _1[:starts_at].to_date == day }
+
+    # Eventos de dia inteiro que cobrem o dia (de starts_at até ends_at, inclusive).
+    def all_day_on(day)
+      @events.select do |e|
+        next false unless e[:all_day]
+
+        first = e[:starts_at].to_date
+        last = (e[:ends_at] || e[:starts_at]).to_date
+        day.between?(first, [last, first].max)
+      end
+    end
+
+    def all_day? = days.any? { |d| all_day_on(d).any? }
+    def all_day_label = ss_t("agenda.all_day", default: "Dia todo")
 
     # Posição de cada evento do dia, em % da coluna: top/height pelo horário,
     # left/width pela coluna dentro do grupo de eventos que se sobrepõem.

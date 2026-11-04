@@ -1,0 +1,148 @@
+/* v0.10.1 (web): moldura (marca, separador, main), página só cabeçalho, paleta (subtítulo,
+   sugestão), paginação em SVG, vazio com arte do app, menu com botão de texto e button_to,
+   passo a passo do servidor e pilhas de aviso em outras posições. */
+
+@layer components {
+  /* ── Ss::AppShellComponent ── */
+  /* Marca do app (with_mark) no lugar do quadrado de gradiente. */
+  .ss-shell-logo.has-mark { display: grid; place-items: center; overflow: hidden; background: none; box-shadow: none; }
+  .ss-shell-logo.has-mark > :is(img, svg) { display: block; width: 100%; height: 100%; object-fit: contain; }
+  /* brand_url: a marca + nome viram um link (mesmo desenho). */
+  .ss-shell-brand-link { display: flex; align-items: center; gap: .6rem; flex: 1; min-width: 0; color: inherit; text-decoration: none; border-radius: 12px; }
+  .ss-shell-brand-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-brand-link { flex: none; }
+  /* Linha divisória ({ separator: true }). */
+  .ss-shell-sep { margin: .45rem .55rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .1); }
+  /* Marca na barra de cima: só no celular (no desktop está no menu). */
+  .ss-shell-top-brand { display: none; align-items: center; gap: .5rem; min-width: 0; color: var(--ink); text-decoration: none; font-weight: 800; }
+  .ss-shell-top-brand .ss-shell-logo { width: 1.75rem; height: 1.75rem; border-radius: 9px; }
+  .ss-shell-top-brand .ss-shell-brand-name { color: var(--ink); font-size: .95rem; }
+  /* <main tabindex="-1">: recebe foco pelo "pular para o conteúdo" sem anel. */
+  .ss-shell-content:focus { outline: none; }
+  .ss-shell-content[data-max] { width: 100%; max-width: var(--shell-main-max); margin-inline: auto; }
+
+  /* ── Ss::PageComponent: só cabeçalho ── */
+  .ss-page-body:empty { display: none; }
+
+  /* ── Ss::PaginationComponent / pager da DataTable: ícones SVG ── */
+  .ss-dt-pager .ss-pg-ico { width: 1.05rem; height: 1.05rem; }
+  .ss-dt-pager .ss-pg-dots { width: 1.1rem; height: 1.1rem; }
+  .ss-dt-pager > :is(a, span) > svg { display: block; width: 1.05rem; height: 1.05rem; }
+
+  /* ── Ss::EmptyStateComponent(with_art) ── */
+  .ss-empty-art.is-custom > :is(img, svg) { display: block; width: 100%; height: auto; }
+
+  /* ── .ss-menu: botão de texto (summary.ss-menu-btn) e itens em form > button (button_to) ── */
+  .ss-menu > summary.ss-menu-btn { display: inline-flex; align-items: center; gap: .4rem; width: auto; height: 2.5rem; padding: 0 .75rem 0 1rem;
+                                   border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 .88rem var(--font-sans); }
+  .ss-menu > summary.ss-menu-btn svg { width: 1rem; height: 1rem; color: var(--muted); transition: rotate .25s var(--ss-bounce); }
+  .ss-menu[open] > summary.ss-menu-btn svg:last-child { rotate: 180deg; }
+  .ss-menu > summary.ss-menu-btn:hover, .ss-menu[open] > summary.ss-menu-btn { background: var(--field); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+  .ss-menu > summary.ss-menu-btn + * { left: 0; right: auto; transform-origin: top left; }
+  .ss-menu.is-end > summary.ss-menu-btn + * { left: auto; right: 0; transform-origin: top right; }
+  .ss-menu > :not(summary) > form { display: block; margin: 0; }
+  .ss-menu > :not(summary) > form > :is(button, input[type="submit"]) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .55rem .7rem; border: 0;
+                                   border-radius: 10px; background: none; color: var(--ink); font: 600 .88rem var(--font-sans); text-align: left; cursor: pointer; }
+  .ss-menu > :not(summary) > form > :is(button, input[type="submit"]):is(:hover, :focus-visible) { background: var(--field); }
+  .ss-menu > :not(summary) > form > .is-danger, .ss-menu > :not(summary) > form.is-danger > button,
+  .ss-menu > :not(summary) > form :is(.is-danger, .is-danger svg) { color: var(--danger); }
+
+  /* ── Ss::WizardComponent(current:): passo feito com url: vira link (o li inteiro clica) ── */
+  .ss-wizard-link { color: inherit; text-decoration: none; }
+  .ss-wizard-link::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: 12px; }
+  .ss-wizard-link:hover { color: var(--accent); }
+  .ss-wizard-link:focus-visible { outline: none; }
+  .ss-wizard-link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Pilhas de aviso em outras posições (ToastStackComponent, position: por aviso) ── */
+  .ss-toasts[data-position="top-center"] { bottom: auto; top: 1.25rem; right: 50%; translate: 50% 0; align-items: center; flex-direction: column-reverse; }
+  .ss-toasts[data-position="top-left"] { bottom: auto; top: 1.25rem; right: auto; left: 1.25rem; align-items: flex-start; flex-direction: column-reverse; }
+  .ss-toasts[data-position="bottom-left"] { right: auto; left: 1.25rem; align-items: flex-start; }
+
+  /* ── Ss::BlockComponent: itens do ⋮ em button_to (move_url:, delete_confirm:) ── */
+  .ss-blk-mi-form { display: contents; }
+  .ss-blk-mi-form > .ss-blk-mi { width: 100%; text-align: left; cursor: pointer; }
+
+  /* ── Ss::OptionCardComponent(url:): card que é link (catálogo), com a seta ── */
+  .ss-option-card.is-link { color: inherit; text-decoration: none; align-items: center; }
+  .ss-option-card-chev { position: absolute; top: 50%; right: 1rem; translate: 0 -50%; display: grid; color: var(--muted); transition: translate .3s var(--ss-bounce), color .2s; }
+  .ss-option-card-chev svg { width: 1.1rem; height: 1.1rem; }
+  .ss-option-card.is-link:hover .ss-option-card-chev { translate: 3px -50%; color: var(--accent); }
+  .ss-option-card.is-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-option-card.is-link[aria-current="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); box-shadow: 0 0 0 3px var(--ring); }
+  .ss-option-card.is-link[aria-current="true"]::after { opacity: 1; scale: 1; }
+  .ss-option-card.is-link[aria-current="true"] .ss-option-card-icon { background: var(--accent); color: #fff; }
+
+  /* ── Ss::JobProgressComponent(stages:): etapas com tempo ── */
+  .ss-job-stages { display: grid; gap: .1rem; margin: 0; padding: 0; list-style: none; font-size: .85rem; }
+  .ss-job-stages li { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+  .ss-job-stages li:first-child { border-top: 0; }
+  .ss-job-stage-ico { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; flex: none; border-radius: 50%; background: var(--success-soft, color-mix(in srgb, var(--success) 15%, transparent)); color: var(--success); }
+  .ss-job-stage-ico svg { width: .85rem; height: .85rem; }
+  .ss-job-stages .is-failed .ss-job-stage-ico { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
+  .ss-job-stages .is-skipped .ss-job-stage-ico { background: var(--field); color: var(--muted); }
+  .ss-job-stages .is-running .ss-job-stage-ico { background: var(--accent-soft); color: var(--accent); }
+  .ss-job-stages .is-running .ss-job-stage-ico svg { animation: ss-spin 1s linear infinite; }
+  .ss-job-stage-name { display: grid; flex: 1; min-width: 0; font-weight: 600; color: var(--ink); }
+  .ss-job-stage-name small { font-weight: 500; font-size: .76rem; color: var(--muted); }
+  .ss-job-stages .is-skipped .ss-job-stage-name { color: var(--muted); }
+  .ss-job-stages .is-failed .ss-job-stage-name { color: var(--danger); }
+  .ss-job-stage-time { flex: none; font-size: .8rem; color: var(--muted); }
+  .ss-job-stage-total { font-weight: 800; }
+  .ss-job-stage-total .ss-job-stage-name { padding-left: 1.95rem; font-weight: 800; }
+  .ss-job-stage-total .ss-job-stage-time { color: var(--ink); font-weight: 700; }
+
+  /* ── Ss::DeviceTileComponent(action_url:): tile de aperto (o botão cobre o tile) ── */
+  .ss-device-press-form { display: contents; }
+  .ss-device-press { padding: 0; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+  .ss-device-press::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+  .ss-device-press:focus-visible { outline: 0; }
+  .ss-device:has(.ss-device-press:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-device:has(.ss-device-press:hover:not(:disabled)) { border-color: color-mix(in srgb, var(--tone) 35%, var(--line)); }
+  .ss-device:has(.ss-device-press:active:not(:disabled)) { scale: .97; transition: scale 80ms ease-out; }
+  .ss-device-press:disabled { cursor: default; }
+  .ss-device.is-press .ss-device-end { z-index: 0; pointer-events: none; }
+  .ss-device-run { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%;
+                   background: color-mix(in srgb, var(--tone) 14%, var(--surface)); color: var(--tone); }
+  .ss-device-run svg { width: 1rem; height: 1rem; }
+  .ss-device:has(.ss-device-press:active:not(:disabled)) .ss-device-run { background: var(--tone); color: #fff; }
+
+  /* ── Ss::CameraTileComponent(status:): selo de texto ao lado do título ── */
+  .ss-cam-status { display: inline-flex; align-items: center; flex: none; max-width: 50%; padding: .18rem .5rem; border-radius: 999px; overflow: hidden;
+                   background: rgba(0, 0, 0, .5); color: #fff; font-size: .66rem; font-weight: 800; line-height: 1.3; white-space: nowrap; text-overflow: ellipsis; }
+
+  /* ── Ss::AgendaComponent: faixa dos eventos de dia inteiro (all_day: true) ── */
+  .ss-agenda-allday { display: grid; grid-template-columns: var(--gutter) repeat(var(--days), 1fr); gap: .25rem; align-items: start;
+                      margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1.5px solid var(--line); }
+  .ss-agenda-allday-label { padding-top: .35rem; font-size: .68rem; font-weight: 700; line-height: 1.2; color: var(--muted); }
+  .ss-agenda-allday-col { display: grid; gap: .25rem; align-content: start; min-width: 0; margin: 0; padding: 0; list-style: none; }
+  .ss-agenda-event.is-all-day { position: static; padding: 0; }
+  .ss-agenda-event.is-all-day .ss-agenda-in { height: auto; padding: .3rem .55rem; border-radius: 10px; }
+}
+
+/* ── Paleta: subtítulo e sugestão (fora das camadas, como o .ss-command) ── */
+.ss-command-text { display: grid; min-width: 0; gap: .05rem; }
+.ss-command-sub { font-size: .78rem; font-weight: 500; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-command-item.is-fill { cursor: pointer; }
+.ss-command-item.is-fill::after { content: ""; flex: none; width: 1rem; height: 1rem; margin-left: auto; background: var(--muted);
+                                  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E") center / contain no-repeat; }
+.ss-command-item.is-fill small + * { margin-left: 0; }
+.ss-command-item.is-fill:has(small)::after { margin-left: .25rem; }
+.ss-command-group .ss-command-group { padding: 0; }
+
+/* Celular: a marca aparece na barra de cima; recolhido não vale na gaveta (volta o desenho aberto). */
+@media (max-width: 1023px) {
+  .ss-shell .ss-shell-top-brand { display: inline-flex; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-brand { flex-direction: row; padding-inline: .35rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-initial { display: none; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-collapse { rotate: none; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-badge { position: static; min-width: 1.25rem; height: auto; padding: 0 .35rem; font-size: .68rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary { height: auto; margin-top: .6rem; padding: .45rem .75rem; justify-content: flex-start; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary::before { content: none; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-nav summary .ss-chev { display: revert; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-tenant > summary { justify-content: flex-start; padding-inline: .55rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-brand-link { flex: 1; }
+}
+@media (max-width: 420px) {
+  .ss-shell-top-brand .ss-shell-brand-name { display: none; }
+}
