@@ -2,7 +2,7 @@
 # A 1ª linha de cada página diz título, grupo e ordem:
 #   <%# titulo: Tabelas | grupo: Dados | ordem: 10 %>
 class VitrineController < ApplicationController
-  GRUPOS = ["Início", "Fundação", "Layout", "Formulários", "Dados", "Retorno", "Cards", "Acabamento", "Casa e automação", "Catálogo"].freeze
+  GRUPOS = ["Início", "Fundação", "Layout", "Formulários", "Dados", "Retorno", "Cards", "Acabamento", "Casa e automação", "Tela (v0.10.2)", "Catálogo"].freeze
 
   helper_method :paginas, :pagina_atual
 

@@ -6,6 +6,7 @@ es:
       label: Agenda
       now: Ahora, %{time}
     agenda_list:
+      all_day: 'Todo el día'
       empty: Nada este día
       label: Agenda
       today: Hoy
@@ -528,3 +529,30 @@ es:
       next: Siguiente
       step: 'Paso %{n}: %{title}'
       submit: Terminar
+    # v0.10.2
+    check_all:
+      label: 'Marcar todos'
+    code_block:
+      copied: 'Copiado'
+      copy: 'Copiar'
+    danger_zone:
+      title: 'Zona de peligro'
+    prompt_dialog:
+      cancel: 'Cancelar'
+      label: 'Nombre'
+      ok: 'Confirmar'
+    skip_link:
+      label: 'Saltar al contenido'
+    sortable:
+      down: 'Mover hacia abajo'
+      handle: 'Arrastrar para cambiar el orden: %{title}'
+      label: 'Lista ordenable'
+      moved: 'Movido a la posición %{n} de %{total}'
+      up: 'Mover hacia arriba'
+    spinner:
+      label: 'Cargando'
+    subnav:
+      label: 'Secciones'
+      more: '%{n} secciones'
+    top_bar:
+      back: 'Volver'

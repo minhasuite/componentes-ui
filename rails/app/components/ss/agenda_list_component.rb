@@ -10,7 +10,9 @@ module Ss
   #              events: [{ time: "08:30", title: "Dentista", detail: "Dr. Paulo", tone: :info, url: consulta_path(c) }] },
   #            { date: Date.tomorrow, events: [] }])
   #
-  # - time: já formatado por quem chama ("08:30", "Dia todo"). color: (cor CSS) ou tone:
+  # - time: já formatado por quem chama ("08:30", "15:00–16:00"). v0.10.2: end: ("16:00") vai
+  #   embaixo, menor; all_day: true sem time: mostra "Dia todo" (agenda_list.all_day). A coluna
+  #   da hora cresce até o texto mais largo da lista (todas alinhadas). color: (cor CSS) ou tone:
   #   :accent (padrão), :info, :warn, :danger, :success, :neutral.
   # - label: do dia é opcional; sem ele, "Hoje"/"Amanhã" (pelo now:) ou o dia da semana; a data
   #   curta vai sempre ao lado.
@@ -62,6 +64,20 @@ module Ss
     end
 
     def color(e) = e[:color] || TONES[e[:tone].to_s] || TONES["accent"]
+
+    def all_day?(e) = !!e[:all_day] && e[:time].blank?
+    def all_day_label = ss_t("agenda_list.all_day", default: "Dia todo")
+    def time_label(e) = all_day?(e) ? all_day_label : e[:time].to_s
+
+    # Largura da coluna da hora (DM Mono .78rem: ~.47rem por caractere, em rem para o "Dia todo"
+    # em Manrope ficar na mesma coluna) quando algum horário passa de
+    # 5 caracteres ("15:00–16:00"); nil mantém a do CSS.
+    def time_width
+      n = @days.flat_map { |d| d[:events] }.reject { all_day?(_1) }.flat_map { [_1[:time].to_s.length, _1[:end].to_s.length] }.max.to_i
+      "max(2.6rem, calc(#{n} * .47rem + .3rem))" if n > 5
+    end
+
+    def root_style = [@attrs[:style], ((w = time_width) ? "--ss-agl-tw: #{w}" : nil)].compact.join("; ").presence
 
     private
 

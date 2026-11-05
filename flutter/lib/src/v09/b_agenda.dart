@@ -548,13 +548,33 @@ class _GradePainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 
 /// Um compromisso da [SsAgendaList]. [time] vem formatado pelo app
-/// ("09:30", "Dia todo", "9h–10h").
+/// ("09:30", "15:00–16:00", "9h–10h").
+///
+/// v0.10.2: [end] mostra o fim embaixo do início, menor ("15:00" / "16:00"),
+/// e [allDay] mostra "Dia todo" ([SsStrings.allDay]) quando [time] vem vazio.
+/// A coluna da hora se ajusta ao texto mais largo da lista (ver
+/// [SsAgendaList.timeWidth]), então "15:00–16:00" numa linha também cabe.
 @immutable
 class SsAgendaItem {
-  const SsAgendaItem({required this.time, required this.title, this.detail, this.color, this.tone, this.onTap});
+  const SsAgendaItem({
+    this.time = '',
+    required this.title,
+    this.end,
+    this.allDay = false,
+    this.detail,
+    this.color,
+    this.tone,
+    this.onTap,
+  });
 
   final String time;
   final String title;
+
+  /// Fim do compromisso, já formatado ("16:00"): vai na 2ª linha da coluna.
+  final String? end;
+
+  /// Dia inteiro: a coluna mostra [time] ou, vazio, "Dia todo".
+  final bool allDay;
 
   /// Linha menor (lugar, pessoa, "Sala 3").
   final String? detail;
@@ -597,6 +617,7 @@ class SsAgendaList extends StatelessWidget {
     this.emptyLabel,
     this.today,
     this.padding = EdgeInsets.zero,
+    this.timeWidth,
   }) : _sliver = false;
 
   /// A mesma lista como sliver.
@@ -609,6 +630,7 @@ class SsAgendaList extends StatelessWidget {
     this.emptyLabel,
     this.today,
     this.padding = EdgeInsets.zero,
+    this.timeWidth,
   }) : _sliver = true;
 
   final List<SsAgendaDay> days;
@@ -622,11 +644,51 @@ class SsAgendaList extends StatelessWidget {
   /// Hoje da faixa de dias (padrão: o relógio).
   final DateTime? today;
   final EdgeInsetsGeometry padding;
+
+  /// Largura da coluna da hora. Nulo (padrão): a do texto mais largo da
+  /// lista (medido com a fonte e a escala de texto da tela), entre 48 e 136;
+  /// a hora que passar disso encolhe para caber numa linha ("Dia todo" quebra
+  /// em até 2). Todas as linhas usam a mesma
+  /// largura, então os títulos ficam alinhados.
+  final double? timeWidth;
   final bool _sliver;
+
+  /// Texto da coluna da hora de [e]: a 1ª linha (hora ou "Dia todo").
+  static String _hora(SsAgendaItem e, SsStrings s) => e.allDay && e.time.isEmpty ? s.allDay : e.time;
+
+  double _largura(BuildContext context) {
+    final s = SsStrings.of(context);
+    final escala = MediaQuery.textScalerOf(context);
+    final mono = AppTheme.number(context, size: AppType.sub, weight: FontWeight.w600);
+    final rotulo = DefaultTextStyle.of(
+      context,
+    ).style.merge(const TextStyle(fontSize: AppType.meta, fontWeight: FontWeight.w700));
+    var maior = 0.0;
+    for (final d in days) {
+      for (final e in d.events) {
+        for (final (texto, estilo) in [
+          (_hora(e, s), e.allDay && e.time.isEmpty ? rotulo : mono),
+          if (e.end != null) (e.end!, mono),
+        ]) {
+          if (texto.isEmpty) continue;
+          final tp = TextPainter(
+            text: TextSpan(text: texto, style: estilo),
+            textDirection: TextDirection.ltr,
+            textScaler: escala,
+            maxLines: 1,
+          )..layout();
+          maior = math.max(maior, tp.width);
+          tp.dispose();
+        }
+      }
+    }
+    return (maior + 2).clamp(48.0, 136.0);
+  }
 
   List<Widget> _linhas(BuildContext context) {
     final c = SsColors.of(context);
     final s = SsStrings.of(context);
+    final largura = timeWidth ?? _largura(context);
     final sel = selected == null ? null : _dia(selected!);
     final out = <Widget>[];
     if (weekStrip) {
@@ -673,7 +735,7 @@ class SsAgendaList extends StatelessWidget {
         );
       } else {
         for (final e in d.events) {
-          out.add(_LinhaAgenda(e, _cor(context, e)));
+          out.add(_LinhaAgenda(e, _cor(context, e), largura));
         }
       }
     }
@@ -747,18 +809,23 @@ class _CabecalhoDia extends StatelessWidget {
 }
 
 class _LinhaAgenda extends StatelessWidget {
-  const _LinhaAgenda(this.e, this.cor);
+  const _LinhaAgenda(this.e, this.cor, this.largura);
   final SsAgendaItem e;
   final Color cor;
+  final double largura;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    final hora = SsAgendaList._hora(e, s);
+    final soRotulo = e.allDay && e.time.isEmpty;
+    final faixa = e.end == null ? hora : '$hora – ${e.end}';
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Semantics(
         button: e.onTap != null,
-        label: [e.time, e.title, ?e.detail].join(', '),
+        label: [faixa, e.title, ?e.detail].join(', '),
         excludeSemantics: true,
         child: SsPressable(
           onTap: e.onTap,
@@ -779,12 +846,46 @@ class _LinhaAgenda extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 10, 0, 10),
                     child: Container(
-                      width: 56,
+                      width: largura,
                       alignment: AlignmentDirectional.centerStart,
-                      child: Text(
-                        e.time,
-                        maxLines: 2,
-                        style: AppTheme.number(context, size: AppType.sub, weight: FontWeight.w600, color: c.ink2),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (soRotulo)
+                            Text(
+                              hora,
+                              maxLines: 2,
+                              style: TextStyle(
+                                color: c.ink2,
+                                fontSize: AppType.meta,
+                                fontWeight: FontWeight.w700,
+                                height: 1.2,
+                              ),
+                            )
+                          else
+                            // Uma linha sempre: o que não couber na coluna encolhe (não quebra nem corta).
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                hora,
+                                maxLines: 1,
+                                style: AppTheme.number(
+                                  context,
+                                  size: AppType.sub,
+                                  weight: FontWeight.w600,
+                                  color: c.ink2,
+                                ),
+                              ),
+                            ),
+                          if (e.end != null)
+                            Text(
+                              e.end!,
+                              maxLines: 1,
+                              style: AppTheme.number(context, size: AppType.meta, color: c.muted),
+                            ),
+                        ],
                       ),
                     ),
                   ),

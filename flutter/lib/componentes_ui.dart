@@ -72,3 +72,4 @@ export 'src/v10/controles.dart';
 export 'src/v10/dados.dart';
 export 'src/v10/casa.dart';
 export 'src/v10/estrutura.dart';
+export 'src/v10/tela.dart';

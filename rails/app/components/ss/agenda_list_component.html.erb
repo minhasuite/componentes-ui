@@ -1,4 +1,4 @@
-<%= tag.div(**root_attrs(class: classes("ss-agl"), role: "region", "aria-label": label)) do %>
+<%= tag.div(**root_attrs(class: classes("ss-agl"), role: "region", "aria-label": label, style: root_style)) do %>
   <% if week_strip? %>
     <nav class="ss-agl-week" aria-label="<%= week_label %>">
       <% week.each do |date| %>
@@ -15,7 +15,7 @@
         <ul class="ss-agl-list">
           <% d[:events].each_with_index do |e, i| %>
             <li class="ss-agl-ev" style="--c: <%= color(e) %>; --i: <%= [i, 8].min %>">
-              <span class="ss-agl-time num"><%= e[:time] %></span>
+              <span class="ss-agl-time num<%= " is-allday" if all_day?(e) %>"><span><%= time_label(e) %></span><% if e[:end].present? %><small><span class="ss-sr">– </span><%= e[:end] %></small><% end %></span>
               <span class="ss-agl-bar" aria-hidden="true"></span>
               <div class="ss-agl-body">
                 <% if e[:url] %><%= link_to e[:title], e[:url], class: "ss-agl-title ss-agl-link" %><% else %><span class="ss-agl-title"><%= e[:title] %></span><% end %>

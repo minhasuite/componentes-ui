@@ -1,0 +1,289 @@
+/* v0.10.2 (web): o que o minha-automacao ainda tinha no produto (ponte.css e views) e
+   é de qualquer produto. Pares no Flutter no README (seção "v0.10.2"). Só tokens. */
+
+/* ── Caixas de marcar e opções desenhadas (opt-in) ──────────────────────────────
+   A gem desenha só dentro de .ss-check/.ss-option-card. Com .ss-inputs num ancestral
+   (o <body>, um form, uma tabela), toda caixa e opção solta ganha o visual da suíte,
+   igual no claro e no escuro. Especificidade baixa: .ss-check e .ss-switch continuam. */
+@layer base {
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr) {
+    appearance: none; margin: 0; width: 1.15rem; height: 1.15rem; flex-shrink: 0; display: inline-grid; place-content: center;
+    vertical-align: middle; cursor: pointer; background: var(--surface); border-radius: 6px;
+    border: 1.5px solid color-mix(in srgb, var(--muted) 60%, var(--line));
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, scale var(--ss-dur-indicator) var(--ss-bounce);
+  }
+  :where(.ss-inputs) :where(input[type="radio"]):not(.sr-only, .ss-sr) { border-radius: 999px; }
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):checked { background: var(--accent-solid); border-color: var(--accent-solid); }
+  :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr)::before {
+    content: ""; width: .7rem; height: .7rem; background: #fff; scale: 0; transition: scale .18s var(--ss-bounce);
+    clip-path: polygon(14% 44%, 0 59%, 40% 100%, 100% 23%, 86% 9%, 40% 70%);
+  }
+  :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr):indeterminate { background: var(--accent-solid); border-color: var(--accent-solid); }
+  :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr):indeterminate::before { clip-path: inset(40% 10% 40% 10% round 2px); scale: 1; }
+  :where(.ss-inputs) :where(input[type="radio"]):not(.sr-only, .ss-sr)::before { content: ""; width: .45rem; height: .45rem; border-radius: 999px; background: #fff; scale: 0; transition: scale .18s var(--ss-bounce); }
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):checked::before { scale: 1; }
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):active:not(:disabled) { scale: .88; }
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):disabled { opacity: .5; cursor: not-allowed; }
+}
+
+@layer components {
+  /* ── Selos ── */
+  .ss-badge-muted { background: var(--field); color: var(--ink-2); box-shadow: none; }
+  .ss-badge-dot::before { content: ""; width: .4rem; height: .4rem; flex: none; border-radius: 999px; background: currentColor; }
+
+  /* ── Chips: sólido, contagem e faixa que rola ── */
+  /* Atual em cor sólida com sombra (a gem usa o --grad). No chip ou na faixa inteira. */
+  :is(.ss-chip.is-solid, .ss-chips.is-solid .ss-chip)[aria-current="true"] {
+    background-image: none; background-color: var(--accent-solid); color: #fff;
+    box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent-solid) 75%, transparent);
+  }
+  /* Contagem dentro do chip (e ao lado de um título): pílula em DM Mono, legível no chip atual. */
+  .ss-chip-count { display: inline-block; min-width: 1.35rem; padding: 0 .35rem; border-radius: 999px; font: 700 .7rem/1.35rem var(--font-mono);
+                   text-align: center; background: color-mix(in srgb, currentColor 14%, transparent); }
+  /* Faixa de chips (filtros, sub-abas): rola de lado sem barra no celular, some na borda
+     para mostrar que tem mais; a partir de 640 px quebra em linhas (.is-scroll rola sempre). */
+  .ss-chips { display: flex; gap: .5rem; overflow-x: auto; padding: .15rem .1rem .45rem; scrollbar-width: none; }
+  .ss-chips::-webkit-scrollbar { display: none; }
+  .ss-chips > * { flex-shrink: 0; }
+  @media (min-width: 640px) { .ss-chips:not(.is-scroll) { flex-wrap: wrap; overflow: visible; } }
+  @media (max-width: 639px) {
+    .ss-chips { padding-right: 2rem;
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); }
+  }
+  .ss-chips.is-scroll { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); padding-right: 2rem; }
+
+  /* ── Linhas de lista num card: ícone, texto, valor e controles na mesma linha ── */
+  .ss-rows { list-style: none; margin: 0; padding: 0; }
+  .ss-rows > li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; padding: .9rem 1.1rem; border-bottom: 1px solid var(--line);
+                  transition: background-color .15s ease; }
+  .ss-rows > li:last-child { border-bottom: 0; }
+  .ss-rows > li:hover { background: color-mix(in srgb, var(--accent) 3%, transparent); }
+  .ss-rows.is-compact > li { padding: .6rem .9rem; }
+
+  /* ── Grupo de botões de comando (abrir/parar/fechar): cada toque manda o comando ── */
+  .ss-btn-group { display: inline-flex; align-items: center; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; background: var(--surface); }
+  .ss-btn-group form { display: contents; }
+  .ss-btn-group :is(button, a) { display: grid; place-items: center; width: 2.5rem; height: 2.25rem; border: 0; background: none; color: var(--ink-2); cursor: pointer;
+                                  text-decoration: none; transition: background-color .15s ease, color .15s ease; }
+  .ss-btn-group :is(button, a) + :is(button, a), .ss-btn-group form + form button { box-shadow: inset 1px 0 0 var(--line); }
+  .ss-btn-group :is(button, a):hover { background: var(--accent-soft); color: var(--accent); }
+  .ss-btn-group :is(button, a):active { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+  .ss-btn-group :is(button, a):disabled { opacity: .45; cursor: not-allowed; }
+  .ss-btn-group svg { width: 1.05rem; height: 1.05rem; }
+
+  /* ── Botão só de ícone (alvo de 40, dica no title/aria-label) ── */
+  .ss-icon-btn { display: inline-grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; padding: 0; border: 0; border-radius: 12px; background: transparent;
+                 color: var(--muted); cursor: pointer; text-decoration: none; position: relative;
+                 transition: background-color .15s ease, color .15s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-icon-btn svg { width: 1.2rem; height: 1.2rem; }
+  .ss-icon-btn:hover { background: var(--field); color: var(--accent); }
+  .ss-icon-btn:active:not(:disabled) { scale: .9; transition-duration: .08s; }
+  .ss-icon-btn:disabled, .ss-icon-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+  .ss-icon-btn.is-tonal { background: var(--field); color: var(--ink-2); border-radius: 999px; }
+  .ss-icon-btn.is-outline { box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); border-radius: 999px; }
+  .ss-icon-btn.is-danger:hover { background: var(--danger-soft); color: var(--danger); }
+  .ss-icon-btn.is-sm { width: 2rem; height: 2rem; border-radius: 10px; }
+  .ss-icon-btn.is-sm svg { width: 1rem; height: 1rem; }
+  .ss-icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .ss-icon-btn > .ss-nav-badge, .ss-icon-btn > [data-badge] { position: absolute; top: .1rem; right: .1rem; }
+  form:has(> .ss-icon-btn) { display: inline-flex; }
+
+  /* ── Ícone tonal: tons e tamanhos ── */
+  .ss-icon-tile.is-accent { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+  .ss-icon-tile.is-grad { background: var(--grad); color: #fff; box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--accent-solid) 80%, transparent); }
+  .ss-icon-tile.is-muted { background: var(--field); color: var(--muted); box-shadow: none; }
+  .ss-icon-tile.is-success { background: var(--success-soft); color: var(--success); box-shadow: none; }
+  .ss-icon-tile.is-warn { background: var(--warn-soft); color: var(--warn); box-shadow: none; }
+  .ss-icon-tile.is-danger { background: var(--danger-soft); color: var(--danger); box-shadow: none; }
+  .ss-icon-tile.is-sm { width: 2.25rem; height: 2.25rem; border-radius: 10px; }
+  .ss-icon-tile.is-sm svg { width: 1.05rem; height: 1.05rem; }
+  .ss-icon-tile.is-lg { width: 3rem; height: 3rem; border-radius: 16px; }
+  .ss-icon-tile.is-lg svg { width: 1.45rem; height: 1.45rem; }
+  .ss-icon-tile.is-circle { border-radius: 999px; }
+
+  /* ── Zona de perigo: ação perigosa separada do resto do cartão ── */
+  .ss-danger-zone { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed color-mix(in srgb, var(--danger) 35%, var(--line)); }
+  .ss-danger-zone-title { margin: 0 0 .25rem; font-size: .85rem; font-weight: 800; color: var(--danger); }
+  .ss-danger-zone > p:not(.ss-danger-zone-title) { margin: 0 0 .75rem; font-size: .85rem; color: var(--muted); }
+
+  /* ── Aviso em linha (não some sozinho): data-tone info|accent|success|warn|danger ── */
+  .ss-callout { --c: var(--ss-info); --c-soft: color-mix(in srgb, var(--ss-info) 12%, var(--surface));
+                display: flex; align-items: flex-start; gap: .65rem; padding: .8rem .95rem; border-radius: 14px; font-size: .875rem; color: var(--ink-2);
+                background: var(--c-soft); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); }
+  .ss-callout[data-tone="accent"] { --c: var(--accent); --c-soft: var(--accent-soft); }
+  .ss-callout[data-tone="success"] { --c: var(--success); --c-soft: var(--success-soft); }
+  .ss-callout[data-tone="warn"] { --c: var(--warn); --c-soft: var(--warn-soft); }
+  .ss-callout[data-tone="danger"] { --c: var(--danger); --c-soft: var(--danger-soft); }
+  .ss-callout > svg, .ss-callout-ico { flex: none; width: 1.25rem; height: 1.25rem; color: var(--c); margin-top: .05rem; }
+  .ss-callout-body { display: grid; gap: .2rem; min-width: 0; flex: 1; }
+  .ss-callout-title { margin: 0; font-weight: 800; color: var(--c); }
+  .ss-callout[data-tone="info"] .ss-callout-title, .ss-callout:not([data-tone]) .ss-callout-title { color: var(--ink); }
+  .ss-callout p { margin: 0; overflow-wrap: anywhere; }
+  .ss-callout ul { margin: .15rem 0 0; padding-left: 1.1rem; list-style: disc; }
+  .ss-callout-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .45rem; }
+
+  /* ── Código: bloco (log, YAML, chave), campo de editar e trecho em linha ── */
+  .ss-code { position: relative; margin: 0; padding: .75rem 2.9rem .75rem .85rem; border-radius: 12px; background: var(--field); color: var(--ink);
+             font: 400 .78rem/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; }
+  .ss-code.is-nowrap { white-space: pre; overflow-wrap: normal; }
+  .ss-code.is-terminal { background: #14121f; color: #e7e4f6; }
+  .ss-code-wrap { position: relative; }
+  .ss-code-wrap > .ss-code-copy { position: absolute; top: .3rem; right: .3rem; }
+  .ss-code-wrap > .ss-code { max-height: var(--ss-code-max, none); }
+  .ss-code-wrap:has(.is-terminal) > .ss-code-copy { color: #b9b4d6; }
+  .ss-code-wrap:has(.is-terminal) > .ss-code-copy:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+  .ss-code-wrap.is-copied > .ss-code-copy { color: var(--success); }
+  .ss-code-copy .ss-code-done, .ss-code-wrap.is-copied .ss-code-copy .ss-code-idle { display: none; }
+  .ss-code-wrap.is-copied .ss-code-copy .ss-code-done { display: block; }
+  textarea.ss-code-input, .ss-input.ss-code-input { font: 400 .82rem/1.55 var(--font-mono); tab-size: 2; white-space: pre; overflow: auto; min-height: 16rem; }
+  .ss-code-inline { padding: .05rem .35rem; border-radius: 6px; background: var(--field); color: var(--ink); font: 400 .8em var(--font-mono); overflow-wrap: anywhere; }
+
+  /* ── Botão flutuante (pílula na cor sólida; .is-icon só o ícone) ── */
+  .ss-fab { position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 40;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 3.5rem; min-width: 3.5rem; padding: 0 1.25rem;
+            border: 0; border-radius: 999px; background: var(--accent-solid); color: #fff; font-weight: 800; font-size: .9rem; text-decoration: none; cursor: pointer;
+            box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent-solid) 80%, transparent);
+            transition: scale var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease; }
+  .ss-fab svg { width: 1.4rem; height: 1.4rem; }
+  .ss-fab.is-icon { padding: 0; width: 3.5rem; }
+  .ss-fab.is-static { position: static; }
+  .ss-fab:hover { box-shadow: 0 16px 32px -12px color-mix(in srgb, var(--accent-solid) 90%, transparent); }
+  .ss-fab:active { scale: .94; transition-duration: .08s; }
+
+  /* ── Divisor, com texto no meio ("ou") ── */
+  hr.ss-divider { border: 0; border-top: 1px solid var(--line); margin: 1rem 0; }
+  div.ss-divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: var(--muted); font-size: .78rem; font-weight: 700; }
+  div.ss-divider::before, div.ss-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* ── Passos numerados (Quando → Só se → Então): .ss-steps conta, .ss-steps-head numera ── */
+  .ss-steps { counter-reset: ss-step; }
+  .ss-steps-head { display: flex; align-items: center; gap: .6rem; counter-increment: ss-step; }
+  .ss-steps-head::before { content: counter(ss-step); display: grid; place-items: center; width: 1.6rem; height: 1.6rem; flex-shrink: 0; border-radius: 999px;
+                           font: 800 .78rem/1 var(--font-mono); color: #fff; background: var(--accent-solid);
+                           box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--accent-solid) 80%, transparent); }
+  .ss-steps-head.is-done::before { content: ""; background: var(--success) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 13l4 4L19 7'/%3E%3C/svg%3E") center / .9rem no-repeat;
+                                   box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--success) 80%, transparent); }
+
+  /* ── Linha de lista com seta: a seta anda um pouco no hover ── */
+  .ss-go > svg:last-child { flex: none; width: 1.1rem; height: 1.1rem; transition: translate .2s ease, color .2s ease; }
+  .ss-go:hover > svg:last-child { translate: 3px 0; color: var(--accent); }
+
+  /* ── <details> de mostrar/esconder: chevron da suíte no lugar do triângulo ── */
+  .ss-summary { display: flex; align-items: center; gap: .5rem; cursor: pointer; border-radius: 10px; list-style: none; }
+  .ss-summary::-webkit-details-marker { display: none; }
+  .ss-summary::before { content: ""; width: 1rem; height: 1rem; flex-shrink: 0; align-self: center; background: currentColor; opacity: .55; rotate: -90deg;
+                        transition: rotate .2s cubic-bezier(.2, .8, .2, 1), opacity .15s, color .15s;
+                        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") center / contain no-repeat;
+                        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") center / contain no-repeat; }
+  details[open] > .ss-summary::before { rotate: 0deg; }
+  .ss-summary:hover::before { opacity: 1; color: var(--accent); }
+
+  /* ── Carregando em anel e tela de abertura ── */
+  .ss-spinner { display: inline-block; flex: none; width: 1.25rem; height: 1.25rem; border-radius: 999px; vertical-align: middle;
+                border: 2px solid color-mix(in srgb, var(--accent) 18%, transparent); border-top-color: var(--accent); animation: ss-spin .8s linear infinite; }
+  .ss-spinner.is-sm { width: 1rem; height: 1rem; }
+  .ss-spinner.is-lg { width: 2rem; height: 2.0rem; border-width: 3px; }
+  .ss-splash { display: grid; place-items: center; align-content: center; gap: 1rem; min-height: 100dvh; padding: 2rem; text-align: center; background: var(--page); }
+  .ss-splash.is-inline { min-height: 16rem; background: none; }
+  .ss-splash-mark { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; }
+  .ss-splash-mark > :is(img, svg) { width: 100%; height: 100%; object-fit: contain; }
+  .ss-splash-title { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--ink); }
+  .ss-splash-wait { display: grid; justify-items: center; gap: .85rem; animation: ss-splash-in .3s ease .3s backwards; }
+  .ss-splash-msg { margin: 0; font-size: .875rem; color: var(--muted); }
+
+  /* ── Barra de topo compacta (tela cheia: mapa, câmera, quiosque, editor) ── */
+  .ss-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: .35rem; min-height: 3.5rem; padding: .35rem .75rem;
+               background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(10px); color: var(--ink); }
+  .ss-topbar.is-static { position: relative; }
+  .ss-topbar-titles { display: grid; min-width: 0; flex: 1; padding-inline: .25rem; }
+  .ss-topbar-title { margin: 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-topbar-sub { font-size: .75rem; font-weight: 600; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-topbar-actions { display: flex; align-items: center; gap: .35rem; flex: none; }
+  .ss-topbar .ss-icon-btn { color: inherit; }
+  .ss-topbar.is-dark { background: #12141c; color: #fff; }
+  .ss-topbar.is-overlay { position: absolute; inset: 0 0 auto; background: linear-gradient(rgba(0, 0, 0, .55), transparent); backdrop-filter: none; color: #fff;
+                          text-shadow: 0 1px 6px rgba(0, 0, 0, .4); padding-bottom: 1.5rem; }
+  :is(.ss-topbar.is-dark, .ss-topbar.is-overlay) .ss-topbar-sub { color: rgba(255, 255, 255, .78); }
+  :is(.ss-topbar.is-dark, .ss-topbar.is-overlay) .ss-icon-btn:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+
+  /* ── Lista de arrastar para ordenar (Ss::SortableListComponent, ss-sortable) ── */
+  .ss-sortable { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ss-sortable-gap, .5rem); }
+  .ss-sortable-item { position: relative; display: flex; align-items: center; gap: .5rem; transition: translate .25s var(--ss-bounce), box-shadow .2s ease, opacity .2s ease; }
+  .ss-sortable-item > .ss-sortable-main { flex: 1; min-width: 0; }
+  .ss-sortable-handle { display: grid; place-items: center; flex: none; width: 2rem; height: 2.5rem; border: 0; border-radius: 10px; background: none; color: var(--muted);
+                        cursor: grab; touch-action: none; }
+  .ss-sortable-handle:hover, .ss-sortable-handle:focus-visible { background: var(--field); color: var(--accent); }
+  .ss-sortable-handle svg { width: 1.1rem; height: 1.1rem; }
+  .ss-sortable-item.is-dragging { z-index: 2; opacity: .92; box-shadow: 0 18px 36px -18px color-mix(in srgb, var(--accent) 60%, transparent); border-radius: var(--r-card); }
+  .ss-sortable-item.is-dragging .ss-sortable-handle { cursor: grabbing; color: var(--accent); }
+  .ss-sortable-item.is-moved { animation: ss-sortable-moved .6s ease; }
+  .ss-sortable.is-busy { cursor: progress; }
+
+  /* ── Pular para o conteúdo: primeiro Tab da página ── */
+  .ss-skip { position: fixed; left: 50%; top: -4rem; z-index: 90; translate: -50% 0; white-space: nowrap; padding: .6rem 1rem; border-radius: 12px;
+             background: var(--accent-solid); color: #fff; font-weight: 700; text-decoration: none; transition: top .15s ease; }
+  .ss-skip:focus { top: .5rem; }
+
+  /* ── Agenda em lista: coluna da hora que cresce (--ss-agl-tw do componente), fim embaixo e dia todo ── */
+  .ss-agl-time { width: var(--ss-agl-tw, 3.2rem); display: grid; align-content: start; gap: .05rem; white-space: nowrap; }
+  .ss-agl-time small { font-size: .7rem; color: var(--muted); opacity: .85; }
+  .ss-agl-time.is-allday { white-space: normal; font-family: var(--font-sans); font-weight: 700; font-size: .72rem; line-height: 1.2; color: var(--ink-2); }
+  .ss-agl-empty { padding-left: calc(1.1rem + var(--ss-agl-tw, 3.2rem) + .7rem + 3px + .7rem); }
+  @media (max-width: 639px) {
+    .ss-agl-time { width: var(--ss-agl-tw, 2.6rem); }
+    .ss-agl-empty { padding-left: calc(.85rem + var(--ss-agl-tw, 2.6rem) + .7rem + 3px + .7rem); }
+  }
+}
+
+/* ── Atalhos de seção: a atual preenchida; no celular vira menu (atual + grade). Fora das
+   camadas, como o .ss-subnav da engine (senão o display e o fundo dele ganham). ── */
+.ss-subnav a { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+.ss-subnav a[aria-current="page"], .ss-subnav a[aria-current="page"]:hover { background: var(--accent-soft); color: var(--accent); font-weight: 700;
+                                                                             border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.ss-subnav-menu { margin-bottom: 1rem; }
+.ss-subnav-current { display: flex; align-items: center; gap: .55rem; padding: .7rem .9rem; border-radius: 14px; cursor: pointer; list-style: none;
+                     background: var(--surface); border: 1px solid var(--line); color: var(--accent); font-weight: 700; font-size: .9rem; }
+.ss-subnav-current::-webkit-details-marker { display: none; }
+.ss-subnav-current > svg { width: 1rem; height: 1rem; flex: none; }
+.ss-subnav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-subnav-count { font-size: .75rem; font-weight: 600; color: var(--muted); }
+.ss-subnav-chevron { transition: rotate .2s ease; color: var(--ink-2); }
+.ss-subnav-menu[open] .ss-subnav-chevron { rotate: 180deg; }
+.ss-subnav-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
+.ss-subnav-grid a { display: flex; align-items: center; gap: .45rem; min-width: 0; padding: .6rem .7rem; border-radius: 12px; font-size: .85rem; font-weight: 600;
+                    color: var(--ink-2); text-decoration: none; background: var(--surface); border: 1px solid var(--line); }
+.ss-subnav-grid a > svg { width: 1rem; height: 1rem; flex: none; }
+.ss-subnav-grid a > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-subnav-grid a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.ss-subnav-wrap > .ss-subnav-menu { display: none; }
+@media (max-width: 1023px) {
+  .ss-subnav-wrap.has-menu > .ss-subnav-menu { display: block; }
+  .ss-subnav-wrap.has-menu > .ss-subnav { display: none; }
+}
+
+@media (max-width: 639px) {
+  .ss-subnav { padding-right: 2rem; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent); }
+  .ss-subnav::-webkit-scrollbar { display: none; }
+}
+
+/* Widget ao vivo recarregando: o turbo-frame.ss-live fica busy e uma faixa fina corre no topo,
+   sem esconder o valor de antes. Fora das camadas (vence o position do conteúdo). */
+turbo-frame.ss-live { display: block; position: relative; }
+turbo-frame.ss-live[busy]::after { content: ""; position: absolute; left: 14px; right: 14px; top: 1px; height: 2px; border-radius: 2px; pointer-events: none; z-index: 3;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent) 0 0 / 50% 100% no-repeat; animation: ss-live-scan 1s ease-in-out infinite; }
+/* .hidden do Tailwind perde para o display das peças: devolve. */
+:is(.ss-chips, .ss-rows, .ss-btn-group, .ss-callout, .ss-fab, .ss-topbar, .ss-splash, .ss-sortable, .ss-subnav-menu).hidden { display: none; }
+
+@keyframes ss-spin { to { rotate: 1turn; } }
+@keyframes ss-splash-in { from { opacity: 0; } }
+@keyframes ss-live-scan { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+@keyframes ss-sortable-moved { 0% { box-shadow: 0 0 0 3px var(--ring); } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-spinner { animation: none; }
+  .ss-splash-wait, .ss-sortable-item, .ss-sortable-item.is-moved, turbo-frame.ss-live[busy]::after { animation: none; transition: none; }
+  .ss-go > svg:last-child, .ss-summary::before, .ss-subnav-chevron, .ss-icon-btn, .ss-fab, .ss-skip,
+  :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]), :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"])::before { transition: none; }
+}

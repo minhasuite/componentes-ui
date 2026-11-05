@@ -1,0 +1,72 @@
+<%# titulo: Barra de topo, atalhos, abertura e ordem | grupo: Tela (v0.10.2) | ordem: 10 %>
+<%# v0.10.2: o que o minha-automacao ainda tinha no produto. Pares Flutter no README. %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+
+<%= demo "Ss::TopBarComponent", "Barra de topo compacta da tela cheia (mapa, câmera, quiosque, editor). variant: :surface, :dark ou :overlay (sobre o conteúdo, com véu).",
+         uso: 'render Ss::TopBarComponent.new(title: "Mapa", subtitle: "Casa", back: site_path(@site), variant: :overlay) { |b| b.with_action { … } }' do %>
+  <div style="display:grid;gap:12px">
+    <div class="ss-card" style="overflow:hidden">
+      <%= render Ss::TopBarComponent.new(title: "Editar painel", subtitle: "Casa da praia", back: "#", sticky: false) do |b| %>
+        <% b.with_action do %><button type="button" class="ss-btn ss-btn-ghost ss-btn-sm">Rascunho</button><% end %>
+        <% b.with_action do %><button type="button" class="ss-btn ss-btn-primary ss-btn-sm">Publicar</button><% end %>
+      <% end %>
+    </div>
+    <div class="ss-card" style="overflow:hidden">
+      <%= render Ss::TopBarComponent.new(title: "Portão · Pessoa", back: "#", variant: :dark, sticky: false) %>
+    </div>
+    <div class="ss-card" style="position:relative;height:150px;overflow:hidden;background:linear-gradient(135deg,#9cc9a4,#6fa5c9)">
+      <%= render Ss::TopBarComponent.new(title: "Mapa", subtitle: "3 pessoas", back: "#", variant: :overlay) do |b| %>
+        <% b.with_action do %><button type="button" class="ss-icon-btn" title="Centralizar" aria-label="Centralizar"><%= ico.("M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3m0 14v3M2 12h3m14 0h3") %></button><% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%= demo "Ss::SubnavComponent", "Atalhos de seção: a atual preenchida na faixa; abaixo de 1024 px vira um menu (a seção atual e, ao abrir, a grade com todas), sem rolar de lado.",
+         uso: 'render Ss::SubnavComponent.new(label: "Configurações", items: [{ label: "Geral", href: …, icon: icon("cog"), current: true }, …])' do %>
+  <%= render Ss::SubnavComponent.new(label: "Configurações", items: [
+        { label: "Geral", href: "#", icon: ico.("M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"), current: true },
+        { label: "Usuários", href: "#", icon: ico.("M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z") },
+        { label: "Integrações", href: "#", icon: ico.("M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3z") },
+        { label: "Sistema", href: "#", icon: ico.("M4 6h16M4 12h16M4 18h16") }]) %>
+<% end %>
+
+<%= demo "Ss::SortableListComponent", "Arrastar pela alça (mouse ou dedo) ou, com o foco nela, ↑/↓. url: manda PATCH { ids } a cada mudança; sem url, só o evento ss-sortable:change.",
+         uso: 'render(Ss::SortableListComponent.new(url: reorder_path, label: "Seções")) { |l| @secoes.each { |s| l.with_item(id: s.id, title: s.title) { … } } }' do %>
+  <%= render Ss::SortableListComponent.new(label: "Seções do painel") do |l| %>
+    <% [["sala", "Sala", "6 widgets", "M4 11h16v6H4zM6 17v2m12-2v2"], ["cozinha", "Cozinha", "3 widgets", "M5 3h14v18H5zM5 10h14"], ["quarto", "Quarto", "4 widgets", "M3 18v-6h18v6M3 12V7h8v5"]].each do |id, t, s, d| %>
+      <% l.with_item(id:, title: t, class: "ss-card") do %>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 8px 10px 0">
+          <span class="ss-icon-tile is-accent is-sm"><%= ico.(d) %></span>
+          <div style="flex:1;min-width:0"><b><%= t %></b><br><small style="color:var(--muted)"><%= s %></small></div>
+          <button type="button" class="ss-icon-btn is-danger" title="Excluir" aria-label="Excluir <%= t %>"><%= ico.("M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3") %></button>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::SplashComponent", "Abertura/espera: marca, nome, o anel e a mensagem (que só aparecem depois de 300 ms). inline: true cabe num card.",
+           uso: 'render(Ss::SplashComponent.new(title: "Minha Automação", message: "Instalando…", inline: true)) { |s| s.with_mark { image_tag "logo.svg", alt: "" } }' do %>
+    <div class="ss-card"><%= render(Ss::SplashComponent.new(title: "Minha Automação", message: "Instalando o app…", inline: true)) { |s| s.with_mark { tag.span(ico.("M3 11l9-7 9 7v9H3z"), class: "ss-icon-tile is-grad is-lg") } } %></div>
+  <% end %>
+  <%= demo ".ss-spinner · .ss-fab", "Anel de carregando (is-sm, is-lg; parado com reduzir movimento) e o botão flutuante (is-icon, is-static fora do canto).",
+           uso: '<span class="ss-spinner"></span> · <a class="ss-fab" href="…">ícone Seção</a>' do %>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <span class="ss-spinner is-sm"></span><span class="ss-spinner"></span><span class="ss-spinner is-lg"></span>
+      <button type="button" class="ss-fab is-static"><%= ico.("M12 5v14M5 12h14") %>Seção</button>
+      <button type="button" class="ss-fab is-static is-icon" title="Novo" aria-label="Novo"><%= ico.("M12 5v14M5 12h14") %></button>
+    </div>
+  <% end %>
+</div>
+
+<%= demo "Ss::PromptDialogComponent", "Pergunta de um campo só: form de verdade (url:) ou por JS (elemento.ssPrompt({ value }).then(…)). O OK fica apagado com o campo vazio.",
+         uso: 'render Ss::PromptDialogComponent.new(id: "nova-secao", title: "Nova seção", label: "Título", url: secoes_path, name: "secao[title]") · <button data-ss-prompt-open="nova-secao">' do %>
+  <%= render Ss::PromptDialogComponent.new(id: "vt-prompt", title: "Nova seção", label: "Título", url: vitrine_path("tela_estrutura"), method: :get, name: "secao", placeholder: "Ex.: Varanda") %>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="ss-btn ss-btn-primary" data-ss-prompt-open="vt-prompt"><%= ico.("M12 5v14M5 12h14") %>Nova seção</button>
+    <button type="button" class="ss-btn ss-btn-outline" data-ss-prompt-open="vt-prompt" data-ss-prompt-value="Sala de estar">Renomear “Sala de estar”</button>
+    <% if params[:secao].present? %><span class="ss-badge ss-badge-success">Enviado: <%= params[:secao] %></span><% end %>
+  </div>
+<% end %>

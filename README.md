@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.10.1
+      ref: v0.10.2
 ```
 
 ```dart
@@ -52,7 +52,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.2"
 ```
 
 ```css
@@ -398,6 +398,45 @@ confirm_title:)`. `OptionCardComponent(url:)`. `JobProgressComponent(stages:, to
 (só no web: o Flutter não tem peça de etapas). `AgendaComponent` com `all_day:`.
 `Ss::BaseComponent` junta `class:` com `css:` (antes descartava).
 
+## v0.10.2: o minha-automacao 100% na gem e no pacote
+
+Tudo aditivo; nada quebra da v0.10.1. É o que o minha-automacao (web e app) ainda tinha
+no produto (`ponte.css`, utilitários soltos nas views, Material cru no app) e que serve a
+qualquer produto. Vitrine Rails: grupo "Tela (v0.10.2)"; vitrine Flutter: seção "Novos na
+v0.10.2 (tela)"; catálogo nos dois lados.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Barra de topo compacta (editor, mapa, câmera; `surface`/`dark`/`overlay`) | `SsTopBar(title:, subtitle:, actions:, style:, onBack:, bottom:)` | `Ss::TopBarComponent(title:, subtitle:, back:, variant:, sticky:)` + `with_action` · `.ss-topbar` |
+| Botão só de ícone (alvo 48, dica = nome lido) | `SsIconButton(icon:, tooltip:, variant: plain/tonal/outline/danger, badge:, selected:)` | `.ss-icon-btn` (`.is-tonal`, `.is-outline`, `.is-danger`, `.is-sm`, `aria-pressed`) |
+| Botão flutuante | `SsFab(icon:, label:, tooltip:)` | `.ss-fab` (`.is-icon`, `.is-static`) |
+| Carregando e abertura | `SsSpinner(size:)`, `SsSplash(logo:, title:, message:, delay:)` | `.ss-spinner` (`.is-sm`, `.is-lg`), `Ss::SplashComponent(title:, message:, inline:)` + `with_mark` |
+| Linhas num card | `SsRows(children:, indent:, card:)` | `.ss-rows` (`.is-compact`) |
+| Arrastar para ordenar | `SsReorderableList(itemCount:, itemBuilder:, onReorder:, spacing:, longPress:)` + `SsDragHandle(index:)` | `Ss::SortableListComponent(url:, param:, name:, label:)` + `with_item(id:, title:)`, `ss-sortable` (ponteiro e ↑/↓) |
+| Zona de perigo | `SsDangerZone(title:, message:, child:)` | `.ss-danger-zone` (+ `.ss-danger-zone-title`) |
+| Aviso em linha | `SsCallout(tone:, title:, message:, child:, actions:)` | `Ss::CalloutComponent(tone:, title:, icon:)` + `with_action` (bloco com `render(...) { }` ou `do … end`) · `.ss-callout[data-tone]` |
+| Código (log, YAML, chave) | `SsCodeBlock(text, terminal:, copy:, maxHeight:, wrap:)` | `Ss::CodeBlockComponent(text:, terminal:, copy:, max_height:, wrap:)` · `.ss-code`, `.ss-code-input`, `.ss-code-inline` |
+| Grupo de botões de comando | `SsButtonGroup(buttons: [SsGroupButton(icon:, tooltip:, onPressed:)], label:)` | `.ss-btn-group` (`form > button` também) |
+| Passo numerado | `SsStepHeading(n, title, subtitle:, trailing:, done:)` | `.ss-steps` + `.ss-steps-head` (`.is-done`) |
+| Divisor com texto | `SsDivider(label:)` | `hr.ss-divider`, `div.ss-divider` |
+| Pergunta de um campo | `showSsPrompt` (já havia) | `Ss::PromptDialogComponent(id:, title:, label:, url:, method:, name:, value:)` + `[data-ss-prompt-open]` / `el.ssPrompt()` |
+| Atalhos de seção (atual preenchida; menu no celular) | — (no app é o `SsMenuView`) | `Ss::SubnavComponent(items:, label:, menu:)` · `.ss-subnav a[aria-current=page]`, `.ss-subnav-menu` |
+| Chips | `SsFilterChip(solid:)`, `SsChipBar(fade:, wrapAbove:)` | `.ss-chip.is-solid` / `.ss-chips.is-solid`, `.ss-chip-count`, `.ss-chips` (`.is-scroll`) |
+| Selos e ícone tonal | `SsBadge(dot:)`, `SsBadgeVariant.muted`, `SsIconTile(gradient:)` | `.ss-badge-dot`, `.ss-badge-muted`, `.ss-icon-tile.is-accent/.is-grad/.is-muted/.is-success/.is-warn/.is-danger/.is-sm/.is-lg/.is-circle` |
+| Agenda em lista | `SsAgendaItem(end:, allDay:)`, `SsAgendaList(timeWidth:)` (coluna mede o texto; a hora nunca quebra) | `events: [{ end:, all_day: }]`, coluna pelo maior horário (todas alinhadas) |
+| Só no web | — | `.ss-inputs` (caixas e rádios soltos desenhados), `.ss-summary`, `.ss-go`, `ss_skip_link` / `.ss-skip`, `turbo-frame.ss-live[busy]` |
+
+**Stimulus novos (web):** `ss-filter` (busca na própria lista, sem acento; `item`, `empty`,
+`group`, `count`), `ss-poll` (JSON `{url}`/`{error}`/`{status}`), `ss-reload` (frame ou
+página a cada N ms, pausa com a aba escondida), `ss-autosubmit` (`#queue` com atraso,
+`#now`), `ss-privacy` (`[data-privacy]` + tecla P), `ss-check-all` (coluna com meio
+marcado), `ss-sortable`, `ss-prompt-dialog`; `ss-copy` ganhou o target `source` (copia o
+`value` de um input) e `ss-theme#toggle` (claro ↔ escuro).
+
+**Textos novos:** Flutter `SsStrings.allDay`, `copy`, `copied`, `dangerZone`; Rails
+`agenda_list.all_day`, `check_all`, `code_block`, `danger_zone`, `prompt_dialog`,
+`skip_link`, `sortable`, `spinner`, `subnav`, `top_bar` (pt-BR, en, es).
+
 ## Verificar
 
 ```bash
@@ -420,6 +459,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.10.2` (05/11/2026): o que faltava para o minha-automacao ficar 100% no pacote e na gem (seção "v0.10.2"): barra de topo, botão de ícone, botão flutuante, carregando/abertura, linhas em card, arrastar para ordenar, zona de perigo, aviso em linha, bloco de código, grupo de comandos, passo numerado, divisor, pergunta de um campo no web, atalhos de seção com menu, chips sólidos e faixa que esmaece, coluna da hora da agenda que cresce, controllers genéricos. Nada quebra; no web o `.ss-subnav` passa a marcar a seção atual (`aria-current=page`) e a esmaecer a borda no celular.
 - `v0.10.1` (04/11/2026): o que a migração do minha-automacao pediu (seção "v0.10.1"). Nada quebra; no web, a marca passa a aparecer na barra do celular do `AppShell` (`mobile_brand: false` desliga) e as regras de `.ss-shell[data-collapsed]` ganharam o seletor do `<html>`.
 - `v0.10.0` (04/11/2026): peças de casa e automação (tabela da seção "v0.10"), idioma pt/en/es nos dois lados, `--accent-solid`, sucesso/perigo AA. Nada quebra: parâmetros de texto que tinham padrão em português ficaram opcionais (passar String continua valendo); no web, o checkbox e o switch ligado usam `--accent-solid`.
 - `v0.9.0` (04/11/2026): paletas, OLED, 58 peças Flutter e 60 componentes Rails (`Ss::*Component` + Stimulus + `ss_form_with`), vitrines Flutter e Rails (seção "v0.9"), movimento com a mola do menu do app em tudo e 28 paletas geradas de `paletas/paletas.json` para os dois lados. A gem passa a depender do `view_component`. Nada quebra da v0.8; no web o `.ss-check` passa a ser desenhado pelo CSS e quatro paletas antigas mudam um pouco de cor (alinhadas ao Flutter).

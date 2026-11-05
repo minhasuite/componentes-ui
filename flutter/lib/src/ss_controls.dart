@@ -135,10 +135,15 @@ class SsFilterChip extends StatelessWidget {
     this.icon,
     this.color,
     this.swatch = false,
+    this.solid = false,
   });
 
   final String label;
   final bool selected;
+
+  /// Marcado em cor sólida da marca com texto branco (em vez da marca a 12%):
+  /// o filtro "atual" das abas de categoria. O `.ss-chip.is-solid` do web.
+  final bool solid;
 
   /// Nulo desabilita: o chip apaga e não responde ao toque.
   final VoidCallback? onTap;
@@ -168,7 +173,8 @@ class SsFilterChip extends StatelessWidget {
     final sobreCor = cor == null
         ? null
         : (ThemeData.estimateBrightnessForColor(cor) == Brightness.light ? const Color(0xFF1A1A2E) : Colors.white);
-    final fg = cheio ? sobreCor! : (selected ? c.accentText : c.ink2);
+    final macico = solid && selected && !cheio && cor == null;
+    final fg = cheio ? sobreCor! : (macico ? AppColors.onDark : (selected ? c.accentText : c.ink2));
     final temIcone = cor == null && (selected || icon != null);
     // Borda que separa a cor do fundo (cor clara no claro, escura no escuro).
     final bordaCor = c.isDark ? Colors.white.withValues(alpha: .28) : Colors.black.withValues(alpha: .22);
@@ -247,8 +253,8 @@ class SsFilterChip extends StatelessWidget {
       // Marcado: anel da marca por fora; senão, a borda que separa a cor clara.
       borda = selected ? Border.all(color: c.accent, width: 2) : Border.all(color: bordaCor);
     } else {
-      fundo = selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface;
-      borda = Border.all(color: selected ? c.accent.withValues(alpha: .35) : c.line);
+      fundo = macico ? c.accentSolid : (selected ? c.accent.withValues(alpha: c.isDark ? .2 : .12) : c.surface);
+      borda = Border.all(color: macico ? c.accentSolid : (selected ? c.accent.withValues(alpha: .35) : c.line));
     }
 
     return Semantics(
@@ -289,7 +295,7 @@ class SsFilterChip extends StatelessWidget {
                       style: AppTheme.number(
                         context,
                         size: AppType.meta,
-                        color: cheio ? fg.withValues(alpha: .75) : (selected ? fg : c.muted),
+                        color: cheio || macico ? fg.withValues(alpha: .8) : (selected ? fg : c.muted),
                       ),
                     ),
                   ],
@@ -304,22 +310,90 @@ class SsFilterChip extends StatelessWidget {
 }
 
 /// Faixa de filtros numa linha só, que rola na horizontal (sem quebrar).
+///
+/// v0.10.2: [fade] apaga a borda direita enquanto há mais chips para rolar
+/// (mostra que tem mais; o `.ss-chips` do web no celular). [wrapAbove] quebra
+/// em várias linhas, sem rolar, quando a largura passa disso (tablet).
 class SsChipBar extends StatelessWidget {
-  const SsChipBar({super.key, required this.children, this.padding = const EdgeInsets.symmetric(horizontal: 16)});
+  const SsChipBar({
+    super.key,
+    required this.children,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    this.fade = false,
+    this.wrapAbove,
+  });
 
   final List<Widget> children;
   final EdgeInsetsGeometry padding;
+  final bool fade;
+  final double? wrapAbove;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    padding: padding,
-    child: Row(
-      children: [
-        for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), children[i]],
-      ],
-    ),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      if (wrapAbove != null && box.maxWidth >= wrapAbove!) {
+        return Padding(
+          padding: padding,
+          child: Wrap(spacing: 8, runSpacing: 8, children: children),
+        );
+      }
+      final faixa = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: fade ? padding.add(const EdgeInsetsDirectional.only(end: 32)) : padding,
+        child: Row(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), children[i]],
+          ],
+        ),
+      );
+      if (!fade) return faixa;
+      return _FaixaEsmaecida(child: faixa);
+    },
   );
+}
+
+/// Some a borda do fim enquanto ainda dá para rolar.
+class _FaixaEsmaecida extends StatefulWidget {
+  const _FaixaEsmaecida({required this.child});
+  final SingleChildScrollView child;
+
+  @override
+  State<_FaixaEsmaecida> createState() => _FaixaEsmaecidaState();
+}
+
+class _FaixaEsmaecidaState extends State<_FaixaEsmaecida> {
+  bool _temMais = true;
+
+  bool _ouvir(ScrollMetrics m) {
+    final mais = m.extentAfter > 1;
+    if (mais != _temMais) setState(() => _temMais = mais);
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (n) => _ouvir(n.metrics),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) => _ouvir(n.metrics),
+        child: ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (r) => LinearGradient(
+            begin: rtl ? Alignment.centerRight : Alignment.centerLeft,
+            end: rtl ? Alignment.centerLeft : Alignment.centerRight,
+            colors: [
+              const Color(0xFF000000),
+              const Color(0xFF000000),
+              _temMais ? const Color(0x00000000) : const Color(0xFF000000),
+            ],
+            stops: [0, r.width <= 40 ? 0 : (r.width - 40) / r.width, 1],
+          ).createShader(r),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
 }
 
 /// Busca "afundada": sem borda, fundo de campo; no foco ganha anel e halo na

@@ -8,6 +8,7 @@ pt-BR:
       label: Agenda
       now: Agora, %{time}
     agenda_list:
+      all_day: 'Dia todo'
       empty: Nada neste dia
       label: Agenda
       today: Hoje
@@ -530,3 +531,30 @@ pt-BR:
       next: Avançar
       step: 'Passo %{n}: %{title}'
       submit: Concluir
+    # v0.10.2
+    check_all:
+      label: 'Marcar todos'
+    code_block:
+      copied: 'Copiado'
+      copy: 'Copiar'
+    danger_zone:
+      title: 'Zona de perigo'
+    prompt_dialog:
+      cancel: 'Cancelar'
+      label: 'Nome'
+      ok: 'Confirmar'
+    skip_link:
+      label: 'Pular para o conteúdo'
+    sortable:
+      down: 'Mover para baixo'
+      handle: 'Arrastar para mudar a ordem: %{title}'
+      label: 'Lista ordenável'
+      moved: 'Movido para a posição %{n} de %{total}'
+      up: 'Mover para cima'
+    spinner:
+      label: 'Carregando'
+    subnav:
+      label: 'Seções'
+      more: '%{n} seções'
+    top_bar:
+      back: 'Voltar'

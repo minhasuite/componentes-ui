@@ -6,6 +6,7 @@ en:
       label: Schedule
       now: Now, %{time}
     agenda_list:
+      all_day: 'All day'
       empty: Nothing this day
       label: Schedule
       today: Today
@@ -528,3 +529,30 @@ en:
       next: Next
       step: 'Step %{n}: %{title}'
       submit: Finish
+    # v0.10.2
+    check_all:
+      label: 'Select all'
+    code_block:
+      copied: 'Copied'
+      copy: 'Copy'
+    danger_zone:
+      title: 'Danger zone'
+    prompt_dialog:
+      cancel: 'Cancel'
+      label: 'Name'
+      ok: 'Confirm'
+    skip_link:
+      label: 'Skip to content'
+    sortable:
+      down: 'Move down'
+      handle: 'Drag to reorder: %{title}'
+      label: 'Sortable list'
+      moved: 'Moved to position %{n} of %{total}'
+      up: 'Move up'
+    spinner:
+      label: 'Loading'
+    subnav:
+      label: 'Sections'
+      more: '%{n} sections'
+    top_bar:
+      back: 'Back'

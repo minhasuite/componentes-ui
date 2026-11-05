@@ -1,0 +1,88 @@
+<%# titulo: Avisos, código, linhas, chips e controllers | grupo: Tela (v0.10.2) | ordem: 20 %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::CalloutComponent · .ss-callout", "Aviso em linha que não some: tom (info, accent, success, warn, danger), ícone por tom, título, corpo e ações. warn/danger viram role=alert.",
+           uso: 'render(Ss::CalloutComponent.new(tone: :warn, title: "Faltam campos")) { tag.ul { … } }' do %>
+    <div style="display:grid;gap:10px">
+      <%= render(Ss::CalloutComponent.new) { "As mudanças valem depois de publicar." } %>
+      <%= render Ss::CalloutComponent.new(tone: :warn, title: "Faltam campos") do |c| %>
+        <% c.with_action do %><a href="#" class="ss-btn ss-btn-outline ss-btn-sm">Revisar</a><% end %>
+        <ul><li>Escolha o aparelho</li><li>Defina o horário</li></ul>
+      <% end %>
+      <%= render(Ss::CalloutComponent.new(tone: :danger, title: "Automação crítica")) { "Ela mexe no alarme." } %>
+      <%= render Ss::CalloutComponent.new(tone: :success, title: "Tudo certo") %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::CodeBlockComponent · .ss-code", "Texto técnico em DM Mono para selecionar e copiar (✓ por 2 s). terminal: fundo escuro; max_height: rola; wrap: false rola de lado. .ss-code-input é o textarea do editor e .ss-code-inline o trecho no texto.",
+           uso: 'render Ss::CodeBlockComponent.new(text: log, terminal: true, max_height: "20rem")' do %>
+    <div style="display:grid;gap:10px">
+      <%= render Ss::CodeBlockComponent.new(text: "alias: Luz da sala\ntrigger:\n  - platform: state\n    to: \"on\"") %>
+      <%= render Ss::CodeBlockComponent.new(text: "14:02:11 INFO  conectado ao broker\n14:02:12 WARN  sala/sensor sem resposta\n14:02:15 INFO  automação \"Bom dia\" rodou", terminal: true, max_height: "8rem") %>
+      <p style="font-size:.875rem">A chave fica em <code class="ss-code-inline">config/secrets.yml</code>.</p>
+    </div>
+  <% end %>
+
+  <%= demo ".ss-rows · .ss-icon-tile (tons) · .ss-badge-dot/-muted · .ss-btn-group · .ss-icon-btn", "Linhas de lista num card com ícone tonal (is-accent, is-grad = ligado, is-muted = desligado), situação com ponto e o grupo de comandos.",
+           uso: '<ul class="ss-card ss-rows"><li><span class="ss-icon-tile is-grad">…</span>…<span class="ss-btn-group">button_to…</span></li></ul>' do %>
+    <ul class="ss-card ss-rows">
+      <li><span class="ss-icon-tile is-grad"><%= ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %></span>
+          <div style="flex:1;min-width:8rem"><b>Luz da sala</b><br><span class="ss-badge ss-badge-success ss-badge-dot">Ligada</span></div>
+          <button type="button" class="ss-icon-btn" title="Editar" aria-label="Editar"><%= ico.("M4 20h4L19 9l-4-4L4 16zM14 6l4 4") %></button></li>
+      <li><span class="ss-icon-tile is-accent"><%= ico.("M4 5h16v10H4zM8 19h8") %></span>
+          <div style="flex:1;min-width:8rem"><b>Cortina</b><br><span class="ss-badge ss-badge-muted">Sem área</span></div>
+          <span class="ss-btn-group" role="group" aria-label="Cortina">
+            <button type="button" title="Abrir" aria-label="Abrir"><%= ico.("M6 15l6-6 6 6") %></button>
+            <button type="button" title="Parar" aria-label="Parar"><%= ico.("M7 7h10v10H7z") %></button>
+            <button type="button" title="Fechar" aria-label="Fechar"><%= ico.("M6 9l6 6 6-6") %></button>
+          </span></li>
+      <li><span class="ss-icon-tile is-muted"><%= ico.("M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0") %></span>
+          <div style="flex:1;min-width:8rem"><b>Tomada da TV</b><br><span class="ss-badge ss-badge-danger ss-badge-dot">Sem sinal</span></div></li>
+    </ul>
+  <% end %>
+
+  <%= demo ".ss-chips · .ss-chip.is-solid · .ss-chip-count", "Faixa de chips que rola de lado no celular (some na borda) e quebra em linhas a partir de 640 px; .is-solid deixa o atual na cor sólida.",
+           uso: '<nav class="ss-chips is-solid"><a class="ss-chip" aria-current="true">Todos <span class="ss-chip-count">24</span></a>…</nav>' do %>
+    <nav class="ss-chips is-solid" aria-label="Tipos">
+      <a href="#" class="ss-chip" aria-current="true">Todos <span class="ss-chip-count">24</span></a>
+      <% [["Luzes", 9], ["Clima", 4], ["Câmeras", 3], ["Sensores", 8]].each do |n, c| %><a href="#" class="ss-chip" aria-current="false"><%= n %> <span class="ss-chip-count"><%= c %></span></a><% end %>
+    </nav>
+  <% end %>
+
+  <%= demo ".ss-steps · .ss-summary · .ss-divider · .ss-danger-zone · .ss-go", "Passos numerados (Quando → Então, .is-done = ✓), <details> com o chevron da suíte, divisor com texto, zona de perigo e a seta que anda no hover.",
+           uso: '<div class="ss-steps"><h2 class="ss-steps-head">Quando</h2>…</div> · <summary class="ss-summary"> · <div class="ss-divider">ou</div> · <div class="ss-danger-zone">' do %>
+    <div class="ss-card ss-card-pad ss-steps" style="display:grid;gap:12px">
+      <h3 class="ss-steps-head is-done">Quando</h3>
+      <h3 class="ss-steps-head">Então</h3>
+      <details><summary class="ss-summary" style="font-weight:700">Opções avançadas</summary><p style="color:var(--muted);padding:6px 0 0 24px">Modo, tempo limite e repetição.</p></details>
+      <div class="ss-divider">ou</div>
+      <a href="#" class="ss-go" style="display:flex;align-items:center;gap:8px;text-decoration:none"><b style="flex:1">Ver histórico</b><%= ico.("M9 6l6 6-6 6") %></a>
+      <div class="ss-danger-zone"><p class="ss-danger-zone-title">Zona de perigo</p><p>Apaga o local e os aparelhos.</p><button type="button" class="ss-btn ss-btn-danger">Excluir local</button></div>
+    </div>
+  <% end %>
+
+  <%= demo "ss-filter · ss-check-all · .ss-inputs", "Busca na própria lista (sem acento e sem caixa) e “marcar todos” com meio-marcado. .ss-inputs desenha toda caixa solta.",
+           uso: 'data-controller="ss-filter" (input/item/empty) · data-controller="ss-check-all" (all + data-col) · <body class="ss-inputs">' do %>
+    <div class="ss-card ss-card-pad ss-inputs" data-controller="ss-filter ss-check-all" style="display:grid;gap:10px">
+      <input type="search" class="ss-input" placeholder="Filtrar" data-ss-filter-target="input" data-action="input->ss-filter#apply keydown.esc->ss-filter#clear">
+      <label style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" data-ss-check-all-target="all" data-ss-check-all-col-param="v" data-action="ss-check-all#toggle"> Expor todos</label>
+      <% %w[Luz\ da\ sala Cortina Ar-condicionado Câmera\ do\ portão].each_with_index do |n, i| %>
+        <label data-ss-filter-target="item" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-col="v" data-action="ss-check-all#sync" <%= "checked" if i.even? %>> <%= n %></label>
+      <% end %>
+      <p data-ss-filter-target="empty" hidden style="color:var(--muted)">Nada encontrado.</p>
+      <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="vt-r" checked> Rádio</label>
+    </div>
+  <% end %>
+</div>
+
+<%= demo "Ss::AgendaListComponent (v0.10.2)", "end: vai embaixo da hora, all_day: mostra “Dia todo” e a coluna cresce até o horário mais largo (15:00–16:00 numa linha).",
+         uso: 'events: [{ time: "15:00–16:00", title: }, { time: "18:30", end: "19:15", title: }, { all_day: true, title: }]' do %>
+  <div class="ss-card" style="padding:0;max-width:26rem">
+    <%= render Ss::AgendaListComponent.new(now: Time.zone.local(2026, 11, 5, 9), days: [
+          { date: Date.new(2026, 11, 5), events: [{ all_day: true, title: "Feriado municipal", tone: :info },
+                                                  { time: "15:00–16:00", title: "Reunião do condomínio", detail: "Salão" },
+                                                  { time: "18:30", end: "19:15", title: "Academia", tone: :success }] },
+          { date: Date.new(2026, 11, 6), events: [] }]) %>
+  </div>
+<% end %>

@@ -347,6 +347,10 @@ class SsStrings {
     required this.colorBrightness,
     required this.colorHex,
     required this.colorHexInvalid,
+    required this.allDay,
+    required this.copy,
+    required this.copied,
+    required this.dangerZone,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -818,6 +822,18 @@ class SsStrings {
   final String colorHex;
   final String colorHexInvalid;
 
+  /// Compromisso sem hora (SsAgendaList).
+  final String allDay;
+
+  /// Botão de copiar (SsCodeBlock).
+  final String copy;
+
+  /// Depois de copiar (SsCodeBlock).
+  final String copied;
+
+  /// Título padrão do SsDangerZone.
+  final String dangerZone;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1171,6 +1187,10 @@ class SsStrings {
     colorBrightness: 'Brilho',
     colorHex: 'Código hex',
     colorHexInvalid: 'Use o formato #RRGGBB',
+    allDay: 'Dia todo',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    dangerZone: 'Zona de perigo',
   );
 
   /// Inglês.
@@ -1512,6 +1532,10 @@ class SsStrings {
     colorBrightness: 'Brightness',
     colorHex: 'Hex code',
     colorHexInvalid: 'Use the #RRGGBB format',
+    allDay: 'All day',
+    copy: 'Copy',
+    copied: 'Copied',
+    dangerZone: 'Danger zone',
   );
 
   /// Espanhol.
@@ -1853,6 +1877,10 @@ class SsStrings {
     colorBrightness: 'Brillo',
     colorHex: 'Código hex',
     colorHexInvalid: 'Usa el formato #RRGGBB',
+    allDay: 'Todo el día',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    dangerZone: 'Zona de peligro',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2181,6 +2209,10 @@ class SsStrings {
     'colorBrightness': colorBrightness,
     'colorHex': colorHex,
     'colorHexInvalid': colorHexInvalid,
+    'allDay': allDay,
+    'copy': copy,
+    'copied': copied,
+    'dangerZone': dangerZone,
   };
 
   /// Os idiomas prontos.
@@ -2544,6 +2576,10 @@ class SsStrings {
     String? colorBrightness,
     String? colorHex,
     String? colorHexInvalid,
+    String? allDay,
+    String? copy,
+    String? copied,
+    String? dangerZone,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -2869,6 +2905,10 @@ class SsStrings {
     colorBrightness: colorBrightness ?? this.colorBrightness,
     colorHex: colorHex ?? this.colorHex,
     colorHexInvalid: colorHexInvalid ?? this.colorHexInvalid,
+    allDay: allDay ?? this.allDay,
+    copy: copy ?? this.copy,
+    copied: copied ?? this.copied,
+    dangerZone: dangerZone ?? this.dangerZone,
   );
 }
 

@@ -366,7 +366,15 @@ class SsAvatarStack extends StatelessWidget {
 /// Ícone num quadrado (ou círculo) no tom da cor a 14% (20% no escuro): o
 /// "ícone tonal" dos itens, cabeçalhos e estados. Sem [tone], a cor da marca.
 class SsIconTile extends StatelessWidget {
-  const SsIconTile(this.icon, {super.key, this.size = 42, this.tone, this.circle = false, this.filled = false});
+  const SsIconTile(
+    this.icon, {
+    super.key,
+    this.size = 42,
+    this.tone,
+    this.circle = false,
+    this.filled = false,
+    this.gradient = false,
+  });
 
   final IconData icon;
   final double size;
@@ -376,6 +384,10 @@ class SsIconTile extends StatelessWidget {
   /// Fundo cheio na cor e ícone claro (ex.: concluído em verde).
   final bool filled;
 
+  /// Fundo no gradiente da marca e ícone claro: o "ligado" (o
+  /// `.ss-icon-tile.is-grad` do web). Ganha de [filled] e de [tone].
+  final bool gradient;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -384,11 +396,15 @@ class SsIconTile extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: filled ? cor : cor.withValues(alpha: c.isDark ? .2 : .14),
+        color: gradient ? null : (filled ? cor : cor.withValues(alpha: c.isDark ? .2 : .14)),
+        gradient: gradient
+            ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [c.brandFrom, c.brandTo])
+            : null,
+        boxShadow: gradient ? c.primaryShadow : null,
         shape: circle ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: circle ? null : BorderRadius.circular(size * .31),
       ),
-      child: Icon(icon, size: size * .5, color: filled ? AppColors.onDark : cor),
+      child: Icon(icon, size: size * .5, color: filled || gradient ? AppColors.onDark : cor),
     );
   }
 }

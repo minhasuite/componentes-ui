@@ -27,6 +27,14 @@ export default class extends Controller {
 
   disconnect() { window.removeEventListener("ss-theme:change", this.remark) }
 
+  // v0.10.2: alterna claro/escuro a partir do que está na tela (botão "Tema" do menu).
+  //   <button data-action="ss-theme#toggle">
+  toggle() {
+    const t = document.documentElement.dataset.theme
+    const dark = t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)
+    this.set({ params: { theme: dark ? "light" : "dark" } })
+  }
+
   set({ params }) {
     const run = () => {
       if (params.theme) {

@@ -2,12 +2,30 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 
-enum SsBadgeVariant { accent, success, warning, danger, ghost, aquec }
+enum SsBadgeVariant {
+  accent,
+  success,
+  warning,
+  danger,
+  ghost,
+  aquec,
+
+  /// Neutro sobre o fundo de campo, texto escuro (o `.ss-badge-muted` do web):
+  /// rascunho, "sem área", contagem que não pede atenção.
+  muted,
+}
 
 /// Badge pill "soft" do design system: fundo dessaturado + texto na cor. Espelha
 /// `.mp-badge` (font 11/700, pill). `micro` = variante compacta (10/700, uppercase).
 class SsBadge extends StatelessWidget {
-  const SsBadge(this.label, {super.key, this.variant = SsBadgeVariant.accent, this.micro = false, this.icon});
+  const SsBadge(
+    this.label, {
+    super.key,
+    this.variant = SsBadgeVariant.accent,
+    this.micro = false,
+    this.icon,
+    this.dot = false,
+  });
 
   final String label;
   final SsBadgeVariant variant;
@@ -15,6 +33,10 @@ class SsBadge extends StatelessWidget {
 
   /// Ícone antes do texto, na cor do texto.
   final IconData? icon;
+
+  /// Ponto na cor do texto antes do rótulo (situação: online, offline). O
+  /// `.ss-badge-dot` do web. Ignorado quando há [icon].
+  final bool dot;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +62,9 @@ class SsBadge extends StatelessWidget {
       case SsBadgeVariant.aquec:
         fg = c.aquecText;
         bg = c.aquecSoft;
+      case SsBadgeVariant.muted:
+        fg = c.ink2;
+        bg = c.field;
     }
     return Semantics(
       label: label,
@@ -50,7 +75,17 @@ class SsBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[Icon(icon, size: micro ? 11 : 13, color: fg), const SizedBox(width: 4)],
+            if (icon != null) ...[
+              Icon(icon, size: micro ? 11 : 13, color: fg),
+              const SizedBox(width: 4),
+            ] else if (dot) ...[
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 5),
+            ],
             Text(
               micro ? label.toUpperCase() : label,
               style: TextStyle(

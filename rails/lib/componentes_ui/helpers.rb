@@ -103,6 +103,14 @@ module ComponentesUi
       %(<script#{attr} data-ss-shell-head>#{APP_SHELL_HEAD_JS}</script>).html_safe
     end
 
+    # v0.10.2: "Pular para o conteúdo" (.ss-skip), o primeiro Tab da página. Ponha logo no
+    # começo do <body>; o alvo precisa de id (o <main> do AppShell é #conteudo, com tabindex=-1).
+    #   <%= ss_skip_link %>   <%= ss_skip_link("#principal", "Ir para a lista") %>
+    def ss_skip_link(target = "#conteudo", label = nil)
+      label ||= ss_t("skip_link.label", default: "Pular para o conteúdo")
+      %(<a href="#{ERB::Util.html_escape(target)}" class="ss-skip">#{ERB::Util.html_escape(label)}</a>).html_safe
+    end
+
     # Nome da paleta e da família no idioma da página (paletas.rb tem o pt-BR, gerado).
     def ss_palette_name(slug)
       pt = ComponentesUi::PALETAS[slug.to_s] if defined?(ComponentesUi::PALETAS)
