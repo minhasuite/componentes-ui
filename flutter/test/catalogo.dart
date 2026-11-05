@@ -675,6 +675,7 @@ final catalogo = comV08(<Componente>[
       'onTap nulo desabilita: o chip apaga (45%) e não responde ao toque.',
       'color: bolinha da cor antes do texto, com borda para a cor clara aparecer; marcado, o ✓ fica dentro dela.',
       'color com swatch: true pinta o chip inteiro (texto claro ou escuro conforme a cor); marcado ganha o anel da marca.',
+      'v0.10.3 SsChipBar(currentIndex:): rola só a faixa até o chip atual (perto do meio) ao abrir e quando muda; sem animação com "reduzir movimento".',
     ],
     estados: [
       Estado(
@@ -686,6 +687,28 @@ final catalogo = comV08(<Componente>[
               SsFilterChip('Todos', selected: false, onTap: _nada, count: 48),
               SsFilterChip('Com vencido', selected: true, onTap: _nada, count: 6),
               SsFilterChip('Sem compra', selected: false, onTap: _nada),
+            ],
+          ),
+        ),
+      ),
+      Estado(
+        'atual-a-vista',
+        'v0.10.3: currentIndex rola até o atual',
+        (_) => Center(
+          child: SsChipBar(
+            currentIndex: 6,
+            children: [
+              for (final (i, n) in const [
+                'Todos',
+                'Sala',
+                'Cozinha',
+                'Quarto',
+                'Varanda',
+                'Garagem',
+                'Jardim',
+                'Escritório',
+              ].indexed)
+                SsFilterChip(n, selected: i == 6, onTap: _nada),
             ],
           ),
         ),

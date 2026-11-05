@@ -314,39 +314,90 @@ class SsFilterChip extends StatelessWidget {
 /// v0.10.2: [fade] apaga a borda direita enquanto há mais chips para rolar
 /// (mostra que tem mais; o `.ss-chips` do web no celular). [wrapAbove] quebra
 /// em várias linhas, sem rolar, quando a largura passa disso (tablet).
-class SsChipBar extends StatelessWidget {
+///
+/// v0.10.3: [currentIndex] é o chip atual: ao abrir e quando muda, a faixa rola
+/// (só ela) até ele ficar à vista, perto do meio; sem animação com "reduzir
+/// movimento" (o `ss-scroll-current` do web).
+class SsChipBar extends StatefulWidget {
   const SsChipBar({
     super.key,
     required this.children,
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
     this.fade = false,
     this.wrapAbove,
+    this.currentIndex,
   });
 
   final List<Widget> children;
   final EdgeInsetsGeometry padding;
   final bool fade;
   final double? wrapAbove;
+  final int? currentIndex;
+
+  @override
+  State<SsChipBar> createState() => _SsChipBarState();
+}
+
+class _SsChipBarState extends State<SsChipBar> {
+  final _chaves = <int, GlobalKey>{};
+
+  GlobalKey _chave(int i) => _chaves.putIfAbsent(i, GlobalKey.new);
+
+  @override
+  void initState() {
+    super.initState();
+    _revelar(animar: false);
+  }
+
+  @override
+  void didUpdateWidget(SsChipBar old) {
+    super.didUpdateWidget(old);
+    if (old.currentIndex != widget.currentIndex) _revelar(animar: true);
+  }
+
+  void _revelar({required bool animar}) {
+    final i = widget.currentIndex;
+    if (i == null || i < 0 || i >= widget.children.length) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _chaves[i]?.currentContext;
+      final faixa = ctx == null ? null : Scrollable.maybeOf(ctx);
+      final alvo = ctx?.findRenderObject();
+      if (!mounted || faixa == null || alvo == null || axisDirectionToAxis(faixa.axisDirection) != Axis.horizontal) {
+        return;
+      }
+      // Só a faixa (o Scrollable.ensureVisible rolaria também a página).
+      faixa.position.ensureVisible(
+        alvo,
+        alignment: .5,
+        duration: animar && !reduceMotion(context) ? SsMotion.base : Duration.zero,
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
-      if (wrapAbove != null && box.maxWidth >= wrapAbove!) {
+      final children = widget.children;
+      if (widget.wrapAbove != null && box.maxWidth >= widget.wrapAbove!) {
         return Padding(
-          padding: padding,
+          padding: widget.padding,
           child: Wrap(spacing: 8, runSpacing: 8, children: children),
         );
       }
       final faixa = SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: fade ? padding.add(const EdgeInsetsDirectional.only(end: 32)) : padding,
+        padding: widget.fade ? widget.padding.add(const EdgeInsetsDirectional.only(end: 32)) : widget.padding,
         child: Row(
           children: [
-            for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(width: 8), children[i]],
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) const SizedBox(width: 8),
+              widget.currentIndex == null ? children[i] : KeyedSubtree(key: _chave(i), child: children[i]),
+            ],
           ],
         ),
       );
-      if (!fade) return faixa;
+      if (!widget.fade) return faixa;
       return _FaixaEsmaecida(child: faixa);
     },
   );

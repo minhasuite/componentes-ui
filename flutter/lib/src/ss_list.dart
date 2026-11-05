@@ -374,6 +374,7 @@ class SsIconTile extends StatelessWidget {
     this.circle = false,
     this.filled = false,
     this.gradient = false,
+    this.onGradient = false,
   });
 
   final IconData icon;
@@ -388,10 +389,28 @@ class SsIconTile extends StatelessWidget {
   /// `.ss-icon-tile.is-grad` do web). Ganha de [filled] e de [tone].
   final bool gradient;
 
+  /// Para pôr sobre o gradiente da marca (herói, [SsAuroraCard]): branco
+  /// translúcido com fio claro e ícone branco (v0.10.3; o
+  /// `.ss-icon-tile.is-on-grad` do web). Ganha dos outros.
+  final bool onGradient;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final cor = tone ?? c.accent;
+    if (onGradient) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: AppColors.onDark.withValues(alpha: .18),
+          border: Border.all(color: AppColors.onDark.withValues(alpha: .22)),
+          shape: circle ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: circle ? null : BorderRadius.circular(size * .31),
+        ),
+        child: Icon(icon, size: size * .5, color: AppColors.onDark),
+      );
+    }
     return Container(
       width: size,
       height: size,

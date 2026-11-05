@@ -194,7 +194,10 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
                 onPressed: onBack ?? () => Navigator.of(context).maybePop(),
               )
             : null);
-    final estiloTitulo = TextStyle(
+    // Do tema (Manrope): o AppBar troca o DefaultTextStyle pelo titleTextStyle,
+    // então um TextStyle cru cairia na fonte do sistema.
+    final tema = Theme.of(context).textTheme;
+    final estiloTitulo = (tema.titleLarge ?? const TextStyle()).copyWith(
       color: fg,
       fontSize: AppType.lg,
       fontWeight: FontWeight.w800,
@@ -212,50 +215,56 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
             subtitle!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: (tema.bodySmall ?? const TextStyle()).copyWith(
               color: claro ? AppColors.onDarkSoft : c.muted,
               fontSize: AppType.meta,
               fontWeight: FontWeight.w600,
+              shadows: style == SsTopBarStyle.overlay ? const [Shadow(color: Color(0x66000000), blurRadius: 6)] : null,
             ),
           ),
         ],
       );
     }
+    final Widget barra = AppBar(
+      backgroundColor: bg,
+      foregroundColor: fg,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      leading: volta,
+      titleSpacing: volta == null ? 16 : 4,
+      centerTitle: centerTitle,
+      title: tituloW,
+      titleTextStyle: estiloTitulo,
+      iconTheme: IconThemeData(color: fg),
+      actionsIconTheme: IconThemeData(color: fg),
+      systemOverlayStyle: claro || c.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      actions: [
+        for (final a in actions) Padding(padding: const EdgeInsets.only(left: 4), child: a),
+        const SizedBox(width: 8),
+      ],
+      bottom: bottom,
+    );
+    // Sobreposto: o véu fica atrás da barra inteira (status bar + barra + faixa
+    // de baixo). No flexibleSpace, sem tamanho, ele sumia (altura zero).
+    final Widget corpo = style == SsTopBarStyle.overlay
+        ? DecoratedBox(
+            key: const ValueKey('ss-topbar-scrim'),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0x8C000000), Color(0x00000000)],
+              ),
+            ),
+            child: barra,
+          )
+        : barra;
     return IconButtonTheme(
       data: IconButtonThemeData(style: IconButton.styleFrom(foregroundColor: fg)),
-      child: AppBar(
-        backgroundColor: bg,
-        foregroundColor: fg,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        leading: volta,
-        titleSpacing: volta == null ? 16 : 4,
-        centerTitle: centerTitle,
-        title: tituloW,
-        titleTextStyle: estiloTitulo,
-        iconTheme: IconThemeData(color: fg),
-        actionsIconTheme: IconThemeData(color: fg),
-        systemOverlayStyle: claro || c.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        flexibleSpace: style == SsTopBarStyle.overlay
-            ? const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x8C000000), Color(0x00000000)],
-                  ),
-                ),
-              )
-            : null,
-        actions: [
-          for (final a in actions) Padding(padding: const EdgeInsets.only(left: 4), child: a),
-          const SizedBox(width: 8),
-        ],
-        bottom: bottom,
-      ),
+      child: corpo,
     );
   }
 }

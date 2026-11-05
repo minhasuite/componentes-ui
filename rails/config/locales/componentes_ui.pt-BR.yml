@@ -218,6 +218,7 @@ pt-BR:
       shortcuts_label: Atalhos de período
       to: Até
     device_tile:
+      more: Mais opções de %{name}
       details: Abrir detalhes de %{name}
       error: Não respondeu
       locked: Sem permissão
@@ -319,6 +320,8 @@ pt-BR:
       volume_down: Diminuir volume
       volume_up: Aumentar volume
     mic_button:
+      hold: Segure para falar
+      release: Ouvindo, solte para enviar
       error: Erro no microfone, toque para tentar de novo
       idle: Falar
       listening: Ouvindo, toque para parar

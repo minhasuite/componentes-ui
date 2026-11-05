@@ -1,0 +1,90 @@
+<%# titulo: Segurar para falar, filtros, opções e chips | grupo: Tela (v0.10.3) | ordem: 10 %>
+<%# v0.10.3: o que a migração do minha-automacao (app e web) para a v0.10.2 achou. Pares Flutter no README. %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% bulb = ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %>
+<% plug = ico.("M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4") %>
+<% gate = ico.("M3 21V9l9-6 9 6v12M7 21v-8h10v8M7 17h10") %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::MicButtonComponent(hold: true, compact: true)", "Segurar para falar: encostar dispara ss-mic:hold-start, soltar ss-mic:hold-end, arrastar para longe ss-mic:hold-cancel. Espaço/Enter seguram; o leitor de tela alterna com um clique. Compacto cabe ao lado do campo de mensagem.",
+           uso: 'render Ss::MicButtonComponent.new(hold: true, compact: true, size: 44)' do %>
+    <form class="ss-card" style="display:flex;gap:8px;align-items:center;padding:8px 8px 8px 16px" onsubmit="return false">
+      <input class="ss-input" style="flex:1" placeholder="Pergunte à casa…" aria-label="Mensagem">
+      <%= render Ss::MicButtonComponent.new(hold: true, compact: true, size: 44) %>
+    </form>
+    <div style="display:flex;gap:24px;align-items:center;margin-top:12px">
+      <%= render Ss::MicButtonComponent.new(hold: true, compact: true, size: 44, state: :listening, level: 0.7) %>
+      <%= render Ss::MicButtonComponent.new(hold: true, compact: true, size: 44, state: :processing) %>
+      <%= render Ss::MicButtonComponent.new(hold: true, size: 56) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::DeviceTileComponent(more_url:)", "O ⋯ abre o menu do aparelho; o clique direito (ou o toque longo no celular) do tile vai para ele, como o onLongPress do app. No modo aperto, url: vira o ⋯.",
+           uso: 'render Ss::DeviceTileComponent.new(name:, url:, toggle_url:, more_url: menu_ponto_path(p))' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <%= render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada · 80%", on: true, icon: bulb, url: "#", toggle_url: "#", more_url: "#menu") %>
+      <%= render Ss::DeviceTileComponent.new(name: "Portão", state: "Fechado", icon: gate, url: "#detalhes", action_url: "#") %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::FilterBarComponent (arrays e url com query)", "multiple: true usa tipo[] (um chip por valor, o × tira só aquele); a busca leva os filtros (name[] e name[k]); url: \"/pontos?site_id=3\" mantém o site_id em todo link e no Limpar filtros.",
+           uso: 'Ss::FilterBarComponent.new(url: pontos_path(site_id: 3), filters: [{ param: :tipo, multiple: true, label: "Tipo", options: [...] }])' do %>
+    <%= render Ss::FilterBarComponent.new(url: "/vitrine/tela_v103?site_id=3", params: { "site_id" => "3", "tipo" => %w[luz tomada] },
+                                          views: [{ label: "Todos", params: {} }, { label: "Só luzes", params: { tipo: ["luz"] } }],
+                                          filters: [{ param: :tipo, label: "Tipo", multiple: true, options: [["Luz", "luz"], ["Tomada", "tomada"], ["Sensor", "sensor"]] }]) %>
+  <% end %>
+
+  <%= demo "Ss::OptionCardComponent(dense:, vertical:, id:, input:)", "Compacto para lista longa; vertical (ícone em cima) em .ss-option-grid.is-tiles; id: e input: {} vão no <input>.",
+           uso: 'render Ss::OptionCardComponent.new(name: "tipo", value: "tuya", title: "Tuya", vertical: true, id: "tipo_tuya")' do %>
+    <div class="ss-option-grid is-tiles" role="radiogroup" aria-label="Integração">
+      <%= render Ss::OptionCardComponent.new(name: "integ", value: "tuya", title: "Tuya", icon: plug, vertical: true, checked: true, id: "integ_tuya") %>
+      <%= render Ss::OptionCardComponent.new(name: "integ", value: "zigbee", title: "Zigbee", icon: bulb, vertical: true) %>
+      <%= render Ss::OptionCardComponent.new(name: "integ", value: "mqtt", title: "MQTT", icon: gate, vertical: true) %>
+    </div>
+    <div class="ss-option-grid" role="radiogroup" aria-label="Cômodo" style="display:grid;gap:6px;margin-top:12px">
+      <% %w[Sala Cozinha Quarto].each_with_index do |c, i| %>
+        <%= render Ss::OptionCardComponent.new(name: "comodo", value: c, title: c, description: "#{i + 2} aparelhos · última atividade há #{i + 1} min", icon: bulb, dense: true, checked: i.zero?) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo ".ss-chip com caixa de marcar · aria-current=page · ss-scroll-current", "Filtro em form sem JS: <label class=\"ss-chip\"><input type=checkbox> Luzes</label>. aria-current=\"page\" vale como \"true\". A faixa rola até o atual.",
+           uso: '<div class="ss-chips is-scroll" data-controller="ss-scroll-current"><label class="ss-chip"><input type="checkbox" name="tipo[]" value="luz"> Luzes</label>…</div>' do %>
+    <div class="ss-chips is-scroll" data-controller="ss-scroll-current" style="max-width:20rem">
+      <% %w[Luzes Tomadas Sensores Câmeras Cortinas Clima Portões Alarmes].each_with_index do |n, i| %>
+        <label class="ss-chip"><input type="checkbox" name="tipo[]" value="<%= n %>" <%= "checked" if [0, 6].include?(i) %>> <%= n %></label>
+      <% end %>
+    </div>
+    <div class="ss-chips is-solid" style="margin-top:8px">
+      <a class="ss-chip" href="#" aria-current="page">Geral</a><a class="ss-chip" href="#">Usuários</a><a class="ss-chip" href="#">Backup</a>
+    </div>
+  <% end %>
+
+  <%= demo ".ss-checklist (linha inteira) · .ss-tag com link · .ss-icon-tile.is-on-grad", "A linha toda marca e o texto é riscado; o × da etiqueta também como link; ícone tonal sobre o gradiente.",
+           uso: '<ul class="ss-checklist"><li><label><input type="checkbox" name="passo[]"> Texto</label></li></ul>' do %>
+    <ul class="ss-checklist">
+      <li><label><input type="checkbox" checked> Conectar o hub</label></li>
+      <li><label><input type="checkbox"> Adicionar a primeira luz</label></li>
+      <li><label><input type="checkbox"> Criar uma cena</label></li>
+    </ul>
+    <p style="display:flex;gap:6px;margin:12px 0"><span class="ss-tag">sala <a href="#" aria-label="Tirar sala">×</a></span><span class="ss-tag">noite <button type="button" aria-label="Tirar noite">×</button></span></p>
+    <div class="ss-grad" style="display:flex;gap:10px;align-items:center;padding:14px;border-radius:16px">
+      <span class="ss-icon-tile is-on-grad"><%= bulb %></span><b>12 aparelhos ligados</b>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::SubnavComponent(layout: :tabs)", "No desktop, abas numa linha com o traço embaixo da atual; no celular, o menu de sempre.",
+           uso: 'render Ss::SubnavComponent.new(items:, layout: :tabs)' do %>
+    <%= render Ss::SubnavComponent.new(layout: :tabs, items: [{ label: "Geral", href: "#", current: true }, { label: "Usuários", href: "#u" },
+                                                             { label: "Integrações", href: "#i" }, { label: "Backup", href: "#b" }]) %>
+  <% end %>
+
+  <%= demo "turbo-frame.ss-live.contents · .ss-base", "O frame ao vivo aceita display: contents (os filhos pulsam ao recarregar). .ss-base no <body> tira o marcador dos <summary> e corta o movimento com “reduzir movimento”; .ss-reduce-motion no <html> corta sempre.",
+           uso: '<turbo-frame id="w1" class="ss-live contents" src="…">' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <turbo-frame id="vt-live" class="ss-live contents" busy>
+        <div class="ss-card" style="padding:12px">21,5 °C</div><div class="ss-card" style="padding:12px">58 %</div>
+      </turbo-frame>
+    </div>
+  <% end %>
+</div>

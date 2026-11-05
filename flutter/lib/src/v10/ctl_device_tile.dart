@@ -39,6 +39,11 @@ enum SsDeviceStatus {
 /// botão) no lugar de abrir os detalhes, depois de confirmar quando há
 /// [confirm]. [color] aceita a cor real da luz, mesmo clara (amarelo-claro,
 /// branco quente): o ícone troca para tinta escura para continuar legível.
+///
+/// Toque longo ([onLongPress], v0.10.3): menu ou detalhes, com vibração e a
+/// ação no leitor de tela ([longPressLabel], padrão "Mais opções"). Vale em
+/// qualquer situação, até indisponível (para editar ou remover). [onDoubleTap]
+/// é um atalho (ex. alternar): o toque simples passa a esperar o tempo do duplo.
 class SsDeviceTile extends StatelessWidget {
   const SsDeviceTile({
     super.key,
@@ -64,6 +69,9 @@ class SsDeviceTile extends StatelessWidget {
     this.confirm,
     this.confirmTitle,
     this.pressLabel,
+    this.onLongPress,
+    this.longPressLabel,
+    this.onDoubleTap,
   });
 
   final IconData icon;
@@ -92,6 +100,15 @@ class SsDeviceTile extends StatelessWidget {
 
   /// Dica do leitor de tela no modo ação (padrão: "Acionar").
   final String? pressLabel;
+
+  /// Toque longo: menu do aparelho, detalhes no modo ação, editar.
+  final VoidCallback? onLongPress;
+
+  /// Nome da ação do toque longo no leitor de tela (padrão: [SsStrings.moreOptions]).
+  final String? longPressLabel;
+
+  /// Toque duplo (atalho; o toque simples espera o tempo do duplo).
+  final VoidCallback? onDoubleTap;
 
   /// Chave rápida: recebe o estado pedido. Sem ela, não há chave.
   final ValueChanged<bool>? onToggle;
@@ -261,6 +278,8 @@ class SsDeviceTile extends StatelessWidget {
             label: semantica,
             hint: toque != null ? dica : null,
             onTap: toque,
+            onLongPress: onLongPress,
+            onLongPressHint: onLongPress == null ? null : longPressLabel ?? s.moreOptions,
             container: true,
             child: corpo,
           ),
@@ -274,7 +293,15 @@ class SsDeviceTile extends StatelessWidget {
         child: tile,
       );
     }
-    final clicavel = toque == null ? tile : SsPressable(scale: onPress != null ? .95 : .98, onTap: toque, child: tile);
+    final clicavel = toque == null && onLongPress == null && onDoubleTap == null
+        ? tile
+        : SsPressable(
+            scale: onPress != null ? .95 : .98,
+            onTap: toque,
+            onLongPress: onLongPress,
+            onDoubleTap: onDoubleTap,
+            child: tile,
+          );
     return AnimatedOpacity(opacity: _available ? 1 : .72, duration: dur, child: clicavel);
   }
 

@@ -21,6 +21,12 @@ module Ss
   # - confirm_title: também vale para a chave (toggle_url:).
   # - link_data: data-* do link de detalhes (ex. { turbo_frame: "_top" }).
   # - Cor real da luz: tone: "rgb(255, 200, 120)" (qualquer cor CSS simples já valia).
+  #
+  # v0.10.3 (par do SsDeviceTile(onLongPress:) do Flutter): more_url: põe o botão ⋯ ("Mais opções
+  # de %{name}", more_label: troca) à direita e liga o menu de contexto do tile (clique direito ou
+  # toque longo no celular) a ele. No modo aperto, url: vira o more_url (os detalhes, que o toque
+  # não abre mais). more_data: data-* do link (ex. { turbo_frame: "modal" }). O toque duplo do app
+  # não tem par no web (o duplo clique seleciona texto): é só do app.
   class DeviceTileComponent < BaseComponent
     STATUSES = %i[ready unavailable pending error locked].freeze
     TONES = { accent: "var(--accent)", success: "var(--success)", warn: "var(--warn)", danger: "var(--danger)",
@@ -36,8 +42,10 @@ module Ss
     def initialize(name:, state: nil, on: false, status: :ready, icon: nil, url: nil, toggle_url: nil, toggle_params: {},
                    toggle_method: :post, tone: nil, wide: false, error_text: nil, confirm: nil,
                    unavailable_label: nil, pending_label: nil, error_label: nil, locked_label: nil, details_label: nil,
-                   link_data: {}, action_url: nil, action_params: {}, action_method: :post, action_label: nil, confirm_title: nil, **rest)
+                   link_data: {}, action_url: nil, action_params: {}, action_method: :post, action_label: nil, confirm_title: nil,
+                   more_url: nil, more_label: nil, more_data: {}, **rest)
       super(**rest)
+      @more_url, @more_label, @more_data = more_url, more_label, more_data.to_h
       @link_data, @action_url, @action_params, @action_method = link_data.to_h, action_url, action_params.to_h, action_method
       @action_label, @confirm_title = action_label, confirm_title
       @name, @state, @on, @icon, @url = name, state, on, icon, url
@@ -65,7 +73,7 @@ module Ss
     end
     DEFAULTS = { unavailable: "Indisponível", pending: "Enviando…", error: "Não respondeu", locked: "Sem permissão",
                  details: "Abrir detalhes de %{name}", turn_on: "Ligar %{name}", turn_off: "Desligar %{name}",
-                 run: "Acionar %{name}" }.freeze
+                 run: "Acionar %{name}", more: "Mais opções de %{name}" }.freeze
 
     def details_label = label(:details).gsub("%{name}", name.to_s)
 
@@ -81,6 +89,12 @@ module Ss
     def press? = @action_url.present?
     def link_data = @link_data.presence
     def action_label = @action_label || I18n.t("componentes_ui.device_tile.run", default: DEFAULTS[:run], name:)
+    def more_url = @more_url || (url if press?)
+    def more? = more_url.present?
+    def more_data = @more_data.presence
+    def more_label = @more_label || I18n.t("componentes_ui.device_tile.more", default: DEFAULTS[:more], name:)
+    def more_icon = Ss::CasaIcons.svg(:dots)
+
     def press_disabled? = %i[unavailable pending locked].include?(status)
 
     # Tile de aperto: o texto vira o botão de um button_to que cobre o tile.
@@ -97,6 +111,16 @@ module Ss
                               confirm: @confirm, confirm_title: @confirm_title, disabled: %i[unavailable pending].include?(status))
     end
 
-    def root_classes = classes("ss-device", ("is-on" if on?), ("is-wide" if wide?), ("is-press" if press?))
+    def root_classes = classes("ss-device", ("is-on" if on?), ("is-wide" if wide?), ("is-press" if press?), ("has-more" if more?))
+
+    # Menu de contexto (clique direito / toque longo) segue o ⋯; junta com o controller do app.
+    def root_data
+      own = @attrs.to_h[:data].to_h
+      data = { status: }
+      return data unless more?
+
+      data.merge(controller: [own[:controller] || own["controller"], "ss-device"].compact.join(" "),
+                 action: [own[:action] || own["action"], "contextmenu->ss-device#more"].compact.join(" "))
+    end
   end
 end

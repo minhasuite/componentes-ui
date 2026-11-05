@@ -270,7 +270,10 @@
 
 /* Widget ao vivo recarregando: o turbo-frame.ss-live fica busy e uma faixa fina corre no topo,
    sem esconder o valor de antes. Fora das camadas (vence o position do conteúdo). */
-turbo-frame.ss-live { display: block; position: relative; }
+/* v0.10.3: o display fica na camada (a utilidade .contents/.grid do app vence); com display:
+   contents a faixa não tem caixa onde correr e os filhos pulsam (v10_3_web.css). */
+@layer components { turbo-frame.ss-live { display: block; } }
+turbo-frame.ss-live { position: relative; }
 turbo-frame.ss-live[busy]::after { content: ""; position: absolute; left: 14px; right: 14px; top: 1px; height: 2px; border-radius: 2px; pointer-events: none; z-index: 3;
     background: linear-gradient(90deg, transparent, var(--accent), transparent) 0 0 / 50% 100% no-repeat; animation: ss-live-scan 1s ease-in-out infinite; }
 /* .hidden do Tailwind perde para o display das peças: devolve. */

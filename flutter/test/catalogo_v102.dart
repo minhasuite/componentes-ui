@@ -77,6 +77,7 @@ final catalogoV102 = <Componente>[
       'actions: SsIconButton, SsButton.text e SsButton(small: true) alinhados à direita.',
       'style: surface (padrão), dark (foto, vídeo, câmera) e overlay (transparente com véu, sobre mapa/planta; use extendBodyBehindAppBar).',
       'Barra de status clara ou escura conforme o fundo.',
+      'v0.10.3: título e subtítulo na fonte do tema (Manrope); no overlay, o véu cobre a barra inteira (antes ficava com altura zero).',
     ],
     estados: [
       Estado(

@@ -158,7 +158,8 @@ void main() {
       );
       var bar = t.widget<AppBar>(find.byType(AppBar));
       expect(bar.backgroundColor, Colors.transparent);
-      expect(bar.flexibleSpace, isNotNull);
+      // v0.10.3: o véu embrulha a barra (no flexibleSpace ficava com altura zero).
+      expect(t.getSize(find.byKey(const ValueKey('ss-topbar-scrim'))).height, greaterThan(0));
       expect(bar.foregroundColor, AppColors.onDark);
       await t.pumpWidget(
         MaterialApp(

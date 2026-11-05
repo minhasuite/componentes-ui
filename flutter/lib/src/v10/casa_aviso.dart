@@ -1,4 +1,5 @@
 // v0.10 (casa): aviso com ações, microfone com nível e tela de bloqueio.
+// v0.10.3: microfone de segurar para falar ([SsMicButton.holdToTalk]) e compacto.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -251,6 +252,16 @@ enum SsMicState { idle, listening, processing, error }
 /// Botão redondo de microfone. Ouvindo, os anéis em volta crescem com o
 /// [level] (0..1) que o app manda do áudio, como um medidor. Processando,
 /// um arco gira em volta; com erro, fica vermelho.
+///
+/// Segurar para falar (v0.10.3, [holdToTalk]): encostar o dedo chama
+/// [onHoldStart] (vibração leve), soltar chama [onHoldEnd] e arrastar para
+/// longe ([cancelDistance]) ou o sistema cancelar chama [onHoldCancel] (sem
+/// ele, [onHoldEnd]). O app troca [state] para `listening` no início e manda o
+/// [level]. No leitor de tela, que não segura, um toque começa e outro termina.
+/// [compact] é o tamanho de dentro do campo de mensagem ([SsChatInput]): a
+/// caixa é o próprio botão (alvo de 48) e os anéis passam por fora dela.
+///
+/// `SsMicButton(holdToTalk: true, compact: true, size: 44, state: st, level: lv, onHoldStart: rec.start, onHoldEnd: rec.stop)`
 class SsMicButton extends StatefulWidget {
   const SsMicButton({
     super.key,
@@ -262,6 +273,12 @@ class SsMicButton extends StatefulWidget {
     this.listeningLabel,
     this.processingLabel,
     this.errorLabel,
+    this.holdToTalk = false,
+    this.onHoldStart,
+    this.onHoldEnd,
+    this.onHoldCancel,
+    this.cancelDistance = 80,
+    this.compact = false,
   });
 
   final SsMicState state;
@@ -270,12 +287,29 @@ class SsMicButton extends StatefulWidget {
   final double level;
   final VoidCallback? onPressed;
 
-  /// Diâmetro do botão; os anéis usam até 1,8× em volta.
+  /// Diâmetro do botão; os anéis usam até 1,8× em volta (1,5× no [compact]).
   final double size;
+
+  /// Textos (padrão: os do [SsStrings]; no [holdToTalk], parado é
+  /// [SsStrings.micHold] e ouvindo, [SsStrings.micRelease]).
   final String? idleLabel;
   final String? listeningLabel;
   final String? processingLabel;
   final String? errorLabel;
+
+  /// Segurar para falar no lugar do toque ([onPressed] não vale).
+  final bool holdToTalk;
+  final VoidCallback? onHoldStart;
+  final VoidCallback? onHoldEnd;
+
+  /// Dedo arrastado para longe ou gesto cancelado (padrão: [onHoldEnd]).
+  final VoidCallback? onHoldCancel;
+
+  /// Quanto o dedo anda até cancelar a gravação.
+  final double cancelDistance;
+
+  /// Caixa do tamanho do botão, para caber numa linha (campo de mensagem).
+  final bool compact;
 
   @override
   State<SsMicButton> createState() => _SsMicButtonState();
@@ -285,10 +319,30 @@ class _SsMicButtonState extends State<SsMicButton> with SingleTickerProviderStat
   SsStrings get _s => SsStrings.of(context);
   late final _spin = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
 
+  // Segurando: o dedo está no botão (ou o leitor de tela começou).
+  bool _holding = false;
+  Offset _origem = Offset.zero;
+
+  bool get _enabled => widget.holdToTalk ? widget.onHoldStart != null : widget.onPressed != null;
+
   void _sync() {
     final girar = widget.state == SsMicState.processing && !reduceMotion(context);
     if (girar && !_spin.isAnimating) _spin.repeat();
     if (!girar && _spin.isAnimating) _spin.stop();
+  }
+
+  void _start() {
+    if (_holding || !_enabled) return;
+    setState(() => _holding = true);
+    SsHaptics.light();
+    widget.onHoldStart?.call();
+  }
+
+  void _end({bool cancel = false}) {
+    if (!_holding) return;
+    setState(() => _holding = false);
+    SsHaptics.tick();
+    (cancel ? widget.onHoldCancel ?? widget.onHoldEnd : widget.onHoldEnd)?.call();
   }
 
   @override
@@ -316,19 +370,65 @@ class _SsMicButtonState extends State<SsMicButton> with SingleTickerProviderStat
     final erro = s == SsMicState.error;
     final cor = erro ? AppColors.danger : c.accent;
     final rm = reduceMotion(context);
-    final total = widget.size * 1.8;
+    final compact = widget.compact;
+    final total = compact ? math.max(widget.size, 48.0) : widget.size * 1.8;
+    final hold = widget.holdToTalk;
     final label = switch (s) {
-      SsMicState.idle => widget.idleLabel ?? _s.micIdle,
-      SsMicState.listening => widget.listeningLabel ?? _s.micListening,
+      SsMicState.idle => widget.idleLabel ?? (hold ? _s.micHold : _s.micIdle),
+      SsMicState.listening => widget.listeningLabel ?? (hold ? _s.micRelease : _s.micListening),
       SsMicState.processing => widget.processingLabel ?? _s.micProcessing,
       SsMicState.error => widget.errorLabel ?? _s.micError,
     };
     final nivel = s == SsMicState.listening ? widget.level.clamp(0.0, 1.0) : 0.0;
+    final parado = s == SsMicState.idle && !_holding;
+    final fundo = parado ? (compact ? c.field : c.surface) : cor;
+
+    final bolha = AnimatedContainer(
+      duration: rm ? Duration.zero : SsMotion.base,
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: fundo,
+        border: parado && !compact ? Border.all(color: c.line, width: 1.5) : null,
+        boxShadow: parado ? (compact ? null : AppShadows.card) : c.tintedShadow(cor),
+      ),
+      child: Icon(
+        erro ? Icons.mic_off_rounded : Icons.mic_rounded,
+        size: widget.size * (compact ? .5 : .42),
+        color: parado ? c.accentText : AppColors.onDark,
+      ),
+    );
+
+    final Widget botao = hold
+        // Ponteiro cru: começa no encostar (sem esperar o toque longo do sistema).
+        ? Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (e) {
+              _origem = e.position;
+              _start();
+            },
+            onPointerMove: (e) {
+              if (_holding && (e.position - _origem).distance > widget.cancelDistance) _end(cancel: true);
+            },
+            onPointerUp: (_) => _end(),
+            onPointerCancel: (_) => _end(cancel: true),
+            child: AnimatedScale(
+              scale: _holding && !rm ? 1.12 : 1,
+              duration: rm ? Duration.zero : SsMotion.fast,
+              curve: SsMotion.spring,
+              child: bolha,
+            ),
+          )
+        : SsPressable(enabled: _enabled, onTap: widget.onPressed, child: bolha);
 
     return Semantics(
       button: true,
       label: label,
-      enabled: widget.onPressed != null,
+      enabled: _enabled,
+      // O leitor de tela não segura: um toque começa, outro termina.
+      onTap: hold && _enabled ? () => _holding ? _end() : _start() : null,
+      excludeSemantics: hold,
       child: SizedBox.square(
         dimension: total,
         child: TweenAnimationBuilder<double>(
@@ -346,33 +446,13 @@ class _SsMicButtonState extends State<SsMicButton> with SingleTickerProviderStat
                 processing: s == SsMicState.processing,
                 spin: rm ? .1 : _spin.value,
                 inner: widget.size / 2,
+                outer: compact ? widget.size * .75 : total / 2,
               ),
               child: child,
             ),
             child: child,
           ),
-          child: Center(
-            child: SsPressable(
-              enabled: widget.onPressed != null,
-              onTap: widget.onPressed,
-              child: AnimatedContainer(
-                duration: rm ? Duration.zero : SsMotion.base,
-                width: widget.size,
-                height: widget.size,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: s == SsMicState.idle ? c.surface : cor,
-                  border: s == SsMicState.idle ? Border.all(color: c.line, width: 1.5) : null,
-                  boxShadow: s == SsMicState.idle ? AppShadows.card : c.tintedShadow(cor),
-                ),
-                child: Icon(
-                  erro ? Icons.mic_off_rounded : Icons.mic_rounded,
-                  size: widget.size * .42,
-                  color: s == SsMicState.idle ? c.accentText : AppColors.onDark,
-                ),
-              ),
-            ),
-          ),
+          child: Center(child: botao),
         ),
       ),
     );
@@ -387,6 +467,7 @@ class _MicPainter extends CustomPainter {
     required this.processing,
     required this.spin,
     required this.inner,
+    required this.outer,
   });
   final double level;
   final Color color;
@@ -395,19 +476,24 @@ class _MicPainter extends CustomPainter {
   final double spin;
   final double inner;
 
+  /// Raio máximo dos anéis (no compacto, passa da caixa).
+  final double outer;
+
   @override
   void paint(Canvas canvas, Size size) {
     final o = size.center(Offset.zero);
-    final max = size.width / 2;
+    final max = outer;
+    final folga = math.min(4.0, (max - inner) / 3);
     if (listening) {
       // Três anéis: o de dentro reage primeiro; os de fora só com voz mais alta.
       for (var i = 0; i < 3; i++) {
         final parte = ((level - i * .22) / (1 - i * .22)).clamp(0.0, 1.0);
-        final r = inner + 4 + (max - inner - 4) * (.25 + .75 * parte) * (i + 1) / 3;
+        final r = inner + folga + (max - inner - folga) * (.25 + .75 * parte) * (i + 1) / 3;
         canvas.drawCircle(o, r, Paint()..color = color.withValues(alpha: .10 + .16 * parte * (1 - i * .25)));
       }
     }
     if (processing) {
+      final anel = inner + math.min(7.0, folga + 3);
       final p = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
@@ -415,13 +501,13 @@ class _MicPainter extends CustomPainter {
         ..color = color;
       canvas.drawCircle(
         o,
-        inner + 7,
+        anel,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3
           ..color = color.withValues(alpha: .15),
       );
-      canvas.drawArc(Rect.fromCircle(center: o, radius: inner + 7), spin * 2 * math.pi, 1.6, false, p);
+      canvas.drawArc(Rect.fromCircle(center: o, radius: anel), spin * 2 * math.pi, 1.6, false, p);
     }
   }
 
@@ -431,7 +517,9 @@ class _MicPainter extends CustomPainter {
       old.spin != spin ||
       old.color != color ||
       old.listening != listening ||
-      old.processing != processing;
+      old.processing != processing ||
+      old.inner != inner ||
+      old.outer != outer;
 }
 
 // ──────────────────────────────────────────────────────── tela de bloqueio

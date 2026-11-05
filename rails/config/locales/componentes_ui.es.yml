@@ -216,6 +216,7 @@ es:
       shortcuts_label: Atajos de período
       to: Hasta
     device_tile:
+      more: Más opciones de %{name}
       details: Abrir detalles de %{name}
       error: No respondió
       locked: Sin permiso
@@ -317,6 +318,8 @@ es:
       volume_down: Bajar volumen
       volume_up: Subir volumen
     mic_button:
+      hold: Mantén pulsado para hablar
+      release: Escuchando, suelta para enviar
       error: Error del micrófono, toca para reintentar
       idle: Hablar
       listening: Escuchando, toca para detener

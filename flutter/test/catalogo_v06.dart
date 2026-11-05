@@ -18,6 +18,7 @@ final catalogoV06 = <Componente>[
       'Sem cor, usa a da marca; com tone, a cor dada (sucesso, aviso, neutro).',
       'filled: fundo cheio na cor e ícone claro (concluído).',
       'circle: redondo, para estado vazio e conquista.',
+      'v0.10.3 onGradient: branco translúcido com fio claro e ícone branco, para pôr sobre o gradiente (herói, aurora).',
     ],
     estados: [
       Estado(
@@ -46,6 +47,24 @@ final catalogoV06 = <Componente>[
             children: [
               SsIconTile(Icons.check_rounded, tone: AppColors.success, filled: true, size: 40),
               SsIconTile(Icons.emoji_events_outlined, circle: true, size: 72),
+            ],
+          ),
+        ),
+      ),
+      Estado(
+        'sobre-gradiente',
+        'v0.10.3: onGradient sobre o gradiente da marca',
+        (context) => Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [SsColors.of(context).brandFrom, SsColors.of(context).brandTo]),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              SsIconTile(Icons.bolt_rounded, onGradient: true),
+              SsIconTile(Icons.home_outlined, onGradient: true, circle: true),
             ],
           ),
         ),

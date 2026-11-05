@@ -284,6 +284,8 @@ class SsStrings {
     required this.micListening,
     required this.micProcessing,
     required this.micError,
+    required this.micHold,
+    required this.micRelease,
     required this.lockMessage,
     required this.unlock,
     required this.usePin,
@@ -736,6 +738,10 @@ class SsStrings {
   final String micListening;
   final String micProcessing;
   final String micError;
+
+  /// Microfone de segurar para falar (v0.10.3): parado e ouvindo.
+  final String micHold;
+  final String micRelease;
   final String lockMessage;
   final String unlock;
   final String usePin;
@@ -1124,6 +1130,8 @@ class SsStrings {
     micListening: 'Ouvindo, toque para parar',
     micProcessing: 'Processando',
     micError: 'Erro no microfone, toque para tentar de novo',
+    micHold: 'Segure para falar',
+    micRelease: 'Ouvindo, solte para enviar',
     lockMessage: 'O app está bloqueado',
     unlock: 'Desbloquear',
     usePin: 'Usar PIN',
@@ -1469,6 +1477,8 @@ class SsStrings {
     micListening: 'Listening, tap to stop',
     micProcessing: 'Processing',
     micError: 'Microphone error, tap to try again',
+    micHold: 'Hold to talk',
+    micRelease: 'Listening, release to send',
     lockMessage: 'The app is locked',
     unlock: 'Unlock',
     usePin: 'Use PIN',
@@ -1814,6 +1824,8 @@ class SsStrings {
     micListening: 'Escuchando, toca para detener',
     micProcessing: 'Procesando',
     micError: 'Error del micrófono, toca para reintentar',
+    micHold: 'Mantén pulsado para hablar',
+    micRelease: 'Escuchando, suelta para enviar',
     lockMessage: 'La app está bloqueada',
     unlock: 'Desbloquear',
     usePin: 'Usar PIN',
@@ -2146,6 +2158,8 @@ class SsStrings {
     'micListening': micListening,
     'micProcessing': micProcessing,
     'micError': micError,
+    'micHold': micHold,
+    'micRelease': micRelease,
     'lockMessage': lockMessage,
     'unlock': unlock,
     'usePin': usePin,
@@ -2513,6 +2527,8 @@ class SsStrings {
     String? micListening,
     String? micProcessing,
     String? micError,
+    String? micHold,
+    String? micRelease,
     String? lockMessage,
     String? unlock,
     String? usePin,
@@ -2842,6 +2858,8 @@ class SsStrings {
     micListening: micListening ?? this.micListening,
     micProcessing: micProcessing ?? this.micProcessing,
     micError: micError ?? this.micError,
+    micHold: micHold ?? this.micHold,
+    micRelease: micRelease ?? this.micRelease,
     lockMessage: lockMessage ?? this.lockMessage,
     unlock: unlock ?? this.unlock,
     usePin: usePin ?? this.usePin,

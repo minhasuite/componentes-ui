@@ -1,5 +1,5 @@
 <%= tag.div(class: root_classes, style: ("--tone: #{tone_css}" if tone_css),
-            **root_attrs(data: { status: status }, aria: { busy: ("true" if status == :pending) }.compact)) do %>
+            **root_attrs(data: root_data, aria: { busy: ("true" if status == :pending) }.compact)) do %>
   <div class="ss-device-main">
     <span class="ss-device-ico" aria-hidden="true"><%= icon %><i class="ss-device-spin"></i></span>
     <% text = capture do %>
@@ -11,12 +11,15 @@
     <% else %>
       <%= content_tag(url ? :a : :div, text, class: "ss-device-text", href: url, title: (details_label if url), data: (link_data if url)) %>
     <% end %>
+    <% more = (link_to(more_icon, more_url, class: "ss-icon-btn ss-device-more", "aria-label": more_label, title: more_label, data: { ss_device_target: "more", **more_data.to_h }) if more?) %>
     <% if status == :locked %>
-      <span class="ss-device-end"><span class="ss-device-lock" role="img" aria-label="<%= label(:locked) %>" title="<%= label(:locked) %>"><%= lock_icon %></span></span>
+      <span class="ss-device-end"><span class="ss-device-lock" role="img" aria-label="<%= label(:locked) %>" title="<%= label(:locked) %>"><%= lock_icon %></span><%= more %></span>
     <% elsif toggle? %>
-      <span class="ss-device-end"><%= render switch %></span>
+      <span class="ss-device-end"><%= render switch %><%= more %></span>
     <% elsif press? %>
-      <span class="ss-device-end"><span class="ss-device-run" aria-hidden="true"><%= Ss::CasaIcons.svg(:play) %></span></span>
+      <span class="ss-device-end"><span class="ss-device-run" aria-hidden="true"><%= Ss::CasaIcons.svg(:play) %></span><%= more %></span>
+    <% elsif more? %>
+      <span class="ss-device-end"><%= more %></span>
     <% end %>
   </div>
   <% if footer? %><div class="ss-device-foot"><%= footer %></div><% end %>

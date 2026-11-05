@@ -1,0 +1,131 @@
+/* v0.10.3 (web): pares do que a migração do minha-automacao-app para a v0.10.2 pediu.
+   Microfone de segurar para falar e compacto (Ss::MicButtonComponent hold:/compact:) e o ⋯ do
+   tile de aparelho (Ss::DeviceTileComponent more_url:). Só tokens. */
+@layer components {
+  /* ── Microfone compacto: a caixa é o botão (mín. 48 px); os anéis passam por fora (até 1,5×). ── */
+  .ss-mic.is-compact { width: max(var(--size), 48px); min-height: 48px; aspect-ratio: auto; }
+  .ss-mic.is-compact .ss-mic-ring { scale: calc(1 + (.06 + (.32 + .68 * var(--p)) * var(--n) * .147)); }
+  .ss-mic.is-compact .ss-mic-arc { inset: -6px; }
+  .ss-mic.is-compact .ss-mic-btn svg { width: calc(var(--size) * .5); height: calc(var(--size) * .5); }
+  .ss-mic.is-compact[data-state="idle"]:not([data-holding]) .ss-mic-btn { border-color: transparent; background: var(--field); box-shadow: none; }
+
+  /* ── Segurar para falar: sem seleção nem menu do toque longo; cresce enquanto segura. ── */
+  .ss-mic.is-hold .ss-mic-btn { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .ss-mic.is-hold:not([data-holding]) .ss-mic-btn:active { scale: 1; }
+  .ss-mic[data-holding] .ss-mic-btn { scale: 1.12; border-color: transparent; background: var(--c); color: #fff;
+                                      box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--c) 75%, transparent); }
+
+  /* ── Tile de aparelho: ⋯ (mais opções) na ponta, acima do link/aperto que cobre o tile. ── */
+  .ss-device.has-more .ss-device-end { z-index: 2; gap: .25rem; pointer-events: none; }
+  .ss-device.has-more .ss-device-end > * { pointer-events: auto; }
+  .ss-device.is-press.has-more .ss-device-run { pointer-events: none; }
+  .ss-device-more { color: var(--muted); }
+  .ss-device-more svg { width: 1.1rem; height: 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-mic[data-holding] .ss-mic-btn { scale: 1; }
+}
+
+/* ───────── v0.10.3 · lacunas da migração do minha-automacao (web) ───────── */
+
+/* Base opcional (.ss-base no <html> ou <body>): tira o marcador de todo <summary> (os da gem já
+   não têm) e, com "reduzir movimento" no sistema, corta animação e transição de tudo. Opt-in
+   para não mexer em <details> de quem não pediu. .ss-reduce-motion no <html> faz o mesmo
+   sempre (preferência do app, independente do sistema). Especificidade zero (:where). */
+@layer base {
+  :where(.ss-base) summary { list-style: none; }
+  :where(.ss-base) summary::-webkit-details-marker { display: none; }
+  :where(.ss-reduce-motion), :where(.ss-reduce-motion) *, :where(.ss-reduce-motion) *::before, :where(.ss-reduce-motion) *::after {
+    animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  @media (prefers-reduced-motion: reduce) {
+    :where(.ss-base), :where(.ss-base) *, :where(.ss-base) *::before, :where(.ss-base) *::after {
+      animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+/* Widget ao vivo com display: contents (.contents, .is-contents ou style): sem caixa para a
+   faixa, os filhos pulsam de leve enquanto recarrega. */
+turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy]::after { content: none; }
+turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * { animation: ss-live-pulse 1.1s ease-in-out infinite alternate; }
+@keyframes ss-live-pulse { to { opacity: .55; } }
+
+@layer components {
+  /* ── Etiqueta: o × também como link (remover por GET/Turbo). ── */
+  .ss-tag > a { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; color: inherit; font-size: 1rem; line-height: 1;
+                text-decoration: none; transition: background-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-tag > a:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .ss-tag > a:active { scale: .8; transition: background-color .2s, scale 80ms ease-out; }
+  .ss-tag > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ── Card de opção: compacto (lista longa) e vertical (ícone em cima, tiles estreitos). ── */
+  .ss-option-card.is-dense { gap: .65rem; padding: .6rem 2.4rem .6rem .75rem; border-radius: 12px; align-items: center; }
+  .ss-option-card.is-dense > input { top: 50%; right: .75rem; translate: 0 -50%; }
+  .ss-option-card.is-dense .ss-option-card-icon { width: 2rem; height: 2rem; border-radius: 10px; }
+  .ss-option-card.is-dense .ss-option-card-icon svg { width: 1rem; height: 1rem; }
+  .ss-option-card.is-dense .ss-option-card-body { gap: 0; min-width: 0; }
+  .ss-option-card.is-dense .ss-option-card-body strong { font-size: .88rem; }
+  .ss-option-card.is-dense .ss-option-card-body small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ss-option-card.is-vertical { flex-direction: column; align-items: center; text-align: center; gap: .55rem; padding: 1.1rem .75rem .9rem; }
+  .ss-option-card.is-vertical > input { top: .6rem; right: .6rem; }
+  .ss-option-card.is-vertical .ss-option-card-icon { width: 3rem; height: 3rem; border-radius: 14px; }
+  .ss-option-card.is-vertical .ss-option-card-icon svg { width: 1.45rem; height: 1.45rem; }
+  .ss-option-card.is-vertical .ss-option-card-body { justify-items: center; }
+  .ss-option-card.is-vertical .ss-option-card-chev { display: none; }
+  .ss-option-card.is-vertical.is-dense { padding: .75rem .5rem .65rem; }
+  /* Grade de tiles estreitos: <div class="ss-option-grid is-tiles">. */
+  .ss-option-grid.is-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .6rem; }
+
+  /* ── Chip: aria-current="page" vale como "true" (atalhos de seção feitos de chips). ── */
+  .ss-chip[aria-current="page"] { background-image: var(--grad); color: #fff; }
+  :is(.ss-chip.is-solid, .ss-chips.is-solid .ss-chip)[aria-current="page"] {
+    background-image: none; background-color: var(--accent-solid); color: #fff;
+    box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent-solid) 75%, transparent); }
+
+  /* ── Chip com caixa de marcar ou rádio (filtro em form, sem JS):
+     <label class="ss-chip"><input type="checkbox" name="tipo[]" value="luz"> Luzes</label>.
+     O input some (continua no teclado e no leitor de tela); marcado = atual. ── */
+  .ss-chip:has(> input:is([type="checkbox"], [type="radio"])) { position: relative; cursor: pointer; user-select: none; }
+  .ss-chip > input:is([type="checkbox"], [type="radio"]) { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+  .ss-chip:has(> input:checked) { background-image: var(--grad); color: #fff; }
+  :is(.ss-chip.is-solid, .ss-chips.is-solid .ss-chip):has(> input:checked) { background-image: none; background-color: var(--accent-solid); color: #fff; }
+  .ss-chip:has(> input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-chip:has(> input:disabled) { opacity: .5; cursor: not-allowed; }
+  .ss-chip:has(> input:checked:focus-visible) { animation: ss-press-pop .38s ease-out; }
+
+  /* ── Checklist de linha inteira: <li><label><input type="checkbox" name="…"> Texto</label></li>.
+     A linha toda marca; marcado, a bolinha fica verde com ✓ e o texto é riscado. ── */
+  .ss-checklist li:has(> label > input[type="checkbox"]) { padding: 0; }
+  .ss-checklist li:has(> label > input[type="checkbox"])::before { content: none; }
+  .ss-checklist li > label:has(> input[type="checkbox"]) { flex: 1; display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .5rem .5rem;
+    border-radius: 12px; cursor: pointer; transition: background-color .15s, color .2s; }
+  .ss-checklist li > label:has(> input[type="checkbox"]):hover { background: var(--field); }
+  .ss-checklist li > label > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; margin: 0;
+    border-radius: 50%; border: 2px solid var(--line); background: var(--surface); cursor: pointer;
+    transition: background-color .2s, border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-checklist li > label > input[type="checkbox"]:checked { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 65% no-repeat; }
+  .ss-checklist li > label > input[type="checkbox"]:active { scale: .85; }
+  .ss-checklist li > label > input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-checklist li > label:has(> input:checked) { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); }
+
+  /* ── Ícone tonal sobre o gradiente (herói, aurora): branco translúcido, ícone branco. ── */
+  .ss-icon-tile.is-on-grad { background: rgba(255, 255, 255, .18); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+}
+
+/* ── Atalhos de seção em abas no desktop (Ss::SubnavComponent layout: :tabs). Fora das
+   camadas, como o .ss-subnav da engine. ── */
+@media (min-width: 1024px) {
+  .ss-subnav-wrap.is-tabs > .ss-subnav { position: static; flex-direction: row; gap: .25rem; margin: 0 0 1.25rem; padding: 0; overflow-x: auto;
+    scrollbar-width: none; border-bottom: 1px solid var(--line); }
+  .ss-subnav-wrap.is-tabs > .ss-subnav a { border: 0; border-radius: 10px 10px 0 0; padding: .6rem .9rem; background: transparent; box-shadow: inset 0 -2px 0 transparent; }
+  .ss-subnav-wrap.is-tabs > .ss-subnav a:hover { background: var(--field); border: 0; }
+  .ss-subnav-wrap.is-tabs > .ss-subnav a[aria-current="page"], .ss-subnav-wrap.is-tabs > .ss-subnav a[aria-current="page"]:hover {
+    background: transparent; color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); border: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  turbo-frame.ss-live[busy] > * { animation: none !important; }
+  turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * { opacity: .7; }
+  .ss-tag > a, .ss-checklist li > label, .ss-checklist li > label > input { transition: none; }
+  .ss-chip:has(> input:checked:focus-visible) { animation: none; }
+}

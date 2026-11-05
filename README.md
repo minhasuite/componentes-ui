@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.10.2
+      ref: v0.10.3
 ```
 
 ```dart
@@ -52,7 +52,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.2"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.3"
 ```
 
 ```css
@@ -437,6 +437,47 @@ marcado), `ss-sortable`, `ss-prompt-dialog`; `ss-copy` ganhou o target `source` 
 `agenda_list.all_day`, `check_all`, `code_block`, `danger_zone`, `prompt_dialog`,
 `skip_link`, `sortable`, `spinner`, `subnav`, `top_bar` (pt-BR, en, es).
 
+## v0.10.3: o que a migração do minha-automacao para a v0.10.2 achou
+
+Tudo aditivo; nada quebra da v0.10.2. Correções e lacunas que o minha-automacao (app e web)
+achou ao subir para a v0.10.2. Vitrine Rails: grupo "Tela (v0.10.3)"; catálogo nos dois lados
+(estados "v0.10.3" nas entradas de cada peça).
+
+**Correções**
+
+- `SsTopBar`: título e subtítulo agora saem do `textTheme` do tema (Manrope; antes caíam na
+  fonte do sistema e viravam quadradinhos nos goldens). No `overlay`, o véu escuro embrulha a
+  barra inteira (antes, no `flexibleSpace`, tinha altura zero e o texto branco ficava direto no mapa).
+- Web: `turbo-frame.ss-live` não força mais `display: block` (a regra foi para a camada; `.contents`
+  do app vence); com `display: contents` (`.contents`, `.is-contents` ou `style`), os filhos pulsam
+  enquanto recarrega no lugar da faixa.
+- Web: `Ss::FilterBarComponent` lê e escreve arrays (`tipo[]`), leva os filtros ativos (arrays e
+  hashes) nos campos escondidos da busca e mantém a query do `url:` (`/pontos?site_id=3`) em todo
+  link, na busca e no "Limpar filtros".
+
+**Peças e parâmetros novos**
+
+| Peça | Flutter | Rails / CSS | Produto |
+|---|---|---|---|
+| Toque longo / duplo no tile de aparelho | `SsDeviceTile(onLongPress:, longPressLabel:, onDoubleTap:)` (vibração média, ação "Mais opções" no leitor de tela; vale até indisponível) | `Ss::DeviceTileComponent(more_url:, more_label:, more_data:)`: botão ⋯ e menu de contexto (clique direito / toque longo) que segue o ⋯; no modo aperto, `url:` vira o ⋯. O toque duplo é só do app | app: menu do aparelho; web: o mesmo menu |
+| Segurar para falar | `SsMicButton(holdToTalk:, onHoldStart:, onHoldEnd:, onHoldCancel:, cancelDistance:, compact:)` | `Ss::MicButtonComponent(hold:, compact:)` · eventos `ss-mic:hold-start/-end/-cancel` (ponteiro, Espaço/Enter, clique do leitor de tela alterna) | assistente por voz |
+| Microfone no campo de mensagem | `SsChatInput(onMicHoldStart:, onMicHoldEnd:, onMicHoldCancel:, micState:, micLevel:)`: campo vazio mostra o microfone compacto no lugar do enviar | o `MicButtonComponent(hold: true, compact: true, size: 44)` ao lado do campo (o web não tem `SsChatInput`) | chat da casa |
+| Vibração leve | `SsHaptics.light()` | `navigator.vibrate` nos controllers | — |
+| Ícone tonal sobre o gradiente | `SsIconTile(onGradient: true)` | `.ss-icon-tile.is-on-grad` | herói do painel |
+| Faixa de chips rola até o atual | `SsChipBar(currentIndex:)` (só a faixa rola) | `ss-scroll-current` (Stimulus; já no `SubnavComponent` e nas visões do `FilterBarComponent`) | filtros por cômodo |
+| Card de opção | — (o app usa `SsCheckRow`/`SsChoiceField`) | `Ss::OptionCardComponent(id:, input: {}, dense:, vertical:)` · `.ss-option-card.is-dense`, `.is-vertical`, `.ss-option-grid.is-tiles` | escolher integração e cômodo |
+| Chip de caixa de marcar | `SsFilterChip` (já cobre) | `label.ss-chip > input[type=checkbox\|radio]` (marcado = atual, `:has(:checked)`) · `.ss-chip[aria-current=page]` igual a `true` | filtros em form |
+| Checklist de linha inteira | `SsChecklistItem(onTap:)` (já cobre) | `.ss-checklist li > label > input[type=checkbox]` (a linha marca; marcado riscado) | primeiros passos |
+| Etiqueta com × em link | — | `.ss-tag > a` | tags de automação |
+| Atalhos de seção em abas | — (no app é o `SsMenuView`) | `Ss::SubnavComponent(layout: :tabs)`: abas numa linha no desktop, menu no celular | configurações |
+| Base opcional | — (o Flutter já lê `MediaQuery.disableAnimations`) | `.ss-base` (no `<html>`/`<body>`): tira o marcador de todo `<summary>` e corta animação/transição com "reduzir movimento"; `.ss-reduce-motion` no `<html>` corta sempre (preferência do app) | layout do produto |
+
+O marcador do `<summary>` não sai globalmente de propósito: a gem é usada por vários produtos
+e um `<details>` cru perderia o único sinal de que abre. Quem quer, põe `.ss-base`.
+
+**Textos novos:** Flutter `SsStrings.micHold`, `micRelease`; Rails `mic_button.hold`,
+`mic_button.release`, `device_tile.more` (pt-BR, en, es).
+
 ## Verificar
 
 ```bash
@@ -459,6 +500,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.10.3` (05/11/2026): correções e lacunas da migração do minha-automacao para a v0.10.2 (seção "v0.10.3"): `SsTopBar` na fonte do tema e com o véu do overlay visível, toque longo/duplo no `SsDeviceTile` (⋯ e menu de contexto no web), segurar para falar (`SsMicButton(holdToTalk:)`, `SsChatInput(onMicHoldStart:)`, `MicButtonComponent(hold:, compact:)`), `SsHaptics.light`, `SsIconTile(onGradient:)`/`.is-on-grad`, `SsChipBar(currentIndex:)`/`ss-scroll-current`; no web, `FilterBarComponent` com arrays e query do `url:`, `ss-live` com `display: contents`, `OptionCardComponent(id:, input:, dense:, vertical:)`, chip de caixa de marcar, checklist de linha inteira, `.ss-tag > a`, `SubnavComponent(layout: :tabs)` e `.ss-base`/`.ss-reduce-motion`. Nada quebra.
 - `v0.10.2` (05/11/2026): o que faltava para o minha-automacao ficar 100% no pacote e na gem (seção "v0.10.2"): barra de topo, botão de ícone, botão flutuante, carregando/abertura, linhas em card, arrastar para ordenar, zona de perigo, aviso em linha, bloco de código, grupo de comandos, passo numerado, divisor, pergunta de um campo no web, atalhos de seção com menu, chips sólidos e faixa que esmaece, coluna da hora da agenda que cresce, controllers genéricos. Nada quebra; no web o `.ss-subnav` passa a marcar a seção atual (`aria-current=page`) e a esmaecer a borda no celular.
 - `v0.10.1` (04/11/2026): o que a migração do minha-automacao pediu (seção "v0.10.1"). Nada quebra; no web, a marca passa a aparecer na barra do celular do `AppShell` (`mobile_brand: false` desliga) e as regras de `.ss-shell[data-collapsed]` ganharam o seletor do `<html>`.
 - `v0.10.0` (04/11/2026): peças de casa e automação (tabela da seção "v0.10"), idioma pt/en/es nos dois lados, `--accent-solid`, sucesso/perigo AA. Nada quebra: parâmetros de texto que tinham padrão em português ficaram opcionais (passar String continua valendo); no web, o checkbox e o switch ligado usam `--accent-solid`.

@@ -105,6 +105,7 @@ final List<Componente> catalogoV10Controles = [
       'Leitor de tela lê "nome: estado" e a dica de abrir detalhes; a chave tem alvo de 48 dp. Menos movimento tira as transições.',
       'Modo ação (onPress): tocar executa o comando (portão, cena, botão), com confirmação opcional (confirm/confirmTitle → showSsConfirm); dica "Acionar".',
       'color aceita a cor real da luz: em cor clara (amarelo-claro, branco quente) o ícone vira tinta escura para continuar legível.',
+      'v0.10.3: onLongPress (menu, detalhes no modo ação; vibração média; ação "Mais opções" no leitor de tela, longPressLabel troca) e onDoubleTap (atalho; o toque simples espera o tempo do duplo). Valem até indisponível.',
     ],
     estados: [
       Estado(

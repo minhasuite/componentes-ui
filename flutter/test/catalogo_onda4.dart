@@ -346,6 +346,7 @@ final catalogoOnda4 = <Componente>[
       'Situação da mensagem: relógio (enviando), ✓ (enviada), "Não enviada" em vermelho.',
       'SsThinking: três pontos que ondulam (única animação contínua), texto opcional; avisa o leitor de tela.',
       'SsChatInput: botão de enviar redondo que acende quando há texto; carregando trava o envio; Enter envia.',
+      'v0.10.3: com onMicHoldStart, o campo vazio mostra o microfone compacto de segurar para falar (SsMicButton) no lugar do enviar; micState/micLevel desenham os anéis; escrever devolve o enviar.',
     ],
     estados: [
       Estado('conversa', 'conversa', (_) => const _Chat(), tamanho: const Size(360, 300)),
@@ -376,6 +377,30 @@ final catalogoOnda4 = <Componente>[
           ),
         ),
         tamanho: const Size(360, 80),
+      ),
+      Estado(
+        'campo-voz',
+        'vazio com microfone · ouvindo',
+        (_) => Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SsChatInput(
+              controller: TextEditingController(),
+              onSend: (_) {},
+              onMicHoldStart: () {},
+              onMicHoldEnd: () {},
+            ),
+            SsChatInput(
+              controller: TextEditingController(),
+              onSend: (_) {},
+              onMicHoldStart: () {},
+              onMicHoldEnd: () {},
+              micState: SsMicState.listening,
+              micLevel: .6,
+            ),
+          ],
+        ),
+        tamanho: const Size(360, 150),
       ),
       Estado(
         'campo-enviando',

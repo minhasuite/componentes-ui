@@ -16,10 +16,26 @@ bool reduceMotion(BuildContext context) => MediaQuery.maybeDisableAnimationsOf(c
 /// [onTap], também trata o toque (com haptic leve); sem ele, só dá o efeito a
 /// um filho que já é tocável (InkWell, botão). [enabled] falso desliga o efeito.
 class SsPressable extends StatefulWidget {
-  const SsPressable({super.key, required this.child, this.onTap, this.enabled = true, this.scale = .97});
+  const SsPressable({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.onLongPress,
+    this.onDoubleTap,
+    this.enabled = true,
+    this.scale = .97,
+  });
 
   final Widget child;
   final VoidCallback? onTap;
+
+  /// Toque longo (v0.10.3), com vibração média. Dê também um caminho visível
+  /// ou de leitor de tela para a mesma ação.
+  final VoidCallback? onLongPress;
+
+  /// Toque duplo (v0.10.3). Com ele, o toque simples espera o tempo do duplo
+  /// antes de disparar: use só onde o atalho vale a espera.
+  final VoidCallback? onDoubleTap;
   final bool enabled;
   final double scale;
 
@@ -78,13 +94,28 @@ class _SsPressableState extends State<SsPressable> with SingleTickerProviderStat
       builder: (_, child) => Transform.scale(scale: _scale, child: child),
       child: widget.child,
     );
-    if (widget.onTap != null) {
+    if (widget.onTap != null || widget.onLongPress != null || widget.onDoubleTap != null) {
       child = GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          widget.onTap!();
-        },
+        onTap: widget.onTap == null
+            ? null
+            : () {
+                SsHaptics.light();
+                widget.onTap!();
+              },
+        onLongPress: widget.onLongPress == null
+            ? null
+            : () {
+                _set(false);
+                SsHaptics.threshold();
+                widget.onLongPress!();
+              },
+        onDoubleTap: widget.onDoubleTap == null
+            ? null
+            : () {
+                SsHaptics.light();
+                widget.onDoubleTap!();
+              },
         child: child,
       );
     }
@@ -335,6 +366,9 @@ class _ConfettiPainter extends CustomPainter {
 class SsHaptics {
   const SsHaptics._();
   static Future<void> tick() => HapticFeedback.selectionClick();
+
+  /// Toque leve (v0.10.3): começar a gravar, abrir um menu, um passo pequeno.
+  static Future<void> light() => HapticFeedback.lightImpact();
   static Future<void> threshold() => HapticFeedback.mediumImpact();
 
   /// Dois toques leves (o "deu certo").

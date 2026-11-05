@@ -432,6 +432,8 @@ final catalogoV10Casa = <Componente>[
       'processing: um arco gira em volta (parado com "reduzir movimento").',
       'error: vermelho com o microfone cortado.',
       'Toque afunda e volta com a mola; rótulo do leitor de tela muda por estado.',
+      'v0.10.3 holdToTalk: encostar começa (onHoldStart, vibração leve), soltar termina (onHoldEnd), arrastar para longe cancela (onHoldCancel); o botão cresce enquanto segura. Leitor de tela: um toque começa, outro termina ("Segure para falar" / "Ouvindo, solte para enviar").',
+      'v0.10.3 compact: caixa do tamanho do botão (alvo de 48) e anéis por fora, para caber no SsChatInput.',
     ],
     estados: [
       Estado(
@@ -452,6 +454,30 @@ final catalogoV10Casa = <Componente>[
           ),
         ),
         tamanho: const Size(360, 170),
+      ),
+      Estado(
+        'segurar',
+        'segurar para falar (compacto): parado · ouvindo 0,7 · processando',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SsMicButton(holdToTalk: true, compact: true, size: 44, onHoldStart: () {}, onHoldEnd: () {}),
+              SsMicButton(
+                holdToTalk: true,
+                compact: true,
+                size: 44,
+                state: SsMicState.listening,
+                level: .7,
+                onHoldStart: () {},
+                onHoldEnd: () {},
+              ),
+              SsMicButton(holdToTalk: true, compact: true, size: 44, state: SsMicState.processing, onHoldStart: () {}),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 100),
       ),
       Estado(
         'niveis',

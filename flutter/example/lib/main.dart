@@ -111,7 +111,7 @@ class _InicioState extends State<_Inicio> {
                       style: TextStyle(fontSize: AppType.screenTitle, fontWeight: FontWeight.w800, color: c.ink),
                     ),
                     Text(
-                      'componentes_ui v0.10.2 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
+                      'componentes_ui v0.10.3 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
                       style: TextStyle(color: c.muted),
                     ),
                     const AparenciaBar(),

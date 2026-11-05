@@ -216,6 +216,7 @@ en:
       shortcuts_label: Period shortcuts
       to: To
     device_tile:
+      more: More options for %{name}
       details: Open %{name} details
       error: No response
       locked: No permission
@@ -317,6 +318,8 @@ en:
       volume_down: Volume down
       volume_up: Volume up
     mic_button:
+      hold: Hold to talk
+      release: Listening, release to send
       error: Microphone error, tap to try again
       idle: Speak
       listening: Listening, tap to stop

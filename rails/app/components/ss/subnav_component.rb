@@ -7,13 +7,20 @@ module Ss
   #     { label: "Geral", href: settings_path, icon: icon("cog"), current: true }, { label: "Usuários", href: users_path }])
   #
   # icon: é o SVG do app (html_safe). current: marca a atual (padrão: current_page?(href)).
+  #
+  # v0.10.3: layout: :tabs deita a faixa no desktop (abas numa linha com o traço embaixo da
+  # atual, no lugar da coluna fixa); no celular continua o menu. A faixa rola até a atual
+  # (ss-scroll-current) quando não cabe.
   class SubnavComponent < BaseComponent
     CHEVRON = %(<svg class="ss-subnav-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>).freeze
 
-    def initialize(items:, label: nil, menu: true, **opts)
+    LAYOUTS = %i[column tabs].freeze
+
+    def initialize(items:, label: nil, menu: true, layout: :column, **opts)
       super(**opts)
       @items = Array(items).map { _1.to_h.transform_keys(&:to_sym) }
       @label, @menu = label, menu
+      @layout = LAYOUTS.include?(layout.to_s.to_sym) ? layout.to_s.to_sym : :column
     end
 
     def label = @label || ss_t("subnav.label", default: "Seções")
@@ -35,9 +42,9 @@ module Ss
     def call
       return "".html_safe if @items.empty?
 
-      tag.div(**root_attrs(class: classes("ss-subnav-wrap", ("has-menu" if @menu)))) do
+      tag.div(**root_attrs(class: classes("ss-subnav-wrap", ("has-menu" if @menu), ("is-tabs" if @layout == :tabs)))) do
         safe_join([
-          tag.nav(safe_join(@items.map { link(_1) }), class: "ss-subnav", "aria-label": label),
+          tag.nav(safe_join(@items.map { link(_1) }), class: "ss-subnav", "aria-label": label, data: { controller: "ss-scroll-current" }),
           (menu_html if @menu)
         ].compact)
       end

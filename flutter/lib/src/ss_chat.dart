@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
+import 'v10/casa_aviso.dart' show SsMicButton, SsMicState;
 
 /// Situação de uma mensagem da pessoa no [SsChatBubble].
 enum SsChatStatus { sending, sent, failed }
@@ -292,6 +293,14 @@ class _SsThinkingState extends State<SsThinking> with SingleTickerProviderStateM
 /// cota, sem rede). [leading] vai antes do campo (anexar foto, microfone).
 /// [maxLength] corta a digitação no limite e mostra a contagem quando passa
 /// de 80%; [sendTooltip] é a dica do botão (padrão: [SsStrings.send]).
+///
+/// Mensagem de voz (v0.10.3): com [onMicHoldStart], o campo vazio mostra um
+/// [SsMicButton] compacto de segurar para falar no lugar do enviar; escrever
+/// devolve o enviar. [onMicHoldEnd] ao soltar, [onMicHoldCancel] ao arrastar
+/// para longe. O app passa [micState] e [micLevel] (anéis do nível); fora de
+/// `idle`, o microfone fica mesmo com texto.
+///
+/// `SsChatInput(controller: c, onSend: enviar, onMicHoldStart: rec.start, onMicHoldEnd: rec.stop, micState: st, micLevel: lv)`
 class SsChatInput extends StatelessWidget {
   const SsChatInput({
     super.key,
@@ -303,6 +312,11 @@ class SsChatInput extends StatelessWidget {
     this.leading,
     this.maxLength,
     this.sendTooltip,
+    this.onMicHoldStart,
+    this.onMicHoldEnd,
+    this.onMicHoldCancel,
+    this.micState = SsMicState.idle,
+    this.micLevel = 0,
   });
 
   final TextEditingController controller;
@@ -319,6 +333,15 @@ class SsChatInput extends StatelessWidget {
 
   /// Dica do botão de enviar (toque longo / mouse por cima).
   final String? sendTooltip;
+
+  /// Segurar para falar (sem ele, não há microfone).
+  final VoidCallback? onMicHoldStart;
+  final VoidCallback? onMicHoldEnd;
+  final VoidCallback? onMicHoldCancel;
+  final SsMicState micState;
+
+  /// Nível do áudio 0..1 enquanto ouve.
+  final double micLevel;
 
   void _enviar() {
     final t = controller.text.trim();
@@ -383,6 +406,22 @@ class SsChatInput extends StatelessWidget {
               listenable: controller,
               builder: (context, _) {
                 final pode = enabled && controller.text.trim().isNotEmpty && !sending;
+                final mic =
+                    onMicHoldStart != null &&
+                    (micState != SsMicState.idle || (controller.text.trim().isEmpty && !sending));
+                if (mic) {
+                  return SsMicButton(
+                    key: const ValueKey('ss-chat-mic'),
+                    holdToTalk: true,
+                    compact: true,
+                    size: 44,
+                    state: micState,
+                    level: micLevel,
+                    onHoldStart: enabled ? onMicHoldStart : null,
+                    onHoldEnd: onMicHoldEnd,
+                    onHoldCancel: onMicHoldCancel,
+                  );
+                }
                 return Semantics(
                   button: true,
                   enabled: pode,
