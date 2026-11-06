@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'format.dart';
 import 'motion.dart';
 import 'ss_button.dart';
@@ -45,10 +46,14 @@ class SsFieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 2, bottom: 6),
+    padding: EdgeInsets.only(left: 2, bottom: SsDensity.of(context).space(6)),
     child: Text(
       text,
-      style: TextStyle(color: SsColors.of(context).ink2, fontSize: AppType.sub, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        color: SsColors.of(context).ink2,
+        fontSize: SsDensity.of(context).font(AppType.sub),
+        fontWeight: FontWeight.w700,
+      ),
     ),
   );
 }
@@ -61,7 +66,7 @@ class SsFieldHelper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 6, left: 2),
+    padding: EdgeInsets.only(top: SsDensity.of(context).space(6), left: 2),
     child: Text(
       text,
       maxLines: 3,
@@ -243,9 +248,10 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final on = _focus.hasFocus;
     OutlineInputBorder borda(Color cor) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppRadius.field),
+      borderRadius: BorderRadius.circular(d.radiusField),
       borderSide: BorderSide(color: cor, width: 2),
     );
     final campo = TextFormField(
@@ -274,23 +280,28 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       autofocus: widget.autofocus,
       readOnly: widget.readOnly,
       onTap: widget.onTap,
-      style: widget.style ?? TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w600),
+      style: widget.style ?? TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
       errorBuilder: (_, msg) => _ErrorLine(msg),
       decoration: InputDecoration(
         hintText: widget.hint,
-        hintStyle: TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w500),
+        hintStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500),
         helperText: widget.helperText,
         helperMaxLines: 3,
         helperStyle: TextStyle(color: c.muted, fontSize: AppType.meta),
-        prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: 21, color: on ? c.accent : c.muted),
+        prefixIcon: widget.icon == null
+            ? null
+            : Icon(widget.icon, size: d.iconSize + 1, color: on ? c.accent : c.muted),
         prefixText: widget.prefixText,
-        prefixStyle: widget.style ?? TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w600),
+        prefixStyle:
+            widget.style ?? TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
         suffixIcon: widget.suffix,
         suffixText: widget.suffixText,
-        suffixStyle: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+        suffixStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
         filled: true,
         fillColor: on ? c.surface : c.field,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        // Padrão 14/14 (52 de altura); a densidade muda a altura pela folga vertical.
+        contentPadding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: (d.fieldHeight - 24) / 2),
+        isDense: d.isCompact,
         enabledBorder: borda(Colors.transparent),
         disabledBorder: borda(Colors.transparent),
         focusedBorder: borda(c.accent.withValues(alpha: .45)),
@@ -299,29 +310,33 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       ),
     );
     final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 180);
-    return AnimatedBuilder(
-      animation: _shake,
-      builder: (_, child) {
-        final t = _shake.value;
-        return Transform.translate(offset: Offset(math.sin(t * math.pi * 6) * 8 * (1 - t), 0), child: child);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.label != null) SsFieldLabel(widget.label!),
-          // O halo só sem erro: com erro, a caixa ganharia a altura da mensagem.
-          AnimatedContainer(
-            duration: dur,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.field),
-              boxShadow: on && !_hasError
-                  ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)]
-                  : const [],
+    // Compacto: a caixa desenha 44 e o toque continua com 48 (por fora de tudo).
+    return SsTapTarget(
+      minSize: Size(0, d.minTarget),
+      child: AnimatedBuilder(
+        animation: _shake,
+        builder: (_, child) {
+          final t = _shake.value;
+          return Transform.translate(offset: Offset(math.sin(t * math.pi * 6) * 8 * (1 - t), 0), child: child);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.label != null) SsFieldLabel(widget.label!),
+            // O halo só sem erro: com erro, a caixa ganharia a altura da mensagem.
+            AnimatedContainer(
+              duration: dur,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(d.radiusField),
+                boxShadow: on && !_hasError
+                    ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)]
+                    : const [],
+              ),
+              child: campo,
             ),
-            child: campo,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -456,6 +471,7 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     Widget tecla(String k) => Expanded(
       child: Padding(
@@ -470,9 +486,9 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
               scale: .9,
               onTap: () => _tecla(k),
               child: Container(
-                height: 56,
+                height: d.target(d.fieldHeight + 4),
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.field)),
+                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(d.radiusField)),
                 child: k == '⌫'
                     ? Icon(Icons.backspace_outlined, color: c.ink2)
                     : Text(k, style: AppTheme.number(context, size: 22, color: c.ink)),
@@ -610,6 +626,7 @@ class SsDateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     final atalhos = showShortcuts
         ? shortcuts(DateTime.now(), s).where((a) => _noIntervalo(a.$2)).toList()
@@ -623,8 +640,8 @@ class SsDateField extends StatelessWidget {
       children: [
         if (label != null) SsFieldLabel(label!),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: d.gap - 4,
+          runSpacing: d.gap - 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             for (final (nome, dia) in atalhos)
@@ -737,6 +754,7 @@ class SsChoiceField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final hint = this.hint ?? SsStrings.of(context).choose;
     // Chave pelo valor: o estado do campo acompanha o valor que vem de fora.
     return FormField<T>(
@@ -751,43 +769,49 @@ class SsChoiceField<T> extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (label != null) SsFieldLabel(label!),
-            Semantics(
-              button: true,
-              enabled: enabled,
-              label: label,
-              value: texto ?? hint,
-              excludeSemantics: true,
-              child: SsPressable(
+            SsTapTarget(
+              minSize: Size(0, d.minTarget),
+              child: Semantics(
+                button: true,
                 enabled: enabled,
-                onTap: enabled ? () => _abrir(context, field) : null,
-                child: Container(
-                  height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: c.field,
-                    borderRadius: BorderRadius.circular(AppRadius.field),
-                    border: Border.all(
-                      color: erro != null ? c.danger.withValues(alpha: .55) : Colors.transparent,
-                      width: 2,
+                label: label,
+                value: texto ?? hint,
+                excludeSemantics: true,
+                child: SsPressable(
+                  enabled: enabled,
+                  onTap: enabled ? () => _abrir(context, field) : null,
+                  child: Container(
+                    height: d.fieldHeight,
+                    padding: EdgeInsets.symmetric(horizontal: d.padX - 2),
+                    decoration: BoxDecoration(
+                      color: c.field,
+                      borderRadius: BorderRadius.circular(d.radiusField),
+                      border: Border.all(
+                        color: erro != null ? c.danger.withValues(alpha: .55) : Colors.transparent,
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      if (icon != null) ...[Icon(icon, size: 21, color: c.muted), const SizedBox(width: 10)],
-                      Expanded(
-                        child: Text(
-                          texto ?? hint,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: texto == null ? c.muted : (enabled ? c.ink : c.muted),
-                            fontSize: AppType.body,
-                            fontWeight: texto == null ? FontWeight.w500 : FontWeight.w600,
+                    child: Row(
+                      children: [
+                        if (icon != null) ...[
+                          Icon(icon, size: d.iconSize + 1, color: c.muted),
+                          SizedBox(width: d.gap - 2),
+                        ],
+                        Expanded(
+                          child: Text(
+                            texto ?? hint,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: texto == null ? c.muted : (enabled ? c.ink : c.muted),
+                              fontSize: d.font(AppType.body),
+                              fontWeight: texto == null ? FontWeight.w500 : FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      Icon(Icons.unfold_more_rounded, size: 20, color: c.muted),
-                    ],
+                        Icon(Icons.unfold_more_rounded, size: d.iconSize, color: c.muted),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -820,6 +844,7 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final q = foldAccents(_q.trim());
     final itens = widget.options.entries.where((e) => q.isEmpty || foldAccents(e.value).contains(q)).toList();
     return Column(
@@ -844,15 +869,15 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
             button: true,
             selected: e.key == widget.selected,
             child: InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(d.radiusField),
               onTap: () {
                 HapticFeedback.selectionClick();
                 widget.onSelect != null ? widget.onSelect!(e.key) : Navigator.pop(context, (e.key,));
               },
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 48),
+                constraints: BoxConstraints(minHeight: d.minTarget),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: d.rowPadV + 2),
                   child: Row(
                     children: [
                       Expanded(
@@ -860,7 +885,7 @@ class _SsChoiceListState<T> extends State<SsChoiceList<T>> {
                           e.value,
                           style: TextStyle(
                             color: e.key == widget.selected ? c.accentText : c.ink,
-                            fontSize: AppType.body,
+                            fontSize: d.font(AppType.body),
                             fontWeight: e.key == widget.selected ? FontWeight.w800 : FontWeight.w600,
                           ),
                         ),
@@ -903,9 +928,10 @@ class SsSwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return MergeSemantics(
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(d.radiusField),
         // O toque no próprio interruptor já dá o haptic (SsSwitch).
         onTap: onChanged == null
             ? null
@@ -914,10 +940,10 @@ class SsSwitchRow extends StatelessWidget {
                 onChanged!(!value);
               },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: d.rowPadV - 2),
           child: Row(
             children: [
-              if (icon != null) ...[SsIconTile(icon!, size: 38), const SizedBox(width: 12)],
+              if (icon != null) ...[SsIconTile(icon!, size: d.iconTile - 4), SizedBox(width: d.gap)],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -926,7 +952,7 @@ class SsSwitchRow extends StatelessWidget {
                       title,
                       style: TextStyle(
                         color: onChanged == null ? c.muted : c.ink,
-                        fontSize: AppType.body,
+                        fontSize: d.font(AppType.body),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -934,13 +960,13 @@ class SsSwitchRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
-                        style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                        style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub)),
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               SsSwitch(value: value, onChanged: onChanged),
             ],
           ),
@@ -1240,6 +1266,7 @@ class SsTimeField extends StatelessWidget {
 
   Widget _campo(BuildContext context, String? erro) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final texto = value == null ? null : format(value!);
     final hint = this.hint ?? SsStrings.of(context).noTime;
     return Column(
@@ -1247,48 +1274,55 @@ class SsTimeField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (label != null) SsFieldLabel(label!),
-        Semantics(
-          button: true,
-          enabled: enabled,
-          label: label,
-          value: texto ?? hint,
-          excludeSemantics: true,
-          child: SsPressable(
+        SsTapTarget(
+          minSize: Size(0, d.minTarget),
+          child: Semantics(
+            button: true,
             enabled: enabled,
-            onTap: enabled ? () => _abrir(context) : null,
-            child: Container(
-              height: 52,
-              padding: const EdgeInsets.only(left: 14, right: 4),
-              decoration: BoxDecoration(
-                color: c.field,
-                borderRadius: BorderRadius.circular(AppRadius.field),
-                // Sem erro, sem borda: o campo fica igual ao de antes.
-                border: erro == null ? null : Border.all(color: c.danger.withValues(alpha: .55), width: 2),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.schedule_rounded, size: 21, color: c.muted),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: texto == null
-                        ? Text(
-                            hint,
-                            style: TextStyle(color: c.muted, fontSize: AppType.body),
-                          )
-                        : Text(
-                            texto,
-                            style: AppTheme.number(context, size: AppType.md, color: enabled ? c.ink : c.muted),
-                          ),
-                  ),
-                  if (clearable && value != null && enabled)
-                    IconButton(
-                      tooltip: SsStrings.of(context).clearTime,
-                      onPressed: () => onChanged(null),
-                      icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
-                    )
-                  else
-                    const SizedBox(width: 10),
-                ],
+            label: label,
+            value: texto ?? hint,
+            excludeSemantics: true,
+            child: SsPressable(
+              enabled: enabled,
+              onTap: enabled ? () => _abrir(context) : null,
+              child: Container(
+                height: d.fieldHeight,
+                padding: EdgeInsets.only(left: d.padX - 2, right: 4),
+                decoration: BoxDecoration(
+                  color: c.field,
+                  borderRadius: BorderRadius.circular(d.radiusField),
+                  // Sem erro, sem borda: o campo fica igual ao de antes.
+                  border: erro == null ? null : Border.all(color: c.danger.withValues(alpha: .55), width: 2),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.schedule_rounded, size: d.iconSize + 1, color: c.muted),
+                    SizedBox(width: d.gap - 2),
+                    Expanded(
+                      child: texto == null
+                          ? Text(
+                              hint,
+                              style: TextStyle(color: c.muted, fontSize: d.font(AppType.body)),
+                            )
+                          : Text(
+                              texto,
+                              style: AppTheme.number(
+                                context,
+                                size: d.font(AppType.md),
+                                color: enabled ? c.ink : c.muted,
+                              ),
+                            ),
+                    ),
+                    if (clearable && value != null && enabled)
+                      IconButton(
+                        tooltip: SsStrings.of(context).clearTime,
+                        onPressed: () => onChanged(null),
+                        icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
+                      )
+                    else
+                      const SizedBox(width: 10),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1317,12 +1351,13 @@ class SsCheckRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final on = onChanged != null;
     return Semantics(
       checked: value,
       enabled: on,
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(d.radiusField),
         onTap: on
             ? () {
                 HapticFeedback.selectionClick();
@@ -1330,14 +1365,14 @@ class SsCheckRow extends StatelessWidget {
               }
             : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: d.rowPadV),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Marcou: a caixa encolhe, pula, a cor inunda do centro, o ✓ se
               // desenha e sai um estouro; desmarcou: desfaz e balança.
               SsCheckBox(value: value),
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1347,7 +1382,7 @@ class SsCheckRow extends StatelessWidget {
                           title!,
                           style: TextStyle(
                             color: on ? c.ink : c.muted,
-                            fontSize: AppType.body,
+                            fontSize: d.font(AppType.body),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1355,7 +1390,7 @@ class SsCheckRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
-                        style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                        style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub)),
                       ),
                     ],
                   ],

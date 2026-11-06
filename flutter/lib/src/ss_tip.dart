@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
 
@@ -64,6 +65,7 @@ class _SsTipState extends State<SsTip> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final anim = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
     return SizeTransition(
       sizeFactor: anim,
@@ -71,16 +73,16 @@ class _SsTipState extends State<SsTip> with SingleTickerProviderStateMixin {
       child: FadeTransition(
         opacity: anim,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 12, 4, 10),
-          decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(AppRadius.card)),
+          padding: EdgeInsets.fromLTRB(d.padX - 2, d.rowPadV + 2, 4, d.rowPadV),
+          decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(d.radiusCard)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Icon(widget.icon, color: c.accentText, size: 20),
+                child: Icon(widget.icon, color: c.accentText, size: d.iconSize),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: d.gap - 2),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 2),

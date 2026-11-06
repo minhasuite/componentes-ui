@@ -39,11 +39,11 @@
     box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent-solid) 75%, transparent);
   }
   /* Contagem dentro do chip (e ao lado de um título): pílula em DM Mono, legível no chip atual. */
-  .ss-chip-count { display: inline-block; min-width: 1.35rem; padding: 0 .35rem; border-radius: 999px; font: 700 .7rem/1.35rem var(--font-mono);
+  .ss-chip-count { display: inline-block; min-width: 1.35rem; padding: 0 .35rem; border-radius: 999px; font: 700 calc(.7rem * var(--ss-font-scale))/1.35rem var(--font-mono);
                    text-align: center; background: color-mix(in srgb, currentColor 14%, transparent); }
   /* Faixa de chips (filtros, sub-abas): rola de lado sem barra no celular, some na borda
      para mostrar que tem mais; a partir de 640 px quebra em linhas (.is-scroll rola sempre). */
-  .ss-chips { display: flex; gap: .5rem; overflow-x: auto; padding: .15rem .1rem .45rem; scrollbar-width: none; }
+  .ss-chips { display: flex; gap: calc(var(--ss-gap) * .67); overflow-x: auto; padding: .15rem .1rem .45rem; scrollbar-width: none; }
   .ss-chips::-webkit-scrollbar { display: none; }
   .ss-chips > * { flex-shrink: 0; }
   @media (min-width: 640px) { .ss-chips:not(.is-scroll) { flex-wrap: wrap; overflow: visible; } }
@@ -55,36 +55,36 @@
 
   /* ── Linhas de lista num card: ícone, texto, valor e controles na mesma linha ── */
   .ss-rows { list-style: none; margin: 0; padding: 0; }
-  .ss-rows > li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; padding: .9rem 1.1rem; border-bottom: 1px solid var(--line);
+  .ss-rows > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ss-gap) calc(var(--ss-gap) * 1.33); padding: calc(var(--ss-row-py) * 1.2) calc(var(--ss-pad-x) * 1.1); border-bottom: 1px solid var(--line);
                   transition: background-color .15s ease; }
   .ss-rows > li:last-child { border-bottom: 0; }
   .ss-rows > li:hover { background: color-mix(in srgb, var(--accent) 3%, transparent); }
-  .ss-rows.is-compact > li { padding: .6rem .9rem; }
+  .ss-rows.is-compact > li { padding: calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .9); }
 
   /* ── Grupo de botões de comando (abrir/parar/fechar): cada toque manda o comando ── */
-  .ss-btn-group { display: inline-flex; align-items: center; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; background: var(--surface); }
+  .ss-btn-group { display: inline-flex; align-items: center; border-radius: var(--r-field); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; background: var(--surface); }
   .ss-btn-group form { display: contents; }
-  .ss-btn-group :is(button, a) { display: grid; place-items: center; width: 2.5rem; height: 2.25rem; border: 0; background: none; color: var(--ink-2); cursor: pointer;
+  .ss-btn-group :is(button, a) { display: grid; place-items: center; width: var(--ss-control-h); height: calc(var(--ss-control-h) - .25rem); border: 0; background: none; color: var(--ink-2); cursor: pointer;
                                   text-decoration: none; transition: background-color .15s ease, color .15s ease; }
   .ss-btn-group :is(button, a) + :is(button, a), .ss-btn-group form + form button { box-shadow: inset 1px 0 0 var(--line); }
   .ss-btn-group :is(button, a):hover { background: var(--accent-soft); color: var(--accent); }
   .ss-btn-group :is(button, a):active { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
   .ss-btn-group :is(button, a):disabled { opacity: .45; cursor: not-allowed; }
-  .ss-btn-group svg { width: 1.05rem; height: 1.05rem; }
+  .ss-btn-group svg { width: var(--ss-icon); height: var(--ss-icon); }
 
   /* ── Botão só de ícone (alvo de 40, dica no title/aria-label) ── */
-  .ss-icon-btn { display: inline-grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; padding: 0; border: 0; border-radius: 12px; background: transparent;
+  .ss-icon-btn { display: inline-grid; place-items: center; flex: none; width: var(--ss-control-h); height: var(--ss-control-h); padding: 0; border: 0; border-radius: var(--r-field); background: transparent;
                  color: var(--muted); cursor: pointer; text-decoration: none; position: relative;
                  transition: background-color .15s ease, color .15s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-icon-btn svg { width: 1.2rem; height: 1.2rem; }
+  .ss-icon-btn svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); }
   .ss-icon-btn:hover { background: var(--field); color: var(--accent); }
   .ss-icon-btn:active:not(:disabled) { scale: .9; transition-duration: .08s; }
   .ss-icon-btn:disabled, .ss-icon-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
   .ss-icon-btn.is-tonal { background: var(--field); color: var(--ink-2); border-radius: 999px; }
   .ss-icon-btn.is-outline { box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); border-radius: 999px; }
   .ss-icon-btn.is-danger:hover { background: var(--danger-soft); color: var(--danger); }
-  .ss-icon-btn.is-sm { width: 2rem; height: 2rem; border-radius: 10px; }
-  .ss-icon-btn.is-sm svg { width: 1rem; height: 1rem; }
+  .ss-icon-btn.is-sm { width: var(--ss-control-h-sm); height: var(--ss-control-h-sm); border-radius: calc(var(--r-field) - 2px); }
+  .ss-icon-btn.is-sm svg { width: calc(var(--ss-icon) * .95); height: calc(var(--ss-icon) * .95); }
   .ss-icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
   .ss-icon-btn > .ss-nav-badge, .ss-icon-btn > [data-badge] { position: absolute; top: .1rem; right: .1rem; }
   form:has(> .ss-icon-btn) { display: inline-flex; }
@@ -96,10 +96,10 @@
   .ss-icon-tile.is-success { background: var(--success-soft); color: var(--success); box-shadow: none; }
   .ss-icon-tile.is-warn { background: var(--warn-soft); color: var(--warn); box-shadow: none; }
   .ss-icon-tile.is-danger { background: var(--danger-soft); color: var(--danger); box-shadow: none; }
-  .ss-icon-tile.is-sm { width: 2.25rem; height: 2.25rem; border-radius: 10px; }
-  .ss-icon-tile.is-sm svg { width: 1.05rem; height: 1.05rem; }
-  .ss-icon-tile.is-lg { width: 3rem; height: 3rem; border-radius: 16px; }
-  .ss-icon-tile.is-lg svg { width: 1.45rem; height: 1.45rem; }
+  .ss-icon-tile.is-sm { width: calc(var(--ss-icon-tile) - .25rem); height: calc(var(--ss-icon-tile) - .25rem); border-radius: calc(var(--r-field) - 2px); }
+  .ss-icon-tile.is-sm svg { width: calc(var(--ss-icon-tile) * .42); height: calc(var(--ss-icon-tile) * .42); }
+  .ss-icon-tile.is-lg { width: calc(var(--ss-icon-tile) + .5rem); height: calc(var(--ss-icon-tile) + .5rem); border-radius: calc(var(--r-field) + 4px); }
+  .ss-icon-tile.is-lg svg { width: calc(var(--ss-icon-tile) * .58); height: calc(var(--ss-icon-tile) * .58); }
   .ss-icon-tile.is-circle { border-radius: 999px; }
 
   /* ── Zona de perigo: ação perigosa separada do resto do cartão ── */
@@ -109,7 +109,7 @@
 
   /* ── Aviso em linha (não some sozinho): data-tone info|accent|success|warn|danger ── */
   .ss-callout { --c: var(--ss-info); --c-soft: color-mix(in srgb, var(--ss-info) 12%, var(--surface));
-                display: flex; align-items: flex-start; gap: .65rem; padding: .8rem .95rem; border-radius: 14px; font-size: .875rem; color: var(--ink-2);
+                display: flex; align-items: flex-start; gap: calc(var(--ss-gap) * .87); padding: calc(var(--ss-row-py) * 1.07) calc(var(--ss-pad-x) * .95); border-radius: calc(var(--r-field) + 2px); font-size: calc(.875rem * var(--ss-font-scale)); color: var(--ink-2);
                 background: var(--c-soft); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); }
   .ss-callout[data-tone="accent"] { --c: var(--accent); --c-soft: var(--accent-soft); }
   .ss-callout[data-tone="success"] { --c: var(--success); --c-soft: var(--success-soft); }
@@ -121,10 +121,10 @@
   .ss-callout[data-tone="info"] .ss-callout-title, .ss-callout:not([data-tone]) .ss-callout-title { color: var(--ink); }
   .ss-callout p { margin: 0; overflow-wrap: anywhere; }
   .ss-callout ul { margin: .15rem 0 0; padding-left: 1.1rem; list-style: disc; }
-  .ss-callout-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .45rem; }
+  .ss-callout-actions { display: flex; flex-wrap: wrap; gap: calc(var(--ss-gap) * .67); margin-top: .45rem; }
 
   /* ── Código: bloco (log, YAML, chave), campo de editar e trecho em linha ── */
-  .ss-code { position: relative; margin: 0; padding: .75rem 2.9rem .75rem .85rem; border-radius: 12px; background: var(--field); color: var(--ink);
+  .ss-code { position: relative; margin: 0; padding: var(--ss-row-py) 2.9rem var(--ss-row-py) calc(var(--ss-pad-x) * .85); border-radius: var(--r-field); background: var(--field); color: var(--ink);
              font: 400 .78rem/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; }
   .ss-code.is-nowrap { white-space: pre; overflow-wrap: normal; }
   .ss-code.is-terminal { background: #14121f; color: #e7e4f6; }
@@ -141,12 +141,12 @@
 
   /* ── Botão flutuante (pílula na cor sólida; .is-icon só o ícone) ── */
   .ss-fab { position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 40;
-            display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 3.5rem; min-width: 3.5rem; padding: 0 1.25rem;
-            border: 0; border-radius: 999px; background: var(--accent-solid); color: #fff; font-weight: 800; font-size: .9rem; text-decoration: none; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: calc(var(--ss-control-h) + 1rem); min-width: calc(var(--ss-control-h) + 1rem); padding: 0 calc(var(--ss-pad-x) * 1.25);
+            border: 0; border-radius: 999px; background: var(--accent-solid); color: #fff; font-weight: 800; font-size: calc(.9rem * var(--ss-font-scale)); text-decoration: none; cursor: pointer;
             box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent-solid) 80%, transparent);
             transition: scale var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease; }
-  .ss-fab svg { width: 1.4rem; height: 1.4rem; }
-  .ss-fab.is-icon { padding: 0; width: 3.5rem; }
+  .ss-fab svg { width: calc(var(--ss-icon) * 1.33); height: calc(var(--ss-icon) * 1.33); }
+  .ss-fab.is-icon { padding: 0; width: calc(var(--ss-control-h) + 1rem); }
   .ss-fab.is-static { position: static; }
   .ss-fab:hover { box-shadow: 0 16px 32px -12px color-mix(in srgb, var(--accent-solid) 90%, transparent); }
   .ss-fab:active { scale: .94; transition-duration: .08s; }
@@ -158,7 +158,7 @@
 
   /* ── Passos numerados (Quando → Só se → Então): .ss-steps conta, .ss-steps-head numera ── */
   .ss-steps { counter-reset: ss-step; }
-  .ss-steps-head { display: flex; align-items: center; gap: .6rem; counter-increment: ss-step; }
+  .ss-steps-head { display: flex; align-items: center; gap: calc(var(--ss-gap) * .8); counter-increment: ss-step; }
   .ss-steps-head::before { content: counter(ss-step); display: grid; place-items: center; width: 1.6rem; height: 1.6rem; flex-shrink: 0; border-radius: 999px;
                            font: 800 .78rem/1 var(--font-mono); color: #fff; background: var(--accent-solid);
                            box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--accent-solid) 80%, transparent); }
@@ -193,11 +193,11 @@
   .ss-splash-msg { margin: 0; font-size: .875rem; color: var(--muted); }
 
   /* ── Barra de topo compacta (tela cheia: mapa, câmera, quiosque, editor) ── */
-  .ss-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: .35rem; min-height: 3.5rem; padding: .35rem .75rem;
+  .ss-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: .35rem; min-height: calc(var(--ss-control-h) + 1rem); padding: .35rem calc(var(--ss-pad-x) * .75);
                background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(10px); color: var(--ink); }
   .ss-topbar.is-static { position: relative; }
   .ss-topbar-titles { display: grid; min-width: 0; flex: 1; padding-inline: .25rem; }
-  .ss-topbar-title { margin: 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-topbar-title { margin: 0; font-size: calc(1.05rem * var(--ss-font-scale)); font-weight: 800; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-topbar-sub { font-size: .75rem; font-weight: 600; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-topbar-actions { display: flex; align-items: center; gap: .35rem; flex: none; }
   .ss-topbar .ss-icon-btn { color: inherit; }
@@ -208,10 +208,10 @@
   :is(.ss-topbar.is-dark, .ss-topbar.is-overlay) .ss-icon-btn:hover { background: rgba(255, 255, 255, .14); color: #fff; }
 
   /* ── Lista de arrastar para ordenar (Ss::SortableListComponent, ss-sortable) ── */
-  .ss-sortable { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ss-sortable-gap, .5rem); }
+  .ss-sortable { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ss-sortable-gap, calc(var(--ss-gap) * .67)); }
   .ss-sortable-item { position: relative; display: flex; align-items: center; gap: .5rem; transition: translate .25s var(--ss-bounce), box-shadow .2s ease, opacity .2s ease; }
   .ss-sortable-item > .ss-sortable-main { flex: 1; min-width: 0; }
-  .ss-sortable-handle { display: grid; place-items: center; flex: none; width: 2rem; height: 2.5rem; border: 0; border-radius: 10px; background: none; color: var(--muted);
+  .ss-sortable-handle { display: grid; place-items: center; flex: none; width: var(--ss-control-h-sm); height: var(--ss-control-h); border: 0; border-radius: calc(var(--r-field) - 2px); background: none; color: var(--muted);
                         cursor: grab; touch-action: none; }
   .ss-sortable-handle:hover, .ss-sortable-handle:focus-visible { background: var(--field); color: var(--accent); }
   .ss-sortable-handle svg { width: 1.1rem; height: 1.1rem; }
@@ -242,8 +242,8 @@
 .ss-subnav a[aria-current="page"], .ss-subnav a[aria-current="page"]:hover { background: var(--accent-soft); color: var(--accent); font-weight: 700;
                                                                              border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .ss-subnav-menu { margin-bottom: 1rem; }
-.ss-subnav-current { display: flex; align-items: center; gap: .55rem; padding: .7rem .9rem; border-radius: 14px; cursor: pointer; list-style: none;
-                     background: var(--surface); border: 1px solid var(--line); color: var(--accent); font-weight: 700; font-size: .9rem; }
+.ss-subnav-current { display: flex; align-items: center; gap: .55rem; padding: calc(var(--ss-row-py) * .93) calc(var(--ss-pad-x) * .9); border-radius: calc(var(--r-field) + 2px); cursor: pointer; list-style: none;
+                     background: var(--surface); border: 1px solid var(--line); color: var(--accent); font-weight: 700; font-size: calc(.9rem * var(--ss-font-scale)); }
 .ss-subnav-current::-webkit-details-marker { display: none; }
 .ss-subnav-current > svg { width: 1rem; height: 1rem; flex: none; }
 .ss-subnav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -251,7 +251,7 @@
 .ss-subnav-chevron { transition: rotate .2s ease; color: var(--ink-2); }
 .ss-subnav-menu[open] .ss-subnav-chevron { rotate: 180deg; }
 .ss-subnav-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
-.ss-subnav-grid a { display: flex; align-items: center; gap: .45rem; min-width: 0; padding: .6rem .7rem; border-radius: 12px; font-size: .85rem; font-weight: 600;
+.ss-subnav-grid a { display: flex; align-items: center; gap: .45rem; min-width: 0; padding: calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .7); border-radius: var(--r-field); font-size: calc(.85rem * var(--ss-font-scale)); font-weight: 600;
                     color: var(--ink-2); text-decoration: none; background: var(--surface); border: 1px solid var(--line); }
 .ss-subnav-grid a > svg { width: 1rem; height: 1rem; flex: none; }
 .ss-subnav-grid a > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

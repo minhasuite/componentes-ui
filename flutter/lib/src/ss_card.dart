@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 
-/// Card do design system: superfície, raio 18 (22 quando ativo), sombra suave
+/// Card do design system: superfície, raio 18 (22 quando ativo; os dois da
+/// [SsDensity]), respiro 16 (o `cardPad`), sombra suave
 /// (glow roxo quando ativo) e borda accent no estado ativo. Espelha `.ss-card`.
 /// Com [onTap], afunda de leve no toque e volta com mola ([SsPressable]).
 class SsCard extends StatelessWidget {
   const SsCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.onTap,
     this.active = false,
     this.done = false,
@@ -18,7 +20,9 @@ class SsCard extends StatelessWidget {
   });
 
   final Widget child;
-  final EdgeInsetsGeometry padding;
+
+  /// Respiro interno. Nulo: `cardPad` da [SsDensity] (16 no padrão).
+  final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
   final bool active;
   final bool done;
@@ -29,11 +33,12 @@ class SsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final radius = BorderRadius.circular(active ? AppRadius.cardActive : AppRadius.card);
+    final d = SsDensity.of(context);
+    final radius = BorderRadius.circular(active ? d.radiusCard + 4 : d.radiusCard);
     final content = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
-      padding: padding,
+      padding: padding ?? EdgeInsets.all(d.cardPad),
       decoration: BoxDecoration(
         color: tint == null ? c.surface : Color.alphaBlend(tint!.withValues(alpha: .08), c.surface),
         borderRadius: radius,

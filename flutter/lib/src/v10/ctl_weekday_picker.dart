@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_strings.dart';
 
@@ -82,10 +83,10 @@ class SsWeekdayPicker extends StatelessWidget {
               ],
             ),
             if (shortcuts) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: SsDensity.of(context).space(10)),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: SsDensity.of(context).space(8),
+                runSpacing: SsDensity.of(context).space(8),
                 alignment: WrapAlignment.center,
                 children: [
                   for (final (t, grupo) in [
@@ -118,6 +119,7 @@ class _Dia extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final reduce = reduceMotion(context);
     return Semantics(
       checked: marcado,
@@ -134,7 +136,8 @@ class _Dia extends StatelessWidget {
                 onTap!();
               },
         child: SizedBox(
-          height: 52,
+          // Faixa de toque 48 / 52 / 56 e bolinha 36 / 42 / 46.
+          height: d.target(d.iconTile + 10),
           child: Center(
             child: AnimatedScale(
               scale: marcado ? 1 : .9,
@@ -142,8 +145,8 @@ class _Dia extends StatelessWidget {
               curve: SsMotion.pop,
               child: AnimatedContainer(
                 duration: reduce ? Duration.zero : SsMotion.fast,
-                width: 42,
-                height: 42,
+                width: d.iconTile,
+                height: d.iconTile,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -156,7 +159,7 @@ class _Dia extends StatelessWidget {
                   style: TextStyle(
                     color: marcado ? Colors.white : c.ink2,
                     fontWeight: FontWeight.w800,
-                    fontSize: AppType.set,
+                    fontSize: d.font(AppType.set),
                   ),
                 ),
               ),
@@ -178,31 +181,38 @@ class _Atalho extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = cor;
-    return Semantics(
-      button: true,
-      selected: marcado,
-      label: texto,
-      excludeSemantics: true,
-      child: SsPressable(
-        scale: .94,
-        enabled: onTap != null,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
-          constraints: const BoxConstraints(minHeight: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            color: marcado ? c.accentSoft : c.surface,
-            border: Border.all(color: marcado ? c.accent.withValues(alpha: .5) : c.line),
-          ),
-          child: Text(
-            texto,
-            style: TextStyle(
-              color: marcado ? c.accentText : c.ink2,
-              fontWeight: FontWeight.w700,
-              fontSize: AppType.meta,
-            ),
+    final d = SsDensity.of(context);
+    // Chip de 30 / 34 / 38 (era 48 de desenho); o toque continua com 48.
+    return SsTapTarget(
+      child: Semantics(
+        button: true,
+        selected: marcado,
+        label: texto,
+        excludeSemantics: true,
+        child: SsPressable(scale: .94, enabled: onTap != null, onTap: onTap, child: _corpo(context, c, d)),
+      ),
+    );
+  }
+
+  Widget _corpo(BuildContext context, SsColors c, SsDensity d) {
+    return AnimatedContainer(
+      duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
+      constraints: BoxConstraints(minHeight: d.chipHeight),
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        color: marcado ? c.accentSoft : c.surface,
+        border: Border.all(color: marcado ? c.accent.withValues(alpha: .5) : c.line),
+      ),
+      child: Align(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          texto,
+          style: TextStyle(
+            color: marcado ? c.accentText : c.ink2,
+            fontWeight: FontWeight.w700,
+            fontSize: d.font(AppType.meta),
           ),
         ),
       ),

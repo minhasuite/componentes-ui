@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion_view.dart';
 
 /// Abre uma folha de baixo no padrão da suíte: alça, raio 26, área segura,
@@ -94,7 +95,9 @@ class SsSheetHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final cor = tone ?? c.accent;
+    final lado = d.iconTile - 2;
     return Semantics(
       header: true,
       child: Row(
@@ -102,15 +105,15 @@ class SsSheetHeader extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Container(
-              width: 40,
-              height: 40,
+              width: lado,
+              height: lado,
               decoration: BoxDecoration(
                 color: cor.withValues(alpha: c.isDark ? .2 : .14),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(d.radiusField - 2),
               ),
-              child: Icon(icon, size: 21, color: cor),
+              child: Icon(icon, size: d.iconSize + 1, color: cor),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: d.gap),
           ],
           Expanded(
             child: Column(
@@ -118,13 +121,18 @@ class SsSheetHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(color: c.ink, fontSize: AppType.lg, fontWeight: FontWeight.w800, height: 1.2),
+                  style: TextStyle(
+                    color: c.ink,
+                    fontSize: d.font(AppType.lg),
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 3),
                   Text(
                     subtitle!,
-                    style: TextStyle(color: c.muted, fontSize: AppType.sub, height: 1.35),
+                    style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), height: 1.35),
                   ),
                 ],
               ],

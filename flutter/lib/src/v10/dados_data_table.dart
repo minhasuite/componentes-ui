@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../skeleton.dart';
@@ -124,13 +125,15 @@ class SsDataTable extends StatelessWidget {
 
   Widget _celula(BuildContext context, SsDataColumn col, Widget child, {bool head = false}) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final estilo = head
-        ? TextStyle(fontSize: AppType.label, fontWeight: FontWeight.w800, letterSpacing: .8, color: c.muted)
+        ? TextStyle(fontSize: d.font(AppType.label), fontWeight: FontWeight.w800, letterSpacing: .8, color: c.muted)
         : col.numeric
-        ? AppTheme.number(context, size: AppType.set, color: c.ink)
-        : TextStyle(fontSize: AppType.set, color: c.ink);
+        ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
+        : TextStyle(fontSize: d.font(AppType.set), color: c.ink);
+    // Célula: 8×8 / 12×12 / 16×16 (horizontal pelo padX, vertical pela linha).
     final conteudo = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 4, vertical: d.rowPadV + 2),
       child: Align(
         alignment: col.numeric ? Alignment.centerRight : Alignment.centerLeft,
         child: DefaultTextStyle.merge(style: estilo, child: child),
@@ -144,7 +147,7 @@ class SsDataTable extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(SsDensity.of(context).radiusCard),
         boxShadow: c.isDark ? null : AppShadows.card,
         border: c.isDark ? Border.all(color: c.line) : null,
       ),
@@ -228,6 +231,7 @@ class SsDataTable extends StatelessWidget {
 
   Widget _cartoes(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final ordenaveis = [
       for (var i = 0; i < columns.length; i++)
         if (columns[i].onSort != null) i,
@@ -237,15 +241,15 @@ class SsDataTable extends StatelessWidget {
       children: [
         if (ordenaveis.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: d.space(10)),
             child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: d.space(6),
+              runSpacing: d.space(6),
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
                   sortByLabel ?? SsStrings.of(context).sortBy,
-                  style: TextStyle(fontSize: AppType.meta, color: c.muted, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: d.font(AppType.meta), color: c.muted, fontWeight: FontWeight.w600),
                 ),
                 for (final i in ordenaveis)
                   Semantics(
@@ -256,8 +260,8 @@ class SsDataTable extends StatelessWidget {
                     child: SsPressable(
                       onTap: () => _ordena(i),
                       child: AnimatedContainer(
-                        duration: SsMotion.fast,
-                        padding: const EdgeInsets.fromLTRB(10, 5, 8, 5),
+                        duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
+                        padding: EdgeInsets.fromLTRB(d.space(10), d.space(5), d.space(8), d.space(5)),
                         decoration: BoxDecoration(
                           color: sortColumn == i ? c.accentSoft : c.surface,
                           borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -269,7 +273,7 @@ class SsDataTable extends StatelessWidget {
                             Text(
                               columns[i].label,
                               style: TextStyle(
-                                fontSize: AppType.meta,
+                                fontSize: d.font(AppType.meta),
                                 fontWeight: FontWeight.w700,
                                 color: sortColumn == i ? c.accentText : c.ink2,
                               ),
@@ -289,54 +293,58 @@ class SsDataTable extends StatelessWidget {
             index: r,
             offset: 10,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: d.space(10)),
               child: Material(
                 color: c.surface,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(d.radiusCard - 2),
                   side: BorderSide(color: c.line),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: rows[r].onTap,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (titleColumn < rows[r].cells.length)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
+                            padding: EdgeInsets.only(bottom: d.space(4)),
                             child: DefaultTextStyle.merge(
-                              style: TextStyle(fontSize: AppType.body, fontWeight: FontWeight.w800, color: c.ink),
+                              style: TextStyle(
+                                fontSize: d.font(AppType.body),
+                                fontWeight: FontWeight.w800,
+                                color: c.ink,
+                              ),
                               child: rows[r].cells[titleColumn],
                             ),
                           ),
                         for (var i = 0; i < columns.length; i++)
                           if (i != titleColumn && i < rows[r].cells.length)
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: EdgeInsets.symmetric(vertical: d.space(4)),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     columns[i].label.toUpperCase(),
                                     style: TextStyle(
-                                      fontSize: AppType.label,
+                                      fontSize: d.font(AppType.label),
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: .6,
                                       color: c.muted,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: d.gap),
                                   Expanded(
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: DefaultTextStyle.merge(
                                         textAlign: TextAlign.right,
                                         style: columns[i].numeric
-                                            ? AppTheme.number(context, size: AppType.set, color: c.ink)
-                                            : TextStyle(fontSize: AppType.set, color: c.ink),
+                                            ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
+                                            : TextStyle(fontSize: d.font(AppType.set), color: c.ink),
                                         child: rows[r].cells[i],
                                       ),
                                     ),
@@ -357,6 +365,7 @@ class SsDataTable extends StatelessWidget {
 
   Widget _fantasma(BuildContext context, bool pilha) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     if (pilha) {
       return Column(
         children: [
@@ -366,14 +375,14 @@ class SsDataTable extends StatelessWidget {
       );
     }
     return Container(
-      decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(AppRadius.card)),
+      decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(d.radiusCard)),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          Container(height: 40, color: c.field),
+          Container(height: d.rowPadV * 2 + 20, color: c.field),
           for (var i = 0; i < loadingRows; i++)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: d.padX - 4, vertical: d.rowPadV + 4),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: c.line)),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_dialogs.dart' show showSsConfirm;
 import '../ss_strings.dart';
@@ -155,10 +156,11 @@ class SsDeviceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final tone = color ?? c.accent;
     final reduce = reduceMotion(context);
     final dur = reduce ? Duration.zero : SsMotion.base;
-    const radius = AppRadius.card;
+    final radius = d.radiusCard;
     final erro = status == SsDeviceStatus.error;
 
     final bg = !_available
@@ -187,13 +189,16 @@ class SsDeviceTile extends StatelessWidget {
       style: TextStyle(
         fontWeight: FontWeight.w700,
         color: _available ? c.ink : c.ink2,
-        fontSize: AppType.set,
+        fontSize: d.font(AppType.set),
         height: 1.25,
       ),
     );
     final estado = Row(
       children: [
-        if (erro) ...[Icon(Icons.error_outline_rounded, size: 14, color: c.dangerText), const SizedBox(width: 4)],
+        if (erro) ...[
+          Icon(Icons.error_outline_rounded, size: d.iconSize - 6, color: c.dangerText),
+          const SizedBox(width: 4),
+        ],
         Flexible(
           child: AnimatedSwitcher(
             duration: dur,
@@ -202,7 +207,7 @@ class SsDeviceTile extends StatelessWidget {
               key: ValueKey(texto),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: corEstado, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+              style: TextStyle(color: corEstado, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -226,24 +231,27 @@ class SsDeviceTile extends StatelessWidget {
     );
     final fim = _trailing(context, c);
 
-    final corpo = wide
+    final Widget? deitado = wide
         ? Row(
             children: [
               bolha,
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               Expanded(child: textos),
-              if (fim != null) ...[const SizedBox(width: 8), fim],
+              if (fim != null) ...[SizedBox(width: d.space(8)), fim],
             ],
           )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [bolha, const Spacer(), ?fim]),
-              const SizedBox(height: 10),
-              textos,
-            ],
-          );
+        : null;
+    // Compacto: ícone e chave em cima, texto embaixo. Numa grade de altura fixa
+    // (childAspectRatio), o espaço do meio cede antes de estourar (densidade confortável).
+    Widget corpoEmPe({required bool limitado}) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [bolha, const Spacer(), ?fim]),
+        if (limitado) Flexible(child: SizedBox(height: d.space(10))) else SizedBox(height: d.space(10)),
+        textos,
+      ],
+    );
 
     final semantica = '$name: $texto';
     // Modo ação: o toque executa; senão, abre os detalhes.
@@ -252,7 +260,7 @@ class SsDeviceTile extends StatelessWidget {
     Widget tile = AnimatedContainer(
       duration: dur,
       curve: Curves.easeOut,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(d.cardPad - 2),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius),
@@ -268,11 +276,10 @@ class SsDeviceTile extends StatelessWidget {
               ]
             : (_available ? AppShadows.card : null),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Semantics(
+      child: LayoutBuilder(
+        builder: (context, cons) {
+          final limitado = cons.hasBoundedHeight && deitado == null;
+          final rotulado = Semantics(
             button: toque != null,
             enabled: onPress != null ? _pressable : null,
             label: semantica,
@@ -281,10 +288,17 @@ class SsDeviceTile extends StatelessWidget {
             onLongPress: onLongPress,
             onLongPressHint: onLongPress == null ? null : longPressLabel ?? s.moreOptions,
             container: true,
-            child: corpo,
-          ),
-          if (footer != null) ...[const SizedBox(height: 12), footer!],
-        ],
+            child: deitado ?? corpoEmPe(limitado: limitado),
+          );
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (limitado) Flexible(child: rotulado) else rotulado,
+              if (footer != null) ...[SizedBox(height: d.gap), footer!],
+            ],
+          );
+        },
       ),
     );
     if (!_available) {
@@ -307,10 +321,15 @@ class SsDeviceTile extends StatelessWidget {
 
   Widget? _trailing(BuildContext context, SsColors c) {
     final s = SsStrings.of(context);
+    final d = SsDensity.of(context);
     if (status == SsDeviceStatus.locked) {
       return Semantics(
         label: lockedLabel ?? s.noPermission,
-        child: SizedBox(width: 48, height: 48, child: Icon(Icons.lock_outline_rounded, color: c.muted, size: 20)),
+        child: SizedBox(
+          width: d.minTarget,
+          height: d.minTarget,
+          child: Icon(Icons.lock_outline_rounded, color: c.muted, size: d.iconSize),
+        ),
       );
     }
     if (onToggle == null) return null;
@@ -321,7 +340,7 @@ class SsDeviceTile extends StatelessWidget {
       child: Semantics(
         label: '$acao $name',
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48, minWidth: 56),
+          constraints: BoxConstraints(minHeight: d.minTarget, minWidth: d.minTarget + 8),
           child: Center(
             child: Opacity(
               opacity: pode ? 1 : .5,
@@ -352,14 +371,16 @@ class _Icone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
-    const tam = 44.0;
+    // Quadrado do ícone: 2 a mais que o SsIconTile (38 / 44 / 48).
+    final tam = d.iconTile + 2;
     final bolha = AnimatedContainer(
       duration: dur,
       width: tam,
       height: tam,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(d.radiusField),
         color: lit ? null : (available ? c.field : c.surface),
         gradient: lit
             ? LinearGradient(
@@ -381,7 +402,7 @@ class _Icone extends StatelessWidget {
       ),
       child: Icon(
         icon,
-        size: 22,
+        size: d.iconSize + 2,
         // Cor de luz clara (amarelo-claro, branco quente): ícone em tinta escura.
         color: lit
             ? (ThemeData.estimateBrightnessForColor(tone) == Brightness.light ? const Color(0xFF2A2418) : Colors.white)

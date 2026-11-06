@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
 
@@ -54,17 +55,18 @@ class SsListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final cor = tone ?? c.accent;
     final lead = leading ?? (icon == null ? null : SsIconTile(icon!, tone: cor));
     final item = InkWell(
       onTap: onTap,
       onLongPress: onLongPress,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(d.radiusField),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 4, vertical: d.rowPadV),
         child: Row(
           children: [
-            if (lead != null) ...[lead, const SizedBox(width: 12)],
+            if (lead != null) ...[lead, SizedBox(width: d.gap)],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +75,7 @@ class SsListItem extends StatelessWidget {
                     title,
                     maxLines: maxLines,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w700),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
@@ -81,32 +83,32 @@ class SsListItem extends StatelessWidget {
                       subtitle!,
                       maxLines: maxLines,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub)),
                     ),
                   ],
                 ],
               ),
             ),
             if (value != null) ...[
-              const SizedBox(width: 10),
+              SizedBox(width: d.gap - 2),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     value!,
-                    style: AppTheme.number(context, size: AppType.body, color: valueColor ?? c.ink),
+                    style: AppTheme.number(context, size: d.font(AppType.body), color: valueColor ?? c.ink),
                   ),
                   if (valueCaption != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       valueCaption!,
-                      style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta)),
                     ),
                   ],
                 ],
               ),
             ],
-            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+            if (trailing != null) ...[SizedBox(width: d.gap - 4), trailing!],
           ],
         ),
       ),
@@ -127,8 +129,9 @@ class SsGroupHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 18, 4, 6),
+      padding: EdgeInsets.fromLTRB(4, d.space(18), 4, d.space(6)),
       child: Row(
         children: [
           Expanded(
@@ -369,7 +372,7 @@ class SsIconTile extends StatelessWidget {
   const SsIconTile(
     this.icon, {
     super.key,
-    this.size = 42,
+    this.size,
     this.tone,
     this.circle = false,
     this.filled = false,
@@ -378,7 +381,9 @@ class SsIconTile extends StatelessWidget {
   });
 
   final IconData icon;
-  final double size;
+
+  /// Lado do quadrado. Nulo: o `iconTile` da [SsDensity] (42 no padrão).
+  final double? size;
   final Color? tone;
   final bool circle;
 
@@ -397,6 +402,7 @@ class SsIconTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final size = this.size ?? SsDensity.of(context).iconTile;
     final cor = tone ?? c.accent;
     if (onGradient) {
       return Container(

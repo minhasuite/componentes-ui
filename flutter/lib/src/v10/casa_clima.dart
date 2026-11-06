@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_strings.dart';
 
@@ -123,6 +124,7 @@ class SsWeatherCard extends StatelessWidget {
     final windLabel = this.windLabel ?? ssText.wind;
     final conditionLabels = this.conditionLabels ?? labelsOf(ssText);
     final c = SsColors.of(context);
+    final dn = SsDensity.of(context);
     final texto = conditionText ?? conditionLabels[condition] ?? '';
     final chuvaTxt = rainChance == null ? null : '${rainChanceLabel ?? ssText.rainChance} $rainChance%';
     final sensacao = feelsLike == null ? null : '${feelsLikeLabel ?? ssText.feelsLike} ${_t(feelsLike!)}';
@@ -132,10 +134,10 @@ class SsWeatherCard extends StatelessWidget {
       if (wind != null) (Icons.air_rounded, windLabel, '${wind!.round()} $windUnit'),
     ];
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(dn.cardPad + 2),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(dn.radiusCard),
         border: c.isDark ? Border.all(color: c.line) : null,
         boxShadow: c.isDark ? null : AppShadows.card,
       ),
@@ -156,16 +158,24 @@ class SsWeatherCard extends StatelessWidget {
                       if (location != null)
                         Text(
                           location!,
-                          style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            color: c.muted,
+                            fontSize: dn.font(AppType.meta),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       Text(
                         _t(temperature),
-                        style: AppTheme.number(context, size: 52, weight: FontWeight.w500, color: c.ink),
+                        style: AppTheme.number(context, size: dn.font(52), weight: FontWeight.w500, color: c.ink),
                       ),
                       if (sensacao != null)
                         Text(
                           sensacao,
-                          style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: c.muted,
+                            fontSize: dn.font(AppType.meta),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -173,7 +183,11 @@ class SsWeatherCard extends StatelessWidget {
                         children: [
                           Text(
                             texto,
-                            style: TextStyle(color: c.ink2, fontSize: AppType.body, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              color: c.ink2,
+                              fontSize: dn.font(AppType.body),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           if (rainChance != null) _Chuva(rainChance!, size: AppType.sub),
                         ],
@@ -186,7 +200,7 @@ class SsWeatherCard extends StatelessWidget {
                               if (max != null) '$maxLabel ${_t(max!)}',
                               if (min != null) '$minLabel ${_t(min!)}',
                             ].join('  ·  '),
-                            style: AppTheme.number(context, size: AppType.meta, color: c.muted),
+                            style: AppTheme.number(context, size: dn.font(AppType.meta), color: c.muted),
                           ),
                         ),
                     ],
@@ -197,7 +211,7 @@ class SsWeatherCard extends StatelessWidget {
             ),
           ),
           if (pilulas.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: dn.space(14)),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -207,7 +221,7 @@ class SsWeatherCard extends StatelessWidget {
                     label: '$label $v',
                     excludeSemantics: true,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: dn.space(10), vertical: dn.space(6)),
                       decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.pill)),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -216,12 +230,12 @@ class SsWeatherCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           Text(
                             label,
-                            style: TextStyle(color: c.muted, fontSize: AppType.label),
+                            style: TextStyle(color: c.muted, fontSize: dn.font(AppType.label)),
                           ),
                           const SizedBox(width: 6),
                           Text(
                             v,
-                            style: AppTheme.number(context, size: AppType.meta, color: c.ink),
+                            style: AppTheme.number(context, size: dn.font(AppType.meta), color: c.ink),
                           ),
                         ],
                       ),
@@ -231,9 +245,9 @@ class SsWeatherCard extends StatelessWidget {
             ),
           ],
           if (forecast.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: dn.space(14)),
             Divider(height: 1, color: c.line),
-            const SizedBox(height: 10),
+            SizedBox(height: dn.space(10)),
             SizedBox(
               height: temChuvaDia ? 116 : 100,
               child: ListView.separated(
@@ -254,24 +268,28 @@ class SsWeatherCard extends StatelessWidget {
                         children: [
                           Text(
                             f.label,
-                            style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              color: c.muted,
+                              fontSize: dn.font(AppType.label),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           SsWeatherIcon(f.condition, size: 26),
                           const SizedBox(height: 4),
                           Text(
                             _t(f.temp),
-                            style: AppTheme.number(context, size: AppType.sub, color: c.ink),
+                            style: AppTheme.number(context, size: dn.font(AppType.sub), color: c.ink),
                           ),
                           if (f.min != null)
                             Text(
                               _t(f.min!),
-                              style: AppTheme.number(context, size: AppType.label, color: c.muted),
+                              style: AppTheme.number(context, size: dn.font(AppType.label), color: c.muted),
                             ),
                           if (f.min == null && f.precip != null)
                             Text(
                               '${f.precip}%',
-                              style: AppTheme.number(context, size: AppType.label, color: _corChuva),
+                              style: AppTheme.number(context, size: dn.font(AppType.label), color: _corChuva),
                             ),
                           // Por dia: a chance de chuva vai embaixo da mínima, com a gota.
                           if (f.min != null && f.precip != null)

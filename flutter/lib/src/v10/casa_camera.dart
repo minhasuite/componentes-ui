@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_strings.dart';
 
@@ -92,7 +93,7 @@ class SsCameraTile extends StatelessWidget {
     final retryLabel = this.retryLabel ?? ssText.retry;
     final ageFormat = this.ageFormat ?? ((Duration d) => formatAge(d, ssText));
     final c = SsColors.of(context);
-    final radius = BorderRadius.circular(AppRadius.card);
+    final radius = BorderRadius.circular(SsDensity.of(context).radiusCard);
     final temQuadro = child != null || image != null;
     final apagado = state == SsCameraState.error || state == SsCameraState.offline;
 
@@ -516,6 +517,7 @@ class SsMediaPlayer extends StatelessWidget {
     final unavailableLabel = this.unavailableLabel ?? ssText.unavailable;
     final bufferingLabel = this.bufferingLabel ?? ssText.loading;
     final c = SsColors.of(context);
+    final dn = SsDensity.of(context);
     final off = state == SsMediaState.unavailable;
     final ativo = !off && state != SsMediaState.idle;
     final tocando = state == SsMediaState.playing || state == SsMediaState.buffering;
@@ -534,7 +536,7 @@ class SsMediaPlayer extends StatelessWidget {
     Widget botao(IconData icon, String label, VoidCallback? onTap) => IconButton(
       tooltip: label,
       onPressed: ativo ? onTap : null,
-      icon: Icon(icon, size: 28),
+      icon: Icon(icon, size: dn.iconSize + 8),
       color: c.ink,
       disabledColor: c.muted2,
     );
@@ -542,10 +544,10 @@ class SsMediaPlayer extends StatelessWidget {
     return Opacity(
       opacity: off ? .55 : 1,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(dn.cardPad),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderRadius: BorderRadius.circular(dn.radiusCard),
           border: c.isDark ? Border.all(color: c.line) : null,
           boxShadow: c.isDark ? null : AppShadows.card,
         ),
@@ -555,9 +557,10 @@ class SsMediaPlayer extends StatelessWidget {
             Row(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.field),
+                  borderRadius: BorderRadius.circular(dn.radiusField),
                   child: SizedBox.square(
-                    dimension: 64,
+                    // Capa: 58 / 64 / 68.
+                    dimension: dn.iconTile + 22,
                     child:
                         art ??
                         DecoratedBox(
@@ -566,7 +569,7 @@ class SsMediaPlayer extends StatelessWidget {
                         ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: dn.space(14)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,14 +578,14 @@ class SsMediaPlayer extends StatelessWidget {
                         titulo,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.md),
+                        style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: dn.font(AppType.md)),
                       ),
                       if (subtitle != null && ativo)
                         Text(
                           subtitle!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                          style: TextStyle(color: c.muted, fontSize: dn.font(AppType.sub)),
                         ),
                       if (source != null)
                         Padding(
@@ -598,7 +601,7 @@ class SsMediaPlayer extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: c.accentText,
-                                    fontSize: AppType.label,
+                                    fontSize: dn.font(AppType.label),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -624,7 +627,7 @@ class SsMediaPlayer extends StatelessWidget {
               ],
             ),
             if (dur != null && ativo) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: dn.gap),
               _Trilha(
                 value: frac,
                 label: progressLabel,
@@ -647,12 +650,12 @@ class SsMediaPlayer extends StatelessWidget {
                 ],
               ),
             ],
-            const SizedBox(height: 6),
+            SizedBox(height: dn.space(6)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 botao(Icons.skip_previous_rounded, previousLabel, onPrevious),
-                const SizedBox(width: 12),
+                SizedBox(width: dn.gap),
                 _PlayButton(
                   playing: tocando,
                   buffering: state == SsMediaState.buffering,
@@ -660,12 +663,12 @@ class SsMediaPlayer extends StatelessWidget {
                   label: state == SsMediaState.buffering ? bufferingLabel : (tocando ? pauseLabel : playLabel),
                   onTap: onPlayPause,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: dn.gap),
                 botao(Icons.skip_next_rounded, nextLabel, onNext),
               ],
             ),
             if (volume != null || onVolumeUp != null || onVolumeDown != null || onMute != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: dn.space(4)),
               Row(
                 // Sem volume absoluto (TV por IR): mudo, − e + juntos no meio.
                 mainAxisAlignment: volume == null ? MainAxisAlignment.center : MainAxisAlignment.start,
@@ -715,7 +718,7 @@ class SsMediaPlayer extends StatelessWidget {
                 ],
               ),
             ],
-            if (mediaPicker != null) ...[const SizedBox(height: 8), mediaPicker!],
+            if (mediaPicker != null) ...[SizedBox(height: dn.space(8)), mediaPicker!],
           ],
         ),
       ),
@@ -805,6 +808,9 @@ class _PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    // 52 / 60 / 64.
+    final tam = d.controlHeight + 12;
     final rm = reduceMotion(context);
     return Semantics(
       button: true,
@@ -814,8 +820,8 @@ class _PlayButton extends StatelessWidget {
         enabled: enabled,
         onTap: enabled ? onTap : null,
         child: Container(
-          width: 60,
-          height: 60,
+          width: tam,
+          height: tam,
           decoration: BoxDecoration(
             color: enabled ? c.accent : c.field,
             shape: BoxShape.circle,
@@ -836,7 +842,7 @@ class _PlayButton extends StatelessWidget {
                 : Icon(
                     playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     key: ValueKey(playing),
-                    size: 32,
+                    size: d.iconSize + 12,
                     color: enabled ? AppColors.onDark : c.muted2,
                   ),
           ),

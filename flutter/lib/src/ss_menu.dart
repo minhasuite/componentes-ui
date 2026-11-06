@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
@@ -74,7 +75,8 @@ class SsOverflowMenu extends StatelessWidget {
         for (final (i, a) in items.indexed)
           PopupMenuItem(
             value: i,
-            height: 48,
+            // 48 (o alvo mínimo) até no compacto; 52 no confortável.
+            height: SsDensity.of(context).target(SsDensity.of(context).controlHeight),
             child: SsRouteStagger(index: i, child: SsMenuActionRow(a)),
           ),
       ],
@@ -92,12 +94,13 @@ class SsMenuActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final cor = action.destructive ? c.dangerText : c.ink;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(action.icon, size: 20, color: action.destructive ? AppColors.danger : c.ink2),
-        const SizedBox(width: 12),
+        Icon(action.icon, size: d.iconSize, color: action.destructive ? AppColors.danger : c.ink2),
+        SizedBox(width: d.gap),
         Flexible(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -105,19 +108,24 @@ class SsMenuActionRow extends StatelessWidget {
             children: [
               Text(
                 action.label,
-                style: TextStyle(color: cor, fontSize: AppType.set, fontWeight: FontWeight.w600),
+                style: TextStyle(color: cor, fontSize: d.font(AppType.set), fontWeight: FontWeight.w600),
               ),
               if (action.subtitle != null)
                 Text(
                   action.subtitle!,
-                  style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                  style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta)),
                 ),
             ],
           ),
         ),
         if (action.checked) ...[
-          const SizedBox(width: 12),
-          Icon(Icons.check_rounded, size: 20, color: c.accentText, semanticLabel: SsStrings.of(context).checked),
+          SizedBox(width: d.gap),
+          Icon(
+            Icons.check_rounded,
+            size: d.iconSize,
+            color: c.accentText,
+            semanticLabel: SsStrings.of(context).checked,
+          ),
         ],
       ],
     );

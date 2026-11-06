@@ -1,0 +1,5 @@
+<%= tag.div(**root_attrs(class: classes("ss-seg", "ss-density-picker"), role: "group", aria: { label: group_label }, data: data)) do %>
+  <% options.each do |d| %>
+    <button type="button" aria-pressed="<%= d == value %>" data-action="ss-density#set" data-ss-density-value-param="<%= d %>"><%= text(d) %></button>
+  <% end %>
+<% end %>

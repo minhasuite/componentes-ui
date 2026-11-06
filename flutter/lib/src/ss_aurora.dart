@@ -5,6 +5,7 @@ import 'dart:ui' show PointMode;
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 
 /// As três cores da aurora a partir da marca: a clara, a principal e uma
@@ -21,16 +22,12 @@ List<Color> auroraColors(SsColors c) {
 ///
 /// As manchas derivam devagar (14 s, ida e volta); param com menos movimento.
 class SsAuroraCard extends StatefulWidget {
-  const SsAuroraCard({
-    super.key,
-    required this.child,
-    this.padding = const EdgeInsets.all(20),
-    this.onTap,
-    this.animate = true,
-  });
+  const SsAuroraCard({super.key, required this.child, this.padding, this.onTap, this.animate = true});
 
   final Widget child;
-  final EdgeInsetsGeometry padding;
+
+  /// Respiro (padrão: o do card da [SsDensity] + 4, 20 no padrão).
+  final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
 
   /// Falso para capturas e listas longas (a deriva é a única animação contínua).
@@ -85,7 +82,10 @@ class _SsAuroraCardState extends State<SsAuroraCard> with SingleTickerProviderSt
                 style: const TextStyle(color: AppColors.onDark),
                 child: IconTheme.merge(
                   data: const IconThemeData(color: AppColors.onDark),
-                  child: Padding(padding: widget.padding, child: widget.child),
+                  child: Padding(
+                    padding: widget.padding ?? EdgeInsets.all(SsDensity.of(context).cardPad + 4),
+                    child: widget.child,
+                  ),
                 ),
               ),
             ),

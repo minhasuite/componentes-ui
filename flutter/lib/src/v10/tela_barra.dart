@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_fit.dart';
 import '../ss_strings.dart';
@@ -39,7 +40,7 @@ class SsIconButton extends StatelessWidget {
     required this.tooltip,
     this.onPressed,
     this.variant = SsIconButtonVariant.plain,
-    this.size = 40,
+    this.size,
     this.color,
     this.badge,
     this.selected = false,
@@ -50,8 +51,9 @@ class SsIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final SsIconButtonVariant variant;
 
-  /// Diâmetro visível (o alvo de toque fica em 48).
-  final double size;
+  /// Diâmetro visível (o alvo de toque fica em 48). Nulo (v0.11): o da
+  /// densidade, 36 / 40 / 44 ([SsDensity.iconButton]).
+  final double? size;
 
   /// Cor do ícone (padrão: a do tema, ou a da barra quando está numa [SsTopBar]).
   final Color? color;
@@ -61,6 +63,7 @@ class SsIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final size = this.size ?? SsDensity.of(context).iconButton;
     Widget i = Icon(icon, size: size * .52);
     if (badge != null) {
       i = Badge(
@@ -97,6 +100,9 @@ class SsIconButton extends StatelessWidget {
         fixedSize: Size.square(size),
         minimumSize: Size.square(size),
         tapTargetSize: MaterialTapTargetSize.padded,
+        // O tamanho já vem da SsDensity: sem o ajuste do visualDensity do tema,
+        // que no compacto baixaria o alvo de toque para 40.
+        visualDensity: VisualDensity.standard,
         side: variant == SsIconButtonVariant.outline ? BorderSide(color: c.line) : null,
         shape: variant == SsIconButtonVariant.plain
             ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(size * .3))
@@ -175,6 +181,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     final claro = style != SsTopBarStyle.surface;
     final fg = claro ? AppColors.onDark : c.ink;
@@ -199,7 +206,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
     final tema = Theme.of(context).textTheme;
     final estiloTitulo = (tema.titleLarge ?? const TextStyle()).copyWith(
       color: fg,
-      fontSize: AppType.lg,
+      fontSize: d.font(AppType.lg),
       fontWeight: FontWeight.w800,
       letterSpacing: -.2,
       shadows: style == SsTopBarStyle.overlay ? const [Shadow(color: Color(0x66000000), blurRadius: 8)] : null,
@@ -217,7 +224,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
             overflow: TextOverflow.ellipsis,
             style: (tema.bodySmall ?? const TextStyle()).copyWith(
               color: claro ? AppColors.onDarkSoft : c.muted,
-              fontSize: AppType.meta,
+              fontSize: d.font(AppType.meta),
               fontWeight: FontWeight.w600,
               shadows: style == SsTopBarStyle.overlay ? const [Shadow(color: Color(0x66000000), blurRadius: 6)] : null,
             ),
@@ -234,7 +241,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
       leading: volta,
-      titleSpacing: volta == null ? 16 : 4,
+      titleSpacing: volta == null ? d.padX : 4,
       centerTitle: centerTitle,
       title: tituloW,
       titleTextStyle: estiloTitulo,
@@ -243,7 +250,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
       systemOverlayStyle: claro || c.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       actions: [
         for (final a in actions) Padding(padding: const EdgeInsets.only(left: 4), child: a),
-        const SizedBox(width: 8),
+        SizedBox(width: d.space(8)),
       ],
       bottom: bottom,
     );
@@ -288,14 +295,17 @@ class SsFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    // 48 / 56 / 60 (o FAB do Material é 56).
+    final h = d.controlHeight + 8;
     final on = onPressed != null;
     final corpo = AnimatedOpacity(
-      duration: SsMotion.fast,
+      duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
       opacity: on ? 1 : .5,
       child: Container(
-        height: 56,
-        constraints: const BoxConstraints(minWidth: 56),
-        padding: EdgeInsets.symmetric(horizontal: label == null ? 0 : 20),
+        height: h,
+        constraints: BoxConstraints(minWidth: h),
+        padding: EdgeInsets.symmetric(horizontal: label == null ? 0 : d.padX + 4),
         decoration: BoxDecoration(
           color: c.accentSolid,
           borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -305,12 +315,12 @@ class SsFab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.onDark, size: 24),
+            Icon(icon, color: AppColors.onDark, size: d.iconSize + 4),
             if (label != null) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: d.space(8)),
               Text(
                 label!,
-                style: const TextStyle(color: AppColors.onDark, fontSize: AppType.set, fontWeight: FontWeight.w800),
+                style: TextStyle(color: AppColors.onDark, fontSize: d.font(AppType.set), fontWeight: FontWeight.w800),
               ),
             ],
           ],

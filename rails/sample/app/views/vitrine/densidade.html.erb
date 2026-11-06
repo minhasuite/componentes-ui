@@ -1,0 +1,75 @@
+<%# titulo: Compacta, padrão e confortável | grupo: Densidade (v0.11) | ordem: 10 %>
+<%# v0.11: as mesmas peças nas três densidades, lado a lado. A barra de cima troca a da página toda. %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% bulb = ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %>
+<% plug = ico.("M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4") %>
+<% edit = ico.("M4 20h4L19 9l-4-4L4 16zM14 6l4 4") %>
+<% plus = ico.("M12 5v14M5 12h14") %>
+<% aqui = "#" %>
+
+<p style="color:var(--muted);max-width:52rem;margin-bottom:8px">
+  <code>data-ss-density="compact|comfortable"</code> no <code>&lt;html&gt;</code> (a barra de cima, guardado em
+  <code>localStorage["ss-density"]</code>) ou em qualquer contêiner, como as três colunas abaixo. Sem atributo vale a padrão.
+  No Flutter: <code>AppTheme.build(b, density: SsDensity.compact)</code> ou <code>SsDensityScope</code>.
+</p>
+<%= demo "ComponentesUi.config.density · ss_density_attrs · ss_density_head · Ss::DensityPickerComponent",
+         "Padrão do produto no initializer; o <html> leva o atributo; o head aplica a escolha da pessoa antes da 1ª pintura; o seletor troca e lembra (o produto decide se mostra).",
+         uso: 'ComponentesUi.configure { |c| c.density = "compact" }  ·  <html> com tag.attributes(ss_density_attrs)  ·  ss_density_head no <head>  ·  render Ss::DensityPickerComponent.new(target: "#tabela")' do %>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <%= render Ss::DensityPickerComponent.new %>
+    <%= render Ss::DensityPickerComponent.new(target: "#vt-dens-tabela", persist: false, label: "Densidade da tabela") %>
+  </div>
+<% end %>
+
+<div class="vt-dens-grid">
+  <% { "compact" => "Compacta", "standard" => "Padrão", "comfortable" => "Confortável" }.each do |d, nome| %>
+    <section data-ss-density="<%= d %>" class="vt-dens-col" aria-label="<%= nome %>">
+      <h3><%= nome %> <code><%= d %></code></h3>
+      <div class="ss-card ss-card-pad" style="display:grid;gap:var(--ss-gap)">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="ss-btn ss-btn-primary"><%= plus %>Salvar</button>
+          <button type="button" class="ss-btn ss-btn-outline">Cancelar</button>
+          <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm">Pequeno</button>
+        </div>
+        <label class="ss-field"><span class="ss-label">Nome</span><input class="ss-input" value="Luz da sala"></label>
+        <select class="ss-input" aria-label="Cômodo"><option>Sala</option></select>
+        <div class="ss-search"><%= ico.("M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3") %><input placeholder="Buscar" aria-label="Buscar"></div>
+        <nav class="ss-seg" style="--n:3" data-controller="ss-indicator"><a href="#" aria-current="true">Dia</a><a href="#">Semana</a><a href="#">Mês</a></nav>
+        <div class="ss-chips"><a class="ss-chip" aria-current="true" href="#">Todos</a><a class="ss-chip" href="#">Luzes</a><a class="ss-chip" href="#">Clima</a></div>
+        <label class="ss-switch-row"><span>Avisar no celular<small>Push quando abrir</small></span><input type="checkbox" checked></label>
+        <div class="ss-stepper"><button type="button" aria-label="Menos">−</button><output>3</output><button type="button" aria-label="Mais">+</button></div>
+      </div>
+      <ul class="ss-card ss-rows">
+        <li><span class="ss-icon-tile is-grad"><%= bulb %></span>
+            <div style="flex:1;min-width:6rem"><b>Luz da sala</b><br><span class="ss-badge ss-badge-success ss-badge-dot">Ligada</span></div>
+            <button type="button" class="ss-icon-btn" title="Editar" aria-label="Editar"><%= edit %></button></li>
+        <li><span class="ss-icon-tile is-muted"><%= plug %></span>
+            <div style="flex:1;min-width:6rem"><b>Tomada da TV</b><br><span class="ss-badge ss-badge-muted">Desligada</span></div></li>
+      </ul>
+      <div class="ss-card">
+        <a class="ss-item" href="#"><span class="ss-item-icon"><%= bulb %></span><span class="ss-item-main"><b>Conta de luz</b><span>Hoje · Casa</span></span><span class="ss-item-value">R$ 182,40</span></a>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--ss-gap)">
+        <%= render Ss::DeviceTileComponent.new(name: "Luz da cozinha", state: "Ligada · 80%", on: true, icon: bulb, url: aqui, toggle_url: aqui) %>
+        <%= render Ss::DeviceTileComponent.new(name: "Tomada", state: "Desligada", icon: plug, url: aqui, toggle_url: aqui) %>
+      </div>
+      <div class="ss-card ss-card-pad"><%= render Ss::ThermostatComponent.new(name: "value", target: 22.5, current: 20, mode: "heat", url: aqui) %></div>
+      <div class="ss-card" style="overflow:hidden">
+        <table class="ss-table"><thead><tr><th>Ponto</th><th class="r">Valor</th></tr></thead>
+          <tbody><tr><td>Sala</td><td class="r num">21,5 °C</td></tr><tr><td>Quarto</td><td class="r num">23,0 °C</td></tr></tbody></table>
+      </div>
+    </section>
+  <% end %>
+</div>
+
+<%= demo "Escopo: uma tabela compacta numa página padrão", "O atributo vale para o que está dentro; o seletor acima (target: \"#vt-dens-tabela\") troca só esta tabela.",
+         uso: '<section data-ss-density="compact"> … </section>' do %>
+  <div id="vt-dens-tabela" class="ss-card" style="overflow:hidden">
+    <table class="ss-table"><thead><tr><th>Aparelho</th><th>Cômodo</th><th class="r">Consumo</th></tr></thead>
+      <tbody>
+        <% [["Geladeira", "Cozinha", "1,2 kWh"], ["Ar-condicionado", "Quarto", "3,8 kWh"], ["TV", "Sala", "0,4 kWh"], ["Bomba", "Área", "2,1 kWh"]].each do |a, c, v| %>
+          <tr><td><%= a %></td><td><%= c %></td><td class="r num"><%= v %></td></tr>
+        <% end %>
+      </tbody></table>
+  </div>
+<% end %>

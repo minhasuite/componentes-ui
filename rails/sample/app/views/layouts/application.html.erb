@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" <%= tag.attributes(ss_density_attrs) %>>
   <head>
     <title><%= content_for(:title) || "Lista Clara · vitrine" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,6 +11,8 @@
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%# v0.10.1: menu recolhido já no <html> antes da 1ª pintura (sem piscar aberto). %>
     <%= ss_app_shell_head %>
+    <%# v0.11: densidade escolhida (localStorage ss-density) antes da 1ª pintura. %>
+    <%= ss_density_head %>
     <%= javascript_importmap_tags %>
     <%= yield :head %>
   </head>
@@ -30,6 +32,8 @@
             <%= link_to sigla, url_for(request.query_parameters.merge(locale: loc)), lang: loc, hreflang: loc, "aria-current": (I18n.locale.to_s == loc ? "true" : nil) %>
           <% end %>
         </nav>
+        <%# v0.11: densidade (Compacta/Padrão/Confortável), para comparar as peças. %>
+        <%= render Ss::DensityPickerComponent.new(css: "vt-densidade") %>
         <%= render "vitrine/tema" %>
       <% end %>
       <div class="vt-top">

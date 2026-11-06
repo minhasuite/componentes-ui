@@ -12,9 +12,15 @@ module ComponentesUi
   # - currency: moeda ISO 4217 dos helpers de dinheiro (ss_money), do
   #   Ss::MoneyInputComponent, do CountUp (format: :money) e do DataTable (format: :money).
   # - locale: idioma dos números e do dinheiro; nil segue o I18n.locale da página.
-  Config = Struct.new(:currency, :locale, keyword_init: true)
+  # - density (v0.11): densidade padrão do produto, "compact", "standard" (padrão) ou
+  #   "comfortable". Sai no <html> por ss_density_attrs; o usuário troca pelo
+  #   Ss::DensityPickerComponent (guardado no navegador, chave ss-density).
+  Config = Struct.new(:currency, :locale, :density, keyword_init: true)
 
-  def self.config = @config ||= Config.new(currency: "BRL", locale: nil)
+  # Densidades na ordem do seletor (o mesmo SsDensity.values do Flutter).
+  DENSITIES = %w[compact standard comfortable].freeze
+
+  def self.config = @config ||= Config.new(currency: "BRL", locale: nil, density: "standard")
 
   def self.configure = yield(config)
 

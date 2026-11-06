@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_list.dart' show SsAvatarStack;
@@ -103,7 +104,7 @@ class SsMosaicTile extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(18),
+                  padding: EdgeInsets.all(SsDensity.of(context).cardPad + 2),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -749,6 +750,7 @@ class SsStatusTabCard extends StatelessWidget {
     final c = SsColors.of(context);
     final k = tone ?? c.accent;
     final fill = Color.lerp(c.surface, k, c.isDark ? .26 : .2)!;
+    final d = SsDensity.of(context);
     return SsPressable(
       onTap: onTap,
       child: LayoutBuilder(
@@ -804,7 +806,7 @@ class SsStatusTabCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 4, 16),
+                  padding: EdgeInsets.fromLTRB(d.cardPad, d.cardPad - 2, 4, d.cardPad),
                   child: Row(
                     children: [
                       SsShapeIcon(icon, color: c.isDark ? c.page : c.ink, filled: true, iconColor: fill, size: 54),

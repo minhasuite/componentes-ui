@@ -2,6 +2,8 @@
    tema escuro por [data-theme="dark"] ou preferência do sistema. Cor solta
    na tela, nunca: só token. */
 /* v0.9: peças novas em arquivos separados (importados aqui). */
+/* v0.11: densidade (tokens --ss-*; data-ss-density). Antes de tudo: os outros leem daqui. */
+@import "./v11_densidade.css";
 @import "./v09_fundacao.css";
 @import "./v09_layout.css";
 @import "./v09_forms.css";
@@ -56,7 +58,7 @@
   --side: #17132e; --side-ink: #e9e6f7;
   --success: #0b7a53; --success-soft: #e3f6ee; --danger: #b8324a; --danger-soft: #fbe9ec;
   --warn: #9a6200; --warn-soft: #fdf1d9;
-  --r-card: 20px; --r-field: 12px;
+  /* --r-card e --r-field vêm da densidade (v11_densidade.css): 20px e 12px no padrão. */
   --shadow-card: 0 1px 2px rgba(30, 26, 56, .04), 0 8px 24px -12px rgba(30, 26, 56, .12);
   --shadow-hover: 0 2px 4px rgba(30, 26, 56, .05), 0 18px 40px -16px rgba(90, 69, 232, .28);
   --ring: rgba(90, 69, 232, .12);
@@ -112,16 +114,16 @@
   .ss-card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
   a.ss-card, .ss-card-link { transition: transform .45s var(--ss-bounce), box-shadow .25s ease; }
   a.ss-card:hover, .ss-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-  .ss-card-pad { padding: 1.25rem; }
+  .ss-card-pad { padding: var(--ss-card-pad); }
 
-  .ss-btn { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 2.5rem;
-            padding: 0 1rem; border-radius: var(--r-field); font-weight: 600; font-size: .875rem; border: 0;
+  .ss-btn { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: var(--ss-control-h);
+            padding: 0 var(--ss-pad-x); border-radius: var(--r-field); font-weight: 600; font-size: calc(.875rem * var(--ss-font-scale)); border: 0;
             cursor: pointer; text-decoration: none; white-space: nowrap; position: relative; overflow: hidden;
             transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease, background-color .2s ease, color .2s ease; }
   /* Toque: aperta em 80 ms e, ao soltar, volta com a mola (a transição da regra base). */
   .ss-btn:active:not(:disabled) { transform: scale(.96); transition: transform 80ms ease-out, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
   .ss-btn:disabled { opacity: .5; cursor: not-allowed; }
-  .ss-btn svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+  .ss-btn svg { width: var(--ss-icon); height: var(--ss-icon); flex-shrink: 0; }
   /* Primário: o gradiente-assinatura com um brilho que passa no hover. */
   .ss-btn-primary { background-image: var(--grad); color: #fff; box-shadow: 0 6px 18px -8px rgba(90, 69, 232, .65); }
   .ss-btn-primary::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); transition: transform .7s ease;
@@ -136,11 +138,11 @@
   .ss-btn-outline:hover { color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
   .ss-btn-danger { background: transparent; color: var(--danger); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 45%, transparent); }
   .ss-btn-danger:hover { background: var(--danger-soft); }
-  .ss-btn-sm { min-height: 2rem; padding: 0 .75rem; font-size: .8rem; border-radius: 10px; }
+  .ss-btn-sm { min-height: var(--ss-control-h-sm); padding: 0 calc(var(--ss-pad-x) * .75); font-size: calc(.8rem * var(--ss-font-scale)); border-radius: calc(var(--r-field) - 2px); }
 
-  .ss-label { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); margin-bottom: .35rem; }
-  .ss-input { width: 100%; min-height: 2.6rem; padding: .5rem .85rem; border-radius: var(--r-field);
-              background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: .9rem;
+  .ss-label { display: block; font-size: calc(.75rem * var(--ss-font-scale)); font-weight: 600; color: var(--muted); margin-bottom: .35rem; }
+  .ss-input { width: 100%; min-height: var(--ss-field-h); padding: var(--ss-pad-y) calc(var(--ss-pad-x) * .85); border-radius: var(--r-field);
+              background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: calc(.9rem * var(--ss-font-scale));
               transition: border-color .2s ease, box-shadow .2s ease; }
   .ss-input::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); }
   .ss-input:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
@@ -151,7 +153,7 @@
   input[type=file]::file-selector-button { margin-right: .75rem; padding: .45rem .9rem; border: 0; border-radius: 10px; cursor: pointer;
                                            font: inherit; font-weight: 600; background: var(--accent-soft); color: var(--accent); }
   input[type=file]::file-selector-button:hover { background: var(--accent); color: #fff; }
-  .ss-check { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; }
+  .ss-check { display: inline-flex; align-items: center; gap: .5rem; font-size: calc(.875rem * var(--ss-font-scale)); font-weight: 600; }
   .ss-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
   /* Caixinha e rádio desenhados (também o input do .ss-option-card).
      Estado (parado no carregamento e sem JS): borda e fundo da marca, ✓ branco, ponto do rádio.
@@ -201,14 +203,14 @@
   :is(.ss-check, .ss-option-card) > input[type="radio"][data-ss-anim="on"]::before { animation: ss-radio-dot .5s linear; }
   :is(.ss-check, .ss-option-card) > input[type="radio"][data-ss-anim="on"]::after { animation: ss-ring-ripple .55s ease-out; }
   /* Seção de formulário: título em caixa alta e espaçado. */
-  .ss-filters { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding: .85rem 1rem; }
+  .ss-filters { background: var(--surface); border-radius: calc(var(--r-card) - 4px); box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding: calc(var(--ss-card-pad) * .68) calc(var(--ss-card-pad) * .8); }
   .ss-filters .ss-label { margin-bottom: .25rem; }
   .ss-section { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
 
-  .ss-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  .ss-table { width: 100%; border-collapse: collapse; font-size: calc(.875rem * var(--ss-font-scale)); }
   .ss-table th { text-align: left; font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
-                 letter-spacing: .06em; padding: .75rem .9rem; border-bottom: 1px solid var(--line); background: var(--head); white-space: nowrap; }
-  .ss-table td { padding: .8rem .9rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+                 letter-spacing: .06em; padding: calc(var(--ss-row-py) * .95) calc(var(--ss-pad-x) * .9); border-bottom: 1px solid var(--line); background: var(--head); white-space: nowrap; }
+  .ss-table td { padding: var(--ss-row-py) calc(var(--ss-pad-x) * .9); border-bottom: 1px solid var(--line); vertical-align: middle; }
   .ss-table tr:last-child td { border-bottom: 0; }
   .ss-table tbody tr { transition: background-color .15s ease; }
   .ss-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
@@ -226,8 +228,8 @@
 
   /* Sidebar escura do meu-financeiro: pílula ativa com gradiente e barra à esquerda. */
   .ss-side { background: var(--side); color: var(--side-ink); }
-  .ss-nav a { position: relative; display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; border-radius: .75rem;
-              font-weight: 500; font-size: .875rem; color: color-mix(in srgb, var(--side-ink) 72%, transparent); text-decoration: none;
+  .ss-nav a { position: relative; display: flex; align-items: center; gap: var(--ss-gap); padding: calc(var(--ss-pad-y) * 1) .75rem; border-radius: .75rem;
+              font-weight: 500; font-size: calc(.875rem * var(--ss-font-scale)); color: color-mix(in srgb, var(--side-ink) 72%, transparent); text-decoration: none;
               transition: background-color .2s ease, color .2s ease; }
   .ss-nav a svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: color-mix(in srgb, var(--side-ink) 50%, transparent); }
   .ss-nav a:hover { background: rgba(255, 255, 255, .08); color: var(--side-ink); }
@@ -260,13 +262,13 @@
                     background: radial-gradient(circle, rgba(59, 130, 246, .45), transparent 60%); animation: ss-float 18s ease-in-out infinite reverse; }
   .ss-hero .ss-kicker { color: rgba(255, 255, 255, .8); }
   .ss-glass { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18); border-radius: 16px; backdrop-filter: blur(6px); }
-  .ss-icon-tile { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 12px; flex-shrink: 0;
+  .ss-icon-tile { display: grid; place-items: center; width: var(--ss-icon-tile); height: var(--ss-icon-tile); border-radius: var(--r-field); flex-shrink: 0;
                   background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
-  .ss-icon-tile svg { width: 1.2rem; height: 1.2rem; }
+  .ss-icon-tile svg { width: calc(var(--ss-icon-tile) * .48); height: calc(var(--ss-icon-tile) * .48); }
 
   /* Aviso (flash) como toast: ícone, fechar e barra de tempo. */
-  .ss-flash { position: relative; overflow: hidden; display: flex; align-items: center; gap: .75rem; border-radius: 14px;
-              padding: .85rem 1rem; font-weight: 600; font-size: .9rem; border: 1px solid currentColor;
+  .ss-flash { position: relative; overflow: hidden; display: flex; align-items: center; gap: var(--ss-gap); border-radius: calc(var(--r-field) + 2px);
+              padding: calc(var(--ss-row-py) * 1.1) var(--ss-pad-x); font-weight: 600; font-size: .9rem; border: 1px solid currentColor;
               box-shadow: var(--shadow-card); animation: ss-rise .35s ease both; }
   .ss-flash { border-color: color-mix(in srgb, currentColor 25%, transparent); }
   .ss-flash svg { width: 1.2rem; height: 1.2rem; flex-shrink: 0; }
@@ -281,7 +283,7 @@
   .ss-kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 1rem; overflow-x: auto; }
   .ss-grad { background: var(--grad); color: #fff; }
   .ss-grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .ss-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 999px; font-size: .82rem;
+  .ss-chip { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--ss-chip-h); padding: 0 calc(var(--ss-pad-x) * .75); border-radius: 999px; font-size: calc(.82rem * var(--ss-font-scale));
              font-weight: 700; background: var(--surface); color: var(--ink-2); box-shadow: var(--shadow-card); text-decoration: none;
              white-space: nowrap; border: 1px solid transparent; transition: transform var(--ss-dur-indicator) var(--ss-bounce), border-color .15s, background-color .2s, color .2s; }
   .ss-chip:hover { border-color: var(--accent); color: var(--accent); }
@@ -336,7 +338,7 @@
   .ss-collapsed #side .ss-side-label { display: none !important; }
   .ss-collapsed #side .ss-expand { display: grid !important; }
   .ss-collapsed #side .ss-nav a, .ss-collapsed #side .ss-nav summary { justify-content: center; padding-left: 0; padding-right: 0; width: 2.75rem; margin-inline: auto; }
-  .ss-collapsed #side .ss-nav a { height: 2.5rem; }
+  .ss-collapsed #side .ss-nav a { height: var(--ss-control-h); }
   .ss-collapsed #side .ss-nav a[aria-current="page"]::before { left: -.55rem; }
 }
 
@@ -361,7 +363,7 @@ dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { opacity: 1; }
 dialog.ss-dialog[open] .ss-dialog-icon { animation: ss-pop-in .5s var(--ss-bounce) .08s backwards; }
 .ss-dialog::backdrop { background: rgba(14, 13, 22, .45); backdrop-filter: blur(3px); }
 .ss-pal { width: min(36rem, calc(100vw - 2rem)); margin-top: 12vh; }
-.ss-pal-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .65rem .85rem; border-radius: 12px; color: var(--ink); text-decoration: none; font-weight: 600; }
+.ss-pal-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: calc(var(--ss-row-py) * .85) calc(var(--ss-pad-x) * .85); border-radius: var(--r-field); color: var(--ink); text-decoration: none; font-weight: 600; }
 .ss-pal-item[aria-selected] { background: var(--accent-soft); color: var(--accent); }
 .ss-kbd { font: 600 .68rem/1 "DM Mono", monospace; padding: .2rem .4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--field); color: var(--muted); }
 .ss-kbd-dark { border-color: rgba(255, 255, 255, .15); background: rgba(255, 255, 255, .06); color: rgba(255, 255, 255, .5); }
@@ -380,8 +382,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
 .ss-filters [type="submit"] { display: none; }
 /* Atalhos de seção (Configurações): chips no celular, coluna fixa no desktop. */
 .ss-subnav { display: flex; gap: .4rem; overflow-x: auto; margin-bottom: 1rem; padding-bottom: .25rem; }
-.ss-subnav a { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; padding: .45rem .8rem; border-radius: 999px;
-               font-size: .85rem; font-weight: 600; color: var(--ink-2); text-decoration: none; background: var(--surface); border: 1px solid var(--line); }
+.ss-subnav a { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; min-height: var(--ss-chip-h); padding: 0 calc(var(--ss-pad-x) * .8); border-radius: 999px;
+               font-size: calc(.85rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink-2); text-decoration: none; background: var(--surface); border: 1px solid var(--line); }
 .ss-subnav a:hover { color: var(--accent); border-color: var(--accent); }
 @media (min-width: 1024px) {
   .ss-subnav { position: sticky; top: 1.5rem; flex-direction: column; margin: 0; overflow: visible; }
@@ -393,7 +395,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
               background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(10px);
               border: 1px solid var(--line); box-shadow: var(--shadow-card); }
 @media (max-width: 639px) {
-  .ss-filters { display: grid !important; grid-template-columns: 1fr 1fr; }
+  .ss-filters { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ss-filters > div:first-of-type { grid-column: span 2; }
   .ss-filters .ss-input { width: 100%; }
 }
@@ -456,8 +458,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
 
   /* Indicador: rótulo, número, variação e minigráfico na base (.ss-spark encostada). */
   .ss-stat { display: flex; flex-direction: column; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow-card); overflow: hidden; }
-  .ss-stat-body { padding: .9rem 1rem .25rem; }
-  .ss-stat-body:last-child { padding-bottom: 1rem; }
+  .ss-stat-body { padding: calc(var(--ss-card-pad) * .72) calc(var(--ss-card-pad) * .8) .25rem; }
+  .ss-stat-body:last-child { padding-bottom: calc(var(--ss-card-pad) * .8); }
   .ss-stat-label { display: flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .82rem; font-weight: 600; margin-bottom: .6rem; }
   .ss-stat-label svg { width: 1.6rem; height: 1.6rem; padding: .35rem; border-radius: 8px; background: var(--accent-soft); color: var(--accent); }
   .ss-stat .ss-amount { font-size: 1.75rem; }
@@ -489,7 +491,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-bars:not(:hover) .ss-bar.is-today b, .ss-bar:hover b { opacity: 1; }
 
   /* Seletor com pílula que desliza: filhos com aria-pressed/aria-current="true" (até 4). */
-  .ss-seg { --n: 2; --i: 0; position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 4px; height: 42px;
+  .ss-seg { --n: 2; --i: 0; position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 4px; height: calc(var(--ss-control-h) + 2px);
             border-radius: 999px; background: var(--field); }
   .ss-seg:has(> :nth-child(3)) { --n: 3; } .ss-seg:has(> :nth-child(4)) { --n: 4; }
   .ss-seg:has(> :nth-child(2)[aria-pressed="true"], > :nth-child(2)[aria-current="true"]) { --i: 1; }
@@ -511,8 +513,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-seg > [aria-pressed="true"], .ss-seg > [aria-current="true"] { color: var(--accent); font-weight: 800; }
 
   /* Filtro em pílula: aria-pressed="true" marca (✓ entra crescendo); <small> = contador. */
-  .ss-fchip { display: inline-flex; align-items: center; height: 34px; padding: 0 .8rem; border-radius: 999px; border: 1px solid var(--line);
-              background: var(--surface); color: var(--ink-2); font-size: .82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+  .ss-fchip { display: inline-flex; align-items: center; height: var(--ss-chip-h); padding: 0 calc(var(--ss-pad-x) * .8); border-radius: 999px; border: 1px solid var(--line);
+              background: var(--surface); color: var(--ink-2); font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 700; white-space: nowrap; cursor: pointer;
               text-decoration: none; transition: background .2s, border-color .2s, transform var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-fchip:active { transform: scale(.94); transition: background .2s, border-color .2s, transform 80ms ease-out; }
   /* Acabou de marcar (com foco, ao soltar): estala uma vez; no load não toca. */
@@ -526,23 +528,23 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-chipbar { display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: none; padding-block: .25rem; }
 
   /* Busca afundada: <label class="ss-search"><svg/><input type="search"></label>. */
-  .ss-search { display: flex; align-items: center; gap: .5rem; height: 48px; padding: 0 .9rem; border-radius: 14px; background: var(--field);
+  .ss-search { display: flex; align-items: center; gap: .5rem; height: calc(var(--ss-control-h) + .25rem); padding: 0 calc(var(--ss-pad-x) * .9); border-radius: calc(var(--r-field) + 2px); background: var(--field);
                border: 2px solid transparent; color: var(--muted); transition: background .18s, border-color .18s, box-shadow .18s; }
-  .ss-search svg { width: 1.3rem; height: 1.3rem; flex: none; }
-  .ss-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font-weight: 600; font-size: .95rem; }
+  .ss-search svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); flex: none; }
+  .ss-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font-weight: 600; font-size: calc(.95rem * var(--ss-font-scale)); }
   .ss-search:focus-within { background: var(--surface); border-color: color-mix(in oklab, var(--accent) 45%, transparent);
                             box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 12%, transparent); color: var(--accent); }
 
   /* Item de lista: selo tonal (--tone), título/sub e valor em mono. */
-  .ss-item { --tone: var(--accent); display: flex; align-items: center; gap: .75rem; padding: .6rem .25rem; border-radius: 14px; color: inherit; text-decoration: none; }
+  .ss-item { --tone: var(--accent); display: flex; align-items: center; gap: var(--ss-gap); padding: calc(var(--ss-row-py) * .8) .25rem; border-radius: calc(var(--r-field) + 2px); color: inherit; text-decoration: none; }
   a.ss-item:hover { background: var(--field); }
-  .ss-item-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: var(--tone);
+  .ss-item-icon { flex: none; display: grid; place-items: center; width: calc(var(--ss-icon-tile) + 2px); height: calc(var(--ss-icon-tile) + 2px); border-radius: calc(var(--r-field) + 1px); color: var(--tone);
                   background: color-mix(in oklab, var(--tone) 14%, transparent); }
-  .ss-item-icon svg { width: 1.3rem; height: 1.3rem; }
+  .ss-item-icon svg { width: calc(var(--ss-icon-tile) * .5); height: calc(var(--ss-icon-tile) * .5); }
   .ss-item-main { flex: 1; min-width: 0; }
   .ss-item-main > :first-child { display: block; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-item-main > :nth-child(2) { display: block; font-size: .82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ss-item-value { text-align: right; font: 500 .95rem var(--font-mono); color: var(--ink); white-space: nowrap; }
+  .ss-item-value { text-align: right; font: 500 calc(.95rem * var(--ss-font-scale)) var(--font-mono); color: var(--ink); white-space: nowrap; }
   .ss-item-value small { display: block; margin-top: .2rem; font: .75rem var(--font-sans); color: var(--muted); }
   .ss-group { display: flex; justify-content: space-between; padding: 1.1rem .25rem .35rem; font-size: .7rem; font-weight: 800; letter-spacing: .08em;
               text-transform: uppercase; color: var(--muted); }
@@ -561,7 +563,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-avatars > .more { background: var(--field); color: var(--ink-2); font: 500 calc(var(--s) * .32) var(--font-mono); }
 
   /* Aviso em pílula escura (igual nos dois temas), sobe com mola. */
-  .ss-toast { display: inline-flex; align-items: center; gap: .65rem; min-height: 52px; padding: .35rem .5rem .35rem 1rem; border-radius: 999px;
+  .ss-toast { display: inline-flex; align-items: center; gap: .65rem; min-height: calc(var(--ss-control-h) + .75rem); padding: .35rem .5rem .35rem var(--ss-pad-x); border-radius: 999px;
               background: #1a1826; color: #fff; border: 1px solid rgba(255, 255, 255, .08); font-size: .9rem; font-weight: 600;
               box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .25); animation: ss-toast .42s cubic-bezier(.34, 1.56, .64, 1); }
   .ss-toast svg { width: 1.25rem; height: 1.25rem; color: oklch(from var(--accent) .75 c h); }
@@ -604,15 +606,15 @@ th.r .ss-sort { flex-direction: row-reverse; }
 
 /* Diálogo, folha e paleta estendem o .ss-dialog (fora das camadas, como ele). */
 .ss-dialog:has(> .ss-dialog-body) { width: min(25rem, calc(100vw - 2rem)); }
-.ss-dialog-body { padding: 1.5rem 1.25rem 1rem; text-align: center; }
+.ss-dialog-body { padding: calc(var(--ss-card-pad) * 1.2) var(--ss-card-pad) calc(var(--ss-card-pad) * .8); text-align: center; }
 .ss-dialog-body h2 { font-size: 1.15rem; margin-bottom: .35rem; }
 .ss-dialog-body p { color: var(--muted); font-size: .9rem; }
 .ss-dialog-icon { display: grid; place-items: center; width: 3rem; height: 3rem; margin: 0 auto .9rem; border-radius: 16px;
                   background: var(--accent-soft); color: var(--accent); }
 .ss-dialog-icon svg { width: 1.5rem; height: 1.5rem; }
 /* Botões empilhados: o principal em cima, ocupando a largura. */
-.ss-dialog-actions { display: grid; gap: .5rem; padding: 0 1.25rem 1.25rem; }
-.ss-dialog-actions > * { width: 100%; min-height: 2.75rem; }
+.ss-dialog-actions { display: grid; gap: .5rem; padding: 0 var(--ss-card-pad) var(--ss-card-pad); }
+.ss-dialog-actions > * { width: 100%; min-height: max(var(--ss-control-h), 2.5rem); }
 .ss-dialog.is-danger .ss-dialog-icon { background: var(--danger-soft); color: var(--danger); }
 .ss-dialog.is-danger .ss-btn-primary { background: var(--danger); color: var(--surface); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--danger) 70%, transparent); }
 
@@ -625,8 +627,8 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 .ss-sheet > :not(.ss-sheet-header) { padding-inline: 1.25rem; }
 /* Cabeçalho: ícone (svg ou span) + h2 + p de ajuda. */
 .ss-sheet .ss-dialog-actions { padding: 0 1.25rem; }
-.ss-sheet-header { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: .75rem; padding: 1.25rem 1.25rem .9rem; }
-.ss-sheet-header > :is(svg, span):first-child { grid-row: span 2; box-sizing: border-box; display: grid; place-items: center; width: 2.75rem; height: 2.75rem;
+.ss-sheet-header { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: var(--ss-gap); padding: var(--ss-card-pad) var(--ss-card-pad) calc(var(--ss-card-pad) * .72); }
+.ss-sheet-header > :is(svg, span):first-child { grid-row: span 2; box-sizing: border-box; display: grid; place-items: center; width: calc(var(--ss-icon-tile) + .25rem); height: calc(var(--ss-icon-tile) + .25rem);
                                                  padding: .65rem; border-radius: 14px; background: var(--accent-soft); color: var(--accent); }
 .ss-sheet-header h2 { font-size: 1.05rem; font-weight: 800; }
 .ss-sheet-header p { grid-column: 2; font-size: .82rem; color: var(--muted); }
@@ -642,10 +644,10 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
 /* Paleta de comandos: <dialog class="ss-dialog ss-command">; item = <a class="ss-command-item"><svg/><span>Novo <mark>ped</mark>ido</span><small>Ação</small></a>. */
 .ss-command { width: min(36rem, calc(100vw - 2rem)); margin-top: 12vh; }
-.ss-command input { width: 100%; height: 3.25rem; padding: 0 1.1rem; border: 0; border-bottom: 1px solid var(--line); outline: 0;
+.ss-command input { width: 100%; height: calc(var(--ss-control-h) + .75rem); padding: 0 calc(var(--ss-pad-x) * 1.1); border: 0; border-bottom: 1px solid var(--line); outline: 0;
                     background: none; color: var(--ink); font: 600 1rem var(--font-sans); }
 .ss-command-list { max-height: 60vh; overflow: auto; padding: .4rem; }
-.ss-command-item { display: flex; align-items: center; gap: .75rem; padding: .65rem .85rem; border-radius: 12px; color: var(--ink); text-decoration: none; font-weight: 600; }
+.ss-command-item { display: flex; align-items: center; gap: var(--ss-gap); padding: calc(var(--ss-row-py) * .85) calc(var(--ss-pad-x) * .85); border-radius: var(--r-field); color: var(--ink); text-decoration: none; font-weight: 600; }
 .ss-command-item svg { width: 1.1rem; height: 1.1rem; color: var(--muted); flex: none; }
 .ss-command-item small { margin-left: auto; font-size: .75rem; color: var(--muted); font-weight: 500; }
 .ss-command-item:hover, .ss-command-item[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
@@ -658,7 +660,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-loading-bar { position: absolute; inset: 0 0 auto; height: 3px; overflow: hidden; z-index: 30; pointer-events: none; }
   .ss-loading-bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; border-radius: 999px; background: var(--grad);
                             animation: ss-indet 1.1s cubic-bezier(.4, 0, .2, 1) infinite; }
-  .ss-load-more { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 2.75rem; border: 0; border-radius: var(--r-field);
+  .ss-load-more { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: max(var(--ss-control-h), 2.5rem); border: 0; border-radius: var(--r-field);
                   background: none; color: var(--accent); font: 700 .88rem var(--font-sans); cursor: pointer; text-decoration: none; }
   .ss-load-more:hover { background: var(--accent-soft); }
   .ss-load-more[aria-busy="true"] { color: var(--muted); pointer-events: none; }
@@ -686,7 +688,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* ── Formulários ── */
   /* <div class="ss-field"><label>…</label><input class="ss-input"><small class="ss-field-help">…</small><small class="ss-field-error">…</small></div> */
-  .ss-field { display: grid; gap: .35rem; }
+  .ss-field { display: grid; gap: calc(var(--ss-gap) * .45); }
   .ss-field > label { font-size: .78rem; font-weight: 700; color: var(--ink-2); }
   .ss-field-help { font-size: .75rem; color: var(--muted); }
   .ss-field-error { display: none; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 600; color: var(--danger); }
@@ -701,7 +703,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* Atalhos de data: botões com aria-pressed + <label>Outra…<input type="date" required></label>. */
   .ss-date-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
-  .ss-date-chips > * { display: inline-flex; align-items: center; gap: .35rem; height: 36px; padding: 0 .85rem; border-radius: 999px; border: 1px solid var(--line);
+  .ss-date-chips > * { display: inline-flex; align-items: center; gap: .35rem; height: calc(var(--ss-chip-h) + 2px); padding: 0 calc(var(--ss-pad-x) * .85); border-radius: 999px; border: 1px solid var(--line);
                        background: var(--surface); color: var(--ink-2); font: 700 .82rem var(--font-sans); cursor: pointer; transition: background .2s, border-color .2s, transform .12s; }
   .ss-date-chips > :active { transform: scale(.97); }
   .ss-date-chips > [aria-pressed="true"], .ss-date-chips > label:has(input:valid) {
@@ -710,7 +712,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-date-chips > label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   /* Escolha em tile: <label class="ss-choice"><span>Rótulo</span><select>…</select></label>. */
-  .ss-choice { position: relative; display: grid; gap: .1rem; padding: .55rem 2.6rem .6rem .9rem; border-radius: 14px; background: var(--surface);
+  .ss-choice { position: relative; display: grid; gap: .1rem; padding: calc(var(--ss-pad-y) * 1.1) 2.6rem calc(var(--ss-pad-y) * 1.2) calc(var(--ss-pad-x) * .9); border-radius: calc(var(--r-field) + 2px); background: var(--surface);
                border: 1px solid var(--line); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
   .ss-choice::after { content: ""; position: absolute; right: .9rem; top: 50%; width: 1rem; height: 1rem; translate: 0 -50%; background: var(--muted);
                       mask: var(--ss-i-chev) center / contain no-repeat; pointer-events: none; }
@@ -720,26 +722,26 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-choice:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
 
   /* Linha com chave: <label class="ss-switch-row"><span>Texto<small>ajuda</small></span><input type="checkbox" role="switch"></label>. */
-  .ss-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.25rem; padding: .5rem .25rem; cursor: pointer; }
-  .ss-switch-row > span { font-weight: 600; font-size: .92rem; }
+  .ss-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: var(--ss-row-h); padding: calc(var(--ss-pad-y) * .8) .25rem; cursor: pointer; }
+  .ss-switch-row > span { font-weight: 600; font-size: calc(.92rem * var(--ss-font-scale)); }
   .ss-switch-row small { display: block; font-size: .78rem; font-weight: 500; color: var(--muted); }
   /* Trilho: a cor de ligado é um líquido (círculo que cresce do lado de onde a bolinha sai,
      --ss-pour) e "derrama" no sentido do movimento; ao desligar, escoa de volta. */
-  .ss-switch-row input { appearance: none; position: relative; isolation: isolate; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; cursor: pointer;
+  .ss-switch-row input { appearance: none; position: relative; isolation: isolate; flex: none; width: var(--ss-switch-w); height: var(--ss-switch-h); margin: 0; border-radius: 999px; cursor: pointer;
                          --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
-                         background: radial-gradient(circle at 14px 50%, var(--accent-solid) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
+                         background: radial-gradient(circle at calc(var(--ss-switch-h) / 2) 50%, var(--accent-solid) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
                          transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
-  .ss-switch-row input:checked { --ss-pour: 40px; --sw-halo: color-mix(in srgb, var(--accent) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
+  .ss-switch-row input:checked { --ss-pour: calc(var(--ss-switch-w) - 6px); --sw-halo: color-mix(in srgb, var(--accent) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
   /* Bolinha presa pelas bordas: a da frente corre (rápida) e a de trás vem depois com a mola;
      no caminho ela estica como uma gota e, ao pousar, achata e assenta. Na troca feita pela
      pessoa (data-ss-anim) o caminho é o keyframe ss-sw-on/off: estica até 1,45× no meio, achata
      (.82 × 1,12) no fim e volta com --ss-bounce; um halo na cor sai da bolinha e some. */
-  .ss-switch-row input::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: 21px; border-radius: 999px; background: #fff;
+  .ss-switch-row input::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); border-radius: 999px; background: #fff;
                                  box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
                                  transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
-  .ss-switch-row input:checked::before { left: 21px; right: 3px; transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; transform-origin: 100% 50%; }
+  .ss-switch-row input:checked::before { left: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); right: 3px; transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; transform-origin: 100% 50%; }
   /* ✓ miúdo na bolinha quando ligada: gira (−90° → 0) e estala; desligada, nada. */
-  .ss-switch-row input::after { content: ""; position: absolute; z-index: 2; top: 50%; left: 32px; width: 12px; height: 12px; margin: -6px 0 0 -6px; pointer-events: none;
+  .ss-switch-row input::after { content: ""; position: absolute; z-index: 2; top: 50%; left: calc(var(--ss-switch-w) - var(--ss-switch-h) / 2); width: calc(var(--ss-switch-h) * .43); height: calc(var(--ss-switch-h) * .43); margin: calc(var(--ss-switch-h) * -.215) 0 0 calc(var(--ss-switch-h) * -.215); pointer-events: none;
                                 background: var(--accent); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
                                 transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
   .ss-switch-row input:checked::after { opacity: 1; scale: 1; rotate: 0deg;
@@ -753,11 +755,11 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* − valor +: <div class="ss-stepper"><button aria-label="Menos">−</button><output>3</output><button aria-label="Mais">+</button></div>. */
   .ss-stepper { display: inline-flex; align-items: center; gap: .25rem; padding: 3px; border-radius: 999px; background: var(--field); box-shadow: inset 0 0 0 1px var(--line); }
-  .ss-stepper button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: var(--surface); color: var(--accent);
+  .ss-stepper button { display: grid; place-items: center; width: var(--ss-target); height: var(--ss-target); border: 0; border-radius: 50%; background: var(--surface); color: var(--accent);
                        font: 700 1.15rem var(--font-sans); cursor: pointer; box-shadow: 0 1px 2px rgba(20, 22, 40, .08); transition: transform var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-stepper button:active:not(:disabled) { transform: scale(.88); transition: transform 80ms ease-out; }
   .ss-stepper button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
-  .ss-stepper :is(output, input) { min-width: 2.75rem; border: 0; background: none; text-align: center; font: 500 1.05rem var(--font-mono); color: var(--ink); }
+  .ss-stepper :is(output, input) { min-width: var(--ss-target); border: 0; background: none; text-align: center; font: 500 1.05rem var(--font-mono); color: var(--ink); }
   .ss-stepper input { width: 3rem; outline: 0; -moz-appearance: textfield; }
   .ss-stepper input::-webkit-inner-spin-button { display: none; }
 
@@ -799,7 +801,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   /* Mês: <div class="ss-month"><span>D</span>…(7 cabeçalhos)<button>1<i></i></button>…; .is-out = outro mês. */
   .ss-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; text-align: center; }
   .ss-month > span { padding: .3rem 0; font-size: .68rem; font-weight: 800; text-transform: uppercase; color: var(--muted); }
-  .ss-month > :is(button, a, div) { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 2.5rem; border: 0; border-radius: 12px;
+  .ss-month > :is(button, a, div) { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: var(--ss-control-h); border: 0; border-radius: var(--r-field);
                                     background: none; color: var(--ink); font: 500 .85rem var(--font-mono); cursor: pointer; text-decoration: none; transition: background .15s; }
   .ss-month > :is(button, a):hover { background: var(--field); }
   .ss-month > .is-out { color: color-mix(in srgb, var(--muted) 55%, transparent); }
@@ -842,19 +844,19 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-status[data-tone="accent"] { --c: var(--accent); }
 
   /* Rótulo ⟷ valor: <div class="ss-value-row"><span>Subtotal</span><b>R$ 10,00</b></div>; .is-total realça. */
-  .ss-value-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .45rem 0; font-size: .88rem; color: var(--muted); }
+  .ss-value-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: calc(var(--ss-row-py) * .6) 0; font-size: calc(.88rem * var(--ss-font-scale)); color: var(--muted); }
   .ss-value-row > :last-child { font: 500 .92rem var(--font-mono); color: var(--ink); white-space: nowrap; }
   .ss-value-row.is-total { margin-top: .25rem; padding-top: .7rem; border-top: 1px solid var(--line); font-weight: 700; color: var(--ink); }
   .ss-value-row.is-total > :last-child { font-size: 1.1rem; }
   .ss-dashed:empty + .ss-value-row.is-total { margin-top: 0; padding-top: .45rem; border-top: 0; }
   /* Tracejado: vazio = divisória; com conteúdo = caixa de "adicionar". */
-  .ss-dashed { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 3.25rem; padding: .75rem; border: 1.5px dashed var(--line);
+  .ss-dashed { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: var(--ss-row-h); padding: var(--ss-row-py); border: 1.5px dashed var(--line);
                border-radius: 14px; background: none; color: var(--muted); font: 600 .88rem var(--font-sans); text-decoration: none; }
   a.ss-dashed:hover, button.ss-dashed:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); cursor: pointer; }
   .ss-dashed:empty { min-height: 0; padding: 0; margin: .75rem 0; border: 0; border-top: 1.5px dashed var(--line); border-radius: 0; }
 
   /* Oferta: card com preço; .is-best ganha borda da marca e a fita (.ss-offer-tag). */
-  .ss-offer { position: relative; display: grid; gap: .25rem; padding: 1rem; border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card);
+  .ss-offer { position: relative; display: grid; gap: .25rem; padding: calc(var(--ss-card-pad) * .8); border-radius: calc(var(--r-card) - 2px); background: var(--surface); box-shadow: var(--shadow-card);
               border: 1.5px solid color-mix(in srgb, var(--line) 70%, transparent); }
   .ss-offer.is-best { border-color: var(--accent); }
   .ss-offer-tag { position: absolute; top: -.65rem; right: 1rem; padding: .15rem .6rem; border-radius: 999px; background: var(--accent); color: #fff;
@@ -902,18 +904,18 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* Primeiros passos: <ol class="ss-checklist"><li class="is-done">…</li>… */
   .ss-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: .25rem; }
-  .ss-checklist li { display: flex; align-items: center; gap: .75rem; padding: .6rem .25rem; font-weight: 600; font-size: .9rem; }
+  .ss-checklist li { display: flex; align-items: center; gap: var(--ss-gap); padding: calc(var(--ss-row-py) * .8) .25rem; font-weight: 600; font-size: calc(.9rem * var(--ss-font-scale)); }
   .ss-checklist li::before { content: ""; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid var(--line); }
   .ss-checklist .is-done { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); }
   .ss-checklist .is-done::before { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 65% no-repeat; }
   .ss-checklist a { color: var(--accent); }
 
   /* Dica dispensável: <aside class="ss-tip"><svg/><p>…</p><button aria-label="Dispensar">×</button></aside>. */
-  .ss-tip { display: flex; align-items: flex-start; gap: .65rem; padding: .85rem .6rem .85rem 1rem; border-radius: 16px; background: var(--accent-soft);
+  .ss-tip { display: flex; align-items: flex-start; gap: calc(var(--ss-gap) * .87); padding: calc(var(--ss-card-pad) * .68) .6rem calc(var(--ss-card-pad) * .68) calc(var(--ss-card-pad) * .8); border-radius: calc(var(--r-field) + 4px); background: var(--accent-soft);
             color: var(--ink-2); font-size: .86rem; animation: ss-rise .35s ease both; }
   .ss-tip > svg { width: 1.2rem; height: 1.2rem; flex: none; margin-top: .05rem; color: var(--accent); }
   .ss-tip > p { flex: 1; margin: 0; }
-  .ss-tip > button { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; margin: -.3rem 0; border: 0; border-radius: 50%; background: none;
+  .ss-tip > button { flex: none; display: grid; place-items: center; width: var(--ss-control-h-sm); height: var(--ss-control-h-sm); margin: -.3rem 0; border: 0; border-radius: 50%; background: none;
                      color: var(--muted); font-size: 1.1rem; cursor: pointer; }
   .ss-tip > button:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
   .ss-tip[hidden] { display: none; }
@@ -960,18 +962,18 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* Menu ⋮: <details class="ss-menu"><summary aria-label="Mais ações">⋮</summary><div>…links/botões, hr…</div></details>. */
   .ss-menu { position: relative; display: inline-block; }
-  .ss-menu > summary { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 12px; list-style: none; cursor: pointer;
+  .ss-menu > summary { display: grid; place-items: center; width: var(--ss-control-h); height: var(--ss-control-h); border-radius: var(--r-field); list-style: none; cursor: pointer;
                        color: var(--muted); font-size: 1.25rem; font-weight: 800; line-height: 1;
                        transition: background-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-menu > summary:active { scale: .9; transition: background-color .2s, color .2s, scale 80ms ease-out; }
   .ss-menu > summary::-webkit-details-marker { display: none; }
   .ss-menu > summary:hover, .ss-menu[open] > summary { background: var(--field); color: var(--ink); }
-  .ss-menu > :not(summary) { position: absolute; right: 0; margin-top: .25rem; z-index: 40; min-width: 12rem; padding: .35rem; border-radius: 14px;
+  .ss-menu > :not(summary) { position: absolute; right: 0; margin-top: .25rem; z-index: 40; min-width: 12rem; padding: .35rem; border-radius: calc(var(--r-field) + 2px);
                              background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 40px -16px rgba(20, 22, 40, .35);
                              transform-origin: top right; animation: ss-pop .16s cubic-bezier(.2, .8, .2, 1); }
-  .ss-menu > :not(summary) > :is(a, button) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .55rem .7rem; border: 0; border-radius: 10px;
-                                               background: none; color: var(--ink); font: 600 .88rem var(--font-sans); text-align: left; text-decoration: none; cursor: pointer; }
-  .ss-menu > :not(summary) svg { width: 1.05rem; height: 1.05rem; color: var(--muted); }
+  .ss-menu > :not(summary) > :is(a, button) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: calc(var(--ss-row-py) * .73) calc(var(--ss-pad-x) * .7); border: 0; border-radius: calc(var(--r-field) - 2px);
+                                               background: none; color: var(--ink); font: 600 calc(.88rem * var(--ss-font-scale)) var(--font-sans); text-align: left; text-decoration: none; cursor: pointer; }
+  .ss-menu > :not(summary) svg { width: var(--ss-icon); height: var(--ss-icon); color: var(--muted); }
   .ss-menu > :not(summary) > :is(a, button):is(:hover, :focus-visible) { background: var(--field); }
   .ss-menu > :not(summary) > .is-danger, .ss-menu > :not(summary) > .is-danger svg { color: var(--danger); }
   .ss-menu > :not(summary) > hr { margin: .3rem 0; border: 0; border-top: 1px solid var(--line); }
@@ -989,7 +991,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
                       padding: .4rem .4rem .4rem 1rem; border-radius: 999px; background: #1a1826; color: #fff; border: 1px solid rgba(255, 255, 255, .08);
                       box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .35); font-size: .88rem; font-weight: 700; white-space: nowrap; animation: ss-toast .42s var(--ss-spring); }
   .ss-selection-bar b { font-family: var(--font-mono); font-weight: 500; }
-  .ss-selection-bar :is(button, a) { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.5rem; padding: 0 .85rem; border: 0; border-radius: 999px;
+  .ss-selection-bar :is(button, a) { display: inline-flex; align-items: center; gap: .35rem; min-height: var(--ss-control-h); padding: 0 calc(var(--ss-pad-x) * .85); border: 0; border-radius: 999px;
                                      background: none; color: #fff; font: 700 .85rem var(--font-sans); text-decoration: none; cursor: pointer; }
   .ss-selection-bar :is(button, a):first-of-type { margin-left: .5rem; }
   .ss-selection-bar :is(button, a):hover { background: rgba(255, 255, 255, .1); }

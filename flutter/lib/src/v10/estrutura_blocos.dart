@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_badge.dart';
 import '../ss_dialogs.dart' show showSsConfirm;
@@ -256,6 +257,7 @@ class _BlocoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final b = block;
     final l = list.labels.resolve(SsStrings.of(context));
     final t = b.tone.colors(context);
@@ -297,7 +299,7 @@ class _BlocoView extends StatelessWidget {
       duration: rm ? Duration.zero : SsMotion.fast,
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.field + 2),
+        borderRadius: BorderRadius.circular(d.radiusField + 2),
         border: borda,
         boxShadow: focused ? [BoxShadow(color: c.accent.withValues(alpha: .18), blurRadius: 0, spreadRadius: 3)] : null,
       ),
@@ -308,10 +310,10 @@ class _BlocoView extends StatelessWidget {
             button: temCorpo,
             expanded: temCorpo ? open : null,
             child: InkWell(
-              borderRadius: BorderRadius.circular(AppRadius.field + 2),
+              borderRadius: BorderRadius.circular(d.radiusField + 2),
               onTap: temCorpo ? () => onOpen(!open) : null,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
+                padding: EdgeInsets.fromLTRB(4, d.rowPadV - 4, 4, d.rowPadV - 4),
                 child: Row(
                   children: [
                     if (dragHandle)
@@ -321,7 +323,7 @@ class _BlocoView extends StatelessWidget {
                           message: l.drag!,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                            child: Icon(Icons.drag_indicator_rounded, size: 20, color: c.muted2),
+                            child: Icon(Icons.drag_indicator_rounded, size: d.iconSize, color: c.muted2),
                           ),
                         ),
                       )
@@ -330,13 +332,16 @@ class _BlocoView extends StatelessWidget {
                     Opacity(
                       opacity: b.enabled ? 1 : .45,
                       child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(10)),
-                        child: Icon(b.icon, size: 19, color: t.text),
+                        width: d.iconTile - 8,
+                        height: d.iconTile - 8,
+                        decoration: BoxDecoration(
+                          color: t.soft,
+                          borderRadius: BorderRadius.circular(d.radiusField - 4),
+                        ),
+                        child: Icon(b.icon, size: d.iconSize - 1, color: t.text),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: d.space(10)),
                     Expanded(
                       child: Opacity(
                         opacity: b.enabled ? 1 : .5,
@@ -347,14 +352,18 @@ class _BlocoView extends StatelessWidget {
                               b.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.set),
+                              style: TextStyle(
+                                color: c.ink,
+                                fontWeight: FontWeight.w800,
+                                fontSize: d.font(AppType.set),
+                              ),
                             ),
                             if (b.summary != null)
                               Text(
                                 b.summary!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                                style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta)),
                               ),
                           ],
                         ),
@@ -387,15 +396,19 @@ class _BlocoView extends StatelessWidget {
             Semantics(
               liveRegion: true,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+                padding: EdgeInsets.fromLTRB(d.padX - 2, 0, d.padX - 2, d.space(10)),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline_rounded, size: 15, color: c.dangerText),
+                    Icon(Icons.error_outline_rounded, size: d.iconSize - 5, color: c.dangerText),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         b.error!,
-                        style: TextStyle(color: c.dangerText, fontSize: AppType.meta, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: c.dangerText,
+                          fontSize: d.font(AppType.meta),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -411,11 +424,15 @@ class _BlocoView extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(top: BorderSide(color: c.line)),
                   ),
-                  padding: const EdgeInsets.fromLTRB(14, 12, 10, 4),
+                  padding: EdgeInsets.fromLTRB(d.padX - 2, d.space(12), d.space(10), d.space(4)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (b.body != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: b.body!),
+                      if (b.body != null)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: d.space(10)),
+                          child: b.body!,
+                        ),
                       if (b.children.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.only(left: 10),
@@ -496,6 +513,7 @@ class _SsCollapsibleState extends State<SsCollapsible> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final rm = reduceMotion(context);
     final t = widget.labelTone.colors(context);
     return Column(
@@ -507,10 +525,10 @@ class _SsCollapsibleState extends State<SsCollapsible> {
           expanded: _open,
           hint: _open ? widget.collapseLabel ?? _s.collapse : widget.expandLabel ?? _s.expand,
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.field),
+            borderRadius: BorderRadius.circular(d.radiusField),
             onTap: _toggle,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: d.rowPadV),
               child: Row(
                 children: [
                   AnimatedRotation(
@@ -520,17 +538,20 @@ class _SsCollapsibleState extends State<SsCollapsible> {
                     child: Icon(Icons.chevron_right_rounded, color: c.muted),
                   ),
                   const SizedBox(width: 4),
-                  if (widget.icon != null) ...[Icon(widget.icon, size: 18, color: c.ink2), const SizedBox(width: 6)],
+                  if (widget.icon != null) ...[
+                    Icon(widget.icon, size: d.iconSize - 2, color: c.ink2),
+                    SizedBox(width: d.space(6)),
+                  ],
                   Flexible(
                     child: Text(
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.md),
+                      style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: d.font(AppType.md)),
                     ),
                   ),
                   if (widget.count != null) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: d.space(8)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
                       decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.pill)),
@@ -557,7 +578,7 @@ class _SsCollapsibleState extends State<SsCollapsible> {
         ),
         SsSpringReveal(
           expanded: _open,
-          child: Padding(padding: const EdgeInsets.fromLTRB(6, 2, 6, 8), child: widget.child),
+          child: Padding(padding: EdgeInsets.fromLTRB(6, 2, 6, d.space(8)), child: widget.child),
         ),
       ],
     );

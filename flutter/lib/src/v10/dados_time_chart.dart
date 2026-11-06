@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../skeleton.dart';
@@ -381,7 +382,7 @@ class _SsTimeChartState extends State<SsTimeChart> {
               const SizedBox(height: 6),
               Text(
                 widget.emptyText ?? _s.chartNoReadings,
-                style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                style: TextStyle(color: c.muted, fontSize: SsDensity.of(context).font(AppType.sub)),
               ),
             ],
           ),
@@ -450,7 +451,11 @@ class _SsTimeChartState extends State<SsTimeChart> {
                                       guide: c.line,
                                       plot: c.field,
                                       surface: c.surface,
-                                      axis: AppTheme.number(context, size: AppType.micro, color: c.muted),
+                                      axis: AppTheme.number(
+                                        context,
+                                        size: SsDensity.of(context).font(AppType.micro),
+                                        color: c.muted,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -549,8 +554,8 @@ class _SsTimeChartState extends State<SsTimeChart> {
                 child: SsPressable(
                   onTap: () => setState(() => on ? _ocultas.add(i) : _ocultas.remove(i)),
                   child: AnimatedContainer(
-                    duration: SsMotion.fast,
-                    padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
+                    duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
+                    padding: _respiro(context, 8, 5, 10, 5),
                     decoration: BoxDecoration(
                       color: on ? c.field : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -560,7 +565,7 @@ class _SsTimeChartState extends State<SsTimeChart> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         AnimatedContainer(
-                          duration: SsMotion.fast,
+                          duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
                           width: 9,
                           height: 9,
                           decoration: BoxDecoration(
@@ -573,7 +578,7 @@ class _SsTimeChartState extends State<SsTimeChart> {
                         Text(
                           s.name,
                           style: TextStyle(
-                            fontSize: AppType.meta,
+                            fontSize: SsDensity.of(context).font(AppType.meta),
                             fontWeight: FontWeight.w600,
                             color: on ? c.ink : c.muted,
                             decoration: on ? null : TextDecoration.lineThrough,
@@ -583,13 +588,17 @@ class _SsTimeChartState extends State<SsTimeChart> {
                           const SizedBox(width: 6),
                           Text(
                             fmt.value(_valorLegenda(s), unit: s.unit, decimals: s.decimals),
-                            style: AppTheme.number(context, size: AppType.meta, color: on ? c.ink : c.muted),
+                            style: AppTheme.number(
+                              context,
+                              size: SsDensity.of(context).font(AppType.meta),
+                              color: on ? c.ink : c.muted,
+                            ),
                           ),
                         ] else if (s.unit != null) ...[
                           const SizedBox(width: 4),
                           Text(
                             s.unit!,
-                            style: TextStyle(fontSize: AppType.label, color: c.muted),
+                            style: TextStyle(fontSize: SsDensity.of(context).font(AppType.label), color: c.muted),
                           ),
                         ],
                       ],
@@ -616,19 +625,19 @@ class _SsTimeChartState extends State<SsTimeChart> {
               nome,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: AppType.label, color: c.ink2),
+              style: TextStyle(fontSize: SsDensity.of(context).font(AppType.label), color: c.ink2),
             ),
           ),
           const SizedBox(width: 6),
           Text(
             valor,
-            style: AppTheme.number(context, size: AppType.meta, color: c.ink),
+            style: AppTheme.number(context, size: SsDensity.of(context).font(AppType.meta), color: c.ink),
           ),
         ],
       ),
     );
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 7, 10, 8),
+      padding: _respiro(context, 10, 7, 10, 8),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(AppRadius.thumb),
@@ -641,7 +650,12 @@ class _SsTimeChartState extends State<SsTimeChart> {
         children: [
           Text(
             fmt.when(t),
-            style: AppTheme.number(context, size: AppType.label, weight: FontWeight.w700, color: c.ink),
+            style: AppTheme.number(
+              context,
+              size: SsDensity.of(context).font(AppType.label),
+              weight: FontWeight.w700,
+              color: c.ink,
+            ),
           ),
           for (var i = 0; i < widget.series.length; i++)
             if (!_ocultas.contains(i))
@@ -701,7 +715,7 @@ class _BotaoVerTudo extends StatelessWidget {
         child: SsPressable(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
+            padding: _respiro(context, 8, 5, 10, 5),
             decoration: BoxDecoration(
               color: c.surface,
               borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -715,7 +729,11 @@ class _BotaoVerTudo extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   label,
-                  style: TextStyle(fontSize: AppType.label, fontWeight: FontWeight.w700, color: c.accentText),
+                  style: TextStyle(
+                    fontSize: SsDensity.of(context).font(AppType.label),
+                    fontWeight: FontWeight.w700,
+                    color: c.accentText,
+                  ),
                 ),
               ],
             ),
@@ -910,4 +928,10 @@ class _TimePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TimePainter old) => true;
+}
+
+/// Respiro na escala da densidade (0,75 / 1 / 1,2).
+EdgeInsets _respiro(BuildContext context, double l, double t, double r, double b) {
+  final d = SsDensity.of(context);
+  return EdgeInsets.fromLTRB(d.space(l), d.space(t), d.space(r), d.space(b));
 }

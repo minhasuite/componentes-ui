@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 
 /// Título de bloco dentro de uma tela de detalhe ("Histórico", "Diário"),
 /// com uma linha de explicação e uma ação qualquer à direita (botão, "+").
@@ -19,8 +20,9 @@ class SsSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: d.space(10)),
       child: Row(
         children: [
           Expanded(
@@ -33,7 +35,12 @@ class SsSectionHeader extends StatelessWidget {
                   child: Text(
                     title,
                     maxLines: 2,
-                    style: TextStyle(color: c.ink, fontSize: AppType.md, fontWeight: FontWeight.w800, height: 1.2),
+                    style: TextStyle(
+                      color: c.ink,
+                      fontSize: d.font(AppType.md),
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
                   ),
                 ),
                 if (subtitle != null)
@@ -42,13 +49,13 @@ class SsSectionHeader extends StatelessWidget {
                     child: Text(
                       subtitle!,
                       maxLines: 2,
-                      style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
                     ),
                   ),
               ],
             ),
           ),
-          if (action != null) ...[const SizedBox(width: 8), action!],
+          if (action != null) ...[SizedBox(width: d.gap - 4), action!],
         ],
       ),
     );

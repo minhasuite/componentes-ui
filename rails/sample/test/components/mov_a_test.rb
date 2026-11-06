@@ -68,7 +68,8 @@ class MovATest < ComponentTest
     assert_includes css, ".ss-ind {"
     assert_match(/\.ss-btn:active:not\(:disabled\) \{ transform: scale\(\.96\); transition: transform 80ms/, css)
     assert_includes css, "@keyframes ss-press-pop"
-    assert_match(/\.ss-switch-row input:checked::before \{ left: 21px; right: 3px;/, css)
+    # v0.11: a bolinha anda pela largura da densidade (46×28 no padrão: left 21px).
+    assert_match(/\.ss-switch-row input:checked::before \{ left: calc\(var\(--ss-switch-w\) - var\(--ss-switch-h\) \+ 3px\); right: 3px;/, css)
     assert_match(/prefers-reduced-motion: reduce\) \{\s*\*, \*::before, \*::after \{ transition: none !important; animation: none !important; \}/, css)
   end
 

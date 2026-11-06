@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../motion_view.dart';
@@ -53,8 +54,9 @@ class SsLevelCard extends StatelessWidget {
     final s = SsStrings.of(context);
     final f = SsFormats.of(context);
     String mil(int n) => f.integer(n);
+    final d = SsDensity.of(context);
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(d.cardPad + 2),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
@@ -127,11 +129,11 @@ class SsLevelCard extends StatelessWidget {
                   label: s.spentEarned(entries[i].title, money(entries[i].cents, f), entries[i].points),
                   excludeSemantics: true,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: EdgeInsets.symmetric(vertical: d.rowPadV - 2),
                     child: Row(
                       children: [
-                        SsIconTile(entries[i].icon, size: 36),
-                        const SizedBox(width: 12),
+                        SsIconTile(entries[i].icon, size: d.iconTile - 6),
+                        SizedBox(width: d.gap),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,11 +224,12 @@ class SsPriceBoard extends StatelessWidget {
     final c = SsColors.of(context);
     final cab = TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w800, letterSpacing: .8);
     final s = SsStrings.of(context);
+    final d = SsDensity.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+          padding: EdgeInsets.fromLTRB(d.padX - 4, 0, d.padX - 4, 6),
           child: Row(
             children: [
               Expanded(child: Text(s.asset, style: cab)),
@@ -265,7 +268,10 @@ class SsPriceBoard extends StatelessWidget {
         onTap: onTap == null ? null : () => onTap!(i),
         child: AnimatedContainer(
           duration: SsMotion.fast,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: SsDensity.of(context).padX - 6,
+            vertical: SsDensity.of(context).rowPadV,
+          ),
           margin: const EdgeInsets.only(bottom: 2),
           decoration: BoxDecoration(
             color: on ? c.accentSoft : Colors.transparent,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'density.dart';
+
 part 'paletas.g.dart';
 
 /// Design system "Lista Clara" da MinhaSuite. A cor da marca vem de [SsBrand]
@@ -437,7 +439,17 @@ class AppTheme {
 
   /// [oled] (só no escuro): página preta pura e superfícies quase pretas,
   /// para tela OLED (economiza bateria). `SsColors.isOled` fica verdadeiro.
-  static ThemeData build(Brightness brightness, {SsBrand brand = SsBrand.violeta, bool oled = false}) {
+  ///
+  /// [density] (v0.11): `SsDensity.compact`, `standard` (padrão) ou
+  /// `comfortable`. Vai no `extensions` (os `Ss*` leem com `SsDensity.of`) e
+  /// alinha o `visualDensity` e os botões/campos Material que sobram.
+  static ThemeData build(
+    Brightness brightness, {
+    SsBrand brand = SsBrand.violeta,
+    bool oled = false,
+    SsDensity density = SsDensity.standard,
+  }) {
+    final d = density;
     final isDark = brightness == Brightness.dark;
     final isOled = isDark && oled;
     final accent = isDark ? brand.accentDark : brand.accentLight;
@@ -490,7 +502,8 @@ class AppTheme {
     final text = _textTheme(manrope, ink, muted);
 
     return base.copyWith(
-      extensions: [brand, if (isOled) const _SsOled(true)],
+      extensions: [brand, d, if (isOled) const _SsOled(true)],
+      visualDensity: d.visualDensity,
       colorScheme: scheme,
       scaffoldBackgroundColor: page,
       textTheme: text,
@@ -522,7 +535,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusCard)),
       ),
       dividerTheme: DividerThemeData(color: line, thickness: 1, space: 1),
       chipTheme: ChipThemeData(
@@ -539,18 +552,18 @@ class AppTheme {
         hintStyle: TextStyle(color: muted),
         labelStyle: TextStyle(color: muted),
         floatingLabelStyle: TextStyle(color: accent),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.field), borderSide: BorderSide.none),
+        contentPadding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: (d.fieldHeight - 26) / 2),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(d.radiusField), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderRadius: BorderRadius.circular(d.radiusField),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderRadius: BorderRadius.circular(d.radiusField),
           borderSide: BorderSide(color: accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderRadius: BorderRadius.circular(d.radiusField),
           borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
         ),
       ),
@@ -559,18 +572,18 @@ class AppTheme {
           backgroundColor: accent,
           foregroundColor: AppColors.onDark,
           elevation: 0,
-          minimumSize: const Size.fromHeight(50),
+          minimumSize: Size.fromHeight(d.controlHeight),
           textStyle: GoogleFonts.manrope(fontSize: AppType.body, fontWeight: FontWeight.w800),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusField)),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: accent,
           foregroundColor: AppColors.onDark,
-          minimumSize: const Size.fromHeight(50),
+          minimumSize: Size.fromHeight(d.controlHeight),
           textStyle: GoogleFonts.manrope(fontSize: AppType.body, fontWeight: FontWeight.w800),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusField)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -582,10 +595,10 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: ink,
-          minimumSize: const Size.fromHeight(50),
+          minimumSize: Size.fromHeight(d.controlHeight),
           side: BorderSide(color: line),
           textStyle: GoogleFonts.manrope(fontSize: AppType.body, fontWeight: FontWeight.w700),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusField)),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -594,7 +607,7 @@ class AppTheme {
         elevation: 0,
         highlightElevation: 0,
         extendedTextStyle: GoogleFonts.manrope(fontSize: AppType.body, fontWeight: FontWeight.w800),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusField)),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: surface,
@@ -604,13 +617,13 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusCard)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: isDark ? AppColors.fieldDark : AppColors.headerLightBg,
         contentTextStyle: GoogleFonts.manrope(color: AppColors.onDark, fontSize: AppType.set),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(d.radiusField)),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: accent,

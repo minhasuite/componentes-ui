@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 
 /// Skeleton loader reutilizável: uma lista de "cartões-fantasma" que pulsam
@@ -43,12 +44,13 @@ class _SkeletonListState extends State<SkeletonList> with SingleTickerProviderSt
       animation: _c,
       builder: (context, _) {
         final t = 0.45 + _c.value * 0.4; // opacidade pulsando 0.45–0.85
+        final d = SsDensity.of(context);
         return ListView(
-          padding: widget.padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: widget.padding ?? EdgeInsets.fromLTRB(d.padX, d.gap, d.padX, 24),
           children: [
             for (var i = 0; i < widget.count; i++)
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: d.gap),
                 child: _CardSkeleton(pulse: t),
               ),
           ],
@@ -74,9 +76,10 @@ class _CardSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
     );
+    final d = SsDensity.of(context);
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: base, borderRadius: BorderRadius.circular(16)),
+      padding: EdgeInsets.all(d.cardPad + 2),
+      decoration: BoxDecoration(color: base, borderRadius: BorderRadius.circular(d.radiusCard - 2)),
       child: Row(
         children: [
           Expanded(

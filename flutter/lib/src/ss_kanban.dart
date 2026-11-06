@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
 
@@ -127,6 +128,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
     final c = SsColors.of(context);
     final destacada = _alvo?.$1 == col.id;
     final n = col.items.length;
+    final d = SsDensity.of(context);
     return DragTarget<_Arrasto<T>>(
       onWillAcceptWithDetails: (_) {
         _entra(col.id, n);
@@ -150,7 +152,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
               label: SsStrings.of(context).cardsCount(col.title, n),
               excludeSemantics: true,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 14, 12, 8),
+                padding: EdgeInsets.fromLTRB(d.cardPad - 2, d.cardPad - 2, d.cardPad - 4, d.space(8)),
                 child: Row(
                   children: [
                     Container(
@@ -164,7 +166,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
                         col.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: c.ink, fontSize: AppType.set, fontWeight: FontWeight.w800),
+                        style: TextStyle(color: c.ink, fontSize: d.font(AppType.set), fontWeight: FontWeight.w800),
                       ),
                     ),
                     Container(
@@ -181,7 +183,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                padding: EdgeInsets.fromLTRB(d.cardPad - 6, 0, d.cardPad - 6, d.cardPad - 6),
                 children: [
                   for (var i = 0; i < n; i++) _card(col, i),
                   if (_alvo == (col.id, n)) _Vaga(altura: _tamanho?.height),

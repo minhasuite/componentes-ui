@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_button.dart';
 import '../ss_strings.dart';
@@ -224,6 +225,9 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
       SsCodeStatus.success => c.success,
       _ => c.accent,
     };
+    final d = SsDensity.of(context);
+    // Tecla: 48 / 56 / 60 (era 64 sempre).
+    final alturaTecla = d.controlHeight + 8;
     // Bolinhas: tamanho fixo mostra todas; livre mostra 4 vazias ou o que tem.
     final total = widget.length ?? math.max(4, _code.length);
 
@@ -281,7 +285,7 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
           SsCodeStatus.error => Text(
             widget.errorText ?? _s.codeError,
             key: const ValueKey('erro'),
-            style: TextStyle(color: c.dangerText, fontWeight: FontWeight.w700, fontSize: AppType.sub),
+            style: TextStyle(color: c.dangerText, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
           ),
           SsCodeStatus.success => Row(
             key: const ValueKey('ok'),
@@ -291,7 +295,7 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
               const SizedBox(width: 6),
               Text(
                 widget.successText ?? _s.done,
-                style: TextStyle(color: c.successText, fontWeight: FontWeight.w700, fontSize: AppType.sub),
+                style: TextStyle(color: c.successText, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
               ),
             ],
           ),
@@ -303,11 +307,11 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
     Widget tecla(String k) {
       final apagar = k == '⌫';
       final vazio = k.isEmpty;
-      if (vazio) return const Expanded(child: SizedBox(height: 64));
+      if (vazio) return Expanded(child: SizedBox(height: alturaTecla));
       final ativo = !_travado && (apagar ? _code.isNotEmpty : _code.length < _max);
       return Expanded(
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: EdgeInsets.all(d.space(5)),
           child: Semantics(
             button: true,
             enabled: ativo,
@@ -318,15 +322,18 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
               enabled: ativo,
               onTap: () => apagar ? _apaga() : _tecla(k),
               child: Container(
-                height: 64,
+                height: alturaTecla,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: apagar ? Colors.transparent : c.field,
-                  borderRadius: BorderRadius.circular(AppRadius.field + 4),
+                  borderRadius: BorderRadius.circular(d.radiusField + 4),
                 ),
                 child: apagar
-                    ? Icon(Icons.backspace_outlined, color: ativo ? c.ink2 : c.muted2)
-                    : Text(k, style: AppTheme.number(context, size: 24, color: _travado ? c.muted : c.ink)),
+                    ? Icon(Icons.backspace_outlined, size: d.iconSize + 4, color: ativo ? c.ink2 : c.muted2)
+                    : Text(
+                        k,
+                        style: AppTheme.number(context, size: d.font(24), color: _travado ? c.muted : c.ink),
+                      ),
               ),
             ),
           ),
@@ -350,14 +357,14 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
               Text(
                 widget.title!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.md),
+                style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: d.font(AppType.md)),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: d.space(14)),
             ],
             pontos,
-            const SizedBox(height: 8),
+            SizedBox(height: d.space(8)),
             Center(child: rodape),
-            const SizedBox(height: 10),
+            SizedBox(height: d.space(10)),
             for (final linha in const [
               ['1', '2', '3'],
               ['4', '5', '6'],
@@ -366,7 +373,7 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
             ])
               Row(children: [for (final k in linha) tecla(k)]),
             if (enviaPorBotao) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: d.gap),
               SsButton(
                 label: widget.submitLabel ?? _s.confirm,
                 icon: Icons.check_rounded,
@@ -375,7 +382,7 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
               ),
             ],
             if (widget.actions.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: d.gap),
               // Lado a lado quando cabe (≥ 180 por botão); senão, empilhados.
               LayoutBuilder(
                 builder: (context, box) {
@@ -391,9 +398,12 @@ class _SsCodeKeypadState extends State<SsCodeKeypad> with SingleTickerProviderSt
                       ),
                   ];
                   if (box.maxWidth / botoes.length >= 180) {
-                    return Row(spacing: 10, children: [for (final b in botoes) Expanded(child: b)]);
+                    return Row(
+                      spacing: d.space(10),
+                      children: [for (final b in botoes) Expanded(child: b)],
+                    );
                   }
-                  return Column(spacing: 8, crossAxisAlignment: CrossAxisAlignment.stretch, children: botoes);
+                  return Column(spacing: d.space(8), crossAxisAlignment: CrossAxisAlignment.stretch, children: botoes);
                 },
               ),
             ],

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
 
@@ -237,6 +238,10 @@ class _SsStepperState extends State<SsStepper> {
 
     String falado(num v) => '${SsStepper.format(v, widget.decimals, f)}${widget.unit == null ? '' : ' ${widget.unit}'}';
     final s = SsStrings.of(context);
+    final d = SsDensity.of(context);
+    // 56 no padrão (botões de 44); 48 / 60 nas outras densidades.
+    final alto = d.fieldHeight + 4;
+    final botao = alto - 12;
     final stepper = Semantics(
       label: widget.label,
       enabled: on,
@@ -246,15 +251,24 @@ class _SsStepperState extends State<SsStepper> {
       onIncrease: on && value < widget.max ? () => _bump(1) : null,
       onDecrease: on && value > widget.min ? () => _bump(-1) : null,
       child: Container(
-        height: 56,
+        height: alto,
         padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.field)),
+        decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(d.radiusField)),
         child: Row(
           children: [
             // Desabilitado: os botões ficam (o tamanho não pula), mas bem apagados.
-            _btn(c, Icons.remove_rounded, widget.decreaseLabel ?? s.decrease, -1, on && value > widget.min, on),
+            _btn(
+              c,
+              d,
+              botao,
+              Icons.remove_rounded,
+              widget.decreaseLabel ?? s.decrease,
+              -1,
+              on && value > widget.min,
+              on,
+            ),
             Expanded(child: valor),
-            _btn(c, Icons.add_rounded, widget.increaseLabel ?? s.increase, 1, on && value < widget.max, on),
+            _btn(c, d, botao, Icons.add_rounded, widget.increaseLabel ?? s.increase, 1, on && value < widget.max, on),
           ],
         ),
       ),
@@ -278,34 +292,39 @@ class _SsStepperState extends State<SsStepper> {
     );
   }
 
-  Widget _btn(SsColors c, IconData icon, String label, int dir, bool on, bool enabled) => Semantics(
-    button: true,
-    enabled: on,
-    label: label,
-    excludeSemantics: true,
-    child: GestureDetector(
-      onTap: on ? () => _bump(dir) : null,
-      onLongPressStart: on ? (_) => _hold(dir) : null,
-      onLongPressEnd: (_) => _stop(),
-      onLongPressCancel: _stop,
-      child: SsPressable(
-        enabled: on,
-        scale: .9,
-        child: AnimatedOpacity(
-          opacity: on ? 1 : (enabled ? .4 : .2),
-          duration: const Duration(milliseconds: 150),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: c.surface,
-              borderRadius: BorderRadius.circular(AppRadius.stepperBtn),
-              border: c.isDark ? Border.all(color: c.line) : null,
+  Widget _btn(SsColors c, SsDensity d, double lado, IconData icon, String label, int dir, bool on, bool enabled) =>
+      // Compacto: o botão desenha 36 e o toque continua com 48.
+      SsTapTarget(
+        minSize: Size(d.minTarget, d.minTarget),
+        child: Semantics(
+          button: true,
+          enabled: on,
+          label: label,
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: on ? () => _bump(dir) : null,
+            onLongPressStart: on ? (_) => _hold(dir) : null,
+            onLongPressEnd: (_) => _stop(),
+            onLongPressCancel: _stop,
+            child: SsPressable(
+              enabled: on,
+              scale: .9,
+              child: AnimatedOpacity(
+                opacity: on ? 1 : (enabled ? .4 : .2),
+                duration: const Duration(milliseconds: 150),
+                child: Container(
+                  width: lado,
+                  height: lado,
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    borderRadius: BorderRadius.circular(d.radiusField - 3),
+                    border: c.isDark ? Border.all(color: c.line) : null,
+                  ),
+                  child: Icon(icon, size: d.iconSize + 2, color: c.ink2),
+                ),
+              ),
             ),
-            child: Icon(icon, size: 22, color: c.ink2),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }

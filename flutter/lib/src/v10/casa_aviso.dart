@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_badge.dart';
 import '../ss_button.dart';
@@ -98,20 +99,21 @@ class SsNoticeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final t = _tone.colors(context);
-    final raio = BorderRadius.circular(AppRadius.card);
+    final raio = BorderRadius.circular(d.radiusCard);
     Widget corpo = Padding(
-      padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
+      padding: EdgeInsets.fromLTRB(d.cardPad - 2, d.cardPad - 2, d.space(8), d.cardPad - 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(12)),
-            child: Icon(_icon, color: t.text, size: 22),
+            width: d.iconTile - 4,
+            height: d.iconTile - 4,
+            decoration: BoxDecoration(color: t.soft, borderRadius: BorderRadius.circular(d.radiusField - 2)),
+            child: Icon(_icon, color: t.text, size: d.iconSize + 2),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: d.gap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +138,7 @@ class SsNoticeCard extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 1),
                         child: Text(
                           title,
-                          style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: AppType.body),
+                          style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: d.font(AppType.body)),
                         ),
                       ),
                     ),
@@ -145,7 +147,7 @@ class SsNoticeCard extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 8, top: 3),
                         child: Text(
                           time!,
-                          style: AppTheme.number(context, size: AppType.label, color: c.muted),
+                          style: AppTheme.number(context, size: d.font(AppType.label), color: c.muted),
                         ),
                       ),
                   ],
@@ -155,12 +157,12 @@ class SsNoticeCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 3),
                     child: Text(
                       text!,
-                      style: TextStyle(color: c.ink2, fontSize: AppType.sub, height: 1.35),
+                      style: TextStyle(color: c.ink2, fontSize: d.font(AppType.sub), height: 1.35),
                     ),
                   ),
                 if (image != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 10, right: 6),
+                    padding: EdgeInsets.only(top: d.space(10), right: 6),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.thumb),
                       child: AspectRatio(aspectRatio: 16 / 9, child: image),
@@ -168,10 +170,10 @@ class SsNoticeCard extends StatelessWidget {
                   ),
                 if (actions.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12, right: 6),
+                    padding: EdgeInsets.only(top: d.gap, right: 6),
                     child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: d.space(8),
+                      runSpacing: d.space(8),
                       children: [
                         for (final (i, a) in actions.indexed)
                           SsButton(
@@ -187,17 +189,17 @@ class SsNoticeCard extends StatelessWidget {
                   ),
                 if (footer != null)
                   Container(
-                    margin: const EdgeInsets.only(top: 12, right: 6),
-                    padding: const EdgeInsets.only(top: 10),
+                    margin: EdgeInsets.only(top: d.gap, right: 6),
+                    padding: EdgeInsets.only(top: d.space(10)),
                     decoration: BoxDecoration(
                       border: Border(
                         top: BorderSide(color: t.solid.withValues(alpha: c.isDark ? .22 : .16)),
                       ),
                     ),
                     child: DefaultTextStyle.merge(
-                      style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta), fontWeight: FontWeight.w600),
                       child: IconTheme.merge(
-                        data: IconThemeData(color: c.muted, size: 16),
+                        data: IconThemeData(color: c.muted, size: d.iconSize - 4),
                         child: footer!,
                       ),
                     ),
@@ -210,7 +212,7 @@ class SsNoticeCard extends StatelessWidget {
               tooltip: dismissLabel ?? SsStrings.of(context).dismiss,
               onPressed: onDismiss,
               visualDensity: VisualDensity.compact,
-              icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
+              icon: Icon(Icons.close_rounded, size: d.iconSize, color: c.muted),
             )
           else
             const SizedBox(width: 6),

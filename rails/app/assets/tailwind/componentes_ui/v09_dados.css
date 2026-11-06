@@ -12,12 +12,12 @@
 
 @layer components {
   /* ── Tabela de dados (Ss::DataTableComponent) ── */
-  .ss-dt { position: relative; display: grid; gap: .65rem; }
+  .ss-dt { position: relative; display: grid; gap: calc(var(--ss-gap) * .87); }
   .ss-dt-tools { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; }
   .ss-seg.ss-dt-density { width: 15rem; height: 36px; }
   .ss-seg.ss-dt-density > * { font-size: .78rem; }
-  .ss-menu.ss-dt-cols > summary { width: 2.25rem; height: 2.25rem; border: 1px solid var(--line); background: var(--surface); }
-  .ss-menu.ss-dt-cols > summary svg { width: 1.1rem; height: 1.1rem; }
+  .ss-menu.ss-dt-cols > summary { width: calc(var(--ss-control-h) - .25rem); height: calc(var(--ss-control-h) - .25rem); border: 1px solid var(--line); background: var(--surface); }
+  .ss-menu.ss-dt-cols > summary svg { width: var(--ss-icon); height: var(--ss-icon); }
   .ss-menu.ss-dt-cols > div { display: grid; gap: .15rem; padding: .5rem .6rem; }
   .ss-dt-cols .ss-check { padding: .35rem .25rem; font-weight: 600; cursor: pointer; }
   .ss-dt-menu-title { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: .2rem .25rem .3rem; }
@@ -39,7 +39,7 @@
   .ss-dt-check, .ss-dt-x { width: 2.5rem; padding-right: 0 !important; }
   .ss-dt-check input { width: 1.05rem; height: 1.05rem; accent-color: var(--accent); cursor: pointer; vertical-align: middle; }
   .ss-dt tr.is-selected > td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
-  .ss-dt-toggle { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border: 0; border-radius: 9px; background: none; color: var(--muted); cursor: pointer; }
+  .ss-dt-toggle { display: grid; place-items: center; width: calc(var(--ss-control-h-sm) - .1rem); height: calc(var(--ss-control-h-sm) - .1rem); border: 0; border-radius: calc(var(--r-field) - 3px); background: none; color: var(--muted); cursor: pointer; }
   .ss-dt-toggle:hover { background: var(--field); color: var(--ink); }
   .ss-dt-toggle svg { width: 1rem; height: 1rem; transition: rotate .2s var(--ss-spring); }
   .ss-dt-toggle[aria-expanded="true"] svg { rotate: 90deg; color: var(--accent); }
@@ -47,8 +47,8 @@
   .ss-dt-detail[hidden] { display: none; }
   .ss-dt-empty td { padding: 0 !important; }
   .ss-dt-pager { display: flex; align-items: center; justify-content: flex-end; gap: .25rem; flex-wrap: wrap; }
-  .ss-dt-pager > :is(a, span) { display: grid; place-items: center; min-width: 2.25rem; height: 2.25rem; padding: 0 .4rem; border-radius: 10px;
-                                font-weight: 700; font-size: .85rem; color: var(--ink-2); text-decoration: none; }
+  .ss-dt-pager > :is(a, span) { display: grid; place-items: center; min-width: calc(var(--ss-control-h) - .25rem); height: calc(var(--ss-control-h) - .25rem); padding: 0 .4rem; border-radius: calc(var(--r-field) - 2px);
+                                font-weight: 700; font-size: calc(.85rem * var(--ss-font-scale)); color: var(--ink-2); text-decoration: none; }
   .ss-dt-pager > a:hover { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--accent); }
   .ss-dt-pager > a[aria-current="page"] { background: var(--accent); color: var(--surface); }
   .ss-dt-pager > [aria-disabled] { color: var(--line); }
@@ -75,28 +75,28 @@
   }
 
   /* ── Barra de filtros (Ss::FilterBarComponent) ── */
-  .ss-filterbar { display: grid; gap: .65rem; }
+  .ss-filterbar { display: grid; gap: calc(var(--ss-gap) * .87); }
   .ss-fb-views { display: flex; gap: .25rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
-  .ss-fb-view { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: .55rem .8rem .7rem; white-space: nowrap;
-                font-size: .86rem; font-weight: 700; color: var(--muted); text-decoration: none; }
+  .ss-fb-view { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: calc(var(--ss-row-py) * .73) calc(var(--ss-pad-x) * .8) calc(var(--ss-row-py) * .93); white-space: nowrap;
+                font-size: calc(.86rem * var(--ss-font-scale)); font-weight: 700; color: var(--muted); text-decoration: none; }
   .ss-fb-view:hover { color: var(--ink); }
   .ss-fb-view small { font: 500 .72rem var(--font-mono); padding: .05rem .4rem; border-radius: 999px; background: var(--field); color: var(--muted); }
   .ss-fb-view[aria-current="page"] { color: var(--accent); }
   .ss-fb-view[aria-current="page"]::after { content: ""; position: absolute; left: .6rem; right: .6rem; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
   .ss-fb-view[aria-current="page"] small { background: var(--accent-soft); color: var(--accent); }
-  .ss-fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-  .ss-search.ss-fb-search { flex: 1 1 16rem; max-width: 24rem; height: 40px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
-  .ss-search.ss-fb-search svg { width: 1.1rem; height: 1.1rem; }
-  .ss-search.ss-fb-search input { font-size: .88rem; }
+  .ss-fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--ss-gap) * .67); }
+  .ss-search.ss-fb-search { flex: 1 1 16rem; max-width: 24rem; height: var(--ss-control-h); border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); }
+  .ss-search.ss-fb-search svg { width: var(--ss-icon); height: var(--ss-icon); }
+  .ss-search.ss-fb-search input { font-size: calc(.88rem * var(--ss-font-scale)); }
   .ss-fb-chips { display: contents; list-style: none; }
-  .ss-fb-chip { display: inline-flex; align-items: center; gap: .15rem; height: 34px; padding: 0 .2rem 0 .75rem; border-radius: 999px; font-size: .82rem;
+  .ss-fb-chip { display: inline-flex; align-items: center; gap: .15rem; height: calc(var(--ss-chip-h) + 2px); padding: 0 .2rem 0 calc(var(--ss-pad-x) * .75); border-radius: 999px; font-size: calc(.82rem * var(--ss-font-scale));
                 background: color-mix(in oklab, var(--accent) 10%, var(--surface)); color: var(--ink-2); border: 1px solid color-mix(in oklab, var(--accent) 28%, transparent);
                 animation: ss-pop-in .22s var(--ss-spring); }
   .ss-fb-chip b { color: var(--accent); font-weight: 800; }
   .ss-fb-chip a { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; color: var(--muted); text-decoration: none; font-size: 1.05rem; line-height: 1; }
   .ss-fb-chip a:hover { background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent); }
-  .ss-menu.ss-fb-add > summary { width: auto; height: 34px; gap: .3rem; padding: 0 .8rem; display: inline-flex; border-radius: 999px; border: 1px dashed var(--line);
-                         font-size: .82rem; font-weight: 700; color: var(--ink-2); background: none; }
+  .ss-menu.ss-fb-add > summary { width: auto; height: calc(var(--ss-chip-h) + 2px); gap: .3rem; padding: 0 calc(var(--ss-pad-x) * .8); display: inline-flex; border-radius: 999px; border: 1px dashed var(--line);
+                         font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 700; color: var(--ink-2); background: none; }
   .ss-menu.ss-fb-add > summary svg { width: .95rem; height: .95rem; }
   .ss-menu.ss-fb-add > summary:hover, .ss-menu.ss-fb-add[open] > summary { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
   .ss-menu.ss-fb-add > div { left: 0; right: auto; transform-origin: top left; max-height: 60vh; overflow: auto; }
@@ -108,7 +108,7 @@
   /* ── KPIs (Ss::KpiStripComponent) ── */
   .ss-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: var(--r-card); background: var(--surface);
              box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
-  .ss-kpi { display: flex; flex-direction: column; min-width: 0; padding: 1rem 1.1rem 0; border-left: 1px solid var(--line); }
+  .ss-kpi { display: flex; flex-direction: column; min-width: 0; padding: calc(var(--ss-card-pad) * .8) calc(var(--ss-card-pad) * .88) 0; border-left: 1px solid var(--line); }
   /* Entrada: o número conta (CountUp), a variação pula e o minigráfico se desenha em cascata. */
   .ss-kpi .ss-delta { animation: ss-iv-pop .5s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 90ms + .35s); }
   .ss-kpi:first-child { border-left: 0; }

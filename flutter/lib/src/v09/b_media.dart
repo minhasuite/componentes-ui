@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_strings.dart';
 
@@ -22,15 +23,18 @@ class SsAttachItem {
 /// documento, contato, local). Entram em cascata, crescendo com mola. O
 /// ícone fica escuro quando a cor de fundo é clara (amarelo), para contrastar.
 class SsAttachBar extends StatelessWidget {
-  const SsAttachBar({super.key, required this.items, this.size = 56});
+  const SsAttachBar({super.key, required this.items, this.size});
 
   final List<SsAttachItem> items;
-  final double size;
+
+  /// Lado do quadrado (padrão: o botão da [SsDensity] + 8, 56 no padrão).
+  final double? size;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final reduzir = reduceMotion(context);
+    final size = this.size ?? SsDensity.of(context).controlHeight + 8;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.start,

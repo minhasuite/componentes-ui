@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../motion_view.dart';
@@ -465,8 +466,8 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
                     onTap: () => _pick(i),
                     child: AnimatedContainer(
                       duration: SsMotion.fast,
-                      constraints: const BoxConstraints(minHeight: 40),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      constraints: BoxConstraints(minHeight: SsDensity.of(context).iconButton),
+                      padding: EdgeInsets.symmetric(horizontal: SsDensity.of(context).padX - 6, vertical: 6),
                       decoration: BoxDecoration(
                         color: i == sel ? cores[i].withValues(alpha: c.isDark ? .22 : .14) : Colors.transparent,
                         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -723,7 +724,12 @@ class _SsFloatingBarsState extends State<SsFloatingBars> {
     final hi = widget.values.fold<double>(0, math.max);
     return Container(
       height: widget.height,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+      padding: EdgeInsets.fromLTRB(
+        SsDensity.of(context).cardPad + 2,
+        SsDensity.of(context).cardPad,
+        SsDensity.of(context).cardPad + 2,
+        SsDensity.of(context).cardPad - 2,
+      ),
       decoration: BoxDecoration(
         color: fundo,
         borderRadius: BorderRadius.circular(AppRadius.cardActive),

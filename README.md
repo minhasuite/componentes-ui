@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.10.3
+      ref: v0.11.0
 ```
 
 ```dart
@@ -30,6 +30,9 @@ MaterialApp(theme: AppTheme.light, darkTheme: AppTheme.dark);
 
 // Outra cor: guarde num static final (getter recria o tema a cada rebuild).
 static final light = AppTheme.build(Brightness.light, brand: minhaMarca);
+
+// v0.11: densidade (compacta, padrão, confortável). Ver "v0.11" abaixo.
+static final denso = AppTheme.build(Brightness.light, density: SsDensity.compact);
 ```
 
 - As fontes (Manrope, DM Mono) vêm **no pacote** (`assets/google_fonts/`); o app só
@@ -52,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.10.3"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.11.0"
 ```
 
 ```css
@@ -62,6 +65,12 @@ gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", t
 
 /* Outra cor de marca: redefina só as variáveis. */
 :root { --accent: #1ba06a; --accent-hover: #138152; --accent-soft: #e3f6ee; }
+```
+
+```erb
+<%# layouts/application: densidade do produto (v0.11) e a escolhida pela pessoa, antes da 1ª pintura %>
+<html lang="pt-BR" <%= tag.attributes(ss_density_attrs) %>>
+  <head> … <%= ss_density_head %> … </head>
 ```
 
 O `tailwindcss:build` gera `app/assets/builds/tailwind/componentes_ui.css` sozinho
@@ -478,11 +487,88 @@ e um `<details>` cru perderia o único sinal de que abre. Quem quer, põe `.ss-b
 **Textos novos:** Flutter `SsStrings.micHold`, `micRelease`; Rails `mic_button.hold`,
 `mic_button.release`, `device_tile.more` (pt-BR, en, es).
 
+## v0.11: densidade
+
+Resposta a "alguns componentes achei grande" (vitrines e minha-automacao). Três densidades,
+iguais nos dois lados: **compacta** (mais coisa por tela: tabela, painel, desktop), **padrão** e
+**confortável** (alvos e respiros maiores: quiosque, toque, pouca visão). Os componentes leem
+altura, respiro, espaço, linha, card, raio, ícone e um leve ajuste de fonte de tokens, nunca de
+número solto. Claro/escuro e movimento não mudam; o alvo de toque nunca cai (48 no app; 40 px no
+web com ponteiro grosso).
+
+| Token | Compacta | Padrão | Confortável | Flutter (`SsDensity`) | CSS |
+|---|---|---|---|---|---|
+| Botão / controle | 40 · 34 px | 48 · 40 px | 52 · 46 px | `controlHeight` | `--ss-control-h` |
+| Botão pequeno | 32 · 28 | 36 · 32 | 40 · 36 | `controlHeightSmall` | `--ss-control-h-sm` |
+| Campo | 44 · 34 | 52 · 40 | 56 · 46 | `fieldHeight` | `--ss-field-h` |
+| Chip | 30 · 28 | 34 · 32 | 38 · 36 | `chipHeight` | `--ss-chip-h` |
+| Respiro lateral | 12 · 12 | 16 · 16 | 20 · 20 | `padX` | `--ss-pad-x` |
+| Espaço entre itens | 8 · 8 | 12 · 12 | 14 · 16 | `gap` | `--ss-gap` |
+| Linha (respiro vertical) | 6 · 7 | 10 · 12 | 14 · 16 | `rowPadV` | `--ss-row-py`, `--ss-row-h` |
+| Card | 12 · 14 | 16 · 20 | 20 · 24 | `cardPad` | `--ss-card-pad` |
+| Raio campo / card | 12/16 · 10/16 | 14/18 · 12/20 | 16/20 · 14/22 | `radiusField`, `radiusCard` | `--ss-radius`, `--ss-radius-card` (= `--r-field`, `--r-card`) |
+| Ícone / quadrado tonal | 18/36 · 15/32 | 20/42 · 17/40 | 22/46 · 19/44 | `iconSize`, `iconTile` | `--ss-icon`, `--ss-icon-tile` |
+| Fonte dos controles | ×0,94 | ×1 | ×1,05–1,06 | `font(x)` | `--ss-font-scale` |
+
+(Flutter em dp · web em px.)
+
+**Flutter.** `AppTheme.build(b, density: SsDensity.compact)` põe a `SsDensity` no `extensions` e
+alinha o `visualDensity` e os botões/campos Material que sobram. `SsDensityScope(density:, child:)`
+troca num trecho (uma tabela compacta numa tela padrão). Os `Ss*` leem `SsDensity.of(context)`
+(`d.font(AppType.body)`, `d.space(10)` para respiros sem token). `SsTapTarget` aumenta a área de
+toque até 48 sem mudar o layout (o compacto desenha 40 e toca 48). `SsDensityPicker(value:,
+onChanged:)` é o seletor (textos `SsStrings.densityLabel/Compact/Standard/Comfortable`); guardar a
+escolha e reconstruir o tema é do app. `SsDensity.byName('compact')` lê a preferência salva.
+
+**Rails.** Tokens em `v11_densidade.css` (`--ss-control-h`, `--ss-pad-x`, `--ss-gap`, `--ss-row-h`,
+`--ss-row-py`, `--ss-card-pad`, `--ss-radius`, `--ss-font-scale`, `--ss-icon`…), trocados por
+`data-ss-density="compact|comfortable"` no `<html>` ou em **qualquer contêiner** (vale para o que
+está dentro). `ComponentesUi.configure { |c| c.density = "compact" }` é o padrão do produto;
+`ss_density_attrs` (atributo para o `<html>` ou um contêiner), `ss_density_head` (aplica a
+escolha guardada antes da 1ª pintura e sobrevive ao morph), `Ss::DensityPickerComponent(target:,
+persist:, value:)` + controller `ss-density` (guarda em `localStorage["ss-density"]`, evento
+`ss-density:change`). O produto decide se mostra o seletor.
+
+**Vitrines:** seletor de densidade na barra de cima do Rails (e a página "Densidade (v0.11)",
+as três lado a lado e o escopo numa tabela) e no `AparenciaBar` do Flutter (seção "Densidade
+(v0.11)"; o ícone de densidade na tela de cada componente alterna). Catálogo: `ss-density` e
+`ss-density-picker` nos dois lados; `flutter/test/densidade_test.dart` captura as peças
+representativas nas três densidades, claro e escuro (`DENSIDADE_SAIDA=<pasta>`).
+
+**Padrões que mudaram (densidade padrão)** — o resto da padrão ficou igual ao da v0.10.3:
+
+| Peça | Flutter (antes → depois) | Web (antes → depois) |
+|---|---|---|
+| Botão | `SsButton` 50 → **48** (e os botões do fim do `SsMenuView`) | `.ss-btn` 40 (igual) |
+| Campo | `SsTextField`/escolha/hora 52 (igual) | `.ss-input`, `.ss-affix`, `.ss-tags-box` 41,6 → **40** |
+| Busca | `SsSearchField` 48 (igual) | `.ss-search` 48 → **44** |
+| Chip | `SsFilterChip` 34 (igual) | `.ss-chip` ~34 → **32** |
+| Linha com chave | `SsSwitchRow` (igual) | `.ss-switch-row` 52 → **48**; `.ss-dashed` 52 → **48** |
+| Tabela | `SsDataTable` (igual) | `.ss-table` td 12,8 → **12**, th 12 → **11,4** de respiro |
+| Diálogo | — | botões do `.ss-dialog-actions` 44 → **40** |
+| Termostato | `SsThermostat` anel 240 → **220**, − e + 52 → **48** (ícone 26 → 24), modos 48 → **40** de desenho (toque 48) | anel 15rem → **13,75rem**, número 2,9rem → **2,6rem**, − e + 52 → **48** (vão 4,5 → 4rem), modos 44 → **40** |
+| Teclado de código | `SsCodeKeypad` tecla 64 → **56** | `.ss-keypad` tecla 64 → **56**, largura 20 → **18rem**, ações 48 → **44** |
+| Slider "fill" | `SsSlider(fill)` 56 → **48** | `.ss-range.is-fill` 56 → **48** |
+| Dias da semana | atalhos do `SsWeekdayPicker` 48 → **34** de desenho (toque 48) | — |
+| Confirmar | `SsHoldToConfirm` 56 → **48**, `SsMorphButton` 52 → **48**, `SsSwipeToConfirm` 60/52 → **56/48** | — |
+| Tile de aparelho | `SsDeviceTile` (igual; numa grade de altura fixa o vão do meio cede em vez de estourar) | `.ss-device` respiro 14,4 → **14** |
+
+Toque: no app nada fica abaixo de 48 (o `SsTapTarget` cobre o que encolheu no desenho); no web,
+o compacto com ponteiro grosso volta a 40 px. Contraste não muda (só tamanho).
+
+**Migrar um produto:** roteiro em [`docs/MIGRACAO.md`](docs/MIGRACAO.md) (levantar, lacunas na
+gem com tag, web e app, o que fica no domínio, armadilhas, conferência e como medir o %).
+
 ## Verificar
 
 ```bash
-podman run --rm -v "$PWD/flutter":/app -v flutter_pub:/root/.pub-cache -w /app \
-  ghcr.io/cirruslabs/flutter:stable bash -lc 'flutter pub get && dart format lib test && flutter analyze && flutter test'
+# Flutter (na raiz do repo)
+podman run --rm -v "$PWD":/r -w /r/flutter -v flutter_pub:/root/.pub-cache ghcr.io/cirruslabs/flutter:stable \
+  bash -c 'git config --global --add safe.directory "*"; flutter pub get; dart format --set-exit-if-changed lib test example; flutter analyze; flutter test'
+# Capturas da densidade (compacta, padrão, confortável; claro e escuro): DENSIDADE_SAIDA=<pasta> flutter test test/densidade_test.dart
+# Rails
+podman run --rm -v "$PWD":/r -w /r/rails/sample -v cui_sample_gems:/usr/local/bundle localhost/ci-ruby:3.3-suite \
+  bash -c 'bundle install --quiet; bin/rails test; bin/rails tailwindcss:build'
 ```
 
 ## Catálogo e SVG
@@ -500,6 +586,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.11.0` (05/11/2026): densidade nos dois lados (seção "v0.11"): `SsDensity` (compacta, padrão, confortável) por `AppTheme.build(density:)` e `SsDensityScope`, `SsTapTarget`, `SsDensityPicker`; no web, tokens `--ss-*` trocados por `data-ss-density` no `<html>` ou num contêiner, `ComponentesUi.config.density`, `ss_density_attrs`, `ss_density_head`, `Ss::DensityPickerComponent` + `ss-density`. Os componentes leem tamanho dos tokens. Alguns padrões grandes demais encolheram (tabela na seção). Nada quebra na API; parâmetros de tamanho com padrão literal viraram anuláveis (nulo = da densidade). Roteiro de migração em `docs/MIGRACAO.md`.
 - `v0.10.3` (05/11/2026): correções e lacunas da migração do minha-automacao para a v0.10.2 (seção "v0.10.3"): `SsTopBar` na fonte do tema e com o véu do overlay visível, toque longo/duplo no `SsDeviceTile` (⋯ e menu de contexto no web), segurar para falar (`SsMicButton(holdToTalk:)`, `SsChatInput(onMicHoldStart:)`, `MicButtonComponent(hold:, compact:)`), `SsHaptics.light`, `SsIconTile(onGradient:)`/`.is-on-grad`, `SsChipBar(currentIndex:)`/`ss-scroll-current`; no web, `FilterBarComponent` com arrays e query do `url:`, `ss-live` com `display: contents`, `OptionCardComponent(id:, input:, dense:, vertical:)`, chip de caixa de marcar, checklist de linha inteira, `.ss-tag > a`, `SubnavComponent(layout: :tabs)` e `.ss-base`/`.ss-reduce-motion`. Nada quebra.
 - `v0.10.2` (05/11/2026): o que faltava para o minha-automacao ficar 100% no pacote e na gem (seção "v0.10.2"): barra de topo, botão de ícone, botão flutuante, carregando/abertura, linhas em card, arrastar para ordenar, zona de perigo, aviso em linha, bloco de código, grupo de comandos, passo numerado, divisor, pergunta de um campo no web, atalhos de seção com menu, chips sólidos e faixa que esmaece, coluna da hora da agenda que cresce, controllers genéricos. Nada quebra; no web o `.ss-subnav` passa a marcar a seção atual (`aria-current=page`) e a esmaecer a borda no celular.
 - `v0.10.1` (04/11/2026): o que a migração do minha-automacao pediu (seção "v0.10.1"). Nada quebra; no web, a marca passa a aparecer na barra do celular do `AppShell` (`mobile_brand: false` desliga) e as regras de `.ss-shell[data-collapsed]` ganharam o seletor do `<html>`.

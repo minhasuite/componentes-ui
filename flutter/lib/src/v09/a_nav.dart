@@ -4,6 +4,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_nav_bar.dart' show SsNavItem;
 import '../ss_strings.dart';
@@ -98,7 +99,7 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
   TextStyle _estilo(BuildContext context, {required bool selected, required Color cor}) => TextStyle(
     fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
     color: cor,
-    fontSize: widget.uppercase ? AppType.meta : AppType.set,
+    fontSize: SsDensity.of(context).font(widget.uppercase ? AppType.meta : AppType.set),
     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
     letterSpacing: widget.uppercase ? 2.4 : 0,
   );
@@ -118,7 +119,7 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
             textScaler: escala,
             maxLines: 1,
           )..layout();
-          final ic = widget.icons?[i] == null ? 0.0 : escala.scale(_icone) + 6;
+          final ic = widget.icons?[i] == null ? 0.0 : escala.scale(_icone) + SsDensity.of(context).space(6);
           final w = tp.width + ic + 2 * _pad;
           tp.dispose();
           return w.ceilToDouble();
@@ -203,7 +204,7 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(icone, size: _icone, color: sel ? on : off),
-                          const SizedBox(width: 6),
+                          SizedBox(width: SsDensity.of(context).space(6)),
                           Flexible(child: texto),
                         ],
                       ),
@@ -230,8 +231,14 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
       bottom: 0,
       child: Container(height: 1, color: widget.onDark ? AppColors.onDark.withValues(alpha: .08) : c.line),
     );
+    // Altura pela densidade (42 / 48 / 52); no compacto o toque continua com 48.
+    final d = SsDensity.of(context);
+    return SsTapTarget(minSize: Size(0, d.minTarget), child: _faixa(context, d, linha, on, off, bar, n));
+  }
+
+  Widget _faixa(BuildContext context, SsDensity d, Widget linha, Color on, Color off, Color bar, int n) {
     return SizedBox(
-      height: 48,
+      height: d.segmentHeight + 6,
       child: LayoutBuilder(
         builder: (context, box) {
           final naturais = _naturais(context);
@@ -754,7 +761,7 @@ class _SsBellDotState extends State<SsBellDot> with SingleTickerProviderStateMix
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                Icon(widget.icon, size: 26, color: widget.color ?? c.ink),
+                Icon(widget.icon, size: SsDensity.of(context).iconSize + 6, color: widget.color ?? c.ink),
                 if (has)
                   Positioned(
                     right: widget.showCount ? 4 : 11,
@@ -879,9 +886,10 @@ class _SsCountTabsState extends State<SsCountTabs> {
     _medir();
     final rects = _rects;
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.fast;
+    final d = SsDensity.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 4),
       child: Stack(
         key: _area,
         children: [
@@ -924,16 +932,16 @@ class _SsCountTabsState extends State<SsCountTabs> {
                       widget.onChanged(i);
                     },
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 72, minHeight: 48),
+                      constraints: BoxConstraints(minWidth: d.iconButton + 32, minHeight: d.minTarget),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: d.space(8), vertical: d.space(6)),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
                               key: _keys[i],
-                              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              constraints: BoxConstraints(minWidth: d.iconButton, minHeight: d.iconButton),
+                              padding: EdgeInsets.symmetric(horizontal: d.space(8)),
                               alignment: Alignment.center,
                               // Antes da 1ª medida, a aba pinta o próprio fundo.
                               decoration: rects != null
@@ -948,7 +956,7 @@ class _SsCountTabsState extends State<SsCountTabs> {
                                   duration: dur,
                                   style: AppTheme.number(
                                     context,
-                                    size: AppType.set,
+                                    size: d.font(AppType.set),
                                     weight: FontWeight.w700,
                                     color: i == widget.index ? AppColors.onDark : c.ink2,
                                   ),
@@ -956,12 +964,12 @@ class _SsCountTabsState extends State<SsCountTabs> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: d.space(6)),
                             Text(
                               widget.tabs[i].$1,
                               style: TextStyle(
                                 color: i == widget.index ? c.ink : c.muted,
-                                fontSize: AppType.meta,
+                                fontSize: d.font(AppType.meta),
                                 fontWeight: i == widget.index ? FontWeight.w800 : FontWeight.w600,
                               ),
                             ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_stat.dart' show SsAmount;
@@ -412,6 +413,7 @@ class SsPopOutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final bg = tone == null ? c.surface : Color.lerp(c.surface, tone, c.isDark ? .22 : .14)!;
+    final d = SsDensity.of(context);
     return SsPressable(
       onTap: onTap,
       child: Stack(
@@ -419,7 +421,7 @@ class SsPopOutCard extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.only(top: popOut),
-            padding: EdgeInsets.fromLTRB(16, imageHeight - popOut + 10, 12, 12),
+            padding: EdgeInsets.fromLTRB(d.cardPad, imageHeight - popOut + 10, d.cardPad - 4, d.cardPad - 4),
             decoration: BoxDecoration(
               color: bg,
               borderRadius: BorderRadius.circular(AppRadius.cardActive),
@@ -460,14 +462,14 @@ class SsPopOutCard extends StatelessWidget {
                           onTap: onAdd,
                           scale: .9,
                           child: SizedBox.square(
-                            dimension: 48,
+                            dimension: d.minTarget,
                             child: Center(
                               child: Container(
-                                width: 40,
-                                height: 40,
+                                width: d.iconButton,
+                                height: d.iconButton,
                                 decoration: BoxDecoration(
                                   color: c.accent,
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(d.radiusField),
                                   boxShadow: c.tintedShadow(c.accent, strength: .8),
                                 ),
                                 child: Icon(actionIcon, color: AppColors.onDark),
@@ -526,10 +528,11 @@ class SsDuoStat extends StatelessWidget {
       end: Alignment.bottomRight,
       colors: [c.brandTo, Color.lerp(c.brandTo, c.brandDeep, .55)!],
     );
+    final d = SsDensity.of(context);
     return Row(
       children: [
         for (var i = 0; i < 2; i++) ...[
-          if (i == 1) const SizedBox(width: 12),
+          if (i == 1) SizedBox(width: d.gap),
           Expanded(
             child: Semantics(
               button: true,
@@ -545,8 +548,8 @@ class SsDuoStat extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: dur,
                   curve: Curves.easeOutCubic,
-                  constraints: const BoxConstraints(minHeight: 72),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  constraints: BoxConstraints(minHeight: d.controlHeight + 24),
+                  padding: EdgeInsets.symmetric(horizontal: d.cardPad - 2, vertical: d.cardPad - 4),
                   decoration: BoxDecoration(
                     color: i == index ? null : c.surface,
                     gradient: i == index ? grad : null,
@@ -706,8 +709,9 @@ class SsQrCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final bg = tone ?? Color.lerp(c.brandTo, c.brandDeep, .35)!;
+    final d = SsDensity.of(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      padding: EdgeInsets.symmetric(horizontal: d.cardPad + 4, vertical: d.cardPad + 2),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(AppRadius.cardActive),
@@ -780,10 +784,11 @@ class SsRecurringCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
+    final d = SsDensity.of(context);
     return SsPressable(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 6, 10),
+        padding: EdgeInsets.fromLTRB(d.cardPad, d.cardPad, 6, d.cardPad - 6),
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppRadius.card),
@@ -801,8 +806,8 @@ class SsRecurringCard extends StatelessWidget {
                   excludeSemantics: true,
                   child: AnimatedContainer(
                     duration: dur,
-                    width: 34,
-                    height: 34,
+                    width: d.chipHeight,
+                    height: d.chipHeight,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: done ? AppColors.success : c.field,
@@ -888,28 +893,29 @@ class SsFeatureTile extends StatelessWidget {
     final k = tone ?? c.accent;
     final bg = Color.lerp(c.surface, k, c.isDark ? .18 : .1)!;
     final fg = tone == null ? c.accentText : Color.lerp(k, c.ink, c.isDark ? .1 : .35)!;
+    final d = SsDensity.of(context);
     return SsPressable(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(d.cardPad),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppRadius.cardActive)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: d.iconTile + 6,
+              height: d.iconTile + 6,
               decoration: BoxDecoration(
                 color: c.surface,
                 shape: BoxShape.circle,
                 boxShadow: c.tintedShadow(k, strength: .7),
               ),
-              child: Icon(icon, color: fg, size: 24),
+              child: Icon(icon, color: fg, size: d.iconSize + 4),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: d.space(14)),
             Text(
               title,
-              style: TextStyle(color: c.ink, fontSize: AppType.md, fontWeight: FontWeight.w800),
+              style: TextStyle(color: c.ink, fontSize: d.font(AppType.md), fontWeight: FontWeight.w800),
             ),
             if (text != null) ...[
               const SizedBox(height: 4),

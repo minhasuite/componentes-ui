@@ -2,8 +2,8 @@
 
 @layer components {
   /* Ss::PageComponent(back:) e with_badge. */
-  .ss-page-back { display: inline-flex; align-items: center; gap: .35rem; justify-self: start; min-height: 2.75rem; margin: -.6rem 0 -.4rem; padding-right: .75rem;
-                  font-size: .875rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .ss-page-back { display: inline-flex; align-items: center; gap: .35rem; justify-self: start; min-height: max(var(--ss-target), 2.5rem); margin: -.6rem 0 -.4rem; padding-right: .75rem;
+                  font-size: calc(.875rem * var(--ss-font-scale)); font-weight: 600; color: var(--muted); text-decoration: none; transition: color .15s; }
   .ss-page-back svg { width: 1rem; height: 1rem; transition: translate .3s var(--ss-bounce); }
   .ss-page-back:hover { color: var(--accent); }
   .ss-page-back:hover svg { translate: -3px 0; }

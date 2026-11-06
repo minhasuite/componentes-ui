@@ -286,6 +286,10 @@ class SsStrings {
     required this.micError,
     required this.micHold,
     required this.micRelease,
+    required this.densityLabel,
+    required this.densityCompact,
+    required this.densityStandard,
+    required this.densityComfortable,
     required this.lockMessage,
     required this.unlock,
     required this.usePin,
@@ -742,6 +746,12 @@ class SsStrings {
   /// Microfone de segurar para falar (v0.10.3): parado e ouvindo.
   final String micHold;
   final String micRelease;
+
+  /// Seletor de densidade (v0.11): rótulo e as três opções.
+  final String densityLabel;
+  final String densityCompact;
+  final String densityStandard;
+  final String densityComfortable;
   final String lockMessage;
   final String unlock;
   final String usePin;
@@ -1132,6 +1142,10 @@ class SsStrings {
     micError: 'Erro no microfone, toque para tentar de novo',
     micHold: 'Segure para falar',
     micRelease: 'Ouvindo, solte para enviar',
+    densityLabel: 'Densidade',
+    densityCompact: 'Compacta',
+    densityStandard: 'Padrão',
+    densityComfortable: 'Confortável',
     lockMessage: 'O app está bloqueado',
     unlock: 'Desbloquear',
     usePin: 'Usar PIN',
@@ -1479,6 +1493,10 @@ class SsStrings {
     micError: 'Microphone error, tap to try again',
     micHold: 'Hold to talk',
     micRelease: 'Listening, release to send',
+    densityLabel: 'Density',
+    densityCompact: 'Compact',
+    densityStandard: 'Standard',
+    densityComfortable: 'Comfortable',
     lockMessage: 'The app is locked',
     unlock: 'Unlock',
     usePin: 'Use PIN',
@@ -1826,6 +1844,10 @@ class SsStrings {
     micError: 'Error del micrófono, toca para reintentar',
     micHold: 'Mantén pulsado para hablar',
     micRelease: 'Escuchando, suelta para enviar',
+    densityLabel: 'Densidad',
+    densityCompact: 'Compacta',
+    densityStandard: 'Estándar',
+    densityComfortable: 'Cómoda',
     lockMessage: 'La app está bloqueada',
     unlock: 'Desbloquear',
     usePin: 'Usar PIN',
@@ -2160,6 +2182,10 @@ class SsStrings {
     'micError': micError,
     'micHold': micHold,
     'micRelease': micRelease,
+    'densityLabel': densityLabel,
+    'densityCompact': densityCompact,
+    'densityStandard': densityStandard,
+    'densityComfortable': densityComfortable,
     'lockMessage': lockMessage,
     'unlock': unlock,
     'usePin': usePin,
@@ -2529,6 +2555,10 @@ class SsStrings {
     String? micError,
     String? micHold,
     String? micRelease,
+    String? densityLabel,
+    String? densityCompact,
+    String? densityStandard,
+    String? densityComfortable,
     String? lockMessage,
     String? unlock,
     String? usePin,
@@ -2860,6 +2890,10 @@ class SsStrings {
     micError: micError ?? this.micError,
     micHold: micHold ?? this.micHold,
     micRelease: micRelease ?? this.micRelease,
+    densityLabel: densityLabel ?? this.densityLabel,
+    densityCompact: densityCompact ?? this.densityCompact,
+    densityStandard: densityStandard ?? this.densityStandard,
+    densityComfortable: densityComfortable ?? this.densityComfortable,
     lockMessage: lockMessage ?? this.lockMessage,
     unlock: unlock ?? this.unlock,
     usePin: usePin ?? this.usePin,

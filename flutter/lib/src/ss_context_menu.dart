@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'motion_view.dart';
 
@@ -143,19 +144,23 @@ class _Menu extends StatelessWidget {
                         a.onTap();
                       },
                       child: SizedBox(
-                        height: 48,
+                        height: SsDensity.of(context).target(SsDensity.of(context).controlHeight),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: SsDensity.of(context).padX),
                           child: Row(
                             children: [
-                              Icon(a.icon, size: 20, color: a.destructive ? c.danger : c.ink2),
-                              const SizedBox(width: 12),
+                              Icon(
+                                a.icon,
+                                size: SsDensity.of(context).iconSize,
+                                color: a.destructive ? c.danger : c.ink2,
+                              ),
+                              SizedBox(width: SsDensity.of(context).gap),
                               Expanded(
                                 child: Text(
                                   a.label,
                                   style: TextStyle(
                                     color: a.destructive ? c.dangerText : c.ink,
-                                    fontSize: AppType.body,
+                                    fontSize: SsDensity.of(context).font(AppType.body),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),

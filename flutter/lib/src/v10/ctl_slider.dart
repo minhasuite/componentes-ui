@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../ss_fields.dart' show SsFieldHelper;
@@ -199,8 +200,11 @@ class _SsSliderState extends State<SsSlider> {
         );
     final reduce = reduceMotion(context);
     final dur = reduce ? Duration.zero : SsMotion.indicator;
+    final dn = SsDensity.of(context);
     final pad = widget.fill ? 0.0 : 14.0;
-    final h = widget.fill ? 56.0 : 48.0;
+    // Linha: 48 de toque em qualquer densidade; barra "fill": 48 / 48 / 52 (a do
+    // web: 40 com mouse no compacto), nunca abaixo do alvo de toque.
+    final h = widget.fill ? dn.target(dn.controlHeight) : dn.minTarget;
 
     Widget corpo = LayoutBuilder(
       builder: (context, box) {
@@ -253,14 +257,14 @@ class _SsSliderState extends State<SsSlider> {
                   Expanded(
                     child: Text(
                       widget.label!,
-                      style: TextStyle(color: c.ink2, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: c.ink2, fontSize: dn.font(AppType.meta), fontWeight: FontWeight.w700),
                     ),
                   )
                 else
                   const Spacer(),
                 Text(
                   _fmt(widget.value),
-                  style: AppTheme.number(context, size: AppType.md, color: c.accentText),
+                  style: AppTheme.number(context, size: dn.font(AppType.md), color: c.accentText),
                 ),
               ],
             ),
@@ -389,8 +393,12 @@ class _SsSliderState extends State<SsSlider> {
   // Barra grossa: a parte cheia é o valor.
   Widget _fill(BuildContext context, SsColors c, double f, double w, Color cor, List<Color>? cores) {
     final cheio = f * w;
+    final dn = SsDensity.of(context);
+    final raio = dn.radiusCard - 2;
+    // Alça: 24 de altura no meio da barra (12 de folga em cima e embaixo no padrão).
+    final folga = math.max(8.0, (dn.target(dn.controlHeight) - 24) / 2);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(raio),
       child: Stack(
         children: [
           Positioned.fill(child: ColoredBox(color: c.field)),
@@ -418,8 +426,8 @@ class _SsSliderState extends State<SsSlider> {
           // Alça: tracinho branco na ponta da parte cheia.
           Positioned(
             left: (cheio - 10).clamp(4.0, math.max(4.0, w - 8)),
-            top: 16,
-            bottom: 16,
+            top: folga,
+            bottom: folga,
             child: AnimatedScale(
               scale: _drag ? 1.3 : 1,
               duration: reduceMotion(context) ? Duration.zero : SsMotion.indicator,
@@ -454,7 +462,7 @@ class _SsSliderState extends State<SsSlider> {
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(raio),
                   border: Border.all(color: c.accent, width: 2),
                 ),
               ),
@@ -466,19 +474,23 @@ class _SsSliderState extends State<SsSlider> {
 
   Widget _textoFill(BuildContext context, Color fg, Color icone) {
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.indicator;
+    final dn = SsDensity.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: dn.padX + 2),
       child: ExcludeSemantics(
         child: Row(
           children: [
-            if (widget.icon != null) ...[Icon(widget.icon, size: 20, color: icone), const SizedBox(width: 8)],
+            if (widget.icon != null) ...[
+              Icon(widget.icon, size: dn.iconSize, color: icone),
+              SizedBox(width: dn.space(8)),
+            ],
             if (widget.label != null)
               Expanded(
                 child: Text(
                   widget.label!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: AppType.set),
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: dn.font(AppType.set)),
                 ),
               )
             else
@@ -489,7 +501,7 @@ class _SsSliderState extends State<SsSlider> {
               curve: SsMotion.bounce,
               child: Text(
                 _fmt(widget.value),
-                style: AppTheme.number(context, size: AppType.md, color: fg),
+                style: AppTheme.number(context, size: dn.font(AppType.md), color: fg),
               ),
             ),
           ],

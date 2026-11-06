@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 
 /// Intensidade do [SsGlass].
@@ -19,13 +20,15 @@ class SsGlass extends StatelessWidget {
     required this.child,
     this.level = SsGlassLevel.medio,
     this.radius = AppRadius.cardActive,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
   });
 
   final Widget child;
   final SsGlassLevel level;
   final double radius;
-  final EdgeInsetsGeometry padding;
+
+  /// Respiro (padrão: o do card da [SsDensity], 16 no padrão).
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +59,7 @@ class SsGlass extends StatelessWidget {
           ),
           child: CustomPaint(
             foregroundPainter: _RimPainter(radius: radius, alpha: rim),
-            child: Padding(padding: padding, child: child),
+            child: Padding(padding: padding ?? EdgeInsets.all(SsDensity.of(context).cardPad), child: child),
           ),
         ),
       ),

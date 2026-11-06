@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'ss_stat.dart';
 
 /// Linha de lista com nome + valor sem espremer o nome: o nome vai até 2
@@ -26,7 +27,7 @@ class SsValueTile extends StatelessWidget {
     this.valueNoteColor,
     this.trailing,
     this.onTap,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    this.padding,
   });
 
   final String title;
@@ -41,11 +42,14 @@ class SsValueTile extends StatelessWidget {
   final Color? valueNoteColor;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final EdgeInsetsGeometry padding;
+
+  /// Nulo: `padX` × `rowPadV` da [SsDensity] (16 × 10 no padrão).
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final below = MediaQuery.textScalerOf(context).scale(10) > 11.5;
     Widget? valueBox;
     if (value != null) {
@@ -74,7 +78,7 @@ class SsValueTile extends StatelessWidget {
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
+          style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: d.font(AppType.body)),
         ),
         if ((subtitle ?? '').isNotEmpty)
           Text(
@@ -88,14 +92,14 @@ class SsValueTile extends StatelessWidget {
       ],
     );
     final row = Padding(
-      padding: padding,
+      padding: padding ?? EdgeInsets.symmetric(horizontal: d.padX, vertical: d.rowPadV),
       child: LayoutBuilder(
         builder: (context, box) => Row(
           children: [
-            if (leading != null) ...[leading!, const SizedBox(width: 12)],
+            if (leading != null) ...[leading!, SizedBox(width: d.gap)],
             Expanded(child: text),
             if (!below && valueBox != null) ...[
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: box.maxWidth * .4),
                 child: valueBox,

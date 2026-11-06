@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'ss_list.dart';
 import 'motion.dart';
 import 'motion_view.dart';
@@ -173,13 +174,14 @@ class SsStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final hasSpark = spark != null && spark!.length > 1;
     return SsPressable(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderRadius: BorderRadius.circular(d.radiusCard),
           boxShadow: AppShadows.card,
           border: c.isDark ? Border.all(color: c.line) : null,
         ),
@@ -189,7 +191,7 @@ class SsStatCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(16, 14, 16, hasSpark ? 4 : 16),
+              padding: EdgeInsets.fromLTRB(d.cardPad, d.cardPad - 2, d.cardPad, hasSpark ? 4 : d.cardPad),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -211,7 +213,7 @@ class SsStatCard extends StatelessWidget {
                           label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],

@@ -33,16 +33,16 @@
   .ss-empty-art.is-custom > :is(img, svg) { display: block; width: 100%; height: auto; }
 
   /* ── .ss-menu: botão de texto (summary.ss-menu-btn) e itens em form > button (button_to) ── */
-  .ss-menu > summary.ss-menu-btn { display: inline-flex; align-items: center; gap: .4rem; width: auto; height: 2.5rem; padding: 0 .75rem 0 1rem;
-                                   border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 .88rem var(--font-sans); }
-  .ss-menu > summary.ss-menu-btn svg { width: 1rem; height: 1rem; color: var(--muted); transition: rotate .25s var(--ss-bounce); }
+  .ss-menu > summary.ss-menu-btn { display: inline-flex; align-items: center; gap: .4rem; width: auto; height: var(--ss-control-h); padding: 0 calc(var(--ss-pad-x) * .75) 0 var(--ss-pad-x);
+                                   border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 calc(.88rem * var(--ss-font-scale)) var(--font-sans); }
+  .ss-menu > summary.ss-menu-btn svg { width: calc(var(--ss-icon) * .95); height: calc(var(--ss-icon) * .95); color: var(--muted); transition: rotate .25s var(--ss-bounce); }
   .ss-menu[open] > summary.ss-menu-btn svg:last-child { rotate: 180deg; }
   .ss-menu > summary.ss-menu-btn:hover, .ss-menu[open] > summary.ss-menu-btn { background: var(--field); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-menu > summary.ss-menu-btn + * { left: 0; right: auto; transform-origin: top left; }
   .ss-menu.is-end > summary.ss-menu-btn + * { left: auto; right: 0; transform-origin: top right; }
   .ss-menu > :not(summary) > form { display: block; margin: 0; }
-  .ss-menu > :not(summary) > form > :is(button, input[type="submit"]) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .55rem .7rem; border: 0;
-                                   border-radius: 10px; background: none; color: var(--ink); font: 600 .88rem var(--font-sans); text-align: left; cursor: pointer; }
+  .ss-menu > :not(summary) > form > :is(button, input[type="submit"]) { display: flex; align-items: center; gap: .6rem; width: 100%; padding: calc(var(--ss-row-py) * .73) calc(var(--ss-pad-x) * .7); border: 0;
+                                   border-radius: calc(var(--r-field) - 2px); background: none; color: var(--ink); font: 600 calc(.88rem * var(--ss-font-scale)) var(--font-sans); text-align: left; cursor: pointer; }
   .ss-menu > :not(summary) > form > :is(button, input[type="submit"]):is(:hover, :focus-visible) { background: var(--field); }
   .ss-menu > :not(summary) > form > .is-danger, .ss-menu > :not(summary) > form.is-danger > button,
   .ss-menu > :not(summary) > form :is(.is-danger, .is-danger svg) { color: var(--danger); }
@@ -66,7 +66,7 @@
   /* ── Ss::OptionCardComponent(url:): card que é link (catálogo), com a seta ── */
   .ss-option-card.is-link { color: inherit; text-decoration: none; align-items: center; }
   .ss-option-card-chev { position: absolute; top: 50%; right: 1rem; translate: 0 -50%; display: grid; color: var(--muted); transition: translate .3s var(--ss-bounce), color .2s; }
-  .ss-option-card-chev svg { width: 1.1rem; height: 1.1rem; }
+  .ss-option-card-chev svg { width: var(--ss-icon); height: var(--ss-icon); }
   .ss-option-card.is-link:hover .ss-option-card-chev { translate: 3px -50%; color: var(--accent); }
   .ss-option-card.is-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .ss-option-card.is-link[aria-current="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); box-shadow: 0 0 0 3px var(--ring); }
@@ -75,7 +75,7 @@
 
   /* ── Ss::JobProgressComponent(stages:): etapas com tempo ── */
   .ss-job-stages { display: grid; gap: .1rem; margin: 0; padding: 0; list-style: none; font-size: .85rem; }
-  .ss-job-stages li { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+  .ss-job-stages li { display: flex; align-items: center; gap: .6rem; padding: calc(var(--ss-row-py) * .53) 0; border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
   .ss-job-stages li:first-child { border-top: 0; }
   .ss-job-stage-ico { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; flex: none; border-radius: 50%; background: var(--success-soft, color-mix(in srgb, var(--success) 15%, transparent)); color: var(--success); }
   .ss-job-stage-ico svg { width: .85rem; height: .85rem; }
@@ -102,9 +102,9 @@
   .ss-device:has(.ss-device-press:active:not(:disabled)) { scale: .97; transition: scale 80ms ease-out; }
   .ss-device-press:disabled { cursor: default; }
   .ss-device.is-press .ss-device-end { z-index: 0; pointer-events: none; }
-  .ss-device-run { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%;
+  .ss-device-run { display: grid; place-items: center; width: calc(var(--ss-control-h) - .25rem); height: calc(var(--ss-control-h) - .25rem); border-radius: 50%;
                    background: color-mix(in srgb, var(--tone) 14%, var(--surface)); color: var(--tone); }
-  .ss-device-run svg { width: 1rem; height: 1rem; }
+  .ss-device-run svg { width: calc(var(--ss-icon) * .95); height: calc(var(--ss-icon) * .95); }
   .ss-device:has(.ss-device-press:active:not(:disabled)) .ss-device-run { background: var(--tone); color: #fff; }
 
   /* ── Ss::CameraTileComponent(status:): selo de texto ao lado do título ── */

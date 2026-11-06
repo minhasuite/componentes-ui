@@ -1,0 +1,96 @@
+/* v0.11: densidade (o SsDensity do Flutter). Os componentes leem tamanho daqui, nunca de
+   número solto: altura de controle, respiro, espaço, linha, card, raio, ícone e um leve
+   ajuste de fonte. Troca no <html> ou em qualquer contêiner (vale para o que está dentro):
+     <html data-ss-density="compact|comfortable">   (sem atributo = padrão)
+     <section data-ss-density="compact"> tabela densa numa tela padrão </section>
+   Toque: no compacto com ponteiro grosso (celular) os controles voltam a 40 px. */
+
+:root, [data-ss-density="standard"] {
+  --ss-density: standard;
+  --ss-control-h: 2.5rem;      /* botão, campo, select: 40 */
+  --ss-control-h-sm: 2rem;     /* botão pequeno, chip de ação: 32 */
+  --ss-field-h: 2.5rem;        /* .ss-input (era 2.6rem) */
+  --ss-chip-h: 2rem;           /* chip de filtro */
+  --ss-target: 2.75rem;        /* alvo mínimo de ícone tocável: 44 */
+  --ss-pad-x: 1rem;            /* respiro lateral de controle e linha */
+  --ss-pad-y: .5rem;
+  --ss-gap: .75rem;            /* entre itens */
+  --ss-row-py: .75rem;         /* respiro vertical de linha (tabela, lista) */
+  --ss-row-h: 3rem;            /* linha mínima (switch, lista, menu) */
+  --ss-card-pad: 1.25rem;      /* .ss-card-pad e tiles */
+  --ss-radius: 12px;           /* campo e botão */
+  --ss-radius-card: 20px;
+  --ss-font-scale: 1;
+  --ss-icon: 1.05rem;          /* ícone dentro de controle */
+  --ss-icon-tile: 2.5rem;      /* quadrado tonal */
+  --ss-switch-w: 46px;
+  --ss-switch-h: 28px;
+  --r-field: var(--ss-radius);
+  --r-card: var(--ss-radius-card);
+}
+
+[data-ss-density="compact"] {
+  --ss-density: compact;
+  --ss-control-h: 2.125rem;    /* 34 */
+  --ss-control-h-sm: 1.75rem;  /* 28 */
+  --ss-field-h: 2.125rem;
+  --ss-chip-h: 1.75rem;
+  --ss-target: 2.25rem;
+  --ss-pad-x: .75rem;
+  --ss-pad-y: .3rem;
+  --ss-gap: .5rem;
+  --ss-row-py: .45rem;
+  --ss-row-h: 2.5rem;
+  --ss-card-pad: .875rem;
+  --ss-radius: 10px;
+  --ss-radius-card: 16px;
+  --ss-font-scale: .9375;
+  --ss-icon: .95rem;
+  --ss-icon-tile: 2rem;
+  --ss-switch-w: 38px;
+  --ss-switch-h: 22px;
+  --r-field: var(--ss-radius);
+  --r-card: var(--ss-radius-card);
+}
+
+[data-ss-density="comfortable"] {
+  --ss-density: comfortable;
+  --ss-control-h: 2.875rem;    /* 46 */
+  --ss-control-h-sm: 2.25rem;  /* 36 */
+  --ss-field-h: 2.875rem;
+  --ss-chip-h: 2.25rem;
+  --ss-target: 3rem;
+  --ss-pad-x: 1.25rem;
+  --ss-pad-y: .65rem;
+  --ss-gap: 1rem;
+  --ss-row-py: 1rem;
+  --ss-row-h: 3.5rem;
+  --ss-card-pad: 1.5rem;
+  --ss-radius: 14px;
+  --ss-radius-card: 22px;
+  --ss-font-scale: 1.0625;
+  --ss-icon: 1.2rem;
+  --ss-icon-tile: 2.75rem;
+  --ss-switch-w: 52px;
+  --ss-switch-h: 32px;
+  --r-field: var(--ss-radius);
+  --r-card: var(--ss-radius-card);
+}
+
+/* Toque no compacto: o desenho fica denso, o alvo não cai abaixo de 40 px. */
+@media (pointer: coarse) {
+  [data-ss-density="compact"] {
+    --ss-control-h: 2.5rem;
+    --ss-control-h-sm: 2rem;
+    --ss-field-h: 2.5rem;
+    --ss-chip-h: 2rem;
+    --ss-target: 2.75rem;
+    --ss-row-h: 2.75rem;
+  }
+}
+
+@layer components {
+  /* Seletor de densidade (Ss::DensityPickerComponent): é um .ss-seg. */
+  .ss-density-picker { display: inline-grid; min-width: min(19rem, 100%); }
+  .ss-density-picker > button { padding-inline: .5rem; white-space: nowrap; }
+}

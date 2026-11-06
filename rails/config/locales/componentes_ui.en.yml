@@ -215,6 +215,11 @@ en:
         today: Today
       shortcuts_label: Period shortcuts
       to: To
+    density_picker:
+      label: Density
+      compact: Compact
+      standard: Standard
+      comfortable: Comfortable
     device_tile:
       more: More options for %{name}
       details: Open %{name} details

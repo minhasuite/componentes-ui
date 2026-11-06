@@ -9,11 +9,14 @@ class Aparencia extends ChangeNotifier {
   ThemeMode modo = ThemeMode.light;
   String paleta = SsBrand.paletas.keys.first;
   bool oled = false;
+
+  /// v0.11: densidade (compacta, padrão, confortável) do tema todo.
+  SsDensity densidade = SsDensity.standard;
   final _cache = <String, ThemeData>{};
 
   ThemeData tema(Brightness b) => _cache.putIfAbsent(
-    '$paleta/$b/$oled',
-    () => AppTheme.build(b, brand: paletas[paleta] ?? SsBrand.violeta, oled: oled),
+    '$paleta/$b/$oled/${densidade.name}',
+    () => AppTheme.build(b, brand: paletas[paleta] ?? SsBrand.violeta, oled: oled, density: densidade),
   );
 
   /// 'claro', 'escuro' ou 'oled'.
@@ -27,6 +30,11 @@ class Aparencia extends ChangeNotifier {
 
   void setModo(ThemeMode m) {
     modo = m;
+    notifyListeners();
+  }
+
+  void setDensidade(SsDensity d) {
+    densidade = d;
     notifyListeners();
   }
 
@@ -46,7 +54,7 @@ class AparenciaScope extends InheritedNotifier<Aparencia> {
   static Widget copy(BuildContext context, Widget child) => AparenciaScope(aparencia: of(context), child: child);
 }
 
-/// Claro/escuro e paletas.
+/// Claro/escuro, densidade (v0.11) e paletas.
 class AparenciaBar extends StatelessWidget {
   const AparenciaBar({super.key, this.compacta = false});
   final bool compacta;
@@ -56,10 +64,27 @@ class AparenciaBar extends StatelessWidget {
     final a = AparenciaScope.of(context);
     if (compacta) {
       final escuro = a.modo == ThemeMode.dark;
-      return IconButton(
-        tooltip: escuro ? 'Claro' : 'Escuro',
-        icon: Icon(escuro ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
-        onPressed: () => a.setModo(escuro ? ThemeMode.light : ThemeMode.dark),
+      // Densidade em ciclo (compacta → padrão → confortável) e claro/escuro.
+      final i = SsDensity.values.indexOf(a.densidade);
+      final proxima = SsDensity.values[(i + 1) % SsDensity.values.length];
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Densidade: ${a.densidade.name}',
+            icon: Icon(
+              a.densidade.isCompact
+                  ? Icons.density_small_rounded
+                  : (a.densidade.isComfortable ? Icons.density_large_rounded : Icons.density_medium_rounded),
+            ),
+            onPressed: () => a.setDensidade(proxima),
+          ),
+          IconButton(
+            tooltip: escuro ? 'Claro' : 'Escuro',
+            icon: Icon(escuro ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
+            onPressed: () => a.setModo(escuro ? ThemeMode.light : ThemeMode.dark),
+          ),
+        ],
       );
     }
     return Column(
@@ -71,6 +96,7 @@ class AparenciaBar extends StatelessWidget {
           value: a.fundo,
           onChanged: a.setFundo,
         ),
+        SsDensityPicker(value: a.densidade, onChanged: a.setDensidade),
         if (paletas.length > 1)
           SsPalettePicker(
             value: paletas[a.paleta] ?? SsBrand.violeta,

@@ -215,6 +215,11 @@ es:
         today: Hoy
       shortcuts_label: Atajos de período
       to: Hasta
+    density_picker:
+      label: Densidad
+      compact: Compacta
+      standard: Estándar
+      comfortable: Cómoda
     device_tile:
       more: Más opciones de %{name}
       details: Abrir detalles de %{name}

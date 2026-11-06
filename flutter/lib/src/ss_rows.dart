@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 
 /// Linha "rótulo … valor" de detalhe, recibo ou resumo. O rótulo à esquerda
@@ -31,7 +32,8 @@ class SsValueRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final size = emphasis ? AppType.lg : AppType.body;
+    final d = SsDensity.of(context);
+    final size = d.font(emphasis ? AppType.lg : AppType.body);
     final weight = emphasis ? FontWeight.w700 : FontWeight.w500;
     final valueText = mono
         ? FittedBox(
@@ -50,9 +52,9 @@ class SsValueRow extends StatelessWidget {
             style: TextStyle(color: c.ink, fontSize: size, fontWeight: weight),
           );
     final row = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 44),
+      constraints: BoxConstraints(minHeight: d.fieldHeight - 8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: d.rowPadV - 2),
         child: LayoutBuilder(
           builder: (context, box) => Row(
             children: [
@@ -66,19 +68,19 @@ class SsValueRow extends StatelessWidget {
                       label,
                       style: TextStyle(
                         color: emphasis ? c.ink : c.ink2,
-                        fontSize: emphasis ? AppType.md : AppType.body,
+                        fontSize: d.font(emphasis ? AppType.md : AppType.body),
                         fontWeight: emphasis ? FontWeight.w800 : FontWeight.w600,
                       ),
                     ),
                     if ((caption ?? '').isNotEmpty)
                       Text(
                         caption!,
-                        style: TextStyle(color: c.muted, fontSize: AppType.meta),
+                        style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta)),
                       ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               Expanded(
                 child: Align(alignment: Alignment.centerRight, child: valueText),
               ),

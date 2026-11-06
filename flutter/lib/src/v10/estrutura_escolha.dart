@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_controls.dart';
 import '../ss_strings.dart';
@@ -80,6 +81,7 @@ class _SsIconPickerState extends State<SsIconPicker> {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final s = SsStrings.of(context);
+    final d = SsDensity.of(context);
     final q = SsIconPicker.normalize(_q.text);
     final lista = q.isEmpty
         ? widget.icons
@@ -97,7 +99,7 @@ class _SsIconPickerState extends State<SsIconPicker> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SsSearchField(controller: _q, hint: widget.searchHint ?? s.searchIcon, onChanged: (_) => setState(() {})),
-        const SizedBox(height: 10),
+        SizedBox(height: d.space(10)),
         SizedBox(
           height: widget.height,
           child: lista.isEmpty
@@ -105,15 +107,16 @@ class _SsIconPickerState extends State<SsIconPicker> {
                   child: Text(
                     (widget.emptyText ?? s.noIconFor)(_q.text.trim()),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
                   ),
                 )
               : GridView.builder(
                   padding: const EdgeInsets.all(4),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 56,
-                    mainAxisSpacing: 6,
-                    crossAxisSpacing: 6,
+                  // Célula até 48 / 56 / 60.
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: d.controlHeight + 8,
+                    mainAxisSpacing: d.space(6),
+                    crossAxisSpacing: d.space(6),
                   ),
                   itemCount: itens.length,
                   itemBuilder: (context, i) {
@@ -126,7 +129,11 @@ class _SsIconPickerState extends State<SsIconPicker> {
                         SsHaptics.tick();
                         widget.onChanged(nome);
                       },
-                      child: Icon(icone ?? Icons.block_rounded, size: 24, color: sel ? c.accentText : c.ink2),
+                      child: Icon(
+                        icone ?? Icons.block_rounded,
+                        size: d.iconSize + 4,
+                        color: sel ? c.accentText : c.ink2,
+                      ),
                     );
                   },
                 ),
@@ -163,7 +170,7 @@ class _Celula extends StatelessWidget {
               curve: SsMotion.bounce,
               decoration: BoxDecoration(
                 color: selected ? c.accentSoft : c.field,
-                borderRadius: BorderRadius.circular(AppRadius.field),
+                borderRadius: BorderRadius.circular(SsDensity.of(context).radiusField),
                 border: Border.all(color: selected ? c.accent : Colors.transparent, width: 2),
               ),
               alignment: Alignment.center,
@@ -240,6 +247,9 @@ class SsLocalePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final s = SsStrings.of(context);
+    final d = SsDensity.of(context);
+    // Recuo do fio: alinha com o nome (respiro + selo + espaço).
+    final recuo = d.padX + _selo(d) + d.gap;
     final sistema = systemOption && onSystem != null;
     if (segmented) {
       // O sistema entra como '' no segmented (os códigos nunca são vazios).
@@ -256,7 +266,7 @@ class SsLocalePicker extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(d.radiusCard),
         border: c.isDark ? Border.all(color: c.line) : null,
         boxShadow: c.isDark ? null : AppShadows.card,
       ),
@@ -266,10 +276,10 @@ class SsLocalePicker extends StatelessWidget {
         children: [
           if (sistema) ...[
             _linhaSistema(context, c, systemLabel ?? s.localeSystem),
-            Divider(height: 1, indent: 60, color: c.line),
+            Divider(height: 1, indent: recuo, color: c.line),
           ],
           for (final (i, l) in locales.indexed) ...[
-            if (i > 0) Divider(height: 1, indent: 60, color: c.line),
+            if (i > 0) Divider(height: 1, indent: recuo, color: c.line),
             Semantics(
               inMutuallyExclusiveGroup: true,
               checked: l.code == value,
@@ -282,33 +292,40 @@ class SsLocalePicker extends StatelessWidget {
                   onChanged(l.code);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  padding: EdgeInsets.symmetric(horizontal: d.padX, vertical: d.rowPadV + 3),
                   child: Row(
                     children: [
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: _selo(d),
+                        height: _selo(d),
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: c.field,
+                          borderRadius: BorderRadius.circular(d.radiusField - 4),
+                        ),
                         child: showFlag && l.flag != null
-                            ? Text(l.flag!, style: const TextStyle(fontSize: 18))
+                            ? Text(l.flag!, style: TextStyle(fontSize: d.font(18)))
                             : Text(
                                 shortCode(l.code),
-                                style: TextStyle(color: c.ink2, fontWeight: FontWeight.w800, fontSize: AppType.label),
+                                style: TextStyle(
+                                  color: c.ink2,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: d.font(AppType.label),
+                                ),
                               ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: d.gap),
                       Expanded(
                         child: Text(
                           l.name,
                           style: TextStyle(
                             color: c.ink,
-                            fontSize: AppType.body,
+                            fontSize: d.font(AppType.body),
                             fontWeight: l.code == value ? FontWeight.w800 : FontWeight.w600,
                           ),
                         ),
                       ),
-                      SsCheckMark(value: l.code == value, size: 20, color: c.accent),
+                      SsCheckMark(value: l.code == value, size: d.iconSize, color: c.accent),
                     ],
                   ),
                 ),
@@ -320,7 +337,11 @@ class SsLocalePicker extends StatelessWidget {
     );
   }
 
+  /// Selo do idioma (bandeira ou código): 26 / 32 / 36.
+  static double _selo(SsDensity d) => d.iconTile - 10;
+
   Widget _linhaSistema(BuildContext context, SsColors c, String rotulo) {
+    final d = SsDensity.of(context);
     final sel = value == null;
     return Semantics(
       inMutuallyExclusiveGroup: true,
@@ -334,28 +355,28 @@ class SsLocalePicker extends StatelessWidget {
           onSystem!();
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          padding: EdgeInsets.symmetric(horizontal: d.padX, vertical: d.rowPadV + 3),
           child: Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: _selo(d),
+                height: _selo(d),
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(10)),
-                child: Icon(Icons.phone_android_rounded, size: 18, color: c.ink2),
+                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(d.radiusField - 4)),
+                child: Icon(Icons.phone_android_rounded, size: d.iconSize - 2, color: c.ink2),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: d.gap),
               Expanded(
                 child: Text(
                   rotulo,
                   style: TextStyle(
                     color: c.ink,
-                    fontSize: AppType.body,
+                    fontSize: d.font(AppType.body),
                     fontWeight: sel ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
               ),
-              SsCheckMark(value: sel, size: 20, color: c.accent),
+              SsCheckMark(value: sel, size: d.iconSize, color: c.accent),
             ],
           ),
         ),

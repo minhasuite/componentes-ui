@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'density.dart';
 import 'ss_controls.dart' show SsSegmented;
 import 'ss_fields.dart' show SsSwitch;
 import 'ss_async.dart' show SsSelfScrolling;
@@ -131,6 +132,7 @@ class _SsMenuViewState extends State<SsMenuView> {
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
     final str = SsStrings.of(context);
+    final dd = SsDensity.of(context);
     final w = widget;
     final q = _query.trim().toLowerCase();
 
@@ -291,7 +293,7 @@ class _SsMenuViewState extends State<SsMenuView> {
         const SizedBox(height: 12),
         if (w.onDeleteAccount != null) ...[
           SizedBox(
-            height: 50,
+            height: dd.controlHeight,
             child: FilledButton.icon(
               onPressed: w.onDeleteAccount,
               icon: const Icon(Icons.delete_forever_outlined),
@@ -299,15 +301,15 @@ class _SsMenuViewState extends State<SsMenuView> {
               style: FilledButton.styleFrom(
                 backgroundColor: s.error,
                 foregroundColor: s.onError,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(dd.radiusField)),
+                textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: dd.font(15)),
               ),
             ),
           ),
           const SizedBox(height: 8),
         ],
         SizedBox(
-          height: 50,
+          height: dd.controlHeight,
           child: OutlinedButton.icon(
             onPressed: w.onLogout,
             icon: const Icon(Icons.logout),
@@ -315,8 +317,8 @@ class _SsMenuViewState extends State<SsMenuView> {
             style: OutlinedButton.styleFrom(
               foregroundColor: s.onSurface,
               side: BorderSide(color: s.outlineVariant),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(dd.radiusField)),
+              textStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: dd.font(15)),
             ),
           ),
         ),
@@ -340,15 +342,16 @@ class SsMenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
+    final d = SsDensity.of(context);
     final color = item.danger ? s.error : s.primary;
     return SsMenuCard(
       onTap: item.onTap,
       onLongPress: item.onLongPress,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV + 2),
       child: Row(
         children: [
           _MenuIcon(item.icon, color),
-          const SizedBox(width: 12),
+          SizedBox(width: d.gap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +363,7 @@ class SsMenuRow extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: item.danger ? s.error : s.onSurface,
-                    fontSize: 15,
+                    fontSize: d.font(15),
                   ),
                 ),
                 if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
@@ -369,7 +372,7 @@ class SsMenuRow extends StatelessWidget {
                     item.subtitle!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: s.onSurfaceVariant, fontSize: 13),
+                    style: TextStyle(color: s.onSurfaceVariant, fontSize: d.font(13)),
                   ),
                 ],
               ],
@@ -455,45 +458,50 @@ class SsMenuGroup extends StatelessWidget {
   }
 }
 
-/// Bolha de ícone das linhas do menu (40 px, fundo na cor a 12%).
+/// Bolha de ícone das linhas do menu (40 px no padrão, fundo na cor a 12%).
 class _MenuIcon extends StatelessWidget {
   const _MenuIcon(this.icon, this.color);
   final IconData icon;
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 40,
-    width: 40,
-    decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
-    child: Icon(icon, color: color, size: 20),
-  );
+  Widget build(BuildContext context) {
+    final d = SsDensity.of(context);
+    // 40 no padrão (36 / 44 nas outras densidades).
+    final lado = d.iconTile - 2;
+    return Container(
+      height: lado,
+      width: lado,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(d.radiusField - 2),
+      ),
+      child: Icon(icon, color: color, size: d.iconSize),
+    );
+  }
 }
 
 /// Cartão das linhas do menu: sombra leve no claro, borda no escuro. Público
 /// para os widgets livres do [SsMenuView] (`appearance`, `SsMenuSection.top`
 /// e `extra`) ficarem no mesmo cartão.
 class SsMenuCard extends StatelessWidget {
-  const SsMenuCard({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.onLongPress,
-    this.padding = const EdgeInsets.all(16),
-  });
+  const SsMenuCard({super.key, required this.child, this.onTap, this.onLongPress, this.padding});
 
   final Widget child;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
-  final EdgeInsetsGeometry padding;
+
+  /// Nulo: `cardPad` da [SsDensity] (16 no padrão).
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
     final s = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final radius = BorderRadius.circular(20);
+    final d = SsDensity.of(context);
+    final radius = BorderRadius.circular(d.radiusCard + 2);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: d.gap - 2),
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: radius,
@@ -512,7 +520,7 @@ class SsMenuCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             onLongPress: onLongPress,
-            child: Padding(padding: padding, child: child),
+            child: Padding(padding: padding ?? EdgeInsets.all(d.cardPad), child: child),
           ),
         ),
       ),

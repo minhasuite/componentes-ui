@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_badge.dart';
 import 'ss_list.dart';
@@ -39,6 +40,7 @@ class SsOfferCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final radius = BorderRadius.circular(AppRadius.card);
+    final d = SsDensity.of(context);
     final priceBox = Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
@@ -72,7 +74,7 @@ class SsOfferCard extends StatelessWidget {
       ],
     );
     final body = Padding(
-      padding: EdgeInsets.fromLTRB(14, best ? 26 : 12, 14, 12),
+      padding: EdgeInsets.fromLTRB(d.cardPad - 2, best ? 26 : d.cardPad - 4, d.cardPad - 2, d.cardPad - 4),
       child: LayoutBuilder(
         builder: (context, box) => Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,12 +84,12 @@ class SsOfferCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SsSourceChip(source, favicon: sourceIcon),
-                  const SizedBox(height: 8),
+                  SizedBox(height: d.space(8)),
                   Text(
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w700),
                   ),
                   if ((note ?? '').isNotEmpty)
                     Text(
@@ -99,7 +101,7 @@ class SsOfferCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: d.gap),
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: box.maxWidth * .4),
               child: priceBox,

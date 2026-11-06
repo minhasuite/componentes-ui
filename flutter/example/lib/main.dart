@@ -16,6 +16,7 @@ import 'catalogo/catalogo_v10_dados.dart';
 import 'catalogo/catalogo_v10_casa.dart';
 import 'catalogo/catalogo_v10_estrutura.dart';
 import 'catalogo/catalogo_v102.dart';
+import 'catalogo/catalogo_v11.dart';
 import 'aparencia.dart';
 import 'telas/tela_demo.dart';
 import 'telas/telas_a.dart';
@@ -75,6 +76,8 @@ class _InicioState extends State<_Inicio> {
       for (final x in [...catalogoV10Controles, ...catalogoV10Dados, ...catalogoV10Casa, ...catalogoV10Estrutura])
         x.slug,
     };
+    final v11 = {for (final x in catalogoV11) x.slug};
+    final v11Lista = catalogo.where((x) => v11.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final v102 = {for (final x in catalogoV102) x.slug};
     final v102Lista = catalogo.where((x) => v102.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final casaLista = catalogo.where((x) => casa.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
@@ -91,6 +94,7 @@ class _InicioState extends State<_Inicio> {
               !mov.contains(x.slug) &&
               !casa.contains(x.slug) &&
               !v102.contains(x.slug) &&
+              !v11.contains(x.slug) &&
               _bate('${x.nome} ${x.descricao}'),
         )
         .toList();
@@ -111,7 +115,7 @@ class _InicioState extends State<_Inicio> {
                       style: TextStyle(fontSize: AppType.screenTitle, fontWeight: FontWeight.w800, color: c.ink),
                     ),
                     Text(
-                      'componentes_ui v0.10.3 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
+                      'componentes_ui v0.11.0 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
                       style: TextStyle(color: c.muted),
                     ),
                     const AparenciaBar(),
@@ -123,6 +127,13 @@ class _InicioState extends State<_Inicio> {
             if (telas.isNotEmpty) ...[
               const _Titulo('Telas montadas'),
               SliverList.builder(itemCount: telas.length, itemBuilder: (context, i) => _TelaTile(telas[i])),
+            ],
+            if (v11Lista.isNotEmpty) ...[
+              const _Titulo('Densidade (v0.11)'),
+              SliverList.builder(
+                itemCount: v11Lista.length,
+                itemBuilder: (context, i) => _CompTile(v11Lista[i], novo: true),
+              ),
             ],
             if (v102Lista.isNotEmpty) ...[
               const _Titulo('Novos na v0.10.2 (tela)'),

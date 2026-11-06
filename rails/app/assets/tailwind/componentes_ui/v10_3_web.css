@@ -20,7 +20,7 @@
   .ss-device.has-more .ss-device-end > * { pointer-events: auto; }
   .ss-device.is-press.has-more .ss-device-run { pointer-events: none; }
   .ss-device-more { color: var(--muted); }
-  .ss-device-more svg { width: 1.1rem; height: 1.1rem; }
+  .ss-device-more svg { width: var(--ss-icon); height: var(--ss-icon); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -59,22 +59,22 @@ turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * {
   .ss-tag > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   /* ── Card de opção: compacto (lista longa) e vertical (ícone em cima, tiles estreitos). ── */
-  .ss-option-card.is-dense { gap: .65rem; padding: .6rem 2.4rem .6rem .75rem; border-radius: 12px; align-items: center; }
+  .ss-option-card.is-dense { gap: calc(var(--ss-gap) * .87); padding: calc(var(--ss-row-py) * .8) 2.4rem calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .75); border-radius: var(--r-field); align-items: center; }
   .ss-option-card.is-dense > input { top: 50%; right: .75rem; translate: 0 -50%; }
-  .ss-option-card.is-dense .ss-option-card-icon { width: 2rem; height: 2rem; border-radius: 10px; }
-  .ss-option-card.is-dense .ss-option-card-icon svg { width: 1rem; height: 1rem; }
+  .ss-option-card.is-dense .ss-option-card-icon { width: calc(var(--ss-icon-tile) - .5rem); height: calc(var(--ss-icon-tile) - .5rem); border-radius: calc(var(--r-field) - 2px); }
+  .ss-option-card.is-dense .ss-option-card-icon svg { width: calc(var(--ss-icon) * .95); height: calc(var(--ss-icon) * .95); }
   .ss-option-card.is-dense .ss-option-card-body { gap: 0; min-width: 0; }
-  .ss-option-card.is-dense .ss-option-card-body strong { font-size: .88rem; }
+  .ss-option-card.is-dense .ss-option-card-body strong { font-size: calc(.88rem * var(--ss-font-scale)); }
   .ss-option-card.is-dense .ss-option-card-body small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ss-option-card.is-vertical { flex-direction: column; align-items: center; text-align: center; gap: .55rem; padding: 1.1rem .75rem .9rem; }
   .ss-option-card.is-vertical > input { top: .6rem; right: .6rem; }
-  .ss-option-card.is-vertical .ss-option-card-icon { width: 3rem; height: 3rem; border-radius: 14px; }
-  .ss-option-card.is-vertical .ss-option-card-icon svg { width: 1.45rem; height: 1.45rem; }
+  .ss-option-card.is-vertical .ss-option-card-icon { width: calc(var(--ss-icon-tile) + .5rem); height: calc(var(--ss-icon-tile) + .5rem); border-radius: calc(var(--r-field) + 2px); }
+  .ss-option-card.is-vertical .ss-option-card-icon svg { width: calc(var(--ss-icon-tile) * .58); height: calc(var(--ss-icon-tile) * .58); }
   .ss-option-card.is-vertical .ss-option-card-body { justify-items: center; }
   .ss-option-card.is-vertical .ss-option-card-chev { display: none; }
   .ss-option-card.is-vertical.is-dense { padding: .75rem .5rem .65rem; }
   /* Grade de tiles estreitos: <div class="ss-option-grid is-tiles">. */
-  .ss-option-grid.is-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .6rem; }
+  .ss-option-grid.is-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: calc(var(--ss-gap) * .8); }
 
   /* ── Chip: aria-current="page" vale como "true" (atalhos de seção feitos de chips). ── */
   .ss-chip[aria-current="page"] { background-image: var(--grad); color: #fff; }
@@ -97,8 +97,8 @@ turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * {
      A linha toda marca; marcado, a bolinha fica verde com ✓ e o texto é riscado. ── */
   .ss-checklist li:has(> label > input[type="checkbox"]) { padding: 0; }
   .ss-checklist li:has(> label > input[type="checkbox"])::before { content: none; }
-  .ss-checklist li > label:has(> input[type="checkbox"]) { flex: 1; display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .5rem .5rem;
-    border-radius: 12px; cursor: pointer; transition: background-color .15s, color .2s; }
+  .ss-checklist li > label:has(> input[type="checkbox"]) { flex: 1; display: flex; align-items: center; gap: var(--ss-gap); min-height: max(var(--ss-target), 2.5rem); padding: calc(var(--ss-pad-y) * 1) .5rem;
+    border-radius: var(--r-field); cursor: pointer; transition: background-color .15s, color .2s; }
   .ss-checklist li > label:has(> input[type="checkbox"]):hover { background: var(--field); }
   .ss-checklist li > label > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; margin: 0;
     border-radius: 50%; border: 2px solid var(--line); background: var(--surface); cursor: pointer;
@@ -117,7 +117,7 @@ turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * {
 @media (min-width: 1024px) {
   .ss-subnav-wrap.is-tabs > .ss-subnav { position: static; flex-direction: row; gap: .25rem; margin: 0 0 1.25rem; padding: 0; overflow-x: auto;
     scrollbar-width: none; border-bottom: 1px solid var(--line); }
-  .ss-subnav-wrap.is-tabs > .ss-subnav a { border: 0; border-radius: 10px 10px 0 0; padding: .6rem .9rem; background: transparent; box-shadow: inset 0 -2px 0 transparent; }
+  .ss-subnav-wrap.is-tabs > .ss-subnav a { border: 0; border-radius: 10px 10px 0 0; padding: calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .9); background: transparent; box-shadow: inset 0 -2px 0 transparent; }
   .ss-subnav-wrap.is-tabs > .ss-subnav a:hover { background: var(--field); border: 0; }
   .ss-subnav-wrap.is-tabs > .ss-subnav a[aria-current="page"], .ss-subnav-wrap.is-tabs > .ss-subnav a[aria-current="page"]:hover {
     background: transparent; color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); border: 0; }

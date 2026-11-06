@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../ss_badge.dart';
@@ -95,7 +96,7 @@ class SsThermostat extends StatefulWidget {
     this.pending = false,
     this.draggable = true,
     this.debounce = const Duration(milliseconds: 700),
-    this.size = 240,
+    this.size,
     this.format,
     this.label,
     this.currentLabel,
@@ -136,7 +137,13 @@ class SsThermostat extends StatefulWidget {
   final bool pending;
   final bool draggable;
   final Duration debounce;
-  final double size;
+
+  /// Diâmetro do anel. Nulo (v0.11): pela densidade, 200 / 220 / 240
+  /// (antes era sempre 240).
+  final double? size;
+
+  /// Diâmetro do anel na densidade [d] quando [size] é nulo.
+  static double sizeFor(SsDensity d) => d.isCompact ? 200 : (d.isComfortable ? 240 : 220);
 
   /// Texto do número (padrão: "21,5°").
   final String Function(double value)? format;
@@ -233,10 +240,10 @@ class _SsThermostatState extends State<SsThermostat> {
   }
 
   void _drag(Offset p) {
-    final c = Offset(widget.size / 2, widget.size / 2);
+    final c = Offset(_dim / 2, _dim / 2);
     final d = p - c;
     // Só o anel (não o miolo nem fora).
-    if (d.distance < widget.size * .3) return;
+    if (d.distance < _dim * .3) return;
     final deg = (math.atan2(d.dy, d.dx) * 180 / math.pi + 360) % 360;
     final f = SsThermostat.fractionForAngle(deg, _f);
     _set(widget.min + f * (widget.max - widget.min));
@@ -264,9 +271,14 @@ class _SsThermostatState extends State<SsThermostat> {
     return '${(widget.currentLabel ?? _s.thermostatCurrent).trimRight()} ${_fmt(cur)}';
   }
 
+  /// Diâmetro em uso (o [SsThermostat.size] ou o da densidade), lido no arrasto.
+  double _dim = 220;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final dn = SsDensity.of(context);
+    _dim = widget.size ?? SsThermostat.sizeFor(dn);
     final tone = _tone(c);
     final linhaAtual = _currentLine();
     final off = widget.mode == 'off';
@@ -291,7 +303,7 @@ class _SsThermostatState extends State<SsThermostat> {
         : ((widget.current! - widget.min) / (widget.max - widget.min)).clamp(0.0, 1.0);
 
     final anel = SizedBox.square(
-      dimension: widget.size,
+      dimension: _dim,
       child: TweenAnimationBuilder<double>(
         tween: Tween(end: _f),
         duration: reduce ? Duration.zero : SsMotion.indicator,
@@ -306,7 +318,7 @@ class _SsThermostatState extends State<SsThermostat> {
             mark: c.ink2,
             // Desligado mas ajustável: arco cinza com o seletor.
             off: off && !widget.adjustWhenOff,
-            stroke: widget.size * .065,
+            stroke: _dim * .065,
           ),
           child: Center(
             child: ExcludeSemantics(
@@ -327,7 +339,7 @@ class _SsThermostatState extends State<SsThermostat> {
                         legenda.toUpperCase(),
                         style: TextStyle(
                           color: widget.pending ? c.muted : corLegenda,
-                          fontSize: AppType.label,
+                          fontSize: dn.font(AppType.label),
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.1,
                         ),
@@ -340,14 +352,14 @@ class _SsThermostatState extends State<SsThermostat> {
                     duration: reduce ? Duration.zero : SsMotion.fast,
                     child: Text(
                       _fmt(_v),
-                      style: AppTheme.number(context, size: widget.size * .2, color: c.ink),
+                      style: AppTheme.number(context, size: _dim * .2, color: c.ink),
                     ),
                   ),
                   if (linhaAtual != null) ...[
                     const SizedBox(height: 6),
                     Text(
                       linhaAtual,
-                      style: TextStyle(color: c.ink2, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: c.ink2, fontSize: dn.font(AppType.sub), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ],
@@ -399,31 +411,36 @@ class _SsThermostatState extends State<SsThermostat> {
             ),
           ),
           const SizedBox(height: 4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _Passo(
-                icon: Icons.remove_rounded,
-                label: widget.lessLabel ?? _s.decrease,
-                onTap: podeMenos ? () => _set(_v - widget.step) : null,
-              ),
-              SizedBox(width: widget.size * .28),
-              _Passo(
-                icon: Icons.add_rounded,
-                label: widget.moreLabel ?? _s.increase,
-                onTap: podeMais ? () => _set(_v + widget.step) : null,
-              ),
-            ],
+          // Linha de 48 no mínimo: no compacto o −/+ desenha 44 e o toque na sobra
+          // (até 48) cai dentro da linha.
+          ConstrainedBox(
+            constraints: BoxConstraints(minHeight: dn.minTarget),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _Passo(
+                  icon: Icons.remove_rounded,
+                  label: widget.lessLabel ?? _s.decrease,
+                  onTap: podeMenos ? () => _set(_v - widget.step) : null,
+                ),
+                SizedBox(width: _dim * .28),
+                _Passo(
+                  icon: Icons.add_rounded,
+                  label: widget.moreLabel ?? _s.increase,
+                  onTap: podeMais ? () => _set(_v + widget.step) : null,
+                ),
+              ],
+            ),
           ),
           if (widget.showModes && widget.modes.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: dn.space(14)),
             Semantics(
               label: widget.modesLabel ?? _s.thermostatMode,
               container: true,
               child: Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
+                spacing: dn.space(8),
+                runSpacing: dn.space(8),
                 children: [
                   for (final m in widget.modes)
                     _ModeChip(
@@ -458,27 +475,32 @@ class _Passo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    // Botão redondo −/+: 44 / 48 / 52 (era 52 sempre); toque nunca abaixo de 48.
+    final tam = d.iconButton + 8;
     final on = onTap != null;
-    return Semantics(
-      button: true,
-      enabled: on,
-      label: label,
-      excludeSemantics: true,
-      child: Tooltip(
-        message: label,
-        child: SsPressable(
-          scale: .88,
-          enabled: on,
-          onTap: onTap,
-          child: Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: c.field,
-              border: Border.all(color: c.line),
+    return SsTapTarget(
+      child: Semantics(
+        button: true,
+        enabled: on,
+        label: label,
+        excludeSemantics: true,
+        child: Tooltip(
+          message: label,
+          child: SsPressable(
+            scale: .88,
+            enabled: on,
+            onTap: onTap,
+            child: Container(
+              width: tam,
+              height: tam,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: c.field,
+                border: Border.all(color: c.line),
+              ),
+              child: Icon(icon, size: d.iconSize + 4, color: on ? c.ink : c.muted2),
             ),
-            child: Icon(icon, size: 26, color: on ? c.ink : c.muted2),
           ),
         ),
       ),
@@ -496,43 +518,46 @@ class _ModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.fast;
     final fg = selected
         ? (c.isDark ? Color.lerp(tone, Colors.white, .35)! : Color.lerp(tone, Colors.black, .35)!)
         : c.ink2;
-    return Semantics(
-      button: true,
-      selected: selected,
-      enabled: onTap != null,
-      label: mode.labelIn(SsStrings.of(context)),
-      excludeSemantics: true,
-      child: SsPressable(
-        scale: .94,
+    // Pílula de 32 / 40 / 44 (era 48 de desenho); o toque continua com 48.
+    return SsTapTarget(
+      child: Semantics(
+        button: true,
+        selected: selected,
         enabled: onTap != null,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: dur,
-          constraints: const BoxConstraints(minHeight: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            color: selected ? Color.alphaBlend(tone.withValues(alpha: c.isDark ? .22 : .14), c.surface) : c.surface,
-            border: Border.all(color: selected ? tone.withValues(alpha: .7) : c.line, width: selected ? 1.4 : 1),
+        label: mode.labelIn(SsStrings.of(context)),
+        excludeSemantics: true,
+        child: SsPressable(scale: .94, enabled: onTap != null, onTap: onTap, child: _chip(context, d, dur, fg, c)),
+      ),
+    );
+  }
+
+  Widget _chip(BuildContext context, SsDensity d, Duration dur, Color fg, SsColors c) {
+    return AnimatedContainer(
+      duration: dur,
+      constraints: BoxConstraints(minHeight: d.controlHeight - 8),
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        color: selected ? Color.alphaBlend(tone.withValues(alpha: c.isDark ? .22 : .14), c.surface) : c.surface,
+        border: Border.all(color: selected ? tone.withValues(alpha: .7) : c.line, width: selected ? 1.4 : 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (mode.icon != null) ...[
+            Icon(mode.icon, size: d.iconSize - 2, color: selected ? fg : c.muted),
+            SizedBox(width: d.space(6)),
+          ],
+          Text(
+            mode.labelIn(SsStrings.of(context)),
+            style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (mode.icon != null) ...[
-                Icon(mode.icon, size: 18, color: selected ? fg : c.muted),
-                const SizedBox(width: 6),
-              ],
-              Text(
-                mode.labelIn(SsStrings.of(context)),
-                style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: AppType.sub),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

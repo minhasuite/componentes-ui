@@ -5,32 +5,52 @@
    Cor da marca só por var(--accent)/var(--grad); semânticas da suíte (success, warn, danger,
    --ss-info) e o âmbar de aquecimento (#e0952a, o AppColors.aquecFg do Flutter). */
 
+/* v0.11: medidas destas peças por densidade (as do SsThermostat/SsCodeKeypad/SsSlider do
+   Flutter). Os tokens gerais (--ss-control-h, --ss-card-pad…) vêm de v11_densidade.css. */
+:root, [data-ss-density="standard"] {
+  --ss-thermo-size: 13.75rem;  /* anel: 220 (era 15rem) */
+  --ss-thermo-step: 3rem;      /* − e + (era 3.25rem) */
+  --ss-keypad-key: 3.5rem;     /* tecla (era 4rem) */
+  --ss-keypad-w: 18rem;        /* (era 20rem) */
+  --ss-range-fill-h: 3rem;     /* slider "fill" (era 3.5rem) */
+}
+[data-ss-density="compact"] {
+  --ss-thermo-size: 12.5rem; --ss-thermo-step: 2.75rem; --ss-keypad-key: 3rem; --ss-keypad-w: 16rem; --ss-range-fill-h: 2.5rem;
+}
+[data-ss-density="comfortable"] {
+  --ss-thermo-size: 15rem; --ss-thermo-step: 3.25rem; --ss-keypad-key: 3.75rem; --ss-keypad-w: 19.5rem; --ss-range-fill-h: 3.25rem;
+}
+/* Toque no compacto: tecla e − + não caem abaixo de 44 px. */
+@media (pointer: coarse) {
+  [data-ss-density="compact"] { --ss-thermo-step: 2.75rem; --ss-keypad-key: 3.25rem; --ss-range-fill-h: 2.75rem; }
+}
+
 @layer components {
   /* ── Chave sozinha (Ss::SwitchComponent) ──
      Modo A (checkbox no form) usa o .ss-switch-row do engine (mesmo movimento, sem texto ao lado
      se pedir). Modo B (button_to com aria-pressed, comando de aparelho) redesenha a mesma chave
      no <button class="ss-switch">: trilho líquido (--ss-pour), bolinha-gota e ✓. */
-  .ss-switch-row.ss-switch-solo { display: inline-flex; min-height: 2.75rem; padding: 0; justify-content: flex-start; }
+  .ss-switch-row.ss-switch-solo { display: inline-flex; min-height: max(var(--ss-target), 2.5rem); padding: 0; justify-content: flex-start; }
   .ss-switch-row.ss-switch-solo.is-label-end { flex-direction: row-reverse; }
-  .ss-switch-cmd { display: inline-flex; align-items: center; gap: .75rem; }
-  .ss-switch-cmd > span { font-weight: 600; font-size: .92rem; }
+  .ss-switch-cmd { display: inline-flex; align-items: center; gap: var(--ss-gap); }
+  .ss-switch-cmd > span { font-weight: 600; font-size: calc(.92rem * var(--ss-font-scale)); }
   .ss-switch-form { display: inline-flex; margin: 0; }
-  .ss-switch { appearance: none; position: relative; isolation: isolate; flex: none; width: 46px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px;
+  .ss-switch { appearance: none; position: relative; isolation: isolate; flex: none; width: var(--ss-switch-w); height: var(--ss-switch-h); margin: 0; padding: 0; border: 0; border-radius: 999px;
                cursor: pointer; font: inherit; color: inherit;
                --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
                --sw-on: var(--tone, var(--accent));
-               background: radial-gradient(circle at 14px 50%, var(--sw-on) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
+               background: radial-gradient(circle at calc(var(--ss-switch-h) / 2) 50%, var(--sw-on) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
                transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
   /* Alvo de toque maior que o desenho (44 px de altura). */
   .ss-switch::selection { background: none; }
-  .ss-switch > .ss-switch-hit { position: absolute; inset: -8px -4px; }
-  .ss-switch[aria-pressed="true"] { --ss-pour: 40px; --sw-halo: color-mix(in srgb, var(--sw-on) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
-  .ss-switch::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: 21px; border-radius: 999px; background: #fff;
+  .ss-switch > .ss-switch-hit { position: absolute; inset: min(-8px, calc((var(--ss-switch-h) - var(--ss-target)) / 2)) -4px; }
+  .ss-switch[aria-pressed="true"] { --ss-pour: calc(var(--ss-switch-w) - 6px); --sw-halo: color-mix(in srgb, var(--sw-on) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
+  .ss-switch::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); border-radius: 999px; background: #fff;
                        box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
                        transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
-  .ss-switch[aria-pressed="true"]::before { left: 21px; right: 3px; transform-origin: 100% 50%;
+  .ss-switch[aria-pressed="true"]::before { left: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); right: 3px; transform-origin: 100% 50%;
                                             transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; }
-  .ss-switch::after { content: ""; position: absolute; z-index: 2; top: 50%; left: 32px; width: 12px; height: 12px; margin: -6px 0 0 -6px; pointer-events: none;
+  .ss-switch::after { content: ""; position: absolute; z-index: 2; top: 50%; left: calc(var(--ss-switch-w) - var(--ss-switch-h) / 2); width: calc(var(--ss-switch-h) * .43); height: calc(var(--ss-switch-h) * .43); margin: calc(var(--ss-switch-h) * -.215) 0 0 calc(var(--ss-switch-h) * -.215); pointer-events: none;
                       background: var(--sw-on); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
                       transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
   .ss-switch[aria-pressed="true"]::after { opacity: 1; scale: 1; rotate: 0deg;
@@ -47,21 +67,21 @@
 
   /* ── Tile de aparelho (Ss::DeviceTileComponent) ──
      <div class="ss-device [is-on] [is-wide]" data-status="ready|unavailable|pending|error|locked" style="--tone:…"> */
-  .ss-device { --tone: var(--accent); position: relative; display: grid; gap: .75rem; padding: .9rem; border-radius: var(--r-card); background: var(--surface);
+  .ss-device { --tone: var(--accent); position: relative; display: grid; gap: calc(var(--ss-gap) * .9); padding: calc(var(--ss-card-pad) * .7); border-radius: var(--r-card); background: var(--surface);
                border: 1px solid var(--line); box-shadow: var(--shadow-card); min-width: 0;
                transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease, opacity .3s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-device-main { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ico . end" "text text text"; align-items: start; row-gap: .7rem; min-width: 0; }
-  .ss-device.is-wide .ss-device-main { grid-template-areas: "ico text end"; align-items: center; column-gap: .8rem; }
-  .ss-device-ico { grid-area: ico; position: relative; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 14px;
+  .ss-device-main { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ico . end" "text text text"; align-items: start; row-gap: calc(var(--ss-gap) * .9); min-width: 0; }
+  .ss-device.is-wide .ss-device-main { grid-template-areas: "ico text end"; align-items: center; column-gap: var(--ss-gap); }
+  .ss-device-ico { grid-area: ico; position: relative; display: grid; place-items: center; width: calc(var(--ss-icon-tile) + .25rem); height: calc(var(--ss-icon-tile) + .25rem); border-radius: calc(var(--r-field) + 2px);
                    background: var(--field); color: var(--ink-2); transition: background .3s ease, color .3s ease, box-shadow .3s ease; }
-  .ss-device-ico svg { width: 1.35rem; height: 1.35rem; }
+  .ss-device-ico svg { width: calc(var(--ss-icon-tile) * .54); height: calc(var(--ss-icon-tile) * .54); }
   .ss-device-text { grid-area: text; display: block; min-width: 0; color: inherit; text-decoration: none; }
   .ss-device-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
-                    font-weight: 700; font-size: .9rem; line-height: 1.25; color: var(--ink); }
-  .ss-device-state { display: block; margin-top: .15rem; font-size: .8rem; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ss-device-end { grid-area: end; position: relative; z-index: 2; display: flex; align-items: center; min-height: 2.75rem; }
-  .ss-device-lock { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; color: var(--muted); }
-  .ss-device-lock svg { width: 1.2rem; height: 1.2rem; }
+                    font-weight: 700; font-size: calc(.9rem * var(--ss-font-scale)); line-height: 1.25; color: var(--ink); }
+  .ss-device-state { display: block; margin-top: .15rem; font-size: calc(.8rem * var(--ss-font-scale)); font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ss-device-end { grid-area: end; position: relative; z-index: 2; display: flex; align-items: center; min-height: max(var(--ss-target), 2.5rem); }
+  .ss-device-lock { display: grid; place-items: center; width: max(var(--ss-target), 2.5rem); height: max(var(--ss-target), 2.5rem); color: var(--muted); }
+  .ss-device-lock svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); }
   .ss-device-foot { position: relative; z-index: 2; min-width: 0; }
   /* O link do nome cobre o tile todo (detalhes); a chave e o rodapé ficam por cima. */
   a.ss-device-text::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
@@ -91,7 +111,7 @@
   .ss-device[data-status="error"] .ss-device-state { color: var(--danger); }
   .ss-device[data-status="error"] .ss-device-state::before { content: ""; display: inline-block; width: .85rem; height: .85rem; margin: 0 .25rem -.12rem 0;
                                                              background: currentColor; mask: var(--ss-i-alert) center / contain no-repeat; }
-  @media (max-width: 420px) { .ss-device { padding: .8rem; } .ss-device-ico { width: 2.5rem; height: 2.5rem; border-radius: 12px; } }
+  @media (max-width: 420px) { .ss-device { padding: calc(var(--ss-card-pad) * .64); } .ss-device-ico { width: var(--ss-icon-tile); height: var(--ss-icon-tile); border-radius: var(--r-field); } }
 
   /* ── Slider (extensão do .ss-range: gradiente, bolha e "fill") ── */
   .ss-range-track { position: relative; }
@@ -109,16 +129,16 @@
   .ss-range-bubble::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% -1px; border: 5px solid transparent; border-top-color: var(--ink); }
   .ss-range-field:has(.ss-range:is([data-dragging], :focus-visible)) .ss-range-bubble { scale: 1; }
   /* Fill: barra grossa, a parte cheia é o valor; rótulo, ícone e valor escritos dentro. */
-  .ss-range-fillbox { position: relative; isolation: isolate; height: 3.5rem; border-radius: 16px; overflow: hidden; background: var(--field);
+  .ss-range-fillbox { position: relative; isolation: isolate; height: var(--ss-range-fill-h); border-radius: calc(var(--r-field) + 4px); overflow: hidden; background: var(--field);
                       box-shadow: inset 0 0 0 1px var(--line); }
   .ss-range.is-fill { position: absolute; inset: 0; height: 100%; z-index: 1; }
-  .ss-range.is-fill::-webkit-slider-runnable-track { height: 3.5rem; border-radius: 0;
+  .ss-range.is-fill::-webkit-slider-runnable-track { height: var(--ss-range-fill-h); border-radius: 0;
     background: linear-gradient(to right, var(--range-fill, var(--range-c)) var(--p), transparent var(--p)); box-shadow: none; }
-  .ss-range.is-fill::-moz-range-track { height: 3.5rem; background: transparent; }
-  .ss-range.is-fill::-moz-range-progress { height: 3.5rem; border-radius: 0; background: var(--range-fill, var(--range-c)); }
-  .ss-range.is-fill::-webkit-slider-thumb { width: .3rem; height: 1.6rem; margin-top: .95rem; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92);
+  .ss-range.is-fill::-moz-range-track { height: var(--ss-range-fill-h); background: transparent; }
+  .ss-range.is-fill::-moz-range-progress { height: var(--ss-range-fill-h); border-radius: 0; background: var(--range-fill, var(--range-c)); }
+  .ss-range.is-fill::-webkit-slider-thumb { width: .3rem; height: calc(var(--ss-range-fill-h) * .46); margin-top: calc(var(--ss-range-fill-h) * .27); border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92);
                                             box-shadow: 0 1px 4px rgba(20, 22, 40, .3); translate: -.55rem 0; }
-  .ss-range.is-fill::-moz-range-thumb { width: .3rem; height: 1.6rem; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92); }
+  .ss-range.is-fill::-moz-range-thumb { width: .3rem; height: calc(var(--ss-range-fill-h) * .46); border: 0; border-radius: 3px; background: rgba(255, 255, 255, .92); }
   .ss-range.is-fill:is(:active, [data-dragging])::-webkit-slider-thumb { transform: scaleY(1.25); box-shadow: 0 1px 4px rgba(20, 22, 40, .3); }
   .ss-range.is-fill:is(:active, [data-dragging])::-moz-range-thumb { transform: scaleY(1.25); }
   .ss-range.is-fill:focus-visible { outline: 0; }
@@ -126,9 +146,9 @@
   /* Fill em gradiente: o gradiente inteiro por baixo e o "vazio" cobrindo depois da ponta. */
   .ss-range.is-fill.is-gradient::-webkit-slider-runnable-track { background: linear-gradient(to right, transparent var(--p), var(--field) var(--p)), var(--range-track); }
   .ss-range.is-fill.is-gradient::-moz-range-progress { background: var(--range-track); }
-  .ss-range-fill-text { position: absolute; inset: 0; padding: 0 1.1rem; z-index: 2; display: flex; align-items: center; gap: .55rem; pointer-events: none; color: var(--ink); }
-  .ss-range-fill-text svg { width: 1.2rem; height: 1.2rem; flex: none; }
-  .ss-range-fill-text b { flex: 1; min-width: 0; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-range-fill-text { position: absolute; inset: 0; padding: 0 calc(var(--ss-pad-x) * 1.1); z-index: 2; display: flex; align-items: center; gap: calc(var(--ss-gap) * .75); pointer-events: none; color: var(--ink); }
+  .ss-range-fill-text svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); flex: none; }
+  .ss-range-fill-text b { flex: 1; min-width: 0; font-size: calc(.9rem * var(--ss-font-scale)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-range-fill-text .ss-range-out { color: inherit; }
   /* A cópia branca do texto só aparece em cima da parte cheia (recorte em --p). */
   .ss-range-fill-text.is-on { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .2); clip-path: inset(0 calc(100% - var(--p)) 0 0); }
@@ -142,7 +162,7 @@
   .ss-thermo[data-mode="heat"] { --thermo-c: var(--thermo-heat); }
   .ss-thermo[data-mode="cool"] { --thermo-c: var(--thermo-cool); }
   .ss-thermo[data-mode="off"] { --thermo-c: var(--muted); }
-  .ss-thermo-dial { position: relative; width: min(15rem, 100%); aspect-ratio: 1; border-radius: 50%; touch-action: none; outline: 0; }
+  .ss-thermo-dial { position: relative; width: min(var(--ss-thermo-size), 100%); aspect-ratio: 1; border-radius: 50%; touch-action: none; outline: 0; }
   .ss-thermo-dial:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
   .ss-thermo-dial svg { width: 100%; height: 100%; overflow: visible; }
   .ss-thermo-track { fill: none; stroke: color-mix(in srgb, var(--muted) 18%, var(--field)); stroke-width: 13; stroke-linecap: round; }
@@ -159,8 +179,8 @@
   .ss-thermo-legend { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
   .ss-thermo[data-hvac="heating"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-heat) 70%, var(--ink)); }
   .ss-thermo[data-hvac="cooling"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-cool) 75%, var(--ink)); }
-  .ss-thermo-value { display: block; margin-top: .2rem; font: 500 2.9rem/1 var(--font-mono); letter-spacing: -.02em; color: var(--ink); transition: opacity .2s ease, scale .3s var(--ss-bounce); }
-  .ss-thermo-now { margin-top: .4rem; font-size: .82rem; font-weight: 600; color: var(--ink-2); }
+  .ss-thermo-value { display: block; margin-top: .2rem; font: 500 calc(var(--ss-thermo-size) * .19)/1 var(--font-mono); letter-spacing: -.02em; color: var(--ink); transition: opacity .2s ease, scale .3s var(--ss-bounce); }
+  .ss-thermo-now { margin-top: .4rem; font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink-2); }
   .ss-thermo[data-mode="off"] :is(.ss-thermo-bar, .ss-thermo-knob) { opacity: 0; }
   .ss-thermo[data-mode="off"] .ss-thermo-value { opacity: .45; }
   /* adjust_when_off: desligado, mas o alvo ainda muda (o botão do anel aparece apagado). */
@@ -168,23 +188,23 @@
   .ss-thermo.is-adjust-off[data-mode="off"] .ss-thermo-value { opacity: .7; }
   .ss-thermo[aria-busy="true"] .ss-thermo-legend::before { content: ""; width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--thermo-c);
                                                            border-right-color: transparent; animation: ss-spin .8s linear infinite; }
-  .ss-thermo-steps { display: flex; gap: 4.5rem; margin-top: -.4rem; }
-  .ss-thermo-steps button { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; border: 1px solid var(--line); background: var(--field);
+  .ss-thermo-steps { display: flex; gap: calc(var(--ss-thermo-size) * .29); margin-top: -.4rem; }
+  .ss-thermo-steps button { display: grid; place-items: center; width: var(--ss-thermo-step); height: var(--ss-thermo-step); border-radius: 50%; border: 1px solid var(--line); background: var(--field);
                             color: var(--ink); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .2s; }
-  .ss-thermo-steps button svg { width: 1.4rem; height: 1.4rem; }
+  .ss-thermo-steps button svg { width: calc(var(--ss-thermo-step) * .43); height: calc(var(--ss-thermo-step) * .43); }
   .ss-thermo-steps button:hover:not(:disabled) { background: color-mix(in srgb, var(--thermo-c) 10%, var(--field)); }
   .ss-thermo-steps button:active:not(:disabled) { scale: .88; transition: scale 80ms ease-out; }
   .ss-thermo-steps button:disabled { color: var(--muted); opacity: .5; cursor: not-allowed; }
   .ss-thermo-steps button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .ss-thermo-modes { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: .3rem 0 0; padding: 0; border: 0; min-width: 0; }
-  .ss-thermo-mode { --mc: var(--accent); position: relative; display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; padding: 0 .9rem; border-radius: 999px;
-                    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: .82rem; cursor: pointer;
+  .ss-thermo-modes { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--ss-gap) * .67); margin: .3rem 0 0; padding: 0; border: 0; min-width: 0; }
+  .ss-thermo-mode { --mc: var(--accent); position: relative; display: inline-flex; align-items: center; gap: .35rem; min-height: var(--ss-control-h); padding: 0 calc(var(--ss-pad-x) * .9); border-radius: 999px;
+                    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: calc(.82rem * var(--ss-font-scale)); cursor: pointer;
                     transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-thermo-mode[data-value="heat"] { --mc: var(--thermo-heat); }
   .ss-thermo-mode[data-value="cool"] { --mc: var(--thermo-cool); }
   .ss-thermo-mode[data-value="off"] { --mc: var(--muted); }
   .ss-thermo-mode input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: inherit; }
-  .ss-thermo-mode svg { width: 1.05rem; height: 1.05rem; }
+  .ss-thermo-mode svg { width: var(--ss-icon); height: var(--ss-icon); }
   .ss-thermo-mode:active { scale: .94; transition: scale 80ms ease-out; }
   .ss-thermo-mode:has(:checked) { border-color: color-mix(in srgb, var(--mc) 70%, transparent); background: color-mix(in srgb, var(--mc) 14%, var(--surface));
                                   color: color-mix(in srgb, var(--mc) 62%, var(--ink)); }
@@ -193,7 +213,7 @@
   .ss-thermo.is-disabled .ss-thermo-dial { opacity: .6; }
 
   /* ── Teclado de código (Ss::CodeKeypadComponent) ── */
-  .ss-keypad { display: grid; gap: .6rem; width: min(20rem, 100%); margin: 0 auto; outline: 0; }
+  .ss-keypad { display: grid; gap: calc(var(--ss-gap) * .8); width: min(var(--ss-keypad-w), 100%); margin: 0 auto; outline: 0; }
   .ss-keypad-title { text-align: center; font-weight: 700; font-size: 1rem; color: var(--ink); }
   .ss-keypad-dots { display: flex; justify-content: center; align-items: center; gap: .85rem; height: 1.8rem; }
   .ss-keypad-dots i { width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 45%, transparent); scale: .75;
@@ -211,17 +231,17 @@
                                                            background: currentColor; mask: var(--ss-i-check) center / contain no-repeat; animation: ss-icon-pop .45s var(--ss-bounce); }
   .ss-keypad[data-state="busy"] .ss-keypad-msg::before { content: ""; display: inline-block; width: .95rem; height: .95rem; margin-bottom: -.15rem; border-radius: 50%;
                                                         border: 2px solid var(--accent); border-right-color: transparent; animation: ss-spin .8s linear infinite; }
-  .ss-keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
-  .ss-keypad-grid button { display: grid; place-items: center; height: 4rem; border: 0; border-radius: 16px; background: var(--field); color: var(--ink);
-                           font: 500 1.5rem var(--font-mono); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .15s; }
+  .ss-keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--ss-gap) * .73); }
+  .ss-keypad-grid button { display: grid; place-items: center; height: var(--ss-keypad-key); border: 0; border-radius: calc(var(--r-field) + 4px); background: var(--field); color: var(--ink);
+                           font: 500 calc(var(--ss-keypad-key) * .38) var(--font-mono); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .15s; }
   .ss-keypad-grid button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 8%, var(--field)); }
   .ss-keypad-grid button:active:not(:disabled), .ss-keypad-grid button[data-pressed] { scale: .9; transition: scale 80ms ease-out; }
   .ss-keypad-grid button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .ss-keypad-grid button:disabled { color: var(--muted); cursor: not-allowed; }
   .ss-keypad-grid .ss-keypad-back { background: transparent; color: var(--ink-2); }
-  .ss-keypad-grid .ss-keypad-back svg { width: 1.5rem; height: 1.5rem; }
-  .ss-keypad-actions { display: flex; gap: .6rem; margin-top: .35rem; }
-  .ss-keypad-actions .ss-btn { flex: 1; min-height: 3rem; }
+  .ss-keypad-grid .ss-keypad-back svg { width: calc(var(--ss-keypad-key) * .38); height: calc(var(--ss-keypad-key) * .38); }
+  .ss-keypad-actions { display: flex; gap: calc(var(--ss-gap) * .8); margin-top: .35rem; }
+  .ss-keypad-actions .ss-btn { flex: 1; min-height: calc(var(--ss-control-h) + .25rem); }
 
   /* ── Campo −/+ (Ss::StepperInputComponent): o .ss-stepper do engine com input e unidade. ── */
   .ss-stepper-input { width: fit-content; }
@@ -233,12 +253,12 @@
   .ss-stepper-input input.is-bump { animation: ss-icon-pop .35s var(--ss-bounce); }
 
   /* ── Dias da semana (Ss::WeekdayPickerComponent) ── */
-  .ss-weekday { display: grid; gap: .6rem; margin: 0; padding: 0; border: 0; min-width: 0; }
-  .ss-weekday-days { display: flex; gap: .4rem; flex-wrap: nowrap; }
-  .ss-weekday-day { position: relative; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; flex: 0 1 2.75rem; min-width: 2.25rem; cursor: pointer; }
+  .ss-weekday { display: grid; gap: calc(var(--ss-gap) * .8); margin: 0; padding: 0; border: 0; min-width: 0; }
+  .ss-weekday-days { display: flex; gap: calc(var(--ss-gap) * .53); flex-wrap: nowrap; min-width: 0; }
+  .ss-weekday-day { position: relative; display: grid; place-items: center; width: var(--ss-target); height: var(--ss-target); flex: 0 1 var(--ss-target); min-width: 2.25rem; cursor: pointer; }
   .ss-weekday-day input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
   .ss-weekday-day span { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: var(--field);
-                         color: var(--ink-2); font-weight: 800; font-size: .88rem; scale: .92; pointer-events: none;
+                         color: var(--ink-2); font-weight: 800; font-size: calc(.88rem * var(--ss-font-scale)); scale: .92; pointer-events: none;
                          transition: background-color .18s, border-color .18s, color .18s, scale .45s var(--ss-bounce), box-shadow .2s; }
   .ss-weekday-day:has(:checked) span { background: var(--accent); border-color: var(--accent); color: #fff; scale: 1;
                                        box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
@@ -247,8 +267,8 @@
   .ss-weekday-day:has(:disabled) { opacity: .5; cursor: not-allowed; }
   .ss-weekday-shortcuts { display: flex; flex-wrap: wrap; gap: .45rem; }
   .ss-weekday-shortcuts[hidden] { display: none; }
-  .ss-weekday-shortcuts button { min-height: 2.25rem; padding: 0 .85rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-                                 font-weight: 700; font-size: .78rem; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-weekday-shortcuts button { min-height: calc(var(--ss-control-h-sm) + .25rem); padding: 0 calc(var(--ss-pad-x) * .85); border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+                                 font-weight: 700; font-size: calc(.78rem * var(--ss-font-scale)); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-weekday-shortcuts button[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent); }
   .ss-weekday-shortcuts button:active { scale: .94; transition: scale 80ms ease-out; }
   .ss-weekday-shortcuts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

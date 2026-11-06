@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 
 /// Título de seção ("VENCE LOGO") com ação opcional à direita.
 class SsSection extends StatelessWidget {
@@ -13,8 +14,9 @@ class SsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+      padding: EdgeInsets.fromLTRB(4, d.space(20), 4, d.space(8)),
       child: Row(
         children: [
           Expanded(
@@ -35,7 +37,7 @@ class SsSection extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: Text(action!, style: const TextStyle(fontSize: AppType.sub)),
+              child: Text(action!, style: TextStyle(fontSize: d.font(AppType.sub))),
             ),
         ],
       ),

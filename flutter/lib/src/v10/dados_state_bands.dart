@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_badge.dart';
@@ -104,8 +105,13 @@ class SsTimeAxis extends StatelessWidget {
               ticks: fmt.ticks(from, to, maxTicks: math.max(2, (box.maxWidth / 72).floor())),
               from: from,
               to: to,
-              style: AppTheme.number(context, size: AppType.micro, color: c.muted),
-              major: AppTheme.number(context, size: AppType.micro, weight: FontWeight.w700, color: c.ink2),
+              style: AppTheme.number(context, size: SsDensity.of(context).font(AppType.micro), color: c.muted),
+              major: AppTheme.number(
+                context,
+                size: SsDensity.of(context).font(AppType.micro),
+                weight: FontWeight.w700,
+                color: c.ink2,
+              ),
             ),
           ),
         ),
@@ -243,7 +249,7 @@ class _SsStateBandsState extends State<SsStateBands> {
         decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.thumb)),
         child: Text(
           widget.emptyText ?? SsStrings.of(context).stateBandsEmpty,
-          style: TextStyle(color: c.muted, fontSize: AppType.sub),
+          style: TextStyle(color: c.muted, fontSize: SsDensity.of(context).font(AppType.sub)),
         ),
       );
     }
@@ -403,7 +409,7 @@ class SsStateBandRow extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             noDataText,
-                            style: TextStyle(fontSize: AppType.label, color: c.muted),
+                            style: TextStyle(fontSize: SsDensity.of(context).font(AppType.label), color: c.muted),
                           ),
                         ),
                       )
@@ -463,7 +469,11 @@ class SsStateBandRow extends StatelessWidget {
                       row.current ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: AppType.meta, color: c.muted, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: SsDensity.of(context).font(AppType.meta),
+                        color: c.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -501,7 +511,7 @@ class SsStateBandRow extends StatelessWidget {
       width: largura,
       child: IgnorePointer(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          padding: _respiro(context, 10, 7, 10, 7),
           decoration: BoxDecoration(
             color: c.surface,
             borderRadius: BorderRadius.circular(AppRadius.thumb),
@@ -525,7 +535,11 @@ class SsStateBandRow extends StatelessWidget {
                       s.text,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: AppType.meta, fontWeight: FontWeight.w800, color: c.ink),
+                      style: TextStyle(
+                        fontSize: SsDensity.of(context).font(AppType.meta),
+                        fontWeight: FontWeight.w800,
+                        color: c.ink,
+                      ),
                     ),
                   ),
                 ],
@@ -533,7 +547,7 @@ class SsStateBandRow extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 '${fmt.when(s.from)} – ${fmt.hm(s.to)} · ${fmt.duration(s.to.difference(s.from))}',
-                style: AppTheme.number(context, size: AppType.micro, color: c.muted),
+                style: AppTheme.number(context, size: SsDensity.of(context).font(AppType.micro), color: c.muted),
               ),
             ],
           ),
@@ -591,4 +605,10 @@ class _BandPainter extends CustomPainter {
   @override
   bool shouldRepaint(_BandPainter old) =>
       old.t != t || old.selected != selected || old.segments != segments || old.from != from || old.to != to;
+}
+
+/// Respiro na escala da densidade (0,75 / 1 / 1,2).
+EdgeInsets _respiro(BuildContext context, double l, double t, double r, double b) {
+  final d = SsDensity.of(context);
+  return EdgeInsets.fromLTRB(d.space(l), d.space(t), d.space(r), d.space(b));
 }

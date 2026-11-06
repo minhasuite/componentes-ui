@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_strings.dart';
 
@@ -534,8 +535,10 @@ class SsDPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final labels = this.labels.resolve(SsStrings.of(context));
     final s = size;
+    final vao = d.space(18);
     Widget seta(SsDPadKey k, IconData icon, Alignment a) => Align(
       alignment: a,
       child: _Tecla(
@@ -582,14 +585,14 @@ class SsDPad extends StatelessWidget {
     Widget redondo(SsDPadKey k, IconData icon) => _Tecla(
       label: labels.of(k),
       onTap: enabled ? () => _aperta(k) : null,
-      size: 52,
+      size: d.iconButton + 12,
       fill: c.field,
       border: c.line,
-      child: Icon(icon, size: 22, color: c.ink2),
+      child: Icon(icon, size: d.iconSize + 2, color: c.ink2),
     );
 
     Widget gangorra(String titulo, SsDPadKey mais, SsDPadKey menos, IconData iMais, IconData iMenos) => Container(
-      width: 56,
+      width: d.iconButton + 16,
       padding: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: c.field,
@@ -606,11 +609,11 @@ class SsDPad extends StatelessWidget {
             child: Icon(iMais, color: c.ink2),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: d.space(10)),
             child: ExcludeSemantics(
               child: Text(
                 titulo,
-                style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w800),
+                style: TextStyle(color: c.muted, fontSize: d.font(AppType.label), fontWeight: FontWeight.w800),
               ),
             ),
           ),
@@ -650,11 +653,11 @@ class SsDPad extends StatelessWidget {
                       Icons.add_rounded,
                       Icons.remove_rounded,
                     ),
-                    const SizedBox(width: 18),
+                    SizedBox(width: vao),
                   ],
                   cruz,
                   if (showChannel) ...[
-                    const SizedBox(width: 18),
+                    SizedBox(width: vao),
                     gangorra(
                       labels.channel!,
                       SsDPadKey.channelUp,
@@ -666,10 +669,10 @@ class SsDPad extends StatelessWidget {
                 ],
               ),
               if (showNavRow) ...[
-                const SizedBox(height: 18),
+                SizedBox(height: vao),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  spacing: 18,
+                  spacing: vao,
                   children: [
                     redondo(SsDPadKey.back, Icons.arrow_back_rounded),
                     redondo(SsDPadKey.home, Icons.home_outlined),
@@ -678,17 +681,17 @@ class SsDPad extends StatelessWidget {
                   ],
                 ),
               ] else if (showMute) ...[
-                const SizedBox(height: 18),
+                SizedBox(height: vao),
                 redondo(SsDPadKey.mute, Icons.volume_off_outlined),
               ],
               if (extraButtons.isNotEmpty) ...[
-                const SizedBox(height: 18),
+                SizedBox(height: vao),
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: math.max(s + 148, 280)),
                   child: Wrap(
                     alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: d.space(8),
+                    runSpacing: d.space(8),
                     children: [
                       for (final b in extraButtons)
                         _BotaoExtra(botao: b, onTap: enabled && onCommand != null ? () => _extra(b) : null),
@@ -713,34 +716,41 @@ class _BotaoExtra extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
-      label: botao.label,
-      excludeSemantics: true,
-      child: SsPressable(
+    final d = SsDensity.of(context);
+    // Pílula de 36 / 44 / 48; o toque não cai abaixo de 48.
+    return SsTapTarget(
+      child: Semantics(
+        button: true,
         enabled: onTap != null,
-        scale: .94,
-        child: Material(
-          color: c.field,
-          shape: StadiumBorder(side: BorderSide(color: c.line)),
-          child: InkWell(
-            customBorder: const StadiumBorder(),
-            onTap: onTap,
-            splashColor: c.accent.withValues(alpha: .18),
-            highlightColor: c.accent.withValues(alpha: .1),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (botao.icon != null) ...[Icon(botao.icon, size: 18, color: c.ink2), const SizedBox(width: 6)],
-                  Text(
-                    botao.label,
-                    style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.sub),
-                  ),
-                ],
+        label: botao.label,
+        excludeSemantics: true,
+        child: SsPressable(
+          enabled: onTap != null,
+          scale: .94,
+          child: Material(
+            color: c.field,
+            shape: StadiumBorder(side: BorderSide(color: c.line)),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: onTap,
+              splashColor: c.accent.withValues(alpha: .18),
+              highlightColor: c.accent.withValues(alpha: .1),
+              child: Container(
+                constraints: BoxConstraints(minHeight: d.controlHeight - 4),
+                padding: EdgeInsets.symmetric(horizontal: d.padX - 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (botao.icon != null) ...[
+                      Icon(botao.icon, size: d.iconSize - 2, color: c.ink2),
+                      SizedBox(width: d.space(6)),
+                    ],
+                    Text(
+                      botao.label,
+                      style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

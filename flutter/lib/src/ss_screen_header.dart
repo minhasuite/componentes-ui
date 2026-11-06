@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'ss_async.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
@@ -283,7 +284,8 @@ class _Delegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_Delegate old) => true;
 }
 
-/// Botão redondo de ação do cabeçalho (40 px, alvo de 48), com tooltip e
+/// Botão redondo de ação do cabeçalho (40 px no padrão, o `iconButton` da
+/// [SsDensity]; alvo de 48), com tooltip e
 /// [badge] opcional ("3"; texto vazio vira só um ponto).
 class SsHeaderAction extends StatelessWidget {
   const SsHeaderAction({super.key, required this.icon, required this.tooltip, this.onPressed, this.badge});
@@ -296,7 +298,8 @@ class SsHeaderAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    Widget i = Icon(icon, size: 21);
+    final d = SsDensity.of(context);
+    Widget i = Icon(icon, size: d.iconSize + 1);
     if (badge != null) {
       i = Badge(
         label: badge!.isEmpty ? null : Text(badge!),
@@ -312,8 +315,10 @@ class SsHeaderAction extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: c.field,
         foregroundColor: c.ink2,
-        fixedSize: const Size.square(40),
-        minimumSize: const Size.square(40),
+        fixedSize: Size.square(d.iconButton),
+        minimumSize: Size.square(d.iconButton),
+        // O alvo de toque segue 48 mesmo com o desenho menor (compacto).
+        tapTargetSize: MaterialTapTargetSize.padded,
         shape: const CircleBorder(),
       ),
     );

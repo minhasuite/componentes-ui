@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../ss_list.dart';
@@ -206,29 +207,30 @@ class _SplitRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final dn = SsDensity.of(context);
     final frac = total == 0 ? 0.0 : cents / total;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-            SsAvatar(name, size: 30),
-            const SizedBox(width: 10),
+            SsAvatar(name, size: dn.iconTile - 12),
+            SizedBox(width: dn.gap - 2),
             Expanded(
               child: Text(
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w700),
+                style: TextStyle(color: c.ink, fontSize: dn.font(AppType.body), fontWeight: FontWeight.w700),
               ),
             ),
             Text(
               money(cents, SsFormats.of(context)),
-              style: AppTheme.number(context, size: AppType.md, weight: FontWeight.w500, color: c.ink),
+              style: AppTheme.number(context, size: dn.font(AppType.md), weight: FontWeight.w500, color: c.ink),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: dn.space(8)),
         Semantics(
           slider: true,
           label: SsStrings.of(context).shareOf(name),
@@ -811,21 +813,34 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
     final c = SsColors.of(context);
     final cor = widget.danger ? AppColors.danger : c.accent;
     final enabled = widget.onConfirmed != null;
+    // Altura do botão da densidade (48 no padrão; era 56); toque nunca abaixo de 48.
+    final d = SsDensity.of(context);
     Widget conteudo(Color fg, IconData icon, String text) => Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 20, color: fg),
-        const SizedBox(width: 8),
+        Icon(icon, size: d.iconSize, color: fg),
+        SizedBox(width: d.gap - 4),
         Flexible(
           child: Text(
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: fg, fontSize: AppType.body, fontWeight: FontWeight.w800),
+            style: TextStyle(color: fg, fontSize: d.font(AppType.body), fontWeight: FontWeight.w800),
           ),
         ),
       ],
     );
+    return SsTapTarget(minSize: Size(0, d.minTarget), child: _corpo(context, d, enabled, cor, conteudo));
+  }
+
+  Widget _corpo(
+    BuildContext context,
+    SsDensity d,
+    bool enabled,
+    Color cor,
+    Widget Function(Color fg, IconData icon, String text) conteudo,
+  ) {
+    final c = SsColors.of(context);
     return Semantics(
       button: true,
       enabled: enabled,
@@ -846,7 +861,7 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
               scale: t > 0 && !_ok && !reduceMotion(context) ? .98 : 1,
               duration: SsMotion.fast,
               child: Container(
-                height: 56,
+                height: d.controlHeight,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: widget.danger ? AppColors.dangerSoft : c.accentSoft,
@@ -856,7 +871,7 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
                   fit: StackFit.expand,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: d.padX + 4),
                       child: conteudo(
                         enabled ? (widget.danger ? c.dangerText : c.accentText) : c.muted,
                         widget.icon,
@@ -869,7 +884,7 @@ class _SsHoldToConfirmState extends State<SsHoldToConfirm> with SingleTickerProv
                       child: ColoredBox(
                         color: _ok ? AppColors.success : cor,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: EdgeInsets.symmetric(horizontal: d.padX + 4),
                           child: conteudo(
                             AppColors.onDark,
                             _ok ? Icons.check_rounded : widget.icon,
@@ -939,8 +954,9 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
   late var _fase = widget.done ? _SwipeFase.done : _SwipeFase.idle;
   bool _passou = false;
 
-  static const _h = 60.0;
-  static const _thumb = 52.0;
+  // Trilho = botão da densidade + 8 (56 no padrão; era 60), bolinha = trilho − 8.
+  double _h(SsDensity d) => d.controlHeight + 8;
+  double _thumbOf(SsDensity d) => _h(d) - 8;
 
   Future<void> _confirm() async {
     if (_fase != _SwipeFase.idle || widget.onConfirm == null) return;
@@ -970,6 +986,9 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final dn = SsDensity.of(context);
+    final h = _h(dn);
+    final thumb = _thumbOf(dn);
     final enabled = widget.onConfirm != null;
     final done = _fase == _SwipeFase.done;
     return Semantics(
@@ -982,7 +1001,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, box) {
-          final curso = math.max(1.0, box.maxWidth - _thumb - 8);
+          final curso = math.max(1.0, box.maxWidth - thumb - 8);
           return GestureDetector(
             onHorizontalDragUpdate: !enabled || _fase != _SwipeFase.idle
                 ? null
@@ -1014,7 +1033,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                 final p = _pos.value.clamp(0.0, 1.0);
                 return AnimatedContainer(
                   duration: SsMotion.base,
-                  height: _h,
+                  height: h,
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: done ? AppColors.success : c.field,
@@ -1027,7 +1046,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                         left: 0,
                         top: 0,
                         bottom: 0,
-                        width: _thumb + curso * p,
+                        width: thumb + curso * p,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: done ? Colors.transparent : c.accent.withValues(alpha: .16),
@@ -1037,7 +1056,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                       ),
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: _thumb + 8),
+                          padding: EdgeInsets.symmetric(horizontal: thumb + 8),
                           child: Opacity(
                             opacity: done ? 1 : (1 - p * 1.4).clamp(0.0, 1.0),
                             child: Text(
@@ -1046,7 +1065,7 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: done ? AppColors.onDark : (enabled ? c.ink2 : c.muted),
-                                fontSize: AppType.body,
+                                fontSize: dn.font(AppType.body),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -1057,8 +1076,8 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                         left: curso * p,
                         top: 0,
                         child: Container(
-                          width: _thumb,
-                          height: _thumb,
+                          width: thumb,
+                          height: thumb,
                           decoration: BoxDecoration(
                             color: done ? AppColors.onDark : (enabled ? c.accent : c.muted2),
                             shape: BoxShape.circle,
@@ -1158,96 +1177,101 @@ class _SsMorphButtonState extends State<SsMorphButton> {
       _MorphFase.ok => SsStrings.of(context).stateDone(widget.label),
       _MorphFase.erro => SsStrings.of(context).stateFailed(widget.label),
     };
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: rotulo,
-      liveRegion: true,
-      excludeSemantics: true,
-      onTap: enabled && idle ? _run : null,
-      child: LayoutBuilder(
-        builder: (context, box) {
-          final full = box.maxWidth.isFinite ? box.maxWidth : 240.0;
-          return Center(
-            child: SsPressable(
-              enabled: enabled && idle,
-              onTap: enabled && idle ? _run : null,
-              child: AnimatedContainer(
-                duration: dur,
-                curve: Curves.easeInOutCubic,
-                width: idle ? full : 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  boxShadow: idle && enabled ? c.primaryShadow : null,
-                ),
-                child: AnimatedSwitcher(
+    // Altura do botão da densidade (48 no padrão; era 52); toque nunca abaixo de 48.
+    final d = SsDensity.of(context);
+    return SsTapTarget(
+      minSize: Size(0, d.minTarget),
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: rotulo,
+        liveRegion: true,
+        excludeSemantics: true,
+        onTap: enabled && idle ? _run : null,
+        child: LayoutBuilder(
+          builder: (context, box) {
+            final full = box.maxWidth.isFinite ? box.maxWidth : 240.0;
+            return Center(
+              child: SsPressable(
+                enabled: enabled && idle,
+                onTap: enabled && idle ? _run : null,
+                child: AnimatedContainer(
                   duration: dur,
-                  transitionBuilder: (child, a) => FadeTransition(
-                    opacity: a,
-                    child: ScaleTransition(scale: Tween(begin: .6, end: 1.0).animate(a), child: child),
+                  curve: Curves.easeInOutCubic,
+                  width: idle ? full : d.controlHeight,
+                  height: d.controlHeight,
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    boxShadow: idle && enabled ? c.primaryShadow : null,
                   ),
-                  child: switch (_fase) {
-                    _MorphFase.idle => Padding(
-                      key: const ValueKey('idle'),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (widget.icon != null) ...[
-                            Icon(widget.icon, color: AppColors.onDark, size: 20),
-                            const SizedBox(width: 8),
+                  child: AnimatedSwitcher(
+                    duration: dur,
+                    transitionBuilder: (child, a) => FadeTransition(
+                      opacity: a,
+                      child: ScaleTransition(scale: Tween(begin: .6, end: 1.0).animate(a), child: child),
+                    ),
+                    child: switch (_fase) {
+                      _MorphFase.idle => Padding(
+                        key: const ValueKey('idle'),
+                        padding: EdgeInsets.symmetric(horizontal: d.padX),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (widget.icon != null) ...[
+                              Icon(widget.icon, color: AppColors.onDark, size: d.iconSize),
+                              SizedBox(width: d.gap - 4),
+                            ],
+                            Flexible(
+                              child: Text(
+                                widget.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.clip,
+                                softWrap: false,
+                                style: TextStyle(
+                                  color: AppColors.onDark,
+                                  fontSize: d.font(AppType.body),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                           ],
-                          Flexible(
-                            child: Text(
-                              widget.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.clip,
-                              softWrap: false,
-                              style: const TextStyle(
-                                color: AppColors.onDark,
-                                fontSize: AppType.body,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    _MorphFase.running => Padding(
-                      key: const ValueKey('run'),
-                      padding: const EdgeInsets.all(12),
-                      child: widget.progress == null
-                          ? CircularProgressIndicator(strokeWidth: 3, color: c.accent)
-                          : ValueListenableBuilder<double>(
-                              valueListenable: widget.progress!,
-                              builder: (_, v, _) => CircularProgressIndicator(
-                                value: v.clamp(0.0, 1.0),
-                                strokeWidth: 3,
-                                color: c.accent,
-                                backgroundColor: c.accent.withValues(alpha: .18),
+                      _MorphFase.running => Padding(
+                        key: const ValueKey('run'),
+                        padding: EdgeInsets.all(d.controlHeight / 4),
+                        child: widget.progress == null
+                            ? CircularProgressIndicator(strokeWidth: 3, color: c.accent)
+                            : ValueListenableBuilder<double>(
+                                valueListenable: widget.progress!,
+                                builder: (_, v, _) => CircularProgressIndicator(
+                                  value: v.clamp(0.0, 1.0),
+                                  strokeWidth: 3,
+                                  color: c.accent,
+                                  backgroundColor: c.accent.withValues(alpha: .18),
+                                ),
                               ),
-                            ),
-                    ),
-                    _MorphFase.ok => const Icon(
-                      Icons.check_rounded,
-                      key: ValueKey('ok'),
-                      color: AppColors.onDark,
-                      size: 26,
-                    ),
-                    _MorphFase.erro => const Icon(
-                      Icons.close_rounded,
-                      key: ValueKey('erro'),
-                      color: AppColors.onDark,
-                      size: 26,
-                    ),
-                  },
+                      ),
+                      _MorphFase.ok => const Icon(
+                        Icons.check_rounded,
+                        key: ValueKey('ok'),
+                        color: AppColors.onDark,
+                        size: 26,
+                      ),
+                      _MorphFase.erro => const Icon(
+                        Icons.close_rounded,
+                        key: ValueKey('erro'),
+                        color: AppColors.onDark,
+                        size: 26,
+                      ),
+                    },
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

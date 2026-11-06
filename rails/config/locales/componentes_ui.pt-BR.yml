@@ -217,6 +217,11 @@ pt-BR:
         today: Hoje
       shortcuts_label: Atalhos de período
       to: Até
+    density_picker:
+      label: Densidade
+      compact: Compacta
+      standard: Padrão
+      comfortable: Confortável
     device_tile:
       more: Mais opções de %{name}
       details: Abrir detalhes de %{name}

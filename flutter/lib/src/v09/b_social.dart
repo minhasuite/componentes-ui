@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_aurora.dart';
@@ -72,7 +73,7 @@ class SsPeoplePicker extends StatelessWidget {
       height: 132,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: SsDensity.of(context).padX, vertical: 4),
         children: [
           if (onAdd != null)
             Padding(

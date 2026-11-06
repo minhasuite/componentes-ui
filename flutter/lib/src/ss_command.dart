@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_list.dart';
 import 'ss_strings.dart';
@@ -234,29 +235,33 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
 
   Widget _linha(SsCommand cmd, bool primeiro) {
     final c = SsColors.of(context);
-    final base = TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w500);
+    final d = SsDensity.of(context);
+    final base = TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500);
     return Semantics(
       button: true,
       child: Material(
         color: primeiro ? c.accentSoft : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.field),
+        borderRadius: BorderRadius.circular(d.radiusField),
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderRadius: BorderRadius.circular(d.radiusField),
           onTap: () {
             HapticFeedback.lightImpact();
             widget.onSelected(cmd);
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: d.rowPadV - 3),
             child: Row(
               children: [
                 Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(10)),
-                  child: Icon(cmd.icon, size: 19, color: c.accentText),
+                  width: d.iconTile - 8,
+                  height: d.iconTile - 8,
+                  decoration: BoxDecoration(
+                    color: c.accentSoft,
+                    borderRadius: BorderRadius.circular(d.radiusField - 4),
+                  ),
+                  child: Icon(cmd.icon, size: d.iconSize - 1, color: c.accentText),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: d.gap),
                 Expanded(
                   child: Text.rich(
                     TextSpan(children: _destaque(cmd.label, base)),

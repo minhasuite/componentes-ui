@@ -103,6 +103,35 @@ module ComponentesUi
       %(<script#{attr} data-ss-shell-head>#{APP_SHELL_HEAD_JS}</script>).html_safe
     end
 
+    # v0.11: densidade. Nome válido ("compact"/"standard"/"comfortable"); o resto vira "standard".
+    def ss_density(value = nil)
+      v = (value || (ComponentesUi.config.density if ComponentesUi.respond_to?(:config))).to_s
+      ComponentesUi::DENSITIES.include?(v) ? v : "standard"
+    end
+
+    # Atributo do <html> (ou de qualquer contêiner) com a densidade: vazio no padrão.
+    #   <html lang="pt-BR" <%= tag.attributes(ss_density_attrs) %>>
+    #   <section <%= tag.attributes(ss_density_attrs("compact")) %>>…</section>
+    def ss_density_attrs(value = nil)
+      d = ss_density(value)
+      d == "standard" ? {} : { "data-ss-density" => d }
+    end
+
+    SS_DENSITY_HEAD_JS = <<~JS.gsub(/\s*\n\s*/, "").freeze
+      (function(){try{var v=localStorage.getItem("ss-density");
+      if(v==="compact"||v==="comfortable")document.documentElement.setAttribute("data-ss-density",v);
+      else if(v==="standard")document.documentElement.removeAttribute("data-ss-density")}catch(e){}})();
+    JS
+
+    # No <head>, antes do CSS: aplica a densidade que a pessoa escolheu (localStorage
+    # ss-density, do Ss::DensityPickerComponent) antes da 1ª pintura e sobrevive ao morph
+    # do Turbo. Sem escolha, vale a do <html> (ss_density_attrs / config).
+    def ss_density_head
+      nonce = (content_security_policy_nonce if respond_to?(:content_security_policy_nonce)) rescue nil
+      attr = nonce ? %( nonce="#{ERB::Util.html_escape(nonce)}") : ""
+      %(<script#{attr} data-ss-density-head>#{SS_DENSITY_HEAD_JS}</script>).html_safe
+    end
+
     # v0.10.2: "Pular para o conteúdo" (.ss-skip), o primeiro Tab da página. Ponha logo no
     # começo do <body>; o alvo precisa de id (o <main> do AppShell é #conteudo, com tabindex=-1).
     #   <%= ss_skip_link %>   <%= ss_skip_link("#principal", "Ir para a lista") %>

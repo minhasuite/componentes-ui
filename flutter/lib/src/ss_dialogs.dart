@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion_view.dart';
 import 'ss_button.dart';
 import 'ss_list.dart';
@@ -277,7 +278,7 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
             decoration: InputDecoration(
               labelText: widget.label ?? SsStrings.of(context).name,
               hintText: widget.hint,
-              prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: 21),
+              prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: SsDensity.of(context).iconSize + 1),
             ),
             validator: widget.validator == null ? null : (v) => widget.validator!((v ?? '').trim()),
             onFieldSubmitted: widget.maxLines > 1 ? null : (_) => _salvar(),
@@ -498,7 +499,7 @@ class _Empilhados extends StatelessWidget {
         variant: danger ? SsButtonVariant.danger : SsButtonVariant.primary,
         onPressed: onConfirm,
       ),
-      const SizedBox(height: 8),
+      SizedBox(height: SsDensity.of(context).gap - 4),
       SsButton(label: cancelLabel, variant: SsButtonVariant.ghost, onPressed: onCancel),
     ],
   );

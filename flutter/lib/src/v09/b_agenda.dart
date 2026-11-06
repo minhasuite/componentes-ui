@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../format.dart';
 import '../motion.dart';
 import '../ss_badge.dart' show SsTone;
@@ -821,8 +822,9 @@ class _LinhaAgenda extends StatelessWidget {
     final hora = SsAgendaList._hora(e, s);
     final soRotulo = e.allDay && e.time.isEmpty;
     final faixa = e.end == null ? hora : '$hora – ${e.end}';
+    final d = SsDensity.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.only(bottom: d.space(6)),
       child: Semantics(
         button: e.onTap != null,
         label: [faixa, e.title, ?e.detail].join(', '),
@@ -831,7 +833,7 @@ class _LinhaAgenda extends StatelessWidget {
           onTap: e.onTap,
           enabled: e.onTap != null,
           child: Container(
-            constraints: const BoxConstraints(minHeight: 52),
+            constraints: BoxConstraints(minHeight: d.fieldHeight),
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: c.surface,
@@ -844,7 +846,7 @@ class _LinhaAgenda extends StatelessWidget {
                 children: [
                   Container(width: 4, color: cor),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 0, 10),
+                    padding: EdgeInsets.fromLTRB(d.padX - 4, d.rowPadV, 0, d.rowPadV),
                     child: Container(
                       width: largura,
                       alignment: AlignmentDirectional.centerStart,
@@ -891,7 +893,7 @@ class _LinhaAgenda extends StatelessWidget {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
+                      padding: EdgeInsets.fromLTRB(8, d.rowPadV, d.padX - 4, d.rowPadV),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -900,7 +902,7 @@ class _LinhaAgenda extends StatelessWidget {
                             e.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: c.ink, fontSize: AppType.set, fontWeight: FontWeight.w700),
+                            style: TextStyle(color: c.ink, fontSize: d.font(AppType.set), fontWeight: FontWeight.w700),
                           ),
                           if (e.detail != null)
                             Padding(

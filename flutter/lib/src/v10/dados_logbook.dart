@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../skeleton.dart';
@@ -433,7 +434,12 @@ class _Cabecalho extends SliverPersistentHeaderDelegate {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Text(
         titulo.toUpperCase(),
-        style: TextStyle(fontSize: AppType.label, fontWeight: FontWeight.w800, letterSpacing: 1.3, color: cor),
+        style: TextStyle(
+          fontSize: SsDensity.of(context).font(AppType.label),
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.3,
+          color: cor,
+        ),
       ),
     ),
   );
@@ -452,9 +458,12 @@ class _Linha extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final tom = e.tone.colors(context);
     final neutro = e.tone == SsTone.neutral;
     final hora = fmt.hm(e.at);
+    // Ícone do evento: 26 / 32 / 36.
+    final tam = d.iconTile - 10;
     final corpo = IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -462,42 +471,47 @@ class _Linha extends StatelessWidget {
           SizedBox(
             width: 52,
             child: Padding(
-              padding: const EdgeInsets.only(top: 9),
+              padding: EdgeInsets.only(top: (tam - 14) / 2),
               child: Text(
                 hora,
                 textAlign: TextAlign.right,
-                style: AppTheme.number(context, size: AppType.meta, color: c.muted),
+                style: AppTheme.number(context, size: d.font(AppType.meta), color: c.muted),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: d.gap),
           // Ícone com o fio vertical que liga os eventos do dia.
           SizedBox(
-            width: 32,
+            width: tam,
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                if (!last) Positioned(top: 32, bottom: 0, child: Container(width: 1, color: c.line)),
+                if (!last)
+                  Positioned(
+                    top: tam,
+                    bottom: 0,
+                    child: Container(width: 1, color: c.line),
+                  ),
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: tam,
+                  height: tam,
                   decoration: BoxDecoration(
                     color: neutro ? c.field : tom.soft,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(d.radiusField - 4),
                   ),
                   child: Icon(
                     e.icon ?? Icons.circle,
-                    size: e.icon == null ? 8 : 16,
+                    size: e.icon == null ? 8 : d.iconSize - 4,
                     color: neutro ? c.muted : tom.solid,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: d.gap),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(top: 5, bottom: last ? 4 : 14),
+              padding: EdgeInsets.only(top: (tam - 22) / 2, bottom: last ? 4 : d.space(14)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -508,7 +522,7 @@ class _Linha extends StatelessWidget {
                     children: [
                       Text(
                         e.title,
-                        style: TextStyle(fontSize: AppType.set, fontWeight: FontWeight.w700, color: c.ink),
+                        style: TextStyle(fontSize: d.font(AppType.set), fontWeight: FontWeight.w700, color: c.ink),
                       ),
                       if (e.state != null)
                         Container(
@@ -520,7 +534,7 @@ class _Linha extends StatelessWidget {
                           child: Text(
                             e.state!,
                             style: TextStyle(
-                              fontSize: AppType.label,
+                              fontSize: d.font(AppType.label),
                               fontWeight: FontWeight.w700,
                               color: neutro ? c.ink2 : tom.text,
                             ),
@@ -533,14 +547,14 @@ class _Linha extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         e.detail!,
-                        style: TextStyle(fontSize: AppType.meta, color: c.muted),
+                        style: TextStyle(fontSize: d.font(AppType.meta), color: c.muted),
                       ),
                     ),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: d.gap),
         ],
       ),
     );

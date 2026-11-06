@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
+import '../density.dart';
 import '../motion.dart';
 import '../ss_badge.dart' show SsTone;
 import '../ss_card.dart';
@@ -20,22 +21,20 @@ import 'tela_barra.dart';
 /// [indent] recua o fio (alinhar com o texto depois do ícone); [card] falso
 /// tira o card (as linhas ficam soltas, só com os fios).
 class SsRows extends StatelessWidget {
-  const SsRows({
-    super.key,
-    required this.children,
-    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-    this.indent = 0,
-    this.card = true,
-  });
+  const SsRows({super.key, required this.children, this.padding, this.indent = 0, this.card = true});
 
   final List<Widget> children;
-  final EdgeInsetsGeometry padding;
+
+  /// Respiro do card. Nulo (v0.11): o da densidade (12×4 no padrão).
+  final EdgeInsetsGeometry? padding;
   final double indent;
   final bool card;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    final padding = this.padding ?? EdgeInsets.symmetric(horizontal: d.padX - 4, vertical: d.space(4));
     final col = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -62,13 +61,14 @@ class SsDragHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final icone = Tooltip(
       message: SsStrings.of(context).dragToReorder,
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.grab : SystemMouseCursors.basic,
         child: SizedBox.square(
-          dimension: 40,
-          child: Icon(Icons.drag_indicator_rounded, color: enabled ? c.muted : c.muted2),
+          dimension: d.iconButton,
+          child: Icon(Icons.drag_indicator_rounded, size: d.iconSize + 4, color: enabled ? c.muted : c.muted2),
         ),
       ),
     );
@@ -169,7 +169,7 @@ class SsReorderableList extends StatelessWidget {
             scale: parado ? 1 : 1 + .02 * t,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.card),
+                borderRadius: BorderRadius.circular(SsDensity.of(context).radiusCard),
                 boxShadow: [
                   BoxShadow(
                     color: c.accent.withValues(alpha: .28 * t),
@@ -202,6 +202,7 @@ class SsDangerZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return Semantics(
       container: true,
       child: Column(
@@ -211,16 +212,16 @@ class SsDangerZone extends StatelessWidget {
           SsDashedDivider(color: c.danger.withValues(alpha: .45), height: 24),
           Text(
             title ?? SsStrings.of(context).dangerZone,
-            style: TextStyle(color: c.dangerText, fontSize: AppType.sub, fontWeight: FontWeight.w800),
+            style: TextStyle(color: c.dangerText, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w800),
           ),
           if (message != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: d.space(4)),
             Text(
               message!,
-              style: TextStyle(color: c.muted, fontSize: AppType.sub, height: 1.4),
+              style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), height: 1.4),
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: d.space(10)),
           child,
         ],
       ),
@@ -262,23 +263,24 @@ class SsCallout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final cores = tone.colors(context);
     final urgente = tone == SsTone.danger || tone == SsTone.warning;
     return Semantics(
       container: true,
       liveRegion: urgente,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+        padding: EdgeInsets.fromLTRB(d.padX - 4, d.padX - 4, d.padX - 2, d.padX - 4),
         decoration: BoxDecoration(
           color: Color.alphaBlend(cores.soft, c.surface),
-          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderRadius: BorderRadius.circular(d.radiusField),
           border: Border.all(color: cores.solid.withValues(alpha: .25)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon ?? _icone(tone), size: 20, color: cores.text),
-            const SizedBox(width: 10),
+            Icon(icon ?? _icone(tone), size: d.iconSize, color: cores.text),
+            SizedBox(width: d.space(10)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,7 +291,7 @@ class SsCallout extends StatelessWidget {
                       title!,
                       style: TextStyle(
                         color: cores.text,
-                        fontSize: AppType.set,
+                        fontSize: d.font(AppType.set),
                         fontWeight: FontWeight.w800,
                         height: 1.3,
                       ),
@@ -299,14 +301,18 @@ class SsCallout extends StatelessWidget {
                       padding: EdgeInsets.only(top: title == null ? 0 : 2),
                       child: Text(
                         message!,
-                        style: TextStyle(color: c.ink2, fontSize: AppType.sub, height: 1.4),
+                        style: TextStyle(color: c.ink2, fontSize: d.font(AppType.sub), height: 1.4),
                       ),
                     ),
-                  if (child != null) Padding(padding: const EdgeInsets.only(top: 6), child: child),
+                  if (child != null)
+                    Padding(
+                      padding: EdgeInsets.only(top: d.space(6)),
+                      child: child,
+                    ),
                   if (actions.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Wrap(spacing: 8, runSpacing: 8, children: actions),
+                      padding: EdgeInsets.only(top: d.space(10)),
+                      child: Wrap(spacing: d.space(8), runSpacing: d.space(8), children: actions),
                     ),
                 ],
               ),
@@ -392,7 +398,7 @@ class _SsCodeBlockState extends State<SsCodeBlock> {
               child: SsIconButton(
                 icon: _copiado ? Icons.check_rounded : Icons.copy_rounded,
                 tooltip: _copiado ? s.copied : s.copy,
-                size: 36,
+                size: SsDensity.of(context).iconButton - 4,
                 color: _copiado
                     ? (widget.terminal ? AppColors.success : c.successText)
                     : (widget.terminal ? AppColors.onDarkMuted : c.muted),
@@ -429,50 +435,56 @@ class SsButtonGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final raio = BorderRadius.circular(AppRadius.thumb);
-    return Semantics(
-      container: true,
-      label: label,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: raio,
-          border: Border.all(color: c.line),
-        ),
-        child: ClipRRect(
-          borderRadius: raio,
-          child: Material(
-            type: MaterialType.transparency,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (i, b) in buttons.indexed) ...[
-                  if (i > 0) Container(width: 1, height: 28, color: c.line),
-                  Tooltip(
-                    message: b.tooltip,
-                    child: Semantics(
-                      button: true,
-                      enabled: b.onPressed != null,
-                      label: b.tooltip,
-                      excludeSemantics: true,
-                      child: InkWell(
-                        onTap: b.onPressed == null
-                            ? null
-                            : () {
-                                SsHaptics.tick();
-                                b.onPressed!();
-                              },
-                        highlightColor: c.accentSoft,
-                        splashColor: c.accent.withValues(alpha: .12),
-                        child: SizedBox(
-                          width: 48,
-                          height: 44,
-                          child: Icon(b.icon, size: 20, color: b.onPressed == null ? c.muted2 : c.ink2),
+    final d = SsDensity.of(context);
+    final raio = BorderRadius.circular(d.radiusField - 2);
+    // Célula 44×40 / 48×44 / 52×48; o toque não cai abaixo de 48.
+    final altura = d.iconButton + 4;
+    return SsTapTarget(
+      minSize: Size(0, d.minTarget),
+      child: Semantics(
+        container: true,
+        label: label,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: raio,
+            border: Border.all(color: c.line),
+          ),
+          child: ClipRRect(
+            borderRadius: raio,
+            child: Material(
+              type: MaterialType.transparency,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final (i, b) in buttons.indexed) ...[
+                    if (i > 0) Container(width: 1, height: altura - 16, color: c.line),
+                    Tooltip(
+                      message: b.tooltip,
+                      child: Semantics(
+                        button: true,
+                        enabled: b.onPressed != null,
+                        label: b.tooltip,
+                        excludeSemantics: true,
+                        child: InkWell(
+                          onTap: b.onPressed == null
+                              ? null
+                              : () {
+                                  SsHaptics.tick();
+                                  b.onPressed!();
+                                },
+                          highlightColor: c.accentSoft,
+                          splashColor: c.accent.withValues(alpha: .12),
+                          child: SizedBox(
+                            width: d.iconButton + 8,
+                            height: altura,
+                            child: Icon(b.icon, size: d.iconSize, color: b.onPressed == null ? c.muted2 : c.ink2),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -496,7 +508,10 @@ class SsStepHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final cor = done ? AppColors.success : c.accentSolid;
+    // Bolinha do número: 22 / 28 / 32.
+    final bola = d.iconTile - 14;
     return Semantics(
       header: true,
       label: '$number. $title',
@@ -504,8 +519,8 @@ class SsStepHeading extends StatelessWidget {
         children: [
           ExcludeSemantics(
             child: Container(
-              width: 28,
-              height: 28,
+              width: bola,
+              height: bola,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: cor,
@@ -520,19 +535,19 @@ class SsStepHeading extends StatelessWidget {
                 ],
               ),
               child: done
-                  ? const Icon(Icons.check_rounded, size: 16, color: AppColors.onDark)
+                  ? Icon(Icons.check_rounded, size: d.iconSize - 4, color: AppColors.onDark)
                   : Text(
                       '$number',
                       style: AppTheme.number(
                         context,
-                        size: AppType.meta,
+                        size: d.font(AppType.meta),
                         weight: FontWeight.w800,
                         color: AppColors.onDark,
                       ),
                     ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: d.space(10)),
           Expanded(
             child: ExcludeSemantics(
               child: Column(
@@ -541,12 +556,12 @@ class SsStepHeading extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(color: c.ink, fontSize: AppType.md, fontWeight: FontWeight.w800),
+                    style: TextStyle(color: c.ink, fontSize: d.font(AppType.md), fontWeight: FontWeight.w800),
                   ),
                   if (subtitle != null)
                     Text(
                       subtitle!,
-                      style: TextStyle(color: c.muted, fontSize: AppType.sub),
+                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub)),
                     ),
                 ],
               ),
@@ -571,6 +586,7 @@ class SsDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     if (label == null) return Divider(height: height, thickness: 1, color: c.line);
     return SizedBox(
       height: height,
@@ -578,10 +594,10 @@ class SsDivider extends StatelessWidget {
         children: [
           Expanded(child: Divider(thickness: 1, color: c.line)),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: d.padX - 4),
             child: Text(
               label!,
-              style: TextStyle(color: c.muted, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+              style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta), fontWeight: FontWeight.w700),
             ),
           ),
           Expanded(child: Divider(thickness: 1, color: c.line)),

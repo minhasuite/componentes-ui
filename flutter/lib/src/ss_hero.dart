@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 
 /// Herói com o gradiente da marca: rótulo, o número grande (DM Mono), uma
 /// legenda e selos. Texto sempre `onDark` (o gradiente é escuro nos dois temas).
@@ -14,7 +15,7 @@ class SsHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(18),
+    padding: EdgeInsets.all(SsDensity.of(context).cardPad + 2),
     decoration: BoxDecoration(
       gradient: LinearGradient(colors: [SsColors.of(context).brandFrom, SsColors.of(context).brandTo]),
       borderRadius: BorderRadius.circular(AppRadius.card),

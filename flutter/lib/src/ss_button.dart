@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 
 enum SsButtonVariant { primary, ghost, success, danger }
 
 /// Botão do design system. `primary` tem o **glow roxo** direcional que o
-/// `elevation` do Material não reproduz. Altura 50, raio 14 (11 quando `small`).
+/// `elevation` do Material não reproduz. Altura e raio vêm da [SsDensity]
+/// (padrão 48 e 14; 36 e 11 quando `small`); o toque nunca fica menor que 48.
 /// No toque afunda rápido e, ao soltar, volta com mola ([SsPressable]); o
 /// carregando e o conteúdo trocam com um cruzamento curto.
 ///
@@ -26,7 +28,7 @@ class SsButton extends StatelessWidget {
        _danger = false;
 
   /// Botão de texto: sem fundo nem sombra, rótulo na cor da marca (ou do
-  /// perigo, com [danger]); altura 40 (32 com [small]); não ocupa a
+  /// perigo, com [danger]); altura 40 (32 com [small], na densidade padrão); não ocupa a
   /// largura toda por padrão.
   const SsButton.text({
     super.key,
@@ -56,6 +58,7 @@ class SsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final enabled = onPressed != null && !loading;
 
     late Color bg;
@@ -83,9 +86,11 @@ class SsButton extends StatelessWidget {
       shadow = null;
     }
 
-    final height = _text ? (small ? 32.0 : 40.0) : (small ? 36.0 : 50.0);
-    final radius = BorderRadius.circular(small ? AppRadius.stepperBtn : AppRadius.field);
-    final fontSize = small ? AppType.meta : AppType.body;
+    final height = _text
+        ? (small ? d.controlHeightSmall - 4 : d.controlHeightSmall + 4)
+        : (small ? d.controlHeightSmall : d.controlHeight);
+    final radius = BorderRadius.circular(small ? d.radiusField - 3 : d.radiusField);
+    final fontSize = d.font(small ? AppType.meta : AppType.body);
 
     Widget content;
     if (loading) {
@@ -95,7 +100,10 @@ class SsButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon != null) ...[Icon(icon, size: small ? 16 : 20, color: fg), const SizedBox(width: 8)],
+          if (icon != null) ...[
+            Icon(icon, size: small ? d.iconSize - 4 : d.iconSize, color: fg),
+            SizedBox(width: d.gap - 4),
+          ],
           Flexible(
             child: Text(
               label,
@@ -120,6 +128,22 @@ class SsButton extends StatelessWidget {
       child: KeyedSubtree(key: ValueKey(loading), child: content),
     );
 
+    return SsTapTarget(
+      minSize: Size(0, d.minTarget),
+      child: _box(context, enabled, height, radius, shadow, bg, content, d),
+    );
+  }
+
+  Widget _box(
+    BuildContext context,
+    bool enabled,
+    double height,
+    BorderRadius radius,
+    List<BoxShadow>? shadow,
+    Color bg,
+    Widget content,
+    SsDensity d,
+  ) {
     return SsPressable(
       enabled: enabled,
       child: Opacity(
@@ -147,7 +171,7 @@ class SsButton extends StatelessWidget {
               onTap: enabled ? onPressed : null,
               borderRadius: radius,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: small ? 12 : 18),
+                padding: EdgeInsets.symmetric(horizontal: small ? d.padX - 4 : d.padX + 2),
                 child: Center(child: content),
               ),
             ),

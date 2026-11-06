@@ -3,6 +3,7 @@
 library;
 
 export 'src/app_theme.dart';
+export 'src/density.dart';
 export 'src/format.dart';
 export 'src/illustrations.dart';
 export 'src/motion.dart';

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'density.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
 
@@ -37,10 +38,11 @@ class SsSegmented<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final n = segments.length;
     final i = segments.indexWhere((s) => s.$1 == value).clamp(0, n - 1);
-    return Container(
-      height: 42,
+    final seg = Container(
+      height: d.segmentHeight,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: onDark ? AppColors.onDark.withValues(alpha: .1) : c.field,
@@ -95,7 +97,7 @@ class SsSegmented<T> extends StatelessWidget {
                                 : (onDark ? AppColors.onDarkSoft : c.muted).withValues(
                                     alpha: disabled.contains(segments[k].$1) ? .45 : 1,
                                   ),
-                            fontSize: AppType.sub,
+                            fontSize: d.font(AppType.sub),
                             fontWeight: k == i ? FontWeight.w800 : FontWeight.w600,
                           ),
                           child: Row(
@@ -103,9 +105,10 @@ class SsSegmented<T> extends StatelessWidget {
                             children: [
                               if (icons?[k] case final ic?) ...[
                                 Builder(
-                                  builder: (ctx) => Icon(ic, size: 16, color: DefaultTextStyle.of(ctx).style.color),
+                                  builder: (ctx) =>
+                                      Icon(ic, size: d.iconSize - 4, color: DefaultTextStyle.of(ctx).style.color),
                                 ),
-                                const SizedBox(width: 5),
+                                SizedBox(width: d.space(5)),
                               ],
                               Flexible(child: Text(segments[k].$2, maxLines: 1, overflow: TextOverflow.ellipsis)),
                             ],
@@ -120,6 +123,8 @@ class SsSegmented<T> extends StatelessWidget {
         ],
       ),
     );
+    // Compacto: desenha 36 e o toque continua com 48.
+    return SsTapTarget(minSize: Size(0, d.minTarget), child: seg);
   }
 }
 
@@ -166,6 +171,7 @@ class SsFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 220);
     final cor = color;
     final cheio = swatch && cor != null;
@@ -257,49 +263,53 @@ class SsFilterChip extends StatelessWidget {
       borda = Border.all(color: macico ? c.accentSolid : (selected ? c.accent.withValues(alpha: .35) : c.line));
     }
 
-    return Semantics(
-      button: true,
-      selected: selected,
-      enabled: _enabled,
-      child: SsPressable(
-        onTap: onTap,
+    // Por fora de tudo: o toque na sobra (alvo 48) passa pelo Semantics.
+    return SsTapTarget(
+      minSize: Size(0, d.minTarget),
+      child: Semantics(
+        button: true,
+        selected: selected,
         enabled: _enabled,
-        // Marcou: o chip dá um pulinho com mola e o ✓ se desenha.
-        child: AnimatedOpacity(
-          duration: dur,
-          opacity: _enabled ? 1 : .45,
-          child: SsPop(
-            active: selected,
-            from: .9,
-            child: AnimatedContainer(
-              duration: dur,
-              height: 34,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: fundo,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                border: borda,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  marca,
-                  Text(
-                    label,
-                    style: TextStyle(color: fg, fontSize: AppType.sub, fontWeight: FontWeight.w700),
-                  ),
-                  if (count != null) ...[
-                    const SizedBox(width: 6),
+        child: SsPressable(
+          onTap: onTap,
+          enabled: _enabled,
+          // Marcou: o chip dá um pulinho com mola e o ✓ se desenha.
+          child: AnimatedOpacity(
+            duration: dur,
+            opacity: _enabled ? 1 : .45,
+            child: SsPop(
+              active: selected,
+              from: .9,
+              child: AnimatedContainer(
+                duration: dur,
+                height: d.chipHeight,
+                padding: EdgeInsets.symmetric(horizontal: d.padX - 4),
+                decoration: BoxDecoration(
+                  color: fundo,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: borda,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    marca,
                     Text(
-                      '$count',
-                      style: AppTheme.number(
-                        context,
-                        size: AppType.meta,
-                        color: cheio || macico ? fg.withValues(alpha: .8) : (selected ? fg : c.muted),
-                      ),
+                      label,
+                      style: TextStyle(color: fg, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w700),
                     ),
+                    if (count != null) ...[
+                      SizedBox(width: d.space(6)),
+                      Text(
+                        '$count',
+                        style: AppTheme.number(
+                          context,
+                          size: d.font(AppType.meta),
+                          color: cheio || macico ? fg.withValues(alpha: .8) : (selected ? fg : c.muted),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -379,10 +389,11 @@ class _SsChipBarState extends State<SsChipBar> {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       final children = widget.children;
+      final gap = SsDensity.of(context).gap - 4;
       if (widget.wrapAbove != null && box.maxWidth >= widget.wrapAbove!) {
         return Padding(
           padding: widget.padding,
-          child: Wrap(spacing: 8, runSpacing: 8, children: children),
+          child: Wrap(spacing: gap, runSpacing: gap, children: children),
         );
       }
       final faixa = SingleChildScrollView(
@@ -391,7 +402,7 @@ class _SsChipBarState extends State<SsChipBar> {
         child: Row(
           children: [
             for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) const SizedBox(width: 8),
+              if (i > 0) SizedBox(width: gap),
               widget.currentIndex == null ? children[i] : KeyedSubtree(key: _chave(i), child: children[i]),
             ],
           ],
@@ -511,21 +522,23 @@ class _SsSearchFieldState extends State<SsSearchField> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     final on = _focus.hasFocus;
-    return AnimatedContainer(
+    final caixa = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      height: 48,
+      // Padrão 48 (campo de 52 menos 4: a busca é mais baixa que o campo).
+      height: d.fieldHeight - 4,
       decoration: BoxDecoration(
         color: on ? c.surface : c.field,
-        borderRadius: BorderRadius.circular(AppRadius.field),
+        borderRadius: BorderRadius.circular(d.radiusField),
         border: Border.all(color: on ? c.accent.withValues(alpha: .45) : Colors.transparent, width: 2),
         boxShadow: on ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)] : const [],
       ),
       child: Row(
         children: [
-          const SizedBox(width: 12),
-          Icon(Icons.search_rounded, size: 22, color: on ? c.accent : c.muted),
-          const SizedBox(width: 8),
+          SizedBox(width: d.padX - 4),
+          Icon(Icons.search_rounded, size: d.iconSize + 2, color: on ? c.accent : c.muted),
+          SizedBox(width: d.gap - 4),
           Expanded(
             child: TextField(
               controller: _ctrl,
@@ -537,10 +550,10 @@ class _SsSearchFieldState extends State<SsSearchField> {
                 widget.onSubmitted?.call(v);
               },
               textInputAction: TextInputAction.search,
-              style: TextStyle(color: c.ink, fontSize: AppType.body, fontWeight: FontWeight.w600),
+              style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
               decoration: InputDecoration.collapsed(
                 hintText: widget.hint ?? SsStrings.of(context).search,
-                hintStyle: TextStyle(color: c.muted, fontSize: AppType.body, fontWeight: FontWeight.w500),
+                hintStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -554,10 +567,11 @@ class _SsSearchFieldState extends State<SsSearchField> {
               },
             )
           else if (widget.suffix == null)
-            const SizedBox(width: 12),
+            SizedBox(width: d.padX - 4),
           ?widget.suffix,
         ],
       ),
     );
+    return SsTapTarget(minSize: Size(0, d.minTarget), child: caixa);
   }
 }
