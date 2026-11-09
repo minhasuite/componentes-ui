@@ -6,6 +6,8 @@ import { reduced } from "componentes_ui/controllers/ss_motion_controller"
 // Modo B (form do button_to): ao enviar, vira a chave na hora (aria-pressed, a mesma festa
 // da .ss-switch-row: data-ss-anim) e marca aria-busy; se o servidor falhar, volta. Dentro de
 // um tile (.ss-device), marca o tile como "pending" e, na falha, "error".
+// v0.12: o botão pode ser um role="switch" (o ícone do tile de aparelho): aí o estado vai em
+// aria-checked, não em aria-pressed.
 // Escuta turbo:submit-start/end; com data-turbo="false", vira no submit e a página recarrega.
 export default class extends Controller {
   static targets = ["button"]
@@ -47,9 +49,10 @@ export default class extends Controller {
 
   get button() { return this.hasButtonTarget ? this.buttonTarget : this.element.querySelector(".ss-switch") }
   get tile() { return this.element.closest(".ss-device") }
+  get stateAttr() { return this.button.getAttribute("role") === "switch" ? "aria-checked" : "aria-pressed" }
 
   begin() {
-    this.was = this.button.getAttribute("aria-pressed") === "true"
+    this.was = this.button.getAttribute(this.stateAttr) === "true"
     this.flip()
     this.button.setAttribute("aria-busy", "true")
     const t = this.tile
@@ -70,11 +73,11 @@ export default class extends Controller {
     }
   }
 
-  flip() { this.set(this.button.getAttribute("aria-pressed") !== "true", true) }
+  flip() { this.set(this.button.getAttribute(this.stateAttr) !== "true", true) }
 
   set(on, animate) {
     const b = this.button
-    b.setAttribute("aria-pressed", String(on))
+    b.setAttribute(this.stateAttr, String(on))
     b.title = on ? this.onLabelValue : this.offLabelValue
     this.tile?.classList.toggle("is-on", on)
     if (!animate || reduced()) return

@@ -1,0 +1,56 @@
+<%# titulo: Tile com ícone-chave, agenda, indicador e ranking | grupo: Cards e casa (v0.12) | ordem: 10 %>
+<%# v0.12: pares Flutter no README (SsDeviceTile, SsDayAgenda(allDay:), SsCardHeader, SsKpiCard, SsRankList). %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% bulb = ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %>
+<% gate = ico.("M3 21V9l9-6 9 6v12M7 21v-8h10v8M7 17h10") %>
+<% bolt = ico.("M13 2 3 14h9l-1 8 10-12h-9z") %>
+<% money = ico.("M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6") %>
+<% bars = ico.("M4 20V10M10 20V4M16 20v-7M22 20H2") %>
+<% aqui = "/vitrine/cards_v012" %>
+<% t = Time.zone.now.change(min: 0) %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::DeviceTileComponent (v0.12)", "Uma linha: o ícone é a chave (role=switch, aria-checked; toque, Enter ou Espaço); ligado, o quadrado fica cheio na cor; desligado, claro com contorno. Nome e estado ficam onde era a chave e abrem os detalhes. Enviando, sem sinal, sem permissão e aperto seguem iguais.",
+           uso: 'render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada", on: true, icon: svg, url: ponto_path(p), toggle_url: comando_path(p))' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <%= render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada", on: true, tone: :warn, icon: bulb, url: "#", toggle_url: aqui) %>
+      <%= render Ss::DeviceTileComponent.new(name: "Fita de LED da bancada", state: "Desligada", tone: :warn, icon: bulb, url: "#", toggle_url: aqui) %>
+      <%= render Ss::DeviceTileComponent.new(name: "Abajur", state: "Ligado", on: true, status: :pending, tone: :warn, icon: bulb, url: "#", toggle_url: aqui) %>
+      <%= render Ss::DeviceTileComponent.new(name: "Jardim", state: "Desligado", status: :unavailable, icon: bulb, url: "#", toggle_url: aqui) %>
+      <%= render Ss::DeviceTileComponent.new(name: "Portão da garagem", state: "Fechado", icon: gate, url: "#", action_url: aqui, confirm: "Abrir o portão?") %>
+      <%= render Ss::DeviceTileComponent.new(name: "Câmera", state: "Ligada", on: true, status: :locked, icon: bulb, url: "#") %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::AgendaComponent (dia todo longo)", "O evento de dia inteiro fica dentro do card em qualquer largura: uma linha com reticências; o título inteiro vai no title (dica do navegador).",
+           uso: 'render Ss::AgendaComponent.new(events: [{ title: "…", all_day: true, starts_at: Date.current }, …])' do %>
+    <div class="ss-card" style="padding:16px;max-width:22rem">
+      <%= render Ss::AgendaComponent.new(days: [t.to_date], from: t.hour, to: [t.hour + 3, 24].min, now: t, hour_height: 40, events: [
+            { title: "NOTA TÉCNICA S-1.3 Nº 07/2026 - Implantação em produção restrita do novo leiaute", all_day: true, starts_at: t.to_date },
+            { title: "Aniversário da Mariana", all_day: true, starts_at: t.to_date, tone: :success },
+            { title: "Reunião com fornecedor", sub: "Escritório", starts_at: t + 1.hour, ends_at: t + 2.hours, tone: :info }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::KpiCardComponent", "Um número num card com o cabeçalho padrão (rótulo como título de card, linha menor, ícone tonal à direita), valor em DM Mono no tamanho de card, variação pelo sentido e minigráfico opcional.",
+           uso: 'render Ss::KpiCardComponent.new(label: "Gasto do mês", value: "R$ 312,75", money: true, icon: svg, caption: "01/11 a 30/11", delta: "+4%", good: false)' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <%= render Ss::KpiCardComponent.new(label: "Gasto de hoje", value: "R$ 18,42", money: true, icon: money, tone: :success) %>
+      <%= render Ss::KpiCardComponent.new(label: "Gasto do mês", value: "R$ 312,75", money: true, icon: money, caption: "01/11 a 30/11", delta: "+4%", good: false, hint: "vs. outubro") %>
+      <%= render Ss::KpiCardComponent.new(label: "Potência agora", value: "1.240 W", icon: bolt, tone: :warn, spark: [3, 5, 4, 8, 6, 9], url: "#") %>
+      <%= render Ss::KpiCardComponent.new(label: "Pontos ligados", value: "12", icon: bulb) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::CardHeaderComponent + Ss::RankListComponent", "Ranking com barra proporcional ao maior, valor e fatia ao lado e uma linha menor; o 1º lugar ganha a posição na cor. O cabeçalho dá a mesma tipografia de card de todos.",
+           uso: 'render Ss::RankListComponent.new(tone: :heat, items: [{ label: "Chuveiro", value: "128 kWh", amount: 128, share: "32%", caption: "R$ 121,59" }])' do %>
+    <div class="ss-card" style="padding:16px">
+      <%= render Ss::CardHeaderComponent.new(title: "Consumo por aparelho", subtitle: "Mês · 401,5 kWh · R$ 381,44", icon: bars, tone: :heat) %>
+      <%= render Ss::RankListComponent.new(tone: :heat, label: "Consumo por aparelho", items: [
+            { label: "Ar-condicionado do quarto", value: "163,6 kWh", amount: 163.6, share: "41%", caption: "R$ 155,44", url: "#" },
+            { label: "Chuveiro", value: "128 kWh", amount: 128, share: "32%", caption: "R$ 121,59" },
+            { label: "Máquina de lavar", value: "39 kWh", amount: 39, share: "10%", caption: "R$ 37,06" },
+            { label: "Geladeira", value: "28,9 kWh", amount: 28.9, share: "7%" }]) %>
+    </div>
+  <% end %>
+</div>

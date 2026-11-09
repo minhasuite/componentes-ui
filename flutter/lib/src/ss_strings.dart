@@ -354,6 +354,7 @@ class SsStrings {
     required this.colorHex,
     required this.colorHexInvalid,
     required this.allDay,
+    required this.ranking,
     required this.copy,
     required this.copied,
     required this.dangerZone,
@@ -841,6 +842,9 @@ class SsStrings {
   /// Compromisso sem hora (SsAgendaList).
   final String allDay;
 
+  /// Nome da lista ranqueada no leitor de tela (SsRankList, v0.12).
+  final String ranking;
+
   /// Botão de copiar (SsCodeBlock).
   final String copy;
 
@@ -1210,6 +1214,7 @@ class SsStrings {
     colorHex: 'Código hex',
     colorHexInvalid: 'Use o formato #RRGGBB',
     allDay: 'Dia todo',
+    ranking: 'Ranking',
     copy: 'Copiar',
     copied: 'Copiado',
     dangerZone: 'Zona de perigo',
@@ -1561,6 +1566,7 @@ class SsStrings {
     colorHex: 'Hex code',
     colorHexInvalid: 'Use the #RRGGBB format',
     allDay: 'All day',
+    ranking: 'Ranking',
     copy: 'Copy',
     copied: 'Copied',
     dangerZone: 'Danger zone',
@@ -1912,6 +1918,7 @@ class SsStrings {
     colorHex: 'Código hex',
     colorHexInvalid: 'Usa el formato #RRGGBB',
     allDay: 'Todo el día',
+    ranking: 'Ranking',
     copy: 'Copiar',
     copied: 'Copiado',
     dangerZone: 'Zona de peligro',
@@ -2250,6 +2257,7 @@ class SsStrings {
     'colorHex': colorHex,
     'colorHexInvalid': colorHexInvalid,
     'allDay': allDay,
+    'ranking': ranking,
     'copy': copy,
     'copied': copied,
     'dangerZone': dangerZone,
@@ -2623,6 +2631,7 @@ class SsStrings {
     String? colorHex,
     String? colorHexInvalid,
     String? allDay,
+    String? ranking,
     String? copy,
     String? copied,
     String? dangerZone,
@@ -2958,6 +2967,7 @@ class SsStrings {
     colorHex: colorHex ?? this.colorHex,
     colorHexInvalid: colorHexInvalid ?? this.colorHexInvalid,
     allDay: allDay ?? this.allDay,
+    ranking: ranking ?? this.ranking,
     copy: copy ?? this.copy,
     copied: copied ?? this.copied,
     dangerZone: dangerZone ?? this.dangerZone,

@@ -410,6 +410,8 @@ en:
       qr: Payment QR code
       title: Pay with Pix
       valid_for: Valid for
+    rank_list:
+      label: Ranking
     review_card:
       rating: Rated %{rating} out of 5
     scan_radar:

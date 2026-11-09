@@ -44,7 +44,7 @@ class V103WebTest < ComponentTest
     render_inline(Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada", url: "/p/1", toggle_url: "/p/1/t",
                                               more_url: "/p/1/menu", more_data: { turbo_frame: "modal" }))
     assert_selector ".ss-device.has-more[data-controller=ss-device][data-action='contextmenu->ss-device#more']"
-    assert_selector ".ss-device-end button.ss-switch"
+    assert_selector "button.ss-device-toggle[role=switch]"
     assert_selector ".ss-device-end a.ss-icon-btn.ss-device-more[href='/p/1/menu'][aria-label='Mais opções de Luz da sala']" \
                     "[data-ss-device-target=more][data-turbo-frame=modal] svg"
     assert_selector "a.ss-device-text[href='/p/1']"

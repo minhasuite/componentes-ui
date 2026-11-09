@@ -9,6 +9,9 @@ module Ss
   # v0.10.1: evento de dia inteiro (all_day: true; starts_at pode ser Date; ends_at opcional,
   # o último dia, inclusive) sai numa faixa em cima das horas, em cada dia que cobre. Texto da
   # faixa: agenda.all_day ("Dia todo").
+  #
+  # v0.12: o evento de dia inteiro fica sempre dentro do card, em qualquer largura (uma linha com
+  # reticências); o título inteiro (e o sub) vai no title= de todo evento.
   class AgendaComponent < BaseComponent
     WEEKDAYS = %w[dom seg ter qua qui sex sáb].freeze
 
@@ -41,6 +44,9 @@ module Ss
         day.between?(first, [last, first].max)
       end
     end
+
+    # Título inteiro (com o sub) na dica do navegador: a faixa corta numa linha com reticências (v0.12).
+    def full_title(e) = [e[:title], e[:sub]].compact_blank.join(" · ")
 
     def all_day? = days.any? { |d| all_day_on(d).any? }
     def all_day_label = ss_t("agenda.all_day", default: "Dia todo")

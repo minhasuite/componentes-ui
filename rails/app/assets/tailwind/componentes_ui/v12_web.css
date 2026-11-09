@@ -1,0 +1,127 @@
+/* v0.12 (web): agenda que não estoura o card, tile de aparelho com o ícone como chave, cabeçalho
+   de card, card de indicador e lista ranqueada (pares do SsCardHeader, SsKpiCard e SsRankList).
+   Só tokens. */
+@layer components {
+  /* ── Ss::AgendaComponent: colunas que encolhem (minmax 0) e faixa do dia inteiro numa linha
+        com reticências; nada passa da borda do card, em qualquer largura. ── */
+  .ss-agenda { min-width: 0; }
+  .ss-agenda-head, .ss-agenda-allday { grid-template-columns: var(--gutter) repeat(var(--days), minmax(0, 1fr)); }
+  .ss-agenda-body { grid-template-columns: var(--gutter) minmax(0, 1fr); }
+  .ss-agenda-grid { grid-template-columns: repeat(var(--days), minmax(0, 1fr)); min-width: 0; }
+  .ss-agenda-allday-col { grid-template-columns: minmax(0, 1fr); }
+  .ss-agenda-event.is-all-day, .ss-agenda-event.is-all-day .ss-agenda-in { min-width: 0; max-width: 100%; }
+  .ss-agenda-event.is-all-day .ss-agenda-in { flex-direction: row; align-items: baseline; gap: .4rem; }
+  .ss-agenda-event.is-all-day .ss-agenda-in b { flex: 0 1 auto; min-width: 0; }
+  .ss-agenda-event.is-all-day .ss-agenda-in small { flex: 1 1 0; min-width: 0; }
+  .ss-agenda-in b, .ss-agenda-in small { min-width: 0; max-width: 100%; }
+}
+
+@layer components {
+  /* ── Ss::DeviceTileComponent (v0.12): uma linha, ícone (a chave) · nome e estado · ⋯/cadeado/▶. ── */
+  .ss-device { gap: calc(var(--ss-gap) * .75); padding: calc(var(--ss-card-pad) * .62); }
+  .ss-device-main, .ss-device.is-wide .ss-device-main { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "ico text end";
+                                                        align-items: center; column-gap: calc(var(--ss-gap) * .85); row-gap: 0; }
+  .ss-device-name { font-size: calc(.88rem * var(--ss-font-scale)); line-height: 1.22; }
+  .ss-device-state { margin-top: .1rem; font-size: calc(.78rem * var(--ss-font-scale)); }
+  .ss-device-end:empty { display: none; }
+  /* A chave: o quadrado do ícone é um botão role=switch, por cima do link de detalhes. */
+  .ss-device-toggle-form { display: contents; }
+  .ss-device-toggle { z-index: 2; flex: none; padding: 0; border: 0; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+                      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 30%, var(--line));
+                      transition: background .3s ease, color .3s ease, box-shadow .3s ease, scale var(--ss-dur-indicator, .3s) var(--ss-bounce); }
+  /* Desligado: claro, contorno na cor do aparelho, ícone em tinta; ligado: cheio na cor (regra do .is-on). */
+  .ss-device:not(.is-on) .ss-device-toggle { background: var(--surface); color: var(--ink-2); }
+  .ss-device-toggle:hover:not(:disabled) { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tone) 60%, var(--line)); }
+  .ss-device.is-on .ss-device-toggle:hover:not(:disabled) { box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--tone) 75%, transparent), inset 0 0 0 2px color-mix(in srgb, #fff 35%, transparent); }
+  .ss-device-toggle:active:not(:disabled) { scale: .9; transition-duration: .08s; }
+  .ss-device-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .ss-device-toggle:disabled { cursor: not-allowed; }
+  .ss-device[data-status="unavailable"] .ss-device-toggle { box-shadow: none; }
+  .ss-device-toggle[data-ss-anim] { animation: ss-device-pop .45s var(--ss-bounce); }
+  .ss-device-toggle[aria-busy="true"] { cursor: progress; }
+  @keyframes ss-device-pop { 0% { scale: .86; } 100% { scale: 1; } }
+  /* Alvo de toque: o quadrado já tem 44 px; no compacto com ponteiro grosso, a área cresce por fora. */
+  @media (pointer: coarse) { .ss-device-toggle::after { content: ""; position: absolute; inset: -4px; } }
+  @media (max-width: 420px) { .ss-device { padding: calc(var(--ss-card-pad) * .56); } .ss-device-main { column-gap: calc(var(--ss-gap) * .7); } }
+  @media (prefers-reduced-motion: reduce) { .ss-device-toggle { transition: none; } .ss-device-toggle[data-ss-anim] { animation: none; } }
+}
+
+@layer components {
+  /* ── Cabeçalho de card (Ss::CardHeaderComponent ↔ SsCardHeader): a tipografia padrão de card. ──
+     <div class="ss-card-head"><div class="ss-card-head-text"><p class="ss-card-title">…</p><p class="ss-card-sub">…</p></div>
+       <span class="ss-card-head-icon" style="--tone:…"><svg/></span></div> */
+  .ss-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ss-gap); min-width: 0; }
+  .ss-card-head-text { min-width: 0; flex: 1; }
+  .ss-card-title { margin: 0; font-size: calc(.875rem * var(--ss-font-scale)); font-weight: 800; line-height: 1.3; color: var(--ink);
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-card-title a { color: inherit; text-decoration: none; }
+  .ss-card-sub { margin: .1rem 0 0; font-size: calc(.75rem * var(--ss-font-scale)); font-weight: 500; line-height: 1.35; color: var(--muted);
+                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-card-head-icon { --tone: var(--accent); display: grid; place-items: center; flex: none; width: calc(var(--ss-icon-tile) * .8); height: calc(var(--ss-icon-tile) * .8);
+                       border-radius: calc(var(--r-field) - 2px); background: color-mix(in srgb, var(--tone) 12%, var(--surface)); color: var(--tone); }
+  .ss-card-head-icon svg { width: calc(var(--ss-icon-tile) * .42); height: calc(var(--ss-icon-tile) * .42); }
+  .ss-card-head-action { flex: none; display: flex; align-items: center; gap: .25rem; }
+
+  /* ── Card de indicador (Ss::KpiCardComponent ↔ SsKpiCard). ── */
+  .ss-kpi-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: var(--ss-card-pad) var(--ss-card-pad) calc(var(--ss-card-pad) * .9); overflow: hidden; }
+  /* No card de indicador o rótulo quebra em até 2 linhas (grade de 2 no celular). */
+  .ss-kpi-card .ss-card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow-wrap: break-word; }
+  .ss-kpi-card-value { margin-top: calc(var(--ss-gap) * .7); font-size: calc(1.5rem * var(--ss-font-scale)); line-height: 1.15; color: var(--ink);
+                       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-kpi-card-value .num, .ss-kpi-card-value .ss-amount { font-family: var(--font-mono); font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .ss-kpi-card-value .ss-amount { font-size: inherit; }
+  .ss-kpi-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .45rem; font-size: .74rem; color: var(--muted); }
+  .ss-kpi-card-spark { margin: .5rem calc(var(--ss-card-pad) * -1) calc(var(--ss-card-pad) * -.9); }
+  .ss-kpi-card-spark .ss-spark { display: block; width: 100%; height: 36px; }
+  .ss-kpi-card.is-link { cursor: pointer; transition: box-shadow .2s, translate .2s; }
+  .ss-kpi-card.is-link:hover { box-shadow: var(--shadow-hover); }
+  .ss-kpi-card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+  .ss-kpi-card-link:focus-visible { outline: 0; }
+  .ss-kpi-card:has(.ss-kpi-card-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Lista ranqueada (Ss::RankListComponent ↔ SsRankList): posição, nome, valor · fatia, barra e linha menor. ── */
+  .ss-rank { --tone: var(--accent); list-style: none; margin: calc(var(--ss-gap) * .9) 0 0; padding: 0; display: grid; gap: calc(var(--ss-gap) * .8); }
+  .ss-rank-item { display: flex; align-items: flex-start; gap: calc(var(--ss-gap) * .8); min-width: 0; animation: ss-rank-in .45s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+  .ss-rank-n { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: .5rem; background: var(--field);
+               font-size: .72rem; font-weight: 600; color: var(--ink-2); }
+  .ss-rank-item:first-child .ss-rank-n { background: color-mix(in srgb, var(--tone) 18%, var(--surface)); color: color-mix(in srgb, var(--tone) 80%, var(--ink)); font-weight: 800; }
+  .ss-rank-body { flex: 1; min-width: 0; }
+  .ss-rank-top { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; margin: 0; min-width: 0; }
+  .ss-rank-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(.84rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink); }
+  .ss-rank-link { text-decoration: none; }
+  .ss-rank-link:hover { color: var(--accent); }
+  .ss-rank-value { flex: none; font-size: calc(.78rem * var(--ss-font-scale)); color: var(--muted); white-space: nowrap; }
+  .ss-rank-value b { font-weight: 500; color: var(--ink); }
+  .ss-rank-value small { font-size: inherit; }
+  .ss-rank-bar { display: block; height: .4rem; margin-top: .3rem; border-radius: 999px; background: var(--field); overflow: hidden; }
+  .ss-rank-bar i { display: block; width: var(--w, 0); height: 100%; border-radius: inherit; background: var(--tone); transform-origin: left;
+                   animation: ss-rank-grow .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 45ms + .1s); }
+  .ss-rank-caption { display: block; margin-top: .15rem; font-size: calc(.72rem * var(--ss-font-scale)); color: var(--muted); }
+  @keyframes ss-rank-in { from { opacity: 0; translate: 0 6px; } }
+  @keyframes ss-rank-grow { from { transform: scaleX(0); } }
+  @media (prefers-reduced-motion: reduce) { .ss-rank-item, .ss-rank-bar i { animation: none; } }
+}
+/* Esconder valores (privacidade): o número do card de indicador e os valores do ranking. */
+[data-privacy="on"] :is(.ss-kpi-card-value, .ss-rank-value, .ss-rank-caption) { filter: blur(7px); user-select: none; }
+@layer components {
+  /* Cadeado (sem permissão) não é tocável: sem a caixa de alvo, o nome ganha o espaço. */
+  .ss-device-end:has(> .ss-device-lock:only-child) { min-height: 0; }
+  .ss-device-lock { width: auto; height: auto; }
+  .ss-device-lock svg { width: var(--ss-icon); height: var(--ss-icon); }
+}
+@layer components {
+  /* Tile estreito (grade de 2 no celular): a linha mede a si mesma. O ▶ do modo aperto some (o tile
+     todo já é o botão), o ⋯ encolhe e o ícone fica no tamanho do quadrado tonal; o nome hifeniza
+     em vez de partir a palavra no meio. */
+  .ss-device-main { container-type: inline-size; }
+  .ss-device-name { overflow-wrap: break-word; hyphens: auto; }
+  @container (max-width: 15rem) {
+    .ss-device-run { display: none; }
+    .ss-device-more { width: 1.75rem; min-width: 0; padding: 0; }
+    .ss-device-more::after { content: ""; position: absolute; inset: 0 -.5rem; } /* alvo de toque continua ~44 px */
+    .ss-device-end { min-height: 0; }
+  }
+  @container (max-width: 12rem) {
+    .ss-device-ico { width: var(--ss-icon-tile); height: var(--ss-icon-tile); border-radius: var(--r-field); }
+  }
+}

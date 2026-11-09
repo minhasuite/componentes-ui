@@ -5,7 +5,6 @@ import '../density.dart';
 import '../motion.dart';
 import '../ss_dialogs.dart' show showSsConfirm;
 import '../ss_strings.dart';
-import '../ss_fields.dart' show SsSwitch;
 import 'ctl_comum.dart';
 
 /// Situação do aparelho além de ligado/desligado.
@@ -26,15 +25,17 @@ enum SsDeviceStatus {
   locked,
 }
 
-/// Tile de aparelho da casa (luz, tomada, portão, sensor): ícone, nome e o
-/// estado em texto ("Ligada · 80%"). Tocar abre os detalhes ([onTap]); com
-/// [onToggle], ganha a chave de liga/desliga rápida à direita. [footer] fica
-/// embaixo, na largura toda (um [SsSlider] ou chips).
+/// Tile de aparelho da casa (luz, tomada, portão, sensor), numa linha só
+/// (v0.12): o ícone, e à direita dele o nome e o estado em texto ("Ligada ·
+/// 80%"); cadeado no fim quando não há permissão. Tocar no tile abre os
+/// detalhes ([onTap]). Com [onToggle], **o ícone é a chave**: tocar no quadrado
+/// do ícone liga/desliga (no leitor de tela é um interruptor, com o nome e o
+/// estado ligado/desligado; teclado: Enter ou Espaço com o foco nele). [footer]
+/// fica embaixo, na largura toda (um [SsSlider] ou chips).
 ///
 /// Ligado ([on]), o tile tinge com [color] (padrão: a cor da marca), o ícone
-/// fica cheio e ganha um brilho na mesma cor. [wide] deita o tile (ícone, texto
-/// e chave numa linha); o padrão é o compacto (ícone e chave em cima, texto
-/// embaixo, para grades de 2 colunas no celular.
+/// fica cheio na cor e ganha um brilho; desligado com chave, o quadrado fica
+/// claro com contorno na cor. [wide] continua aceito (o tile já é deitado).
 ///
 /// Modo ação: com [onPress], tocar no tile executa um comando (portão, cena,
 /// botão) no lugar de abrir os detalhes, depois de confirmar quando há
@@ -111,9 +112,11 @@ class SsDeviceTile extends StatelessWidget {
   /// Toque duplo (atalho; o toque simples espera o tempo do duplo).
   final VoidCallback? onDoubleTap;
 
-  /// Chave rápida: recebe o estado pedido. Sem ela, não há chave.
+  /// Chave rápida (o ícone): recebe o estado pedido. Sem ela, o ícone é só desenho.
   final ValueChanged<bool>? onToggle;
   final Widget? footer;
+
+  /// Desde a v0.12 o tile é sempre deitado; fica por compatibilidade.
   final bool wide;
 
   /// Mensagem do erro (padrão: [errorLabel]).
@@ -222,34 +225,54 @@ class SsDeviceTile extends StatelessWidget {
       ),
     );
 
-    final bolha = _Icone(
+    final pode = (status == SsDeviceStatus.ready || status == SsDeviceStatus.error) && _available;
+    final chave = onToggle != null && status != SsDeviceStatus.locked;
+    final acao = on ? turnOffLabel ?? s.turnOff : turnOnLabel ?? s.turnOn;
+    Widget bolha = _Icone(
       icon: icon,
       tone: tone,
       lit: _lit,
       available: _available,
       pending: status == SsDeviceStatus.pending,
+      toggle: chave,
     );
+    if (chave) {
+      final raio = BorderRadius.circular(d.radiusField);
+      bolha = Tooltip(
+        message: '$acao $name',
+        excludeFromSemantics: true,
+        child: Semantics(
+          container: true,
+          toggled: _lit,
+          enabled: pode,
+          label: name,
+          hint: acao,
+          onTap: pode ? () => _toggle() : null,
+          excludeSemantics: true,
+          child: SsTapTarget(
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: pode ? _toggle : null,
+                borderRadius: raio,
+                customBorder: RoundedRectangleBorder(borderRadius: raio),
+                focusColor: tone.withValues(alpha: .18),
+                child: bolha,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final fim = _trailing(context, c);
 
-    final Widget? deitado = wide
-        ? Row(
-            children: [
-              bolha,
-              SizedBox(width: d.gap),
-              Expanded(child: textos),
-              if (fim != null) ...[SizedBox(width: d.space(8)), fim],
-            ],
-          )
-        : null;
-    // Compacto: ícone e chave em cima, texto embaixo. Numa grade de altura fixa
-    // (childAspectRatio), o espaço do meio cede antes de estourar (densidade confortável).
-    Widget corpoEmPe({required bool limitado}) => Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+    // Uma linha: ícone (a chave), nome e estado ao lado e o cadeado no fim.
+    final linha = Row(
       children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [bolha, const Spacer(), ?fim]),
-        if (limitado) Flexible(child: SizedBox(height: d.space(10))) else SizedBox(height: d.space(10)),
-        textos,
+        bolha,
+        SizedBox(width: d.space(12)),
+        Expanded(child: textos),
+        if (fim != null) ...[SizedBox(width: d.space(8)), fim],
       ],
     );
 
@@ -260,7 +283,7 @@ class SsDeviceTile extends StatelessWidget {
     Widget tile = AnimatedContainer(
       duration: dur,
       curve: Curves.easeOut,
-      padding: EdgeInsets.all(d.cardPad - 2),
+      padding: EdgeInsets.all(d.cardPad - 4),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius),
@@ -278,7 +301,7 @@ class SsDeviceTile extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, cons) {
-          final limitado = cons.hasBoundedHeight && deitado == null;
+          final limitado = cons.hasBoundedHeight;
           final rotulado = Semantics(
             button: toque != null,
             enabled: onPress != null ? _pressable : null,
@@ -288,13 +311,13 @@ class SsDeviceTile extends StatelessWidget {
             onLongPress: onLongPress,
             onLongPressHint: onLongPress == null ? null : longPressLabel ?? s.moreOptions,
             container: true,
-            child: deitado ?? corpoEmPe(limitado: limitado),
+            child: linha,
           );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (limitado) Flexible(child: rotulado) else rotulado,
+              if (limitado) Flexible(child: Center(child: rotulado)) else rotulado,
               if (footer != null) ...[SizedBox(height: d.gap), footer!],
             ],
           );
@@ -325,31 +348,16 @@ class SsDeviceTile extends StatelessWidget {
     if (status == SsDeviceStatus.locked) {
       return Semantics(
         label: lockedLabel ?? s.noPermission,
-        child: SizedBox(
-          width: d.minTarget,
-          height: d.minTarget,
-          child: Icon(Icons.lock_outline_rounded, color: c.muted, size: d.iconSize),
-        ),
+        // Não é tocável (v0.12): só o desenho, sem a caixa de 48 que apertava o nome.
+        child: Icon(Icons.lock_outline_rounded, color: c.muted, size: d.iconSize - 2),
       );
     }
-    if (onToggle == null) return null;
-    final pode = status == SsDeviceStatus.ready || status == SsDeviceStatus.error;
-    final acao = on ? turnOffLabel ?? s.turnOff : turnOnLabel ?? s.turnOn;
-    return Tooltip(
-      message: acao,
-      child: Semantics(
-        label: '$acao $name',
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: d.minTarget, minWidth: d.minTarget + 8),
-          child: Center(
-            child: Opacity(
-              opacity: pode ? 1 : .5,
-              child: SsSwitch(value: on, activeColor: color, onChanged: pode && _available ? onToggle : null),
-            ),
-          ),
-        ),
-      ),
-    );
+    return null;
+  }
+
+  void _toggle() {
+    SsHaptics.tick();
+    onToggle?.call(!on);
   }
 }
 
@@ -362,11 +370,15 @@ class _Icone extends StatelessWidget {
     required this.lit,
     required this.available,
     required this.pending,
+    this.toggle = false,
   });
 
   final IconData icon;
   final Color tone;
   final bool lit, available, pending;
+
+  /// É a chave (v0.12): desligado, fundo claro com contorno na cor.
+  final bool toggle;
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +393,10 @@ class _Icone extends StatelessWidget {
       height: tam,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(d.radiusField),
-        color: lit ? null : (available ? c.field : c.surface),
+        color: lit ? null : (available ? (toggle ? c.surface : c.field) : c.surface),
+        border: !lit && toggle && available
+            ? Border.all(color: Color.alphaBlend(tone.withValues(alpha: .35), c.line), width: 1.5)
+            : null,
         gradient: lit
             ? LinearGradient(
                 begin: Alignment.topLeft,

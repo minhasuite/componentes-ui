@@ -21,6 +21,8 @@
 /* v0.10.2: o que faltava para o minha-automacao ficar 100% na gem. */
 @import "./v10_2_web.css";
 @import "./v10_3_web.css";
+/* v0.12: agenda dentro do card, ícone do tile como chave, cabeçalho de card, indicador e ranking. */
+@import "./v12_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

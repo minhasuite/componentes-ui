@@ -412,6 +412,8 @@ pt-BR:
       qr: QR Code para pagamento
       title: Pague com Pix
       valid_for: Vale por
+    rank_list:
+      label: Ranking
     review_card:
       rating: Nota %{rating} de 5
     scan_radar:

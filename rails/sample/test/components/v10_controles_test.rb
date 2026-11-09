@@ -47,7 +47,8 @@ class V10ControlesTest < ComponentTest
     assert_selector ".ss-device.is-on[data-status=ready][style*='--tone: #e0952a']"
     assert_selector "a.ss-device-text[href='/pontos/1'] .ss-device-name", text: "Luz da sala"
     assert_selector ".ss-device-state", text: "Ligada · 80%"
-    assert_selector ".ss-device-end button.ss-switch[aria-pressed=true][aria-label='Desligar Luz da sala']"
+    # v0.12: a chave é o ícone (role=switch).
+    assert_selector "form[data-controller=ss-switch] button.ss-device-ico.ss-device-toggle[role=switch][aria-checked=true][aria-label='Luz da sala'][title='Desligar Luz da sala']"
     assert_selector ".ss-device-foot", text: "rodapé"
   end
 
@@ -55,16 +56,16 @@ class V10ControlesTest < ComponentTest
     render_inline(Ss::DeviceTileComponent.new(name: "Tomada", state: "Ligada", on: true, status: :unavailable, toggle_url: "/t", wide: true))
     assert_selector ".ss-device.is-wide[data-status=unavailable]:not(.is-on)"
     assert_selector ".ss-device-state", text: "Indisponível"
-    assert_selector "button.ss-switch[disabled]"
+    assert_selector "button.ss-device-toggle[disabled]"
     render_inline(Ss::DeviceTileComponent.new(name: "Tomada", state: "Ligada", status: :pending, toggle_url: "/t"))
     assert_selector ".ss-device[data-status=pending][aria-busy=true] .ss-device-spin"
     assert_selector ".ss-device-state[data-pending='Enviando…']"
     render_inline(Ss::DeviceTileComponent.new(name: "Tomada", status: :error, error_text: "Sem resposta", toggle_url: "/t"))
     assert_selector ".ss-device[data-status=error] .ss-device-state", text: "Sem resposta"
-    assert_no_selector "button.ss-switch[disabled]"
+    assert_no_selector "button.ss-device-toggle[disabled]"
     render_inline(Ss::DeviceTileComponent.new(name: "Portão", status: :locked, toggle_url: "/t"))
     assert_selector ".ss-device-lock[role=img][aria-label='Sem permissão']"
-    assert_no_selector "button.ss-switch"
+    assert_no_selector "button.ss-switch, button.ss-device-toggle"
     render_inline(Ss::DeviceTileComponent.new(name: "x", tone: "red;}body{x"))
     assert_no_selector ".ss-device[style]"
   end

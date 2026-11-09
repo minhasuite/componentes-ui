@@ -303,6 +303,11 @@ class SsAgendaEvent {
 /// [eventBuilder] troca o bloco padrão por qualquer widget (um card de
 /// status, por exemplo), que recebe a altura do bloco pelas restrições.
 /// [now] desenha a linha do "agora" na cor da marca.
+///
+/// v0.12: [allDay] põe os compromissos de dia inteiro numa faixa em cima das
+/// horas ("Dia todo" à esquerda, como o `Ss::AgendaComponent` do web). Cada um
+/// numa linha com reticências, sempre dentro da largura dada; o título inteiro
+/// vai no [Tooltip] (toque longo) e no leitor de tela.
 class SsDayAgenda extends StatelessWidget {
   const SsDayAgenda({
     super.key,
@@ -312,9 +317,14 @@ class SsDayAgenda extends StatelessWidget {
     this.hourHeight = 72,
     this.eventBuilder,
     this.now,
+    this.allDay = const [],
   }) : assert(endHour > startHour);
 
   final List<SsAgendaEvent> events;
+
+  /// Compromissos de dia inteiro (faixa de cima). Usa título, [SsAgendaItem.detail],
+  /// cor/tom e toque; a hora é ignorada.
+  final List<SsAgendaItem> allDay;
   final int startHour, endHour;
   final double hourHeight;
   final Widget Function(BuildContext context, SsAgendaEvent event)? eventBuilder;
@@ -360,6 +370,66 @@ class SsDayAgenda extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final grade = _grade(context);
+    if (allDay.isEmpty) return grade;
+    final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 4),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.line, width: 1.5)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: _gutter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 6, right: 6),
+                  child: ExcludeSemantics(
+                    child: Text(
+                      s.allDay,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: c.muted,
+                        fontSize: AppType.label,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, e) in allDay.indexed)
+                      Padding(
+                        padding: EdgeInsets.only(top: i == 0 ? 0 : 4),
+                        child: _DiaTodo(
+                          e,
+                          e.color ?? e.tone?.colors(context).solid ?? c.series[i % c.series.length],
+                          s.allDay,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        grade,
+      ],
+    );
+  }
+
+  Widget _grade(BuildContext context) {
     final c = SsColors.of(context);
     final horas = endHour - startHour;
     final altura = horas * hourHeight + _topPad * 2;
@@ -439,6 +509,59 @@ class SsDayAgenda extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Um compromisso de dia inteiro da faixa de cima do [SsDayAgenda]: uma linha
+/// com reticências; o título inteiro no tooltip e no leitor de tela.
+class _DiaTodo extends StatelessWidget {
+  const _DiaTodo(this.e, this.cor, this.rotulo);
+  final SsAgendaItem e;
+  final Color cor;
+  final String rotulo;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final inteiro = [e.title, ?e.detail].join(' · ');
+    return Tooltip(
+      message: inteiro,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: e.onTap != null,
+        label: '$rotulo, $inteiro',
+        excludeSemantics: true,
+        child: SsPressable(
+          onTap: e.onTap,
+          enabled: e.onTap != null,
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(cor.withValues(alpha: c.isDark ? .22 : .14), c.surface),
+              borderRadius: BorderRadius.circular(10),
+              border: BorderDirectional(start: BorderSide(color: cor, width: 4)),
+            ),
+            padding: const EdgeInsets.fromLTRB(9, 5, 10, 5),
+            child: Text.rich(
+              TextSpan(
+                text: e.title,
+                style: TextStyle(color: c.ink, fontSize: AppType.sub, fontWeight: FontWeight.w800),
+                children: [
+                  if (e.detail != null)
+                    TextSpan(
+                      text: '  ${e.detail}',
+                      style: TextStyle(color: c.ink2, fontSize: AppType.meta, fontWeight: FontWeight.w500),
+                    ),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+            ),
+          ),
+        ),
       ),
     );
   }

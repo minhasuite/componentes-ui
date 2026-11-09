@@ -16,7 +16,7 @@
 </p>
 
 <div data-vt-casa>
-<%= demo "Ss::DeviceTileComponent", "Tile de aparelho: ícone, nome e estado. O nome abre os detalhes (cobre o tile todo); a chave à direita manda o comando, vira na hora e volta se falhar. Ligado tinge na cor do aparelho (tone:) e brilha.",
+<%= demo "Ss::DeviceTileComponent", "Tile de aparelho numa linha (v0.12): o ícone é a chave (role=switch; toque, Enter ou Espaço) e manda o comando, vira na hora e volta se falhar; nome e estado ao lado abrem os detalhes (cobre o tile todo). Ligado tinge na cor do aparelho (tone:) e brilha.",
       uso: 'render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada · 80%", on: true, icon: svg, url: ponto_path(p), toggle_url: comando_path(p, cmd: "toggle"), tone: :heat, status: :ready)' do %>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,11rem),1fr));gap:.9rem;max-width:56rem">
     <%= render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Desligada", icon: bulb, url: "#", toggle_url: aqui) %>

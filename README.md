@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.11.0
+      ref: v0.12.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.11.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.12.0"
 ```
 
 ```css
@@ -559,6 +559,29 @@ o compacto com ponteiro grosso volta a 40 px. Contraste não muda (só tamanho).
 **Migrar um produto:** roteiro em [`docs/MIGRACAO.md`](docs/MIGRACAO.md) (levantar, lacunas na
 gem com tag, web e app, o que fica no domínio, armadilhas, conferência e como medir o %).
 
+## v0.12: tile com o ícone como chave, agenda dentro do card, indicador e ranking
+
+Pedido do minha-automacao (painéis "Casa" e "Energia"). Vitrine Rails: grupo "Cards e casa (v0.12)";
+vitrine Flutter: seção "Cards e casa (v0.12)"; catálogo nos dois lados.
+
+| Peça | Flutter | Rails / CSS | O que mudou |
+|---|---|---|---|
+| Tile de aparelho | `SsDeviceTile` (mesma API) | `Ss::DeviceTileComponent` (mesma API) | **Uma linha:** o ícone é a chave (`onToggle`/`toggle_url:`), nome e estado ficam onde era a chave. Web: `button role="switch"` com `aria-checked`, rótulo = nome, `title` Ligar/Desligar, Enter/Espaço, dentro de um `form[data-controller=ss-switch]` (pendente/erro/volta como antes). Flutter: `Semantics(toggled:)`, foco + Enter/Espaço (`InkWell`), alvo de 48 (`SsTapTarget`). Desligado com chave: quadrado claro com contorno na cor; ligado: cheio na cor. Sem permissão: o ícone não é chave e o cadeado (menor, não tocável) vai no fim. `wide:` continua aceito (o tile já é deitado) |
+| Agenda, dia inteiro | `SsDayAgenda(allDay: [SsAgendaItem])` (novo: a faixa de cima que só o web tinha) | `Ss::AgendaComponent` (correção) | O compromisso de dia inteiro fica **dentro do card** em qualquer largura: uma linha com reticências e o título inteiro no `title=` (web; todo evento ganhou) / `Tooltip` e leitor de tela (Flutter). Web: colunas `minmax(0, 1fr)` |
+| Cabeçalho de card | `SsCardHeader(title:, subtitle:, icon:, tone:, trailing:, titleMaxLines: 1)` · `SsCardHeader.titleStyle/subtitleStyle` | `Ss::CardHeaderComponent(title:, subtitle:, icon:, tone:, heading:)` + slot `action` · `.ss-card-head`, `.ss-card-title`, `.ss-card-sub` | A tipografia padrão de título de card (14 / 800) e da linha menor (12, apagada), com o ícone tonal pequeno à direita |
+| Card de indicador | `SsKpiCard(label:, value:, icon:, tone:, caption:, delta:, hint:, spark:, onTap:, valueSize: 24)` | `Ss::KpiCardComponent(label:, value:, money:, icon:, tone:, caption:, delta:, good:, trend:, hint:, spark:, url:)` · `.ss-kpi-card` | Um número num card com o cabeçalho padrão e o valor no tamanho de card (o `SsStatCard`/`.ss-kpi` continuam para herói e faixa) |
+| Lista ranqueada | `SsRankList(items: [SsRankItem(label:, value:, amount:, share:, caption:, onTap:)], tone:, numbered:)` | `Ss::RankListComponent(items: [{ label:, value:, amount:, share:, caption:, url: }], tone:, numbered:, label:)` · `.ss-rank` | Posição, nome, valor · fatia, barra proporcional ao maior e linha menor; 1º lugar na cor |
+
+**Tom âmbar de energia/luz:** web `tone: :heat` (`#e0952a`, nos três componentes e no tile) ↔ Flutter
+`tone: AppColors.aquecFg`.
+
+**Textos novos:** Flutter `SsStrings.ranking`; Rails `rank_list.label` (pt-BR, en, es).
+**Controller:** `ss-switch` usa `aria-checked` quando o botão é `role="switch"` (o resto igual).
+
+**Padrões que mudaram:** o `SsDeviceTile`/`.ss-device` deixou de ter a chave à direita (o `Ss::SwitchComponent`
+saiu de dentro do tile; quem procurava `.ss-device .ss-switch` no JS do app deve olhar o
+`form[data-controller~="ss-switch"]` ou o `.ss-device-toggle`). Respiro do tile 14 → **12** px; nome 0,9 → **0,88rem**.
+
 ## Verificar
 
 ```bash
@@ -586,6 +609,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.12.0` (09/11/2026): seção "v0.12". `SsDeviceTile`/`Ss::DeviceTileComponent` numa linha com o ícone como chave (switch acessível nos dois lados), agenda que não estoura o card (dia inteiro numa linha; `SsDayAgenda(allDay:)` no Flutter), `SsCardHeader`/`Ss::CardHeaderComponent`, `SsKpiCard`/`Ss::KpiCardComponent` e `SsRankList`/`Ss::RankListComponent`. A API não quebra; muda o desenho do tile (a chave saiu da direita).
 - `v0.11.0` (05/11/2026): densidade nos dois lados (seção "v0.11"): `SsDensity` (compacta, padrão, confortável) por `AppTheme.build(density:)` e `SsDensityScope`, `SsTapTarget`, `SsDensityPicker`; no web, tokens `--ss-*` trocados por `data-ss-density` no `<html>` ou num contêiner, `ComponentesUi.config.density`, `ss_density_attrs`, `ss_density_head`, `Ss::DensityPickerComponent` + `ss-density`. Os componentes leem tamanho dos tokens. Alguns padrões grandes demais encolheram (tabela na seção). Nada quebra na API; parâmetros de tamanho com padrão literal viraram anuláveis (nulo = da densidade). Roteiro de migração em `docs/MIGRACAO.md`.
 - `v0.10.3` (05/11/2026): correções e lacunas da migração do minha-automacao para a v0.10.2 (seção "v0.10.3"): `SsTopBar` na fonte do tema e com o véu do overlay visível, toque longo/duplo no `SsDeviceTile` (⋯ e menu de contexto no web), segurar para falar (`SsMicButton(holdToTalk:)`, `SsChatInput(onMicHoldStart:)`, `MicButtonComponent(hold:, compact:)`), `SsHaptics.light`, `SsIconTile(onGradient:)`/`.is-on-grad`, `SsChipBar(currentIndex:)`/`ss-scroll-current`; no web, `FilterBarComponent` com arrays e query do `url:`, `ss-live` com `display: contents`, `OptionCardComponent(id:, input:, dense:, vertical:)`, chip de caixa de marcar, checklist de linha inteira, `.ss-tag > a`, `SubnavComponent(layout: :tabs)` e `.ss-base`/`.ss-reduce-motion`. Nada quebra.
 - `v0.10.2` (05/11/2026): o que faltava para o minha-automacao ficar 100% no pacote e na gem (seção "v0.10.2"): barra de topo, botão de ícone, botão flutuante, carregando/abertura, linhas em card, arrastar para ordenar, zona de perigo, aviso em linha, bloco de código, grupo de comandos, passo numerado, divisor, pergunta de um campo no web, atalhos de seção com menu, chips sólidos e faixa que esmaece, coluna da hora da agenda que cresce, controllers genéricos. Nada quebra; no web o `.ss-subnav` passa a marcar a seção atual (`aria-current=page`) e a esmaecer a borda no celular.

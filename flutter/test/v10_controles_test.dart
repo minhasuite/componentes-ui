@@ -143,9 +143,11 @@ void main() {
       await t.tap(find.text('Luz'));
       await t.pumpAndSettle();
       expect(aberto, 1);
-      await t.tap(find.byType(SsSwitch));
+      // v0.12: a chave é o ícone.
+      await t.tap(find.byIcon(Icons.lightbulb_outline));
       await t.pumpAndSettle();
       expect(pedido, isTrue);
+      expect(aberto, 1);
     });
 
     testWidgets('indisponível e sem permissão não deixam ligar', (t) async {
@@ -167,9 +169,9 @@ void main() {
       );
       expect(find.text('Indisponível'), findsOneWidget);
       expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
-      // O B (locked) não tem chave; a do A está travada.
-      expect(find.byType(SsSwitch), findsOneWidget);
-      await t.tap(find.byType(SsSwitch));
+      // O B (locked) não tem chave (ícone sem InkWell); a do A (o ícone) está travada.
+      expect(find.ancestor(of: find.byIcon(Icons.lock), matching: find.byType(InkWell)), findsNothing);
+      await t.tap(find.byIcon(Icons.lightbulb_outline));
       await t.pumpAndSettle();
       expect(pedido, isNull);
     });

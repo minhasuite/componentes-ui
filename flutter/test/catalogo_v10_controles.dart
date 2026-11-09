@@ -94,14 +94,15 @@ final List<Componente> catalogoV10Controles = [
   Componente(
     'ss-device-tile',
     'SsDeviceTile',
-    'Tile de aparelho da casa: ícone, nome e estado em texto ("Ligada · 80%"), chave rápida opcional e um rodapé (slider ou chips). Compacto (grade) ou largo (linha).',
+    'Tile de aparelho da casa numa linha (v0.12): o ícone é a chave rápida (onToggle), e à direita dele o nome e o estado em texto ("Ligada · 80%"); rodapé opcional (slider ou chips).',
     comportamentos: [
-      'Tocar no tile abre os detalhes (onTap); a chave à direita liga e desliga sem abrir (onToggle).',
+      'Tocar no tile abre os detalhes (onTap); tocar no ícone liga e desliga sem abrir (onToggle; interruptor no leitor de tela, Enter/Espaço com foco, alvo de 48 dp).',
+      'v0.12: desligado com chave, o quadrado do ícone fica claro com contorno na cor do aparelho; ligado, cheio na cor.',
       'Ligado: fundo tinge com a cor do aparelho (color, padrão a marca), ícone cheio em gradiente e brilho na mesma cor.',
       'Indisponível: apagado, borda tracejada e "Indisponível"; a chave trava.',
       'Enviando (pending): anel girando em volta do ícone e a chave travada até a resposta.',
       'Erro: borda e texto em vermelho com o motivo (errorText); a chave volta a funcionar para tentar de novo.',
-      'Sem permissão (locked): cadeado no lugar da chave, não liga nem desliga.',
+      'Sem permissão (locked): o ícone deixa de ser chave e o cadeado vai no fim; não liga nem desliga.',
       'Leitor de tela lê "nome: estado" e a dica de abrir detalhes; a chave tem alvo de 48 dp. Menos movimento tira as transições.',
       'Modo ação (onPress): tocar executa o comando (portão, cena, botão), com confirmação opcional (confirm/confirmTitle → showSsConfirm); dica "Acionar".',
       'color aceita a cor real da luz: em cor clara (amarelo-claro, branco quente) o ícone vira tinta escura para continuar legível.',

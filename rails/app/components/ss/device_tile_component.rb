@@ -1,7 +1,7 @@
 module Ss
   # Tile de aparelho da casa: ícone, nome e estado em texto ("Ligada · 80%"). O nome é um link
-  # para os detalhes (url:) que cobre o tile todo; toggle_url: põe a chave rápida à direita
-  # (Ss::SwitchComponent modo B). Rodapé opcional (slider, chips) no slot footer.
+  # para os detalhes (url:) que cobre o tile todo; toggle_url: faz do ícone a chave rápida
+  # (v0.12; antes era um Ss::SwitchComponent à direita). Rodapé opcional (slider, chips) no slot footer.
   #
   #   render Ss::DeviceTileComponent.new(name: "Luz da sala", state: "Ligada · 80%", on: true, icon: svg,
   #            url: ponto_path(p), toggle_url: comando_path(p, cmd: "toggle"), tone: :warn) do |t|
@@ -27,6 +27,14 @@ module Ss
   # toque longo no celular) a ele. No modo aperto, url: vira o more_url (os detalhes, que o toque
   # não abre mais). more_data: data-* do link (ex. { turbo_frame: "modal" }). O toque duplo do app
   # não tem par no web (o duplo clique seleciona texto): é só do app.
+  #
+  # v0.12 (par do SsDeviceTile do Flutter): uma linha só. O ícone é a chave (toggle_url:): tocar no
+  # quadrado do ícone liga/desliga (button role="switch" + aria-checked, Enter/Espaço, rótulo =
+  # nome; title "Ligar"/"Desligar"); ligado, o quadrado fica cheio na cor (tone:), desligado, claro
+  # com contorno. O nome e o estado ficam à direita do ícone (onde era a chave); ⋯, cadeado e ▶ no
+  # fim. Pendente ("Enviando…"), erro, confirm:/confirm_title:, indisponível (chave travada),
+  # sem permissão (ícone sem chave + cadeado) e modo aperto continuam iguais; wide: segue aceito
+  # (o tile já é deitado). O form da chave tem data-controller="ss-switch" (o app reconhece).
   class DeviceTileComponent < BaseComponent
     STATUSES = %i[ready unavailable pending error locked].freeze
     TONES = { accent: "var(--accent)", success: "var(--success)", warn: "var(--warn)", danger: "var(--danger)",
@@ -104,14 +112,22 @@ module Ss
                              disabled: press_disabled?, "aria-label": action_label, form: { class: "ss-device-press-form", data: }, &)
     end
 
-    def switch
-      key = on? ? :turn_off : :turn_on
-      text = I18n.t("componentes_ui.device_tile.#{key}", default: DEFAULTS[key], name:)
-      Ss::SwitchComponent.new(url: toggle_url, on: on?, label: text, method: toggle_method, params: toggle_params,
-                              confirm: @confirm, confirm_title: @confirm_title, disabled: %i[unavailable pending].include?(status))
+    def toggle_text(key) = I18n.t("componentes_ui.device_tile.#{key}", default: DEFAULTS[key], name:)
+    def toggle_disabled? = %i[unavailable pending].include?(status)
+
+    # v0.12: o quadrado do ícone é a chave (button_to com role=switch). O ss-switch vira na hora,
+    # marca o tile "pending" e volta se o servidor falhar.
+    def icon_toggle(&)
+      form_data = { controller: "ss-switch", ss_switch_on_label_value: toggle_text(:turn_off), ss_switch_off_label_value: toggle_text(:turn_on) }
+      form_data[:turbo_confirm] = @confirm if @confirm
+      form_data[:turbo_confirm_title] = @confirm_title if @confirm && @confirm_title
+      button_to(toggle_url, method: toggle_method, params: toggle_params, class: "ss-device-ico ss-device-toggle", disabled: toggle_disabled?,
+                            form_class: "ss-device-toggle-form", form: { data: form_data }, role: "switch",
+                            aria: { checked: on?.to_s, label: name }, title: toggle_text(on? ? :turn_off : :turn_on),
+                            data: { ss_switch_target: "button" }, &)
     end
 
-    def root_classes = classes("ss-device", ("is-on" if on?), ("is-wide" if wide?), ("is-press" if press?), ("has-more" if more?))
+    def root_classes = classes("ss-device", ("is-on" if on?), ("has-toggle" if toggle?), ("is-wide" if wide?), ("is-press" if press?), ("has-more" if more?))
 
     # Menu de contexto (clique direito / toque longo) segue o ⋯; junta com o controller do app.
     def root_data
