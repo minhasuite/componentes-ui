@@ -87,4 +87,25 @@ class AFormBuilderTest < ComponentTest
     html = view.form_with(model: c, url: "/x") { |f| f.text_field(:nome) }
     assert_includes html, "field_with_errors"
   end
+  test "v0.13: wrapper_class no .ss-field, selected sem model, variantes do enviar e grupo com ajuda" do
+    view = vc_test_controller.view_context
+    html = view.ss_form_with(url: "/busca", scope: :filtro) do |f|
+      f.ss_text_field(:q, wrapper_class: "sm:col-span-2") + f.ss_check_box(:ativo, wrapper_class: "col-span-full") +
+        f.ss_radio_buttons(:tipo, [%w[A a], %w[B b]], wrapper_class: "rd") +
+        f.ss_select(:plano, [%w[Mensal m], %w[Anual a]], selected: "a") +
+        f.ss_submit("Filtrar", variant: :outline, small: true) + f.ss_submit("Limpar", variant: :ghost) +
+        f.ss_fieldset(legend: "Horário", help: "Vale para todos os dias", class: "grid gap-2") { f.ss_time_field(:inicio) }
+    end
+    @page = Capybara.string(html.to_s)
+    assert_selector ".ss-field.sm\\:col-span-2 input#filtro_q"
+    assert_selector ".ss-field.col-span-full input#filtro_ativo"
+    assert_selector "fieldset.ss-field.rd"
+    assert_selector "select#filtro_plano option[value=a][selected]"
+    assert_selector "input[type=submit].ss-btn.ss-btn-outline.ss-btn-sm[value=Filtrar]"
+    assert_selector "input[type=submit].ss-btn.ss-btn-ghost[value=Limpar]"
+    fs = page.find("fieldset.ss-fieldset.ss-field-group")
+    assert_equal fs.find("small.ss-field-help")["id"], fs["aria-describedby"]
+    assert_selector "fieldset.ss-field-group legend.ss-label", text: "Horário"
+    assert_selector "fieldset.ss-field-group .ss-field-group-body.grid input#filtro_inicio"
+  end
 end

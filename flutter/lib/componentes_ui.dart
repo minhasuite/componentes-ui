@@ -75,3 +75,5 @@ export 'src/v10/casa.dart';
 export 'src/v10/estrutura.dart';
 export 'src/v10/tela.dart';
 export 'src/v12/cards.dart';
+export 'src/v13/paineis.dart';
+export 'src/v13/textos.dart';

@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'density.dart';
 
-/// Título de seção ("VENCE LOGO") com ação opcional à direita.
+/// Título de seção ("VENCE LOGO") com ação opcional à direita e, desde a
+/// v0.13, um [icon] antes do texto (o `Ss::SectionComponent` do Rails).
 class SsSection extends StatelessWidget {
-  const SsSection(this.title, {super.key, this.action, this.onAction});
+  const SsSection(this.title, {super.key, this.action, this.onAction, this.icon});
 
   final String title;
   final String? action;
   final VoidCallback? onAction;
+
+  /// Ícone pequeno antes do título, na cor apagada do texto (v0.13).
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +23,11 @@ class SsSection extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(4, d.space(20), 4, d.space(8)),
       child: Row(
         children: [
+          if (icon != null) ...[Icon(icon, size: 16, color: c.muted), const SizedBox(width: 6)],
           Expanded(
             child: Text(
               title.toUpperCase(),
+              semanticsLabel: title,
               style: TextStyle(
                 color: c.muted,
                 fontSize: AppType.label,

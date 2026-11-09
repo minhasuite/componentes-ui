@@ -410,6 +410,8 @@ es:
       qr: Código QR de pago
       title: Paga con Pix
       valid_for: Válido por
+    aside_layout:
+      label: Columna lateral
     rank_list:
       label: Ranking
     review_card:

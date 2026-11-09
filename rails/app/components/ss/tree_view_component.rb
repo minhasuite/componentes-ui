@@ -4,14 +4,16 @@ module Ss
   #   render Ss::TreeViewComponent.new(label: "Plano de contas", nodes: [
   #     { label: "Receitas", value: "R$ 12.400,00", count: 3, open: true, children: [{ label: "Vendas", value: "R$ 9.000,00", url: "…" }] }])
   class TreeViewComponent < BaseComponent
-    def initialize(nodes:, label: nil, **opts)
+    # wrap: true (v0.13) quebra o rótulo longo em linhas em vez de cortar com reticências.
+    def initialize(nodes:, label: nil, wrap: false, **opts)
       super(**opts)
       @nodes = nodes
+      @wrap = wrap
       @label = label || ss_t("tree_view.label", default: "Árvore")
     end
 
     def call
-      tag.div(**root_attrs(class: classes("ss-tree"), role: "group", "aria-label": @label, data: { controller: "ss-tree", action: "keydown->ss-tree#key" })) do
+      tag.div(**root_attrs(class: classes("ss-tree", ("is-wrap" if @wrap)), role: "group", "aria-label": @label, data: { controller: "ss-tree", action: "keydown->ss-tree#key" })) do
         list(@nodes, 0)
       end
     end

@@ -30,9 +30,15 @@ class SsMosaicTile extends StatelessWidget {
     this.variant = 0,
     this.wide = false,
     this.onTap,
+    this.facts,
   });
 
   final String title;
+
+  /// Pílulas de resumo no lugar do [caption] (v0.13; o `facts:` do
+  /// `Ss::MosaicTileComponent`): "2 ligados", "87 W", com ícone opcional,
+  /// numa linha que rola de lado se não couber (no web, quebram linha).
+  final List<SsMosaicFact>? facts;
 
   /// Linha em versalete embaixo do título (contador).
   final String? caption;
@@ -66,7 +72,7 @@ class SsMosaicTile extends StatelessWidget {
     final textScale = MediaQuery.textScalerOf(context).scale(1);
     return Semantics(
       button: onTap != null,
-      label: [title, ?caption].join(', '),
+      label: [title, if (facts?.isNotEmpty ?? false) ...facts!.map((f) => f.label) else ?caption].join(', '),
       excludeSemantics: true,
       child: SsPressable(
         onTap: onTap,
@@ -121,7 +127,14 @@ class SsMosaicTile extends StatelessWidget {
                           height: 1.2,
                         ),
                       ),
-                      if (caption != null) ...[
+                      if (facts?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 8),
+                        // Uma linha só (a altura do bloco é fixa): o que não cabe rola de lado.
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(spacing: 6, children: [for (final f in facts!) _FactPill(f)]),
+                        ),
+                      ] else if (caption != null) ...[
                         const SizedBox(height: 4),
                         Text(
                           caption!.toUpperCase(),
@@ -145,6 +158,39 @@ class SsMosaicTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Pílula de resumo do [SsMosaicTile.facts] (v0.13): texto e ícone opcional.
+@immutable
+class SsMosaicFact {
+  const SsMosaicFact(this.label, {this.icon});
+
+  final String label;
+  final IconData? icon;
+}
+
+class _FactPill extends StatelessWidget {
+  const _FactPill(this.fact);
+
+  final SsMosaicFact fact;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(color: AppColors.onDark.withValues(alpha: .2), borderRadius: BorderRadius.circular(999)),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (fact.icon != null) ...[Icon(fact.icon, size: 14, color: AppColors.onDark), const SizedBox(width: 4)],
+          Text(
+            fact.label,
+            style: const TextStyle(color: AppColors.onDark, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// Grade "masonry" de 2 colunas com alturas variadas: cada bloco vai para a

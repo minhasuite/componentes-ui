@@ -1,0 +1,137 @@
+/* v0.13: o que os painéis do minha-automacao pediram (pares do Flutter no README).
+   Título de seção com ícone e ação (Ss::SectionComponent ↔ SsSection), cabeçalho de bloco
+   (Ss::SectionHeaderComponent ↔ SsSectionHeader), mosaico em colunas (Ss::MasonryComponent ↔
+   SsMasonry), conteúdo + coluna lateral (Ss::AsideLayoutComponent ↔ SsAsideLayout), bloco do
+   mosaico (Ss::MosaicTileComponent ↔ SsMosaicTile), card de foto (Ss::PhotoCardComponent ↔
+   SsPhotoCard), chip que alterna (aria-pressed), chip só de ícone/cor e avatar com anel.
+   E o que a migração dos formulários pediu: texto longo (.ss-prose ↔ SsProse), parágrafo de abertura
+   (.ss-intro ↔ SsIntro), grupo de campos com ajuda (ss_fieldset ↔ SsFieldGroup) e árvore que quebra o rótulo. */
+@layer components {
+  /* Título de seção: <div.ss-section-row><h2.ss-section><span.ss-section-ico/><span.ss-section-text/></h2><div.ss-section-action/></div> */
+  .ss-section-row { display: flex; align-items: center; gap: calc(var(--ss-gap) * .67); min-width: 0; margin: 0 0 calc(var(--ss-gap) * .55) .15rem; }
+  .ss-section-row > .ss-section { display: flex; align-items: center; gap: .45rem; flex: 1; min-width: 0; margin: 0; line-height: 1.3; }
+  .ss-section-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-section-ico { display: grid; flex: none; width: 1rem; height: 1rem; }
+  .ss-section-ico svg { width: 100%; height: 100%; }
+  .ss-section-action { flex: none; display: flex; align-items: center; gap: .4rem; font-size: calc(.78rem * var(--ss-font-scale)); font-weight: 700; }
+  .ss-section-action a:not([class]) { color: var(--accent); text-decoration: none; }
+
+  /* Cabeçalho de bloco: ícone tonal, título 1,15rem/800, explicação apagada, ação à direita. */
+  .ss-section-head { display: flex; align-items: center; gap: calc(var(--ss-gap) * .67); min-width: 0; padding: .5rem .15rem 0; }
+  .ss-section-head-ico { display: grid; place-items: center; flex: none; width: 1.25rem; height: 1.25rem; color: var(--accent); }
+  .ss-section-head-ico svg { width: 100%; height: 100%; }
+  .ss-section-head-text { flex: 1; min-width: 0; }
+  .ss-section-head-title { margin: 0; font-size: calc(1.15rem * var(--ss-font-scale)); font-weight: 800; line-height: 1.25; letter-spacing: -.01em; color: var(--ink); }
+  .ss-section-head-sub { margin: .15rem 0 0; font-size: calc(.82rem * var(--ss-font-scale)); color: var(--muted); }
+  .ss-section-head-action { flex: none; display: flex; align-items: center; gap: .5rem; }
+
+  /* Mosaico em colunas: cada filho inteiro numa coluna; o título de seção fica com o card seguinte. */
+  .ss-masonry { columns: 1; column-gap: var(--ss-gap); }
+  @media (min-width: 640px) { .ss-masonry { columns: 2; } }
+  @media (min-width: 1024px) { .ss-masonry { columns: 3; } .ss-masonry.is-max-2 { columns: 2; } }
+  @media (min-width: 1440px) { .ss-masonry { columns: 4; } .ss-masonry.is-max-3 { columns: 3; } }
+  .ss-masonry.is-max-1 { columns: 1; }
+  .ss-masonry > :not(.contents), .ss-masonry > .contents > * { display: block; break-inside: avoid; margin-bottom: var(--ss-gap); }
+  .ss-masonry > [hidden], .ss-masonry > .contents > [hidden] { display: none; }
+  .ss-masonry > .ss-section-row { display: flex; break-after: avoid; padding-top: .35rem; margin-bottom: calc(var(--ss-gap) * .55); }
+
+  /* Conteúdo + coluna lateral (que gruda no topo no computador). */
+  .ss-aside-layout { display: grid; gap: calc(var(--ss-gap) * 1.67); }
+  .ss-aside-layout-main, .ss-aside-layout-side { display: grid; gap: calc(var(--ss-gap) * 2); min-width: 0; align-content: start; }
+  @media (min-width: 1024px) {
+    .ss-aside-layout { grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr); align-items: start; }
+    .ss-aside-layout-side { position: sticky; top: 1rem; }
+  }
+
+  /* Bloco do mosaico: gradiente da marca com o matiz deslocado pelo data-variant (o mesmo
+     colorsFor do Flutter: +18° a 56% de luz → −8° a 42%), ou foto com véu. Texto branco. */
+  .ss-mosaic { --mz: 0; position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;
+               min-height: 8.5rem; padding: calc(var(--ss-card-pad) + .1rem); padding-top: calc(var(--ss-card-pad) + 2.9rem); overflow: hidden;
+               border-radius: var(--r-card); color: #fff; text-decoration: none; box-shadow: var(--shadow-card);
+               background: var(--grad); transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease; }
+  /* --mz sem unidade: o h do hsl(from …) é número. Sem suporte a cor relativa, fica o --grad. */
+  @supports (color: hsl(from red h s l)) {
+    .ss-mosaic { background: linear-gradient(225deg, hsl(from var(--accent) calc(h + var(--mz) + 18) max(s, 42) 56), hsl(from var(--accent) calc(h + var(--mz) - 8) max(s, 42) 42)); }
+  }
+  .ss-mosaic[data-variant="1"] { --mz: 22; }
+  .ss-mosaic[data-variant="2"] { --mz: -18; }
+  .ss-mosaic[data-variant="3"] { --mz: 40; }
+  .ss-mosaic[data-variant="4"] { --mz: -34; }
+  .ss-mosaic::after { content: ""; position: absolute; inset: auto -20% -60% auto; z-index: -1; width: 75%; aspect-ratio: 1; border-radius: 999px;
+                      background: radial-gradient(circle, rgb(255 255 255 / .28), transparent 65%); }
+  .ss-mosaic.has-photo { background: linear-gradient(180deg, rgb(14 13 22 / .05), rgb(14 13 22 / .72)), var(--photo) center / cover; }
+  .ss-mosaic.has-photo::after { content: none; }
+  a.ss-mosaic:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); color: #fff; }
+  a.ss-mosaic:active { transform: scale(.98); transition-duration: 80ms; }
+  a.ss-mosaic:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  .ss-mosaic-ico { position: absolute; top: calc(var(--ss-card-pad) - .1rem); left: calc(var(--ss-card-pad) + .1rem); display: grid; place-items: center;
+                   width: 2.4rem; height: 2.4rem; border-radius: 12px; background: rgb(255 255 255 / .2); backdrop-filter: blur(4px); }
+  .ss-mosaic-ico svg { width: 1.3rem; height: 1.3rem; }
+  .ss-mosaic-title { font-size: calc(1.15rem * var(--ss-font-scale)); font-weight: 800; line-height: 1.2; letter-spacing: -.01em;
+                     overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .ss-mosaic-caption { margin-top: .25rem; font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(255 255 255 / .86);
+                       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-mosaic-facts { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .5rem; }
+  .ss-mosaic-fact { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+                    background: rgb(255 255 255 / .2); }
+  .ss-mosaic-fact svg { width: .875rem; height: .875rem; flex: none; }
+  @media (prefers-reduced-motion: reduce) { a.ss-mosaic:hover, a.ss-mosaic:active { transform: none; } }
+
+  /* Card de foto: imagem cobrindo, véu embaixo com título e selo; is-dimmed = cinza e escura. */
+  .ss-photo { position: relative; display: block; margin: 0; padding: 0; overflow: hidden; background: var(--field); color: #fff; text-decoration: none; }
+  .ss-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter .4s ease, transform .6s ease; }
+  .ss-photo.is-dimmed img { filter: grayscale(.85) brightness(.6); }
+  a.ss-photo:hover img { transform: scale(1.03); }
+  .ss-photo-cap { position: absolute; inset: auto 0 0 0; display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+                  padding: 1.6rem calc(var(--ss-card-pad) * .9) .7rem; background: linear-gradient(180deg, transparent, rgb(14 13 22 / .62)); }
+  .ss-photo-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+  .ss-photo-badge { flex: none; padding: .15rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700; background: rgb(255 255 255 / .2); backdrop-filter: blur(6px); }
+  @media (prefers-reduced-motion: reduce) { a.ss-photo:hover img { transform: none; } }
+
+  /* Chip que alterna (button com aria-pressed) igual ao atual; chip só de ícone ou de cor; travado. */
+  .ss-chip[aria-pressed="true"] { background-image: var(--grad); color: #fff; }
+  :is(.ss-chip.is-solid, .ss-chips.is-solid .ss-chip)[aria-pressed="true"] { background-image: none; background-color: var(--accent-solid); color: #fff; }
+  .ss-chip[aria-pressed] { cursor: pointer; font: inherit; font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 700; }
+  .ss-chip.is-icon { width: var(--ss-chip-h); padding: 0; justify-content: center; }
+  .ss-chip-swatch { width: 1.15rem; height: 1.15rem; flex: none; border-radius: 999px; background: var(--c, var(--accent)); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .15); }
+  .ss-chip[aria-disabled="true"] { cursor: default; opacity: .7; }
+  .ss-chip[aria-disabled="true"]:not([aria-current="true"]):hover { border-color: transparent; color: var(--ink-2); }
+  .ss-chip[aria-disabled="true"]:active { transform: none; }
+
+  /* Avatar: ponto apagado (fora) e anel na cor da marca (em casa, ativo) — o status:/ring: do SsAvatar. */
+  .ss-avatar[data-status="muted"]::after { background: var(--muted); }
+  .ss-avatar[data-ring] { box-shadow: 0 0 0 2px var(--accent); }
+
+  /* Texto longo (termos, privacidade, ajuda): parágrafos, títulos, listas e links com medida de leitura. */
+  .ss-prose { max-width: 70ch; color: var(--ink-2); font-size: calc(.95rem * var(--ss-font-scale)); line-height: 1.7; overflow-wrap: anywhere; }
+  .ss-prose > * + * { margin-top: .85em; }
+  .ss-prose :is(h1, h2, h3, h4) { color: var(--ink); font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
+  .ss-prose h1 { font-size: 1.6em; } .ss-prose h2 { font-size: 1.25em; margin-top: 1.6em; } .ss-prose h3 { font-size: 1.08em; margin-top: 1.3em; }
+  .ss-prose :is(h1, h2, h3, h4) + * { margin-top: .5em; }
+  .ss-prose a { color: var(--accent); text-decoration: underline; text-underline-offset: .18em; }
+  .ss-prose a:hover { text-decoration-thickness: 2px; }
+  .ss-prose :is(ul, ol) { padding-left: 1.3em; }
+  .ss-prose ul { list-style: disc; } .ss-prose ol { list-style: decimal; }
+  .ss-prose li + li { margin-top: .3em; }
+  .ss-prose li::marker { color: var(--muted); }
+  .ss-prose strong { color: var(--ink); font-weight: 700; }
+  .ss-prose :is(code, kbd) { padding: .1em .35em; border-radius: 6px; background: var(--field); font: .88em var(--font-mono); }
+  .ss-prose hr { border: 0; border-top: 1px solid var(--line); margin: 1.6em 0; }
+  .ss-prose blockquote { padding-left: 1em; border-left: 3px solid var(--line); color: var(--muted); }
+  .ss-prose small, .ss-prose .ss-prose-meta { font-size: .82em; color: var(--muted); }
+
+  /* Parágrafo de abertura de uma aba ou seção: uma ou duas frases do que ela faz. */
+  .ss-intro { margin: 0 0 calc(var(--ss-gap) * 1.2); max-width: 65ch; font-size: calc(.88rem * var(--ss-font-scale)); line-height: 1.55; color: var(--muted); }
+  .ss-intro a { color: var(--accent); }
+
+  /* Grupo de campos (ss_fieldset / f.ss_fieldset): legenda, ajuda do grupo e o corpo com os campos. */
+  .ss-field-group { display: grid; gap: .35rem; }
+  .ss-field-group > legend { float: left; width: 100%; margin-bottom: 0; color: var(--ink-2); font-weight: 700; }
+  .ss-field-group > .ss-field-help { clear: both; }
+  .ss-field-group-body { clear: both; display: grid; gap: var(--ss-gap); margin-top: .35rem; }
+
+  /* Árvore com rótulo que quebra linha (TreeViewComponent(wrap: true)). */
+  .ss-tree.is-wrap .ss-tree-label { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.35; }
+  .ss-tree.is-wrap .ss-tree-row { align-items: flex-start; padding-block: .45rem; }
+  .ss-tree.is-wrap .ss-tree-row::before { margin-top: .2rem; }
+}

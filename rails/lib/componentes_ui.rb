@@ -24,6 +24,22 @@ module ComponentesUi
 
   def self.configure = yield(config)
 
+  HEX = /\A#\h{6}\z/
+
+  # v0.13: variáveis CSS da marca a partir de uma ou duas cores (#rrggbb): o que um tema de
+  # usuário, um painel ou um cliente com a própria cor põe no style= de um trecho. Mesmas
+  # misturas do SsBrand.fromColors (Flutter). accent2 nulo = a própria accent. Inválida = nil.
+  def self.brand_css(accent, accent2 = nil)
+    a = accent.to_s.downcase
+    b = (accent2.presence || accent).to_s.downcase
+    return nil unless a.match?(HEX) && b.match?(HEX)
+
+    ["--accent: #{a}", "--accent-solid: #{a}", "--accent-hover: color-mix(in srgb, #{a} 86%, #000)",
+     "--accent2: #{b}", "--accent-soft: color-mix(in srgb, #{a} 14%, var(--surface))",
+     "--grad: linear-gradient(135deg, #{a} 0%, #{b} 100%)", "--glow: color-mix(in srgb, #{a} 16%, transparent)",
+     "--ring: color-mix(in srgb, #{a} 22%, transparent)"].join("; ")
+  end
+
   # O tailwindcss-rails acha app/assets/tailwind/componentes_ui/engine.css e gera
   # app/assets/builds/tailwind/componentes_ui.css no app. Os helpers (ss_amount,
   # ss_sparkline, ss_rings, ss_avatar, ss_form_with) entram em todas as views.

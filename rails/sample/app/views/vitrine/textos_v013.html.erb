@@ -1,0 +1,36 @@
+<%# titulo: Texto longo, abertura, grupo de campos e formulário | grupo: Painéis (v0.13) | ordem: 20 %>
+<%# v0.13: o que a migração dos formulários do minha-automacao pediu (pares Flutter: SsProse, SsIntro, SsFieldGroup). %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::ProseComponent + Ss::IntroComponent", "Texto longo com medida de leitura (parágrafos, títulos, listas, links) e o parágrafo de abertura de uma aba.",
+           uso: 'render(Ss::ProseComponent.new(tag: :article)) { simple_format(texto) } · render Ss::IntroComponent.new(text: "…")' do %>
+    <%= render Ss::IntroComponent.new(text: "Aqui ficam as regras que avisam quando algo sai do normal.") %>
+    <%= render Ss::ProseComponent.new(tag: :article) do %>
+      <h2>Privacidade</h2>
+      <p>Guardamos só o que a casa precisa para funcionar. Leia também os <a href="#">termos de uso</a>.</p>
+      <ul><li>Leituras dos aparelhos</li><li>Histórico de 30 dias</li></ul>
+      <p><small>Atualizado em 9 de novembro de 2026.</small></p>
+    <% end %>
+  <% end %>
+
+  <%= demo "f.ss_fieldset, wrapper_class:, selected:, ss_submit(variant:)", "Grupo de campos com legenda e ajuda do grupo; a classe de grade vai direto no .ss-field; select sem model; enviar em contorno ou fantasma.",
+           uso: 'f.ss_fieldset(legend: "Horário", help: "…", class: "grid sm:grid-cols-2 gap-3") { f.ss_time_field :inicio, wrapper_class: "sm:col-span-1" } · f.ss_submit "Filtrar", variant: :outline' do %>
+    <%= ss_form_with url: "#", scope: :filtro, method: :get do |f| %>
+      <%= f.ss_fieldset legend: "Horário", help: "Vale para todos os dias da semana.", class: "vt-grid-2" do %>
+        <%= f.ss_time_field :inicio, label: "Início" %>
+        <%= f.ss_time_field :fim, label: "Fim" %>
+      <% end %>
+      <%= f.ss_select :plano, [%w[Mensal m], %w[Anual a]], label: "Plano", selected: "a" %>
+      <div style="display:flex;gap:.5rem"><%= f.ss_submit "Filtrar", variant: :outline %><%= f.ss_submit "Limpar", variant: :ghost %></div>
+    <% end %>
+  <% end %>
+
+  <%= demo "Ss::TreeViewComponent(wrap: true)", "Rótulo longo quebra em linhas em vez de cortar com reticências.",
+           uso: 'render Ss::TreeViewComponent.new(wrap: true, nodes: [...])' do %>
+    <div class="ss-card" style="padding:8px;max-width:20rem">
+      <%= render Ss::TreeViewComponent.new(wrap: true, label: "Integrações", nodes: [
+            { label: "Home Assistant (importar painéis, automações e scripts)", count: 3, open: true,
+              children: [{ label: "Painel principal com todas as visões da casa", value: "12" }, { label: "Automações", value: "48" }] }]) %>
+    </div>
+  <% end %>
+</div>
+<style>.vt-grid-2 { grid-template-columns: 1fr 1fr; }</style>

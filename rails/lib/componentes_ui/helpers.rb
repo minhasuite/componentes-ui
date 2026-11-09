@@ -199,11 +199,20 @@ module ComponentesUi
 
     # Iniciais sobre gradiente com matiz tirado do nome (sempre o mesmo).
     # status: "ok", "danger", "warn" (ponto no canto).
-    def ss_avatar(name, size: 42, status: nil, brand_hue: 250)
+    # status: o ponto no canto ("success" ou qualquer valor = verde, "danger", "warn", "muted" = apagado,
+    # v0.13); ring: true (v0.13) põe o anel na cor da marca (o ring: do SsAvatar).
+    def ss_avatar(name, size: 42, status: nil, brand_hue: 250, ring: false)
       hue = (brand_hue + (ss_seed(name) % 5 - 2) * 24) % 360
       st = status ? %( data-status="#{ERB::Util.h(status)}") : ""
+      st += " data-ring" if ring
       %(<span class="ss-avatar" style="--h:#{hue};--s:#{size}px" title="#{ERB::Util.h(name)}" aria-label="#{ERB::Util.h(name)}"#{st}>#{ERB::Util.h(ss_initials(name))}</span>).html_safe
     end
+
+    # v0.13: as variáveis CSS da marca a partir de uma ou duas cores (#rrggbb), para pintar um
+    # trecho (style=) com outra marca: o par do SsBrand.fromColors do Flutter (mesmas misturas:
+    # hover = 14% de preto, suave = 14% sobre a superfície). Cor inválida = nil.
+    #   <div style="<%= ss_brand_style("#0284c7", "#14b8a6") %>">…</div>
+    def ss_brand_style(accent, accent2 = nil) = ComponentesUi.brand_css(accent, accent2)
 
     def ss_initials(name)
       parts = name.to_s.strip.split(/\s+/)

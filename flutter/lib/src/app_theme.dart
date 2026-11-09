@@ -96,6 +96,12 @@ class AppColors {
   static Color ghostSoft = const Color(0x249096AC); // .14
 }
 
+/// Mistura [a] com [t] de [b] (0 = [a], 1 = [b]), em sRGB como o
+/// `color-mix(in srgb, …)` do CSS (v0.13). Para derivar um tom de uma cor que
+/// veio de fora (tema do usuário) sem escrever cor solta na tela:
+/// `ssMix(cor, AppColors.scrim, .14)` = 14% mais escura.
+Color ssMix(Color a, Color b, double t) => Color.lerp(a, b, t.clamp(0.0, 1.0))!;
+
 /// Cor da marca do produto. Vai no `ThemeData.extensions` (ver [AppTheme.build])
 /// e os `Ss*` leem daqui; o resto da paleta é comum à suíte.
 @immutable
@@ -241,6 +247,23 @@ class SsBrand extends ThemeExtension<SsBrand> {
   /// seletor de aparência e vitrine. Com slug e família: [SsPaleta.todas].
   static const paletas = _ssPaletasMapa;
   // </paletas>
+
+  /// Marca a partir de uma ou duas cores soltas (v0.13; o `ss_brand_style` /
+  /// `ComponentesUi.brand_css` do Rails): tema de usuário, painel com a própria
+  /// cor, cliente. Os tons saem de [ssMix] com o preto e o branco da suíte:
+  /// hover 14% mais escuro, suave 12% da cor sobre o branco (no escuro, 22%
+  /// sobre a superfície), accent do escuro 28% mais claro e o fundo do
+  /// gradiente 35% mais escuro. [accent2] (padrão: a própria) é o fim do gradiente.
+  factory SsBrand.fromColors(Color accent, [Color? accent2]) => SsBrand(
+    accentLight: accent,
+    accentHoverLight: ssMix(accent, AppColors.scrim, .14),
+    accentSoftLight: ssMix(AppColors.surfaceLight, accent, .12),
+    accentDark: ssMix(accent, AppColors.surfaceLight, .28),
+    accentSoftDark: ssMix(AppColors.surfaceDark, accent, .22),
+    brandFrom: ssMix(accent, AppColors.surfaceLight, .12),
+    brandTo: accent2 ?? accent,
+    brandDeep: ssMix(accent, AppColors.scrim, .35),
+  );
 
   @override
   SsBrand copyWith() => this;

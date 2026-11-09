@@ -11,11 +11,14 @@ import 'density.dart';
 ///
 /// `SsSectionHeader('Diário', subtitle: 'O que você notou', action: botao)`
 class SsSectionHeader extends StatelessWidget {
-  const SsSectionHeader(this.title, {super.key, this.subtitle, this.action});
+  const SsSectionHeader(this.title, {super.key, this.subtitle, this.action, this.icon});
 
   final String title;
   final String? subtitle;
   final Widget? action;
+
+  /// Ícone antes do título, na cor da marca (v0.13; o `Ss::SectionHeaderComponent`).
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,7 @@ class SsSectionHeader extends StatelessWidget {
       padding: EdgeInsets.only(bottom: d.space(10)),
       child: Row(
         children: [
+          if (icon != null) ...[Icon(icon, size: 20, color: c.accent), SizedBox(width: d.gap - 4)],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

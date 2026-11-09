@@ -1,0 +1,87 @@
+<%# titulo: Seções, mosaico, coluna lateral, área e foto | grupo: Painéis (v0.13) | ordem: 10 %>
+<%# v0.13: pares Flutter no README (SsSection(icon:), SsSectionHeader(icon:), SsMasonry, SsAsideLayout, SsMosaicTile(facts:), SsPhotoCard, SsBrand.fromColors). %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% bulb = ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %>
+<% home = ico.("M3 11l9-8 9 8M5 10v10h14V10") %>
+<% sofa = ico.("M4 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M3 12h18v5H3zM5 17v2M19 17v2") %>
+<% bolt = ico.("M13 2 3 14h9l-1 8 10-12h-9z") %>
+<% eye = ico.("M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z") %>
+<% foto = "data:image/svg+xml;utf8,#{ERB::Util.url_encode(%(<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#7dd3fc'/><stop offset='1' stop-color='#166534'/></linearGradient></defs><rect width='160' height='90' fill='url(#g)'/><circle cx='120' cy='22' r='10' fill='#fde68a'/><path d='M0 70 40 45l30 20 30-25 60 35v15H0z' fill='#14532d'/></svg>))}" %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::SectionComponent", "O título em versalete (.ss-section) com ícone antes e uma ação à direita; abre um grupo de cards ou de linhas.",
+           uso: 'render(Ss::SectionComponent.new(title: "Sala", icon: svg)) { |s| s.with_action { link_to "Ver tudo", sala_path } }' do %>
+    <%= render(Ss::SectionComponent.new(title: "Sala de estar", icon: sofa)) { |s| s.with_action { link_to "Ver tudo", "#" } } %>
+    <%= render Ss::SectionComponent.new(title: "Um título de seção bem comprido que não cabe numa linha só", icon: home) %>
+  <% end %>
+
+  <%= demo "Ss::SectionHeaderComponent", "Título de bloco maior (1,15rem / 800) com ícone na cor da marca, explicação embaixo e ação à direita.",
+           uso: 'render Ss::SectionHeaderComponent.new(title: "Andar de cima", subtitle: "3 cômodos", icon: svg)' do %>
+    <%= render(Ss::SectionHeaderComponent.new(title: "Andar de cima", subtitle: "3 cômodos · 2 luzes acesas", icon: home)) { |h| h.with_action { link_to "Editar", "#", class: "ss-btn ss-btn-ghost ss-btn-sm" } } %>
+    <%= render Ss::SectionHeaderComponent.new(title: "Sem ícone nem ação") %>
+  <% end %>
+
+  <%= demo "Ss::MosaicTileComponent", "Bloco de área: gradiente da marca com o matiz deslocado (variant: 0 a 4) ou foto com véu; ícone em cima, título e pílulas de resumo (facts:) ou a linha em versalete (caption:). Com url: é link (sobe no hover).",
+           uso: 'render Ss::MosaicTileComponent.new(title: "Sala", icon: svg, url: area_path(a), variant: 1, facts: [{ label: "2 ligados", icon: bulb }])' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <%= render Ss::MosaicTileComponent.new(title: "Sala", icon: sofa, url: "#", facts: [{ label: "2 ligados", icon: bulb }, { label: "87 W", icon: bolt, num: true }]) %>
+      <%= render Ss::MosaicTileComponent.new(title: "Cozinha", icon: home, url: "#", variant: 1, facts: [{ label: "Movimento", icon: eye }]) %>
+      <%= render Ss::MosaicTileComponent.new(title: "Quarto", icon: home, variant: 2, caption: "Tudo calmo") %>
+      <%= render Ss::MosaicTileComponent.new(title: "Jardim", icon: home, url: "#", image_url: "/icon.png", facts: ["1 sem sinal"]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::PhotoCardComponent", "Foto cobrindo o card na proporção pedida, com título e selo por cima de um véu; dimmed: deixa em cinza (desligado).",
+           uso: 'render Ss::PhotoCardComponent.new(src: url, title: "Varanda", badge: "Ligada", ratio: "4 / 3")' do %>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <%= render Ss::PhotoCardComponent.new(src: foto, title: "Varanda", badge: "Ligada", ratio: "4 / 3") %>
+      <%= render Ss::PhotoCardComponent.new(src: foto, title: "Jardim", badge: "Desligada", ratio: "4 / 3", dimmed: true, url: "#") %>
+    </div>
+  <% end %>
+
+  <%= demo "Chips que alternam (v0.13)", "button.ss-chip com aria-pressed pinta como o atual; .is-icon fica redondo (só ícone ou cor, .ss-chip-swatch com --c); aria-disabled trava sem esconder.",
+           uso: '<button class="ss-chip" aria-pressed="true">Auto</button> · <button class="ss-chip is-icon" aria-label="Vermelho"><i class="ss-chip-swatch" style="--c:#ef4444"></i></button>' do %>
+    <div class="ss-chips" role="group" aria-label="Modo">
+      <button type="button" class="ss-chip" aria-pressed="true">Auto</button>
+      <button type="button" class="ss-chip" aria-pressed="false">Frio</button>
+      <button type="button" class="ss-chip" aria-pressed="false">Quente</button>
+      <span class="ss-chip" aria-disabled="true">Ventilar</span>
+      <button type="button" class="ss-chip is-icon" aria-pressed="false" aria-label="Vermelho" title="Vermelho"><i class="ss-chip-swatch" style="--c:#ef4444"></i></button>
+      <button type="button" class="ss-chip is-icon" aria-pressed="true" aria-label="Azul" title="Azul"><i class="ss-chip-swatch" style="--c:#3b82f6"></i></button>
+    </div>
+  <% end %>
+
+  <%= demo "ss_avatar(ring:, status: \"muted\") e ss_brand_style", "Avatar com anel da marca (em casa) e ponto apagado (fora); um trecho pintado com outra marca a partir de duas cores (o SsBrand.fromColors do Flutter).",
+           uso: 'ss_avatar("Ana", ring: true, status: "success") · <div style="<%= ss_brand_style("#0284c7", "#14b8a6") %>">' do %>
+    <div style="display:flex;gap:16px;align-items:center">
+      <%= ss_avatar("Ana Souza", size: 40, status: "success", ring: true) %>
+      <%= ss_avatar("Bruno Lima", size: 40, status: "muted") %>
+      <%= ss_avatar("Carla Dias", size: 40, status: "warn") %>
+    </div>
+    <div style="<%= ss_brand_style("#0284c7", "#14b8a6") %>; margin-top:12px; display:flex; gap:8px">
+      <button type="button" class="ss-btn ss-btn-primary ss-btn-sm">Oceano</button>
+      <span class="ss-chip" aria-current="true">Atual</span>
+      <span class="ss-badge ss-badge-accent">Selo</span>
+    </div>
+  <% end %>
+</div>
+
+<div style="margin-top:1.5rem">
+  <%= demo "Ss::MasonryComponent + Ss::AsideLayoutComponent", "Mosaico: cards em colunas que se encaixam pela altura (1, 2, 3, 4 pela largura; max: limita). Coluna lateral: 2/3 + 1/3 que gruda no topo no computador; empilha abaixo de 1024 px.",
+           uso: 'render(Ss::AsideLayoutComponent.new) { |l| l.with_main { render(Ss::MasonryComponent.new(max: 2)) { … } }; l.with_aside { … } }' do %>
+    <%= render Ss::AsideLayoutComponent.new(label: "Resumo") do |l| %>
+      <% l.with_main do %>
+        <%= render Ss::MasonryComponent.new(max: 2) do %>
+          <%= render Ss::SectionComponent.new(title: "Sala", icon: sofa) %>
+          <% [3, 1, 2, 1, 4, 2].each_with_index do |n, i| %>
+            <div class="ss-card ss-card-pad"><%= render Ss::CardHeaderComponent.new(title: "Card #{i + 1}", subtitle: "#{n} linha(s)") %><% n.times do %><p style="margin:.4rem 0 0;color:var(--muted)">Linha de conteúdo do card.</p><% end %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% l.with_aside do %>
+        <%= render Ss::SectionComponent.new(title: "Resumo") %>
+        <div class="ss-card ss-card-pad"><%= render Ss::CardHeaderComponent.new(title: "Coluna lateral", subtitle: "Gruda no topo ao rolar") %></div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

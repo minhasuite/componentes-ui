@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.12.0
+      ref: v0.13.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.12.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.13.0"
 ```
 
 ```css
@@ -582,6 +582,34 @@ vitrine Flutter: seção "Cards e casa (v0.12)"; catálogo nos dois lados.
 saiu de dentro do tile; quem procurava `.ss-device .ss-switch` no JS do app deve olhar o
 `form[data-controller~="ss-switch"]` ou o `.ss-device-toggle`). Respiro do tile 14 → **12** px; nome 0,9 → **0,88rem**.
 
+## v0.13: seções, mosaico em colunas, coluna lateral, área, foto, marca de duas cores, textos e formulário
+
+Pedido do minha-automacao (painéis e formulários 100% na gem). Tudo aditivo; nada quebra da v0.12. Vitrine Rails:
+grupo "Painéis (v0.13)"; vitrine Flutter: seção "Painéis (v0.13)"; catálogo nos dois lados.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Título de seção com ícone e ação | `SsSection(title, icon:, action:, onAction:)` (`icon:` novo) | `Ss::SectionComponent(title:, icon:, heading: :h2)` + slot `action` · `.ss-section-row` (o `.ss-section` com ícone) |
+| Cabeçalho de bloco (1,15rem / 800) | `SsSectionHeader(title, subtitle:, icon:, action:)` (`icon:` novo) | `Ss::SectionHeaderComponent(title:, subtitle:, icon:, heading:)` + slot `action` · `.ss-section-head` |
+| Mosaico em colunas (1/2/3/4 por 640/1024/1440) | `SsMasonry(children:, maxColumns:, spacing:)`, `SsMasonry.columnsFor(width)` | `Ss::MasonryComponent(max:)` · `.ss-masonry` (`.is-max-N`; filho `display: contents` vale pelo de dentro; `.ss-section-row` gruda no card seguinte) |
+| Conteúdo + coluna lateral | `SsAsideLayout(main:, aside:, breakpoint: 1024, spacing:, asideLabel:)` | `Ss::AsideLayoutComponent(label:)` + slots `main`/`aside` · `.ss-aside-layout` (a coluna gruda no topo no computador) |
+| Bloco do mosaico com pílulas | `SsMosaicTile(facts: [SsMosaicFact(label, icon:)])` (novo; uma linha que rola de lado) | `Ss::MosaicTileComponent(title:, caption:, icon:, image_url:, variant: 0..4, facts: [{ label:, icon:, num: }], url:, link_data:)` · `.ss-mosaic` (matiz da marca deslocado como o `colorsFor`, ou foto com véu) |
+| Card de foto | `SsPhotoCard(image:, title:, badge:, aspectRatio:, dimmed:, onTap:)` | `Ss::PhotoCardComponent(src:, title:, badge:, ratio: "16 / 9", dimmed:, alt:, url:)` · `.ss-photo` (`.is-dimmed`) |
+| Chip que alterna, só ícone/cor, travado | `SsFilterChip` (já cobre) | `.ss-chip[aria-pressed=true]` (igual ao atual), `.ss-chip.is-icon`, `.ss-chip-swatch` (`--c`), `.ss-chip[aria-disabled=true]` |
+| Avatar com anel e ponto apagado | `SsAvatar(ring:, status:)` (já havia) | `ss_avatar(name, ring: true, status: "muted")` (`ring:` e `"muted"` novos) |
+| Marca a partir de uma ou duas cores | `SsBrand.fromColors(accent, [accent2])`, `ssMix(a, b, t)` (color-mix em sRGB) | `ComponentesUi.brand_css(accent, accent2)` / `ss_brand_style(...)`: `--accent`, `--accent-hover`, `--accent-soft`, `--accent-solid`, `--grad`, `--glow`, `--ring` |
+| Texto longo (termos, privacidade, ajuda) | `SsProse(children:, maxWidth:)`, `SsProse.paragraphs(texto)`, `SsProseList`, `SsProse.heading(context)` | `Ss::ProseComponent(tag: :article)` · `.ss-prose` (parágrafos, títulos, listas, links, citação) |
+| Parágrafo de abertura de aba/seção | `SsIntro(texto)` | `Ss::IntroComponent(text:)` (ou bloco) · `.ss-intro` |
+| Grupo de campos com ajuda do grupo | `SsFieldGroup(label:, helperText:, children:, spacing:)` | `f.ss_fieldset(legend:, help:, class:, wrapper_class:) { … }` / `ss_fieldset(...)` fora do form · `.ss-field-group` |
+| Formulário | — | `wrapper_class:` em todo `f.ss_*` (vai no `.ss-field`/fieldset: coluna de grade sem `<div>` a mais); `f.ss_select(..., selected:)` e `ss_collection_select(selected:)` sem model; `f.ss_submit(variant: :primary/:outline/:ghost/:danger, small:)` |
+| Árvore com rótulo longo | — (o app não tem árvore) | `Ss::TreeViewComponent(wrap: true)` · `.ss-tree.is-wrap` (quebra em vez de reticências) |
+
+`SsBrand.fromColors` deriva os tons com o preto (`AppColors.scrim`) e o branco (`AppColors.surfaceLight`) da
+suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície no escuro), accent do escuro
+28% mais claro, fundo do gradiente 35% mais escuro. Use no tema do usuário em vez de `Colors.black/white`.
+
+**Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
+
 ## Verificar
 
 ```bash
@@ -609,6 +637,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.13.0` (09/11/2026): seção "v0.13". `SsSection(icon:)`/`Ss::SectionComponent`, `SsSectionHeader(icon:)`/`Ss::SectionHeaderComponent`, `SsMasonry`/`Ss::MasonryComponent`, `SsAsideLayout`/`Ss::AsideLayoutComponent`, `SsMosaicTile(facts:)`/`Ss::MosaicTileComponent`, `SsPhotoCard`/`Ss::PhotoCardComponent`, chip com `aria-pressed`/`.is-icon`/`.ss-chip-swatch`, `ss_avatar(ring:)` marca a partir de duas cores (`SsBrand.fromColors`, `ssMix` / `ss_brand_style`), texto longo e abertura (`SsProse`/`SsIntro` ↔ `ProseComponent`/`IntroComponent`), grupo de campos com ajuda (`SsFieldGroup` ↔ `ss_fieldset`), `wrapper_class:`/`selected:`/`ss_submit(variant:)` no form builder e `TreeViewComponent(wrap:)`. Nada quebra.
 - `v0.12.0` (09/11/2026): seção "v0.12". `SsDeviceTile`/`Ss::DeviceTileComponent` numa linha com o ícone como chave (switch acessível nos dois lados), agenda que não estoura o card (dia inteiro numa linha; `SsDayAgenda(allDay:)` no Flutter), `SsCardHeader`/`Ss::CardHeaderComponent`, `SsKpiCard`/`Ss::KpiCardComponent` e `SsRankList`/`Ss::RankListComponent`. A API não quebra; muda o desenho do tile (a chave saiu da direita).
 - `v0.11.0` (05/11/2026): densidade nos dois lados (seção "v0.11"): `SsDensity` (compacta, padrão, confortável) por `AppTheme.build(density:)` e `SsDensityScope`, `SsTapTarget`, `SsDensityPicker`; no web, tokens `--ss-*` trocados por `data-ss-density` no `<html>` ou num contêiner, `ComponentesUi.config.density`, `ss_density_attrs`, `ss_density_head`, `Ss::DensityPickerComponent` + `ss-density`. Os componentes leem tamanho dos tokens. Alguns padrões grandes demais encolheram (tabela na seção). Nada quebra na API; parâmetros de tamanho com padrão literal viraram anuláveis (nulo = da densidade). Roteiro de migração em `docs/MIGRACAO.md`.
 - `v0.10.3` (05/11/2026): correções e lacunas da migração do minha-automacao para a v0.10.2 (seção "v0.10.3"): `SsTopBar` na fonte do tema e com o véu do overlay visível, toque longo/duplo no `SsDeviceTile` (⋯ e menu de contexto no web), segurar para falar (`SsMicButton(holdToTalk:)`, `SsChatInput(onMicHoldStart:)`, `MicButtonComponent(hold:, compact:)`), `SsHaptics.light`, `SsIconTile(onGradient:)`/`.is-on-grad`, `SsChipBar(currentIndex:)`/`ss-scroll-current`; no web, `FilterBarComponent` com arrays e query do `url:`, `ss-live` com `display: contents`, `OptionCardComponent(id:, input:, dense:, vertical:)`, chip de caixa de marcar, checklist de linha inteira, `.ss-tag > a`, `SubnavComponent(layout: :tabs)` e `.ss-base`/`.ss-reduce-motion`. Nada quebra.
