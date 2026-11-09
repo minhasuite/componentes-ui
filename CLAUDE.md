@@ -12,4 +12,4 @@ CSS para Tailwind 4). Uso no README. Proposta em `../docs/PROPOSTA.md`.
 - **Componente novo ou mudado = entrada no catálogo** (`flutter/test/catalogo.dart`,
   `rails/catalogo/index.html`) na mesma mudança. A skill `componentes` exporta em SVG.
 - Não é deploy: push aqui não publica nada. O produto só muda quando sobe a tag dele.
-- Flutter roda só em container (comando no README); o `flutter` do PATH é o do Windows.
+- Flutter roda só em container (comando no README); não há Flutter no host.
