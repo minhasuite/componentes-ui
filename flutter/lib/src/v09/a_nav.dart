@@ -23,6 +23,12 @@ import '../ss_strings.dart';
 /// com a largura do nome, e a escolhida é trazida para a vista ao mudar.
 /// [scrollable] `true` força a rolagem; `false`, a divisão por igual.
 /// [icons] põe um ícone antes de cada nome (nulo na posição = sem ícone).
+///
+/// v0.19.1: [stacked] põe o ícone **em cima** do nome e nunca rola: as abas
+/// dividem a largura por igual e o nome encolhe para caber (5 abas cabem em
+/// 360 px). A faixa fica com [stackedHeight] de altura (66 no padrão), para
+/// o `bottomHeight:` do [SsSliverHeader]. O conteúdo das abas vai no
+/// [SsTabsView] com o mesmo `TabController`.
 class SsTabsUnderline extends StatefulWidget {
   const SsTabsUnderline({
     super.key,
@@ -33,8 +39,12 @@ class SsTabsUnderline extends StatefulWidget {
     this.onDark = false,
     this.icons,
     this.scrollable,
+    this.stacked = false,
   }) : assert(tabs.length >= 2),
        assert(icons == null || icons.length == tabs.length);
+
+  /// Altura da faixa com [stacked] na densidade de [context] (60/66/70).
+  static double stackedHeight(BuildContext context) => SsDensity.of(context).segmentHeight + 24;
 
   final List<String> tabs;
   final int index;
@@ -48,6 +58,9 @@ class SsTabsUnderline extends StatefulWidget {
   /// Nulo = rola só quando as abas não cabem.
   final bool? scrollable;
 
+  /// v0.19.1: ícone em cima do nome, sem rolagem (ver a classe).
+  final bool stacked;
+
   @override
   State<SsTabsUnderline> createState() => _SsTabsUnderlineState();
 }
@@ -55,6 +68,7 @@ class SsTabsUnderline extends StatefulWidget {
 class _SsTabsUnderlineState extends State<SsTabsUnderline> {
   static const _pad = 16.0; // folga de cada lado do nome, no modo rolável
   static const _icone = 18.0;
+  static const _iconeEmCima = 20.0;
   final _rolagem = ScrollController();
 
   // Posição de cada aba no modo rolável (do último layout), para trazer a
@@ -99,7 +113,7 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
   TextStyle _estilo(BuildContext context, {required bool selected, required Color cor}) => TextStyle(
     fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
     color: cor,
-    fontSize: SsDensity.of(context).font(widget.uppercase ? AppType.meta : AppType.set),
+    fontSize: SsDensity.of(context).font(widget.uppercase || widget.stacked ? AppType.meta : AppType.set),
     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
     letterSpacing: widget.uppercase ? 2.4 : 0,
   );
@@ -181,6 +195,37 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
     final sel = i == widget.index;
     final icone = widget.icons?[i];
     final texto = Text(_nome(i), maxLines: 1, overflow: TextOverflow.ellipsis);
+    final Widget rotulo;
+    if (widget.stacked) {
+      // Ícone em cima; o nome encolhe (sem reticências) para caber na aba.
+      rotulo = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icone != null) ...[
+              Icon(icone, size: _iconeEmCima, color: sel ? on : off),
+              SizedBox(height: SsDensity.of(context).space(4)),
+            ],
+            FittedBox(fit: BoxFit.scaleDown, child: Text(_nome(i), maxLines: 1)),
+          ],
+        ),
+      );
+    } else {
+      rotulo = icone == null
+          ? texto
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icone, size: _icone, color: sel ? on : off),
+                  SizedBox(width: SsDensity.of(context).space(6)),
+                  Flexible(child: texto),
+                ],
+              ),
+            );
+    }
     return Semantics(
       button: true,
       selected: sel,
@@ -196,19 +241,7 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
               duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
               curve: Curves.easeOut,
               style: _estilo(context, selected: sel, cor: sel ? on : off),
-              child: icone == null
-                  ? texto
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(icone, size: _icone, color: sel ? on : off),
-                          SizedBox(width: SsDensity.of(context).space(6)),
-                          Flexible(child: texto),
-                        ],
-                      ),
-                    ),
+              child: rotulo,
             ),
           ),
         ),
@@ -238,12 +271,12 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
 
   Widget _faixa(BuildContext context, SsDensity d, Widget linha, Color on, Color off, Color bar, int n) {
     return SizedBox(
-      height: d.segmentHeight + 6,
+      height: widget.stacked ? d.segmentHeight + 24 : d.segmentHeight + 6,
       child: LayoutBuilder(
         builder: (context, box) {
-          final naturais = _naturais(context);
+          final naturais = widget.stacked ? const <double>[] : _naturais(context);
           final soma = naturais.fold(0.0, (a, b) => a + b);
-          final rola = widget.scrollable ?? soma > box.maxWidth;
+          final rola = !widget.stacked && (widget.scrollable ?? soma > box.maxWidth);
           if (!rola) {
             _esq = const [];
             _larg = const [];

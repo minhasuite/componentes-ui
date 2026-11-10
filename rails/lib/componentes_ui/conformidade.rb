@@ -23,7 +23,9 @@ module ComponentesUi
   #    os helpers que as geram (`button_to`, `*_field_tag`, `form_with`…) e campos do FormBuilder fora do `ss_*`
   #    (`hidden_field` é livre: não é componente visual);
   # 5. gráfico fora da gem (Chart.js) e o hover do Tailwind 3 (`@custom-variant`, ações `md:opacity-0`);
-  # 6. CSS próprio além de `@import`/`@source`, e JS do produto com classe que não é `ss-*`/`is-*` ou estilo inline.
+  # 6. CSS próprio além de `@import`/`@source`, e JS do produto com classe que não é `ss-*`/`is-*` ou estilo inline;
+  # 7. (v0.19.1) card à mão: no mesmo `class`, fundo `bg-surface`/`bg-[var(--surface)]` + `shadow*` + `rounded*`
+  #    (é o `.ss-card`, `.ss-card.is-soft` ou um `Ss::*Component` de card).
   module Conformidade
     Violacao = Struct.new(:regra, :arquivo, :linha, :trecho) do
       def to_s = "#{arquivo}:#{linha} [#{regra}] #{trecho}"
@@ -113,6 +115,7 @@ module ComponentesUi
         add.("js-tag-crua") if ext == ".js" && linha =~ JS_TAG_RE
         add.("hover-tailwind3") if linha =~ HOVER3_RE
         add.("grafico-fora-da-gem") if linha =~ CHART_RE
+        add.("card-a-mao:ss-card") if !comentario && (ruby_ou_erb || ext == ".js") && card_a_mao?(linha)
         js(linha, add) if ext == ".js"
       end
     end
@@ -120,6 +123,16 @@ module ComponentesUi
     def classes(linha)
       linha.scan(CLASSES_RE).flat_map do |m|
         m.compact.join(" ").gsub(/<%.*?%>|#\{[^}]*\}/, " ").scan(%r{[\w:/\[\]-]+}).map { |c| c.split(":").last }
+      end
+    end
+
+    # Fundo da superfície + sombra + canto arredondado no mesmo atributo de classe.
+    def card_a_mao?(linha)
+      linha.scan(CLASSES_RE).any? do |m|
+        tokens = m.compact.join(" ").gsub(/<%.*?%>|#\{[^}]*\}/, " ").scan(%r{[\w:/\[\]().-]+}).map { |c| c.split(":").last }
+        tokens.any? { |c| %w[bg-surface bg-[var(--surface)]].include?(c) } &&
+          tokens.any? { |c| c.start_with?("shadow") && c != "shadow-none" } &&
+          tokens.any? { |c| c.start_with?("rounded") }
       end
     end
 

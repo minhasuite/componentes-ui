@@ -155,6 +155,9 @@
   hr.ss-divider { border: 0; border-top: 1px solid var(--line); margin: 1rem 0; }
   div.ss-divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: var(--muted); font-size: .78rem; font-weight: 700; }
   div.ss-divider::before, div.ss-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  /* v0.19.1: fio em pé entre duas colunas (par do SsDivider.vertical): <hr class="ss-divider is-vertical" aria-orientation="vertical">. */
+  .ss-divider.is-vertical { display: block; flex: none; align-self: stretch; width: 1px; min-height: 1rem; height: auto; margin: 0; border: 0; background: var(--line); }
+  .ss-divider.is-vertical::before, .ss-divider.is-vertical::after { content: none; }
 
   /* ── Passos numerados (Quando → Só se → Então): .ss-steps conta, .ss-steps-head numera ── */
   .ss-steps { counter-reset: ss-step; }

@@ -21,7 +21,16 @@
 /// 3. cor literal (`Colors.*`, `Color(0x…)`, `Color.fromARGB/fromRGBO`);
 /// 4. tipografia literal (`fontSize:`/`letterSpacing:` com número, `fontFamily:` com
 ///    texto, `height:`/`wordSpacing:` com número dentro de `TextStyle(...)`/`copyWith(...)`);
-/// 5. gráfico fora do pacote (`fl_chart` no pubspec ou importado).
+/// 5. gráfico fora do pacote (`fl_chart` no pubspec ou importado);
+/// 6. (v0.19.1) card à mão: `BoxDecoration` com a cor `surface` e a sombra de card
+///    (`AppShadows.card`, ou `boxShadow:` com o raio `AppRadius.card`/`cardActive`),
+///    que é o `SsCard` (ou `SsCard(soft:)`). Para não pegar desenho de domínio, fica
+///    de fora decoração com `gradient:`, `image:` ou `shape:` (círculo), cor que não
+///    é a `surface` pura (o papel do cupom, `surface.withValues`, ternário) e o
+///    `ShapeDecoration`.
+///
+/// v0.19.1: a chamada com tipo (`showDialog<void>(`, `PopupMenuButton<String>(`)
+/// também conta (antes passava).
 ///
 /// Fica de fora o que o pacote não substitui: `Scaffold`, `InkWell`, `Material`,
 /// layout (`Row`, `Column`, `Padding`…), `RawAutocomplete` etc.
@@ -85,7 +94,7 @@ List<Violacao> conferirConformidade(Directory raiz) {
   final arquivos = lib.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart')).toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
-  final material = RegExp('(?<![A-Za-z_0-9])(${proibidosMaterial.join('|')})(\\.\\w+)?\\(');
+  final material = RegExp('(?<![A-Za-z_0-9])(${proibidosMaterial.join('|')})(\\.\\w+)?(<[\\w<>?, ]*>)?\\(');
   final regras = <String, RegExp>{
     'cupertino': RegExp(r'(?<![A-Za-z_0-9])(Cupertino\w+|showCupertino\w+)\(|package:flutter/cupertino\.dart'),
     'scaffold-messenger': RegExp(r'(?<![A-Za-z_0-9])ScaffoldMessenger\b'),
@@ -125,6 +134,38 @@ List<Violacao> conferirConformidade(Directory raiz) {
         problemas.add(Violacao('tipografia', rel(f), linha, linhas[linha - 1].trim()));
       }
     }
+    // 6: card à mão (BoxDecoration com surface + sombra de card).
+    for (final abre in RegExp(r'(?<![A-Za-z_0-9])BoxDecoration\(').allMatches(texto)) {
+      final corpo = _corpo(texto, abre.end - 1);
+      if (_cardAMao(corpo)) {
+        final linha = '\n'.allMatches(texto.substring(0, abre.start)).length + 1;
+        if (linhas[linha - 1].trimLeft().startsWith('//')) continue;
+        problemas.add(Violacao('card-à-mão:SsCard', rel(f), linha, linhas[linha - 1].trim()));
+      }
+    }
   }
   return problemas;
+}
+
+/// O texto entre o `(` em [ini] e o `)` que fecha (sem ele).
+String _corpo(String texto, int ini) {
+  var nivel = 0;
+  var fim = ini;
+  for (; fim < texto.length; fim++) {
+    if (texto[fim] == '(') nivel++;
+    if (texto[fim] == ')' && --nivel == 0) break;
+  }
+  return texto.substring(ini, fim);
+}
+
+final _corSurface = RegExp(r'(?<![\w])color:\s*(?:[A-Za-z_]\w*(?:\([^()]*\))?\.)*surface\s*(?:,|\)|$)');
+final _sombraCard = RegExp(r'AppShadows\.card\b');
+final _raioCard = RegExp(r'AppRadius\.(card|cardActive)\b');
+final _dominio = RegExp(r'(?<![\w])(gradient|image|shape):');
+
+/// Card à mão: a cor é a `surface` pura e a sombra é a do card (o token, ou
+/// qualquer `boxShadow:` com o raio de card); fora o que é desenho de domínio.
+bool _cardAMao(String corpo) {
+  if (_dominio.hasMatch(corpo) || !_corSurface.hasMatch(corpo)) return false;
+  return _sombraCard.hasMatch(corpo) || (corpo.contains('boxShadow:') && _raioCard.hasMatch(corpo));
 }

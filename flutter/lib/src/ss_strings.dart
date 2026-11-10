@@ -391,6 +391,7 @@ class SsStrings {
     required this.quickActions,
     required this.image,
     required this.zoomHint,
+    required this.tapToClose,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -986,6 +987,9 @@ class SsStrings {
   /// v0.19: dica do [showSsImageViewer] (pinça e toque duplo ampliam).
   final String zoomHint;
 
+  /// v0.19.1: dica do leitor de tela na tela cheia que fecha com um toque.
+  final String tapToClose;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1383,6 +1387,7 @@ class SsStrings {
     quickActions: 'Ações rápidas',
     image: 'Imagem',
     zoomHint: 'Toque duas vezes ou use dois dedos para ampliar',
+    tapToClose: 'Toque para fechar',
   );
 
   /// Inglês.
@@ -1768,6 +1773,7 @@ class SsStrings {
     quickActions: 'Quick actions',
     image: 'Image',
     zoomHint: 'Double-tap or pinch to zoom',
+    tapToClose: 'Tap to close',
   );
 
   /// Espanhol.
@@ -2153,6 +2159,7 @@ class SsStrings {
     quickActions: 'Acciones rápidas',
     image: 'Imagen',
     zoomHint: 'Toca dos veces o usa dos dedos para ampliar',
+    tapToClose: 'Toca para cerrar',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2525,6 +2532,7 @@ class SsStrings {
     'quickActions': quickActions,
     'image': image,
     'zoomHint': zoomHint,
+    'tapToClose': tapToClose,
   };
 
   /// Os idiomas prontos.
@@ -2932,6 +2940,7 @@ class SsStrings {
     String? quickActions,
     String? image,
     String? zoomHint,
+    String? tapToClose,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3301,6 +3310,7 @@ class SsStrings {
     quickActions: quickActions ?? this.quickActions,
     image: image ?? this.image,
     zoomHint: zoomHint ?? this.zoomHint,
+    tapToClose: tapToClose ?? this.tapToClose,
   );
 }
 

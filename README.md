@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.19.0
+      ref: v0.19.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.1"
 ```
 
 ```css
@@ -610,6 +610,90 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.19.1: conteúdo das abas, dica ao segurar, fio em pé, menu com logo, tela cheia, cor de dado e card à mão no verificador
+
+O que o minhas-compras-app e o minhas-viagens-app ainda montavam com peça crua do Material, cor literal ou número solto
+no estilo de texto, para os dois passarem no `conferirConformidade` sem exceção. Tudo aditivo (parâmetro novo opcional;
+a API não quebra). Catálogo: `flutter/test/catalogo_v191.dart` (`ss-tabs-view`, `ss-tooltip`, `ss-fullscreen` novos;
+estados `empilhada` no `ss-tabs-underline`, `vertical` no `ss-divider`, `ancora` no `ss-overflow-menu`) e
+`rails/catalogo/index.html` (`ss-divider-vertical`); testes em `flutter/test/v191_test.dart`,
+`flutter/test/conformidade_test.dart` e `rails/sample/test/conformidade_test.rb`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Conteúdo das abas | `SsTabsView(controller:, children:, swipe: true)` (sem `controller`, o `DefaultTabController`) | `Ss::TabsComponent` com painéis (já existia) | `TabBarView` |
+| Aba com ícone em cima | `SsTabsUnderline(stacked: true, icons: [...])`: ícone em cima do nome, divide a largura e nunca rola (o nome encolhe; 5 abas cabem em 360 px); altura em `SsTabsUnderline.stackedHeight(context)` (60/66/70) | — (só app) | `TabBar(tabs: [Tab(icon:, child:)])` dentro do `SsSliverHeader(bottom:)` |
+| Dica ao segurar / passar o mouse | `SsTooltip(message:, child:, below: false)` | `Ss::TooltipComponent` (já existia; mesmo nome) | `Tooltip` |
+| Fio em pé | `SsDivider.vertical(width: 1, indent: 0)` ou `SsDivider(vertical: true, height:)` | `<hr class="ss-divider is-vertical" aria-orientation="vertical">` | `VerticalDivider` |
+| Item de menu com logo | `SsMenuAction(icon, label, onTap, leading: Widget)` + `SsOverflowMenu(items:, tooltip:, child: Widget)` (âncora própria) | `PopoverComponent` + `ButtonComponent(variant: :item)` com o bloco (já cobre) | `PopupMenuButton` + `PopupMenuItem(child: Row(logo, texto))` |
+| Tela cheia | `showSsFullscreen<T>(context, title:, child:, actions:, dismissOnTap: false, useRootNavigator: true)`; a tela `SsFullscreenPage` é pública | — (só app) | `showDialog(builder: (_) => Dialog.fullscreen(...))` |
+| Transparente | `AppColors.transparent` | `transparent` do CSS | `Colors.transparent` |
+| Entrelinha e espaço entre letras | `AppType.solid` (1), `AppType.tight` (1,2), `AppType.snug` (1,3), `AppType.trackingTight` (0,5), `AppType.trackingTitle` (−0,3), além dos da v0.19 (`leading` 1,4, `trackingCaps` 0,8, `trackingWide` 1,4) | — (só app) | `height: 1.2`, `letterSpacing: 1` soltos |
+| Cor que é dado | `ssColorFromHex('#E43225')` (`#RGB`, `#RRGGBB`, `#RRGGBBAA`; lança `FormatException`), `ssTryColorFromHex(String?)` (nulo se não for cor), `ssColorFromRgb(0x3A6EA5)` | variável inline com o hex validado (como o `WalletCardComponent(colors:)`) | `Color(0xFF000000 \| v)`, `Color(0xFFE43225)` num mapa |
+| Glifo de ícone no canvas | `ssIconTextStyle(icon, size:, color:)` e `ssPaintIcon(canvas, icon, center, size:, color:, angle:)` | — (só app) | `TextStyle(fontFamily: icon.fontFamily, package: icon.fontPackage, fontSize: 20)` |
+
+**Cor que é dado.** `ssColorFromHex`/`ssColorFromRgb` são **o** jeito de pintar uma cor que não é estilo, é dado: a que
+vem da API (cor média da foto do destino, `color` do JSON) ou a cor de marca de um terceiro guardada no app como dado
+(monograma das lojas e dos sites de viagem: o mapa vira `'amazon': ('a', '#232F3E')` e a tela chama
+`ssColorFromHex(hex)`; decisão do usuário em 10/11/2026: a cor de marca das lojas fica no app, sem API). O verificador
+não reprova essas chamadas. Cor de **estilo** (fundo, texto, borda) continua só por token (`SsColors.of(context)`,
+`AppColors`, o `SsBrand`): usar o helper para escrever a cor da tela é burlar a régua.
+
+**SsTabsView.** Mesmo `TabController` do `SsTabsUnderline` (`index: _tabs.index, onChanged: _tabs.animateTo`, com o
+`setState`/`ListenableBuilder` no controlador): o toque na aba desliza a página e arrastar troca a aba. `swipe: false`
+desliga o arrastar (aba com mapa). Uma `PageStorageKey` por filho guarda a rolagem de cada aba.
+
+**SsTabsUnderline(stacked:).** Para as 5 abas do detalhe da viagem dentro do `SsSliverHeader`:
+`bottom: SsTabsUnderline(stacked: true, tabs:, icons:, index:, onChanged:)` e
+`bottomHeight: SsTabsUnderline.stackedHeight(context)`. Ícone 20 em cima, nome 12 (800 na escolhida) que encolhe
+(sem reticências); o traço que viaja é o mesmo.
+
+**SsTooltip.** Aparece ao segurar (toque) ou com o mouse/foco por 250 ms, em cima do filho (`below: true`, embaixo);
+claro: fundo de tinta e texto branco; escuro: o fundo do campo com borda; 12/600, raio 8, sombra do card. O leitor
+de tela lê a mensagem junto do filho. Não é o `SsTip` (a dica dispensável com ×). Botão de ícone continua com o
+`SsIconButton(tooltip:)`.
+
+**SsMenuAction(leading:) e SsOverflowMenu(child:).** `leading` vai numa caixa do tamanho do ícone da densidade (o
+`icon` fica para o atalho de uma ação só). Com `child` (ex. "↗ No app" em texto), o menu abre mesmo com uma ação e
+o `tooltip` é o nome da âncora. "Buscar no app da loja":
+`SsOverflowMenu(tooltip: 'Buscar no app da loja', child: ..., items: [SsMenuAction(Icons.storefront, 'Buscar no app da Shopee', () => ..., leading: StoreIcon(store: 'shopee', name: 'Shopee', size: 18))])`.
+
+**showSsFullscreen.** Rota por cima de tudo, sobe com fade (sem animação com "reduzir movimento"); barra com × (`SsStrings.close`),
+`title` e `actions`; `dismissOnTap: true` fecha com um toque em qualquer lugar e o leitor diz "Toque para fechar".
+
+**Entrelinha e espaço entre letras: o mapa dos valores dos apps** (arredonde para o token mais próximo; a diferença
+não aparece no desenho):
+
+| Valor solto | Token |
+|---|---|
+| `height: 1` | `AppType.solid` |
+| `height: 1.1`, `1.2` | `AppType.tight` (1,2) |
+| `height: 1.3` | `AppType.snug` (1,3) |
+| `height: 1.35`, `1.4` | `AppType.leading` (1,4) |
+| `letterSpacing: .3`, `.5`, `.6` | `AppType.trackingTight` (0,5) |
+| `letterSpacing: .8`, `1` | `AppType.trackingCaps` (0,8) |
+| `letterSpacing: 1.2`, `1.5`, `1.6` | `AppType.trackingWide` (1,4) |
+| `letterSpacing: -0.4` (título grande) | `AppType.trackingTitle` (−0,3) |
+| `fontSize: 10` / `11` / `14` / `20` / `34` | `AppType.micro` / `label` / `set` / `headerTitle` / `statNum` (já existiam) |
+
+**Verificador: card à mão (regra nova, ligada para todos).** `conferirConformidade` reprova `card-à-mão:SsCard`: um
+`BoxDecoration` com a cor `surface` pura (`c.surface`, `SsColors.of(context).surface`) e a sombra de card
+(`AppShadows.card`, ou qualquer `boxShadow:` com o raio `AppRadius.card`/`cardActive`), que é o `SsCard` (ou
+`SsCard(soft:)`, `SsCard(active:)`, `SsCard(tint:)`). Para não pegar desenho de domínio fica de fora: decoração com
+`gradient:`, `image:` ou `shape:`, cor que não é a `surface` pura (papel do cupom, `surface.withValues(...)`,
+ternário), `ShapeDecoration` e sombra sem raio de card (barra de baixo). No web, `ComponentesUi::Conformidade` reprova
+`card-a-mao:ss-card`: no mesmo `class`, `bg-surface`/`bg-[var(--surface)]` + `shadow*` + `rounded*` (é o `.ss-card`).
+Achados ao ligar (10/11/2026): meu-financeiro-app (o `main` 100%) **0**, minhas-compras-app 8, minhas-viagens-app 2,
+minha-automacao-app 0, meu-gestor-app 0, meu-personal-app 0, meu-cultivo-app 0, minhas-vendas-app 0; no web, 0
+em todos (meu-financeiro 100%, compras, viagens, automação, gestor, personal, vendas). Como ninguém que já estava verde quebra, a regra não tem parâmetro para desligar.
+
+**Verificador: chamada com tipo.** `showDialog<void>(`, `PopupMenuButton<String>(`, `SegmentedButton<int>(` passavam
+pelo verificador (o tipo entre o nome e o parêntese); agora reprovam como sem o tipo. No meu-financeiro-app: 0 achados.
+
+**Textos novos (pt, en, es):** `SsStrings.tapToClose` ("Toque para fechar").
+
+**Padrões que mudaram.** Nenhum desenho mudou; o verificador ficou mais rígido (card à mão e chamada com tipo).
+
 ## v0.19.0: botão como componente, entrar com o Google, cartão físico, arquivo e cor no formulário (web 100% do meu-financeiro)
 
 O que o Meu Financeiro (web) ainda escrevia à mão (`<button>`, `button_to` com classe, `<input type=file|color>`, o "G" do
@@ -999,6 +1083,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.19.1` (10/11/2026): seção "v0.19.1" (o que destrava o minhas-compras-app e o minhas-viagens-app no `conferirConformidade`). `SsTabsView` (conteúdo das abas), `SsTabsUnderline(stacked:)` + `stackedHeight`, `SsTooltip`, `SsDivider.vertical`/`SsDivider(vertical:)` ↔ `.ss-divider.is-vertical`, `SsMenuAction(leading:)`, `SsOverflowMenu(child:)`, `showSsFullscreen`/`SsFullscreenPage`, `AppColors.transparent`, `AppType.solid`/`tight`/`snug`/`trackingTight`/`trackingTitle`, `ssColorFromHex`/`ssTryColorFromHex`/`ssColorFromRgb` (cor que é dado), `ssIconTextStyle`/`ssPaintIcon`, texto `tapToClose`. Verificador: card à mão (Flutter e Rails) e chamada com tipo (`showDialog<void>(`). Nada quebra.
 - `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra. Conformidade: `ComponentesUi::Conformidade.verificar` e `conferirConformidade` (teste "100% componentes-ui" dos produtos, sem exceções). Lado Flutter: `showSsImageViewer`/`SsImageViewer`, `SsCollapsible(subtitle:)`, `AppType.leading`/`trackingCaps`/`trackingWide`, textos `image`/`zoomHint`. Nada quebra.
 - `v0.18.0` (10/11/2026): seção "v0.18.0" (fase final do meu-financeiro, web e app). `Ss::SpeedDialComponent` ↔ `SsSpeedDial`, `Ss::DialogComponent(global:, header:, clear_on_close:, refresh_on_close:, follow_missing:)` + `data-ss-dialog-keep-open`/`-refresh`/`-dismiss`, `Ss::RowActionsComponent` e `t.actions` (hover só com mouse, à vista no toque), `DataTableComponent(row_attrs:, empty_art:)`, `Ss::FormErrorsComponent`, `Ss::FormActionsComponent`, `ComboboxComponent` com ícone/imagem por opção e `input:`, `PopoverComponent(trigger_attrs:)`, `ss_status` com `:warn`/`:warning` (e `ComponentesUi.tone`), `Ss::IconButtonComponent`, `Ss::PrivacyToggleComponent`, AppShell sem a barra vazia no computador (`with_top_mobile`, ícone no grupo), utilitários `text-on-accent`/`bg-grad`/`text-info`…; no app `SsMoneyField(controller:, focusNode:, autofocus:, …)` + `SsMoneyField.parse`, `showSsToastGlobal`/`SsToastHost.navigatorKey`, `SsFab(iconTurns:)`. Nada quebra; o diálogo com frame passa a seguir a URL quando a resposta não tem o frame.
 - `v0.17.1` (10/11/2026): seção "v0.17.1". `.ss-fab` respeita a área segura e o `lift:` (o do `engine.css` vencia na cascata) e `.ss-hero-chip` fora do herói em fundo de campo. Nada quebra.

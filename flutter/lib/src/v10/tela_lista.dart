@@ -582,19 +582,40 @@ class SsStepHeading extends StatelessWidget {
 }
 
 /// Fio de separação; com [label], o texto no meio ("ou", "Hoje").
+/// v0.19.1: [vertical] (ou [SsDivider.vertical]) é o fio em pé entre duas
+/// colunas (menu lateral e conteúdo, lista e painel), no lugar do
+/// `VerticalDivider` do Material; aí [height] é a largura ocupada.
 class SsDivider extends StatelessWidget {
-  const SsDivider({super.key, this.label, this.height = 24});
+  const SsDivider({super.key, this.label, this.height = 24, this.vertical = false, this.indent = 0})
+    : assert(!vertical || label == null, 'o fio em pé não tem rótulo');
+
+  /// Fio em pé de [width] de largura ocupada (padrão 1: só o fio, encostado
+  /// nas duas colunas); [indent] encurta as duas pontas.
+  const SsDivider.vertical({super.key, double width = 1, this.indent = 0})
+    : label = null,
+      height = width,
+      vertical = true;
 
   final String? label;
 
-  /// Altura total ocupada (o fio fica no meio).
+  /// Altura total ocupada (o fio fica no meio); em pé, a largura.
   final double height;
+
+  /// v0.19.1: fio em pé (ocupa a altura toda do pai, como numa `Row` com
+  /// `crossAxisAlignment: stretch`).
+  final bool vertical;
+
+  /// Recuo nas duas pontas do fio.
+  final double indent;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
-    if (label == null) return Divider(height: height, thickness: 1, color: c.line);
+    if (vertical) {
+      return VerticalDivider(width: height, thickness: 1, color: c.line, indent: indent, endIndent: indent);
+    }
+    if (label == null) return Divider(height: height, thickness: 1, color: c.line, indent: indent, endIndent: indent);
     return SizedBox(
       height: height,
       child: Row(

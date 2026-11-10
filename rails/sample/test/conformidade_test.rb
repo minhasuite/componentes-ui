@@ -55,4 +55,20 @@ class ConformidadeTest < ActiveSupport::TestCase
       assert_includes regras, r
     end
   end
+
+  test "v0.19.1: card à mão (superfície + sombra + canto) reprova; peças e domínio passam" do
+    dir = produto(gemfile: GEM_OK, arquivos: {
+      "app/views/web/x.html.erb" => <<~ERB,
+        <div class="rounded-2xl bg-surface p-4 shadow-sm">Card à mão</div>
+        <%= tag.div class: "bg-[var(--surface)] rounded-[18px] md:shadow-lg" do %>Outro<% end %>
+        <%# comentário: <div class="rounded-2xl bg-surface shadow"> não conta %>
+        <div class="ss-card">Card da gem</div>
+        <div class="rounded-full bg-surface shadow-none">Sem sombra</div>
+        <div class="bg-surface shadow">Barra (sem canto)</div>
+        <span class="ss-divider is-vertical"></span>
+      ERB
+    })
+    cards = ComponentesUi::Conformidade.verificar(dir).select { |v| v.regra == "card-a-mao:ss-card" }
+    assert_equal [1, 2], cards.map(&:linha)
+  end
 end

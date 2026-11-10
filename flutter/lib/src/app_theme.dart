@@ -70,6 +70,11 @@ class AppColors {
   /// Tinta das sombras pintadas à mão (drawShadow).
   static const shadowInk = Color(0xFF141628);
 
+  /// v0.19.1: nenhuma cor (preto a 0%). Borda ou fundo que some no estado não
+  /// selecionado (`selected ? c.accentSoft : AppColors.transparent`), sem o
+  /// `Colors.transparent` do Material no produto.
+  static const transparent = Color(0x00000000);
+
   // Ícones/labels sobre header e sheets escuros (contraste AA sobre #1C1F2B).
   static const onDarkIcon = Color(0xFFC9CBE0);
 
@@ -422,6 +427,26 @@ class AppType {
   /// v0.19: espaço largo entre letras: sobrelinha ("CASA · 10 DE NOVEMBRO") e
   /// dígitos agrupados (número do cartão, código).
   static const trackingWide = 1.4;
+
+  /// v0.19.1: entrelinha 1 (sem respiro): monograma num círculo, número ou
+  /// letra centrada numa caixa do tamanho da fonte.
+  static const solid = 1.0;
+
+  /// v0.19.1: entrelinha justa (1,2): título e nome em destaque em até 2
+  /// linhas, carimbo, cabeçalho de herói.
+  static const tight = 1.2;
+
+  /// v0.19.1: entrelinha média (1,3): legenda e meta de 2 linhas (sob o
+  /// valor, no cupom), entre o [tight] e o [leading] do texto corrido.
+  static const snug = 1.3;
+
+  /// v0.19.1: espaço entre letras discreto (0,5): rótulo pequeno em caixa
+  /// alta ou número de selo que só pede um respiro (menos que o [trackingCaps]).
+  static const trackingTight = .5;
+
+  /// v0.19.1: espaço negativo de título grande (−0,3), o mesmo aperto do
+  /// título do [SsScreenHeader] (−1% de 28).
+  static const trackingTitle = -.3;
 }
 
 /// Cores resolvidas do tema atual — atalho para os widgets `Ss*` lerem tokens
