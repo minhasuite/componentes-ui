@@ -78,8 +78,22 @@ final catalogoV102 = <Componente>[
       'style: surface (padrão), dark (foto, vídeo, câmera) e overlay (transparente com véu, sobre mapa/planta; use extendBodyBehindAppBar).',
       'Barra de status clara ou escura conforme o fundo.',
       'v0.10.3: título e subtítulo na fonte do tema (Manrope); no overlay, o véu cobre a barra inteira (antes ficava com altura zero).',
+      'v0.17: eyebrow: linha pequena em caixa alta acima do título (local · data), o topo discreto de um painel.',
     ],
     estados: [
+      Estado(
+        'eyebrow',
+        'painel com a linha de cima',
+        (_) => SizedBox(
+          height: 56,
+          child: SsTopBar(
+            eyebrow: 'Casa · 10 de novembro',
+            title: 'Sala de estar',
+            actions: [SsIconButton(icon: Icons.edit_outlined, tooltip: 'Editar painel', onPressed: () {})],
+          ),
+        ),
+        tamanho: const Size(390, 56),
+      ),
       Estado(
         'surface',
         'surface com ações',
@@ -184,6 +198,7 @@ final catalogoV102 = <Componente>[
       'Encolhe ao toque e volta com a mola.',
       'Sem heroTag: pode ficar em várias abas de um IndexedStack.',
       'Só ícone: tooltip vira a dica e o nome lido.',
+      'v0.17: extended: false com label = círculo, e o label vira a dica e o nome lido; extendedFrom: 640 mostra o texto só na tela larga (Ss::FabComponent(extended: :wide)).',
     ],
     estados: [
       Estado(
@@ -199,6 +214,16 @@ final catalogoV102 = <Componente>[
           ),
         ),
         tamanho: const Size(360, 100),
+      ),
+      Estado(
+        'so-icone-rotulo',
+        'só ícone com rótulo (Falar com a casa)',
+        (_) => _pad(
+          Center(
+            child: SsFab(icon: Icons.mic_none_rounded, label: 'Falar com a casa', extended: false, onPressed: () {}),
+          ),
+        ),
+        tamanho: const Size(200, 100),
       ),
     ],
   ),

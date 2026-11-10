@@ -1,0 +1,26 @@
+<%# titulo: Botão flutuante e cabeçalho compacto | grupo: Tela | ordem: 40 %>
+<%# v0.17: Ss::FabComponent (par do SsFab(extended:, extendedFrom:)) e Ss::PageComponent(eyebrow:, compact:) (par do SsTopBar(eyebrow:)). %>
+<% mic = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM19 11a7 7 0 0 1-14 0M12 18v3"/></svg>) %>
+<% plus = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>) %>
+<% pencil = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15.2 5.2 3.6 3.6M4 20l4.5-1 10.3-10.3a2.5 2.5 0 0 0-3.5-3.5L5 15.5 4 20z"/></svg>) %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::FabComponent", "A ação principal num canto, por cima de tudo: área segura do celular, sobe acima da .ss-sticky-bar, foco visível, some na impressão. Uma vez no layout (id estável: o morph do Turbo não duplica). O desta página é o do canto de baixo. Par: SsFab.",
+           uso: 'render Ss::FabComponent.new(icon: svg, label: "Falar com a casa", data: { action: "assist#open" })' do %>
+    <div class="ss-card ss-card-pad" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center">
+      <%= render Ss::FabComponent.new(icon: mic, label: "Falar com a casa", static: true, id: "vt-fab-1") %>
+      <%= render Ss::FabComponent.new(icon: plus, label: "Novo pedido", extended: true, static: true, id: "vt-fab-2") %>
+      <%= render Ss::FabComponent.new(icon: mic, label: "Falar", extended: :wide, static: true, id: "vt-fab-3") %>
+    </div>
+    <p class="text-muted" style="font-size:.8rem;margin-top:.5rem">extended: false (círculo) · true (pílula) · :wide (círculo no celular, pílula a partir de 640 px). lift: "4.5rem" sobe acima de uma barra do app; pulse: true liga o anel.</p>
+  <% end %>
+
+  <%= demo "Ss::PageComponent(eyebrow:, compact:)", "Topo discreto de painel: linha pequena em cima (local · data), título de 1,2 rem em até duas linhas, ações de ícone. Par: SsTopBar(eyebrow:).",
+           uso: 'render Ss::PageComponent.new(title: "Sala de estar", eyebrow: "Casa · 10 de novembro", compact: true) { |p| p.with_actions { … } }' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::PageComponent.new(title: "Sala de estar", eyebrow: "Casa · 10 de novembro de 2026", compact: true) do |p| %>
+        <% p.with_actions do %><a href="#" class="ss-icon-btn" title="Editar painel" aria-label="Editar painel"><%= pencil.html_safe %></a><% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<%= render Ss::FabComponent.new(icon: mic, label: "Falar com a casa", extended: :wide, id: "vt-fab") %>

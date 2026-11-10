@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.16.0
+      ref: v0.17.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.16.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.17.0"
 ```
 
 ```css
@@ -610,6 +610,31 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.17.0: botão flutuante como componente e cabeçalho compacto
+
+O que o minha-automacao pediu ao tirar o "Falar" do topo do painel: o botão flutuante vira componente no web
+(antes era só a classe `.ss-fab`) e o cabeçalho ganha a linha de cima e o modo compacto. Tudo aditivo; a API não
+quebra. Vitrine Rails: "Botão flutuante e cabeçalho compacto" (grupo Tela); catálogo nos dois lados
+(`flutter/test/catalogo_v102.dart`, estados novos do `ss-fab` e do `ss-top-bar`; `rails/catalogo/index.html`,
+seções de `rails/sample/script/catalogo_v017.rb`).
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Botão flutuante | `SsFab(icon:, label:, tooltip:, onPressed:, extended: true, extendedFrom: 640)`: `extended: false` com `label` = círculo, e o `label` vira a dica e o nome lido; `extendedFrom:` mostra o texto só na tela a partir dessa largura | `Ss::FabComponent(icon:, label:, href: nil, extended: false \| true \| :wide, position: :end \| :start, lift: "4.5rem", pulse: false, static: false, permanent: false, id: "ss-fab")` · `.ss-fab` + `.is-wide`, `.is-start`, `.is-still`, `--ss-fab-lift` | botão "Falar" no topo do painel, `<button class="ss-fab">` à mão |
+| Cabeçalho compacto | `SsTopBar(eyebrow: 'Casa · 10 de novembro')`: linha pequena em caixa alta, apagada, acima do título | `Ss::PageComponent(eyebrow:, compact: true)` · `.ss-page.is-compact`, `.ss-page-eyebrow` | herói em degradê no topo do painel |
+
+**Botão flutuante no web.** `label:` é obrigatório: é o `aria-label` e o `title` (no círculo, a dica); na pílula
+aparece também ao lado do ícone. `href:` vira `<a>`; sem ele, `<button type="button">`, e a ação vem do `data:` do
+app (`data: { action: "assist#open" }`). Fica fixo embaixo, acima da área segura (`env(safe-area-inset-*)`); no
+celular sobe sozinho acima da `.ss-sticky-bar`; `lift:` sobe acima de uma barra do app (quiosque, player). A
+`.ss-shell-main` ganha espaço embaixo para o fim da página não ficar por baixo do botão. Foco visível, some na
+impressão e, por padrão, sem o anel que pulsa (`pulse: true` liga). **Turbo:** renderize uma vez, no layout, fora do
+`<main>`; o `id` estável (padrão `ss-fab`) faz o morph casar o mesmo nó em vez de criar outro, e `permanent: true` põe
+`data-turbo-permanent` quando o botão guarda estado.
+
+**Padrões que mudaram.** Nenhum no app. No web, `.ss-fab` passa a ler `--ss-fab-lift` no `bottom` (0 sem a
+variável: o mesmo lugar de antes) e ganha o anel de foco.
+
 ## v0.16.0: legenda, oferta completa, chip removível, alto contraste, capa no cabeçalho, escolha livre, barras divergentes, estrelas e comparação
 
 Etapa 5 da migração do minhas-compras-app e do minhas-viagens-app (`../docs/MIGRACAO-minhas-compras-viagens.md`):
@@ -797,6 +822,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.17.0` (10/11/2026): seção "v0.17.0". `Ss::FabComponent` (o `.ss-fab` como componente: círculo, pílula ou `:wide`, área segura, acima da `.ss-sticky-bar`, `lift:`, id estável para o morph do Turbo) ↔ `SsFab(extended:, extendedFrom:)`, e o cabeçalho compacto `Ss::PageComponent(eyebrow:, compact:)` ↔ `SsTopBar(eyebrow:)`. Nada quebra.
 - `v0.16.0` (10/11/2026): seção "v0.16.0" (etapa 5 da migração do minhas-compras e do minhas-viagens). `SsChartLegend` ↔ `Ss::ChartLegendComponent`, `SsOfferCard(badges:, meta:, actions:, menu:, hit:, kind:, unit:, estimate:, savings:, stacked:, fill:)` ↔ `.ss-offer` completa, `SsInputChip` ↔ `.ss-tag`, `SsColors.seriesInk`/`inkFor` ↔ `--series-ink-1..6`, `AppTheme.build(highContrast:)`/`SsBrand.highContrast()` ↔ `data-ss-contrast="high"` (gerado das paletas), `SsSliverHeader(background:)`, `showSsPicker(allowCustom:, noneLabel:)`, `showSsDatePicker`, `SsDivergingBars` ↔ `Ss::DivergingBarsComponent`, `SsValidators.qty`/`moneyText`, `SsNetImage(placeholderColor:)`, `SsTimelineItem(endTime:, alert:)`, `SsRating` ↔ `Ss::RatingComponent`, `SsCompareTable` ↔ `CompareTableComponent(best:, mono:)` e os ajustes (`SsFilterChip` com reticências, `SsSparkline(target:, markMin:)`, `SsButton.text(trailingIcon:, tone:, onDark:)`, `SsDelta.neutral`, `SsCountdownRing(warnAt:)`, `SsProportionBar(onDark:, legendValue:)`, `SsReorderableList(primary:)`). Nada quebra; o calendário do `SsDateField` passa a usar os textos do `SsStrings`.
 - `v0.15.2` (10/11/2026): seção "v0.15.2" (etapa 1 da migração do minhas-compras e do minhas-viagens). `SsBadge`/`.ss-badge` com reticências em vez de estourar, dinheiro com espaço não separável nos dois lados, `SsFormats.forCurrency(iso)` ↔ `ss_money(currency:)`, `SsFormats.qty(q, unit)`/`ss_qty` com litro em maiúscula, `ssRunBlocking(art:, showElapsedAfter:, cancelAfter:)` + `SsBlockingCancelled` e as paletas Azul e Petróleo (30). A API não quebra; muda o texto do dinheiro (U+00A0 no lugar do espaço).
 - `v0.15.1` (10/11/2026): correção. `ss_number`/`ss_money` e os componentes que formatam com `format(...)` (CountUp, Donut, DataTable com `format: :money`, ProgressRow, BarChart, AreaChart, MoneyInput, relógio, QR, mídia…) quebravam no ViewComponent 3.x, que tem um `format` próprio sem argumentos; agora chamam `Kernel.format`. Nada quebra.

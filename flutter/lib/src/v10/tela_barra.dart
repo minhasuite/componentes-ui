@@ -147,6 +147,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.title,
     this.titleWidget,
     this.subtitle,
+    this.eyebrow,
     this.actions = const [],
     this.leading,
     this.automaticallyImplyLeading = true,
@@ -161,6 +162,10 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Troca o título de texto (ex.: um seletor de local).
   final Widget? titleWidget;
   final String? subtitle;
+
+  /// v0.17 (par do `Ss::PageComponent(eyebrow:)`): linha pequena em caixa alta
+  /// acima do título ("CASA · 10 DE NOVEMBRO"), o topo discreto de um painel.
+  final String? eyebrow;
   final List<Widget> actions;
 
   /// Troca o voltar automático.
@@ -212,6 +217,28 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
       shadows: style == SsTopBarStyle.overlay ? const [Shadow(color: Color(0x66000000), blurRadius: 8)] : null,
     );
     Widget? tituloW = titleWidget ?? (title == null ? null : SsFitTitle(title!, style: estiloTitulo));
+    if (tituloW != null && eyebrow != null) {
+      tituloW = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: centerTitle ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        children: [
+          Text(
+            eyebrow!.toUpperCase(),
+            key: const ValueKey('ss-topbar-eyebrow'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: (tema.labelSmall ?? const TextStyle()).copyWith(
+              color: claro ? AppColors.onDarkSoft : c.muted,
+              fontSize: d.font(AppType.micro),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.4,
+              height: 1.2,
+            ),
+          ),
+          tituloW,
+        ],
+      );
+    }
     if (tituloW != null && subtitle != null) {
       tituloW = Column(
         mainAxisSize: MainAxisSize.min,
@@ -282,8 +309,21 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
 /// pode ficar em várias abas de um `IndexedStack`.
 ///
 /// `floatingActionButton: SsFab(icon: Icons.add_rounded, label: 'Seção', onPressed: _add)`
+///
+/// v0.17 (par do `Ss::FabComponent`): `extended: false` mostra só o ícone e o
+/// [label] vira a dica e o nome lido (o FAB de toda tela: "Falar com a casa");
+/// `extendedFrom: 640` mostra o texto só com a tela a partir dessa largura (o
+/// `extended: :wide` do web).
 class SsFab extends StatelessWidget {
-  const SsFab({super.key, required this.icon, this.label, this.tooltip, required this.onPressed});
+  const SsFab({
+    super.key,
+    required this.icon,
+    this.label,
+    this.tooltip,
+    required this.onPressed,
+    this.extended = true,
+    this.extendedFrom,
+  });
 
   final IconData icon;
   final String? label;
@@ -292,10 +332,19 @@ class SsFab extends StatelessWidget {
   final String? tooltip;
   final VoidCallback? onPressed;
 
+  /// Com [label]: false desenha o círculo só com o ícone (o rótulo vai para a dica e o leitor).
+  final bool extended;
+
+  /// Largura mínima da tela para mostrar o [label] (abaixo, só o ícone).
+  final double? extendedFrom;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
+    final wide = extendedFrom == null || MediaQuery.sizeOf(context).width >= extendedFrom!;
+    final shown = extended && wide ? label : null;
+    final name = label ?? tooltip;
     // 48 / 56 / 60 (o FAB do Material é 56).
     final h = d.controlHeight + 8;
     final on = onPressed != null;
@@ -305,7 +354,7 @@ class SsFab extends StatelessWidget {
       child: Container(
         height: h,
         constraints: BoxConstraints(minWidth: h),
-        padding: EdgeInsets.symmetric(horizontal: label == null ? 0 : d.padX + 4),
+        padding: EdgeInsets.symmetric(horizontal: shown == null ? 0 : d.padX + 4),
         decoration: BoxDecoration(
           color: c.accentSolid,
           borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -316,10 +365,10 @@ class SsFab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: AppColors.onDark, size: d.iconSize + 4),
-            if (label != null) ...[
+            if (shown != null) ...[
               SizedBox(width: d.space(8)),
               Text(
-                label!,
+                shown,
                 style: TextStyle(color: AppColors.onDark, fontSize: d.font(AppType.set), fontWeight: FontWeight.w800),
               ),
             ],
@@ -330,11 +379,11 @@ class SsFab extends StatelessWidget {
     Widget w = Semantics(
       button: true,
       enabled: on,
-      label: label ?? tooltip,
+      label: name,
       excludeSemantics: true,
       child: SsPressable(onTap: onPressed, enabled: on, scale: .94, child: corpo),
     );
-    if (label == null && tooltip != null) w = Tooltip(message: tooltip!, child: w);
+    if (shown == null && (tooltip ?? label) != null) w = Tooltip(message: tooltip ?? label!, child: w);
     return w;
   }
 }

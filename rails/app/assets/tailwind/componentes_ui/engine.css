@@ -31,6 +31,8 @@
 @import "./v15_web.css";
 /* v0.16: o que a migração do minhas-compras e do minhas-viagens pediu (legenda, barras divergentes, estrelas, alto contraste…). */
 @import "./v16_web.css";
+/* v0.17: botão flutuante como componente e cabeçalho compacto com a linha de cima. */
+@import "./v17_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

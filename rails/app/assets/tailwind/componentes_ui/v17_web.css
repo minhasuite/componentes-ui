@@ -1,0 +1,39 @@
+/* v0.17 · botão flutuante como componente (Ss::FabComponent, par do SsFab) e cabeçalho compacto com
+   a linha de cima (Ss::PageComponent(eyebrow:, compact:), par do SsTopBar(eyebrow:)). Tudo aditivo;
+   cor só por token. */
+
+@layer components {
+  /* Botão flutuante: canto de baixo, acima da área segura e de uma barra do app (--ss-fab-lift);
+     acima da barra fixa de baixo da gem sozinho. .is-still tira o anel que pulsa (o padrão do
+     componente); .is-wide = círculo no celular e pílula com o texto a partir de 640 px. */
+  .ss-fab { --ss-fab-gap: max(1rem, env(safe-area-inset-bottom));
+            bottom: calc(var(--ss-fab-gap) + var(--ss-fab-lift, 0px)); right: max(1rem, env(safe-area-inset-right)); }
+  .ss-fab.is-start { right: auto; left: max(1rem, env(safe-area-inset-left)); }
+  .ss-fab.is-still::before { content: none; }
+  .ss-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .ss-fab-ico { display: inline-grid; place-items: center; }
+  .ss-fab-label { white-space: nowrap; }
+  .ss-fab.is-wide .ss-fab-label { display: none; }
+  .ss-fab.is-wide { padding: 0; width: calc(var(--ss-control-h) + 1rem); }
+  @media (min-width: 640px) {
+    .ss-fab.is-wide .ss-fab-label { display: inline; }
+    .ss-fab.is-wide { width: auto; padding: 0 calc(var(--ss-pad-x) * 1.25); }
+  }
+  /* Barra fixa de baixo (.ss-sticky-bar, até 40 rem centrada): no celular ela ocupa a largura, e o
+     botão sobe por cima dela. */
+  @media (max-width: 767px) {
+    body:has(.ss-sticky-bar) .ss-fab:not(.is-static) { --ss-fab-lift: calc(var(--ss-control-h) + 2.5rem); }
+  }
+  /* O fim da página não fica por baixo do botão. */
+  body:has(.ss-fab:not(.is-static)) .ss-shell-main { padding-bottom: calc(var(--ss-control-h) + 2rem); }
+
+  /* Cabeçalho compacto (Ss::PageComponent(compact: true, eyebrow:)): linha pequena em cima, título
+     menor, ações de ícone alinhadas ao centro do título. */
+  .ss-page-eyebrow { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-page.is-compact { gap: .75rem; }
+  .ss-page.is-compact .ss-page-head { align-items: center; flex-wrap: nowrap; }
+  .ss-page.is-compact .ss-page-titles { gap: .15rem; }
+  .ss-page.is-compact .ss-page-title { font-size: calc(1.2rem * var(--ss-font-scale, 1)); line-height: 1.2;
+                                       overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .ss-page.is-compact .ss-page-actions { flex-wrap: nowrap; gap: .25rem; }
+}

@@ -1,8 +1,9 @@
-<%= tag.div(**root_attrs(class: classes("ss-page"))) do %>
+<%= tag.div(**root_attrs(class: classes("ss-page", ("is-compact" if @compact)))) do %>
   <header class="ss-page-head">
     <div class="ss-page-titles">
       <% if @crumbs.present? %><%= render Ss::BreadcrumbsComponent.new(items: @crumbs) %><% end %>
       <% if @back %><%= link_to @back, class: "ss-page-back" do %><%= BACK.html_safe %><span><%= back_label %></span><% end %><% end %>
+      <% if @eyebrow %><p class="ss-kicker ss-page-eyebrow"><%= @eyebrow %></p><% end %>
       <% if badge? %>
         <div class="ss-page-titlerow"><h1 class="ss-page-title"><%= @title %></h1><%= badge %></div>
       <% else %>
