@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.18.0
+      ref: v0.19.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.18.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.0"
 ```
 
 ```css
@@ -653,6 +653,35 @@ celular; o seletor `table.ss-sr` continua valendo).
 
 **Textos novos:** `google.sign_in`, `wallet_card.balance`, `wallet_card.card` (pt-BR, en, es).
 
+### v0.19.0: conformidade (o teste "100% componentes-ui" dos produtos)
+
+Um verificador nos dois lados para o produto rodar num teste próprio: a CI reprova qualquer coisa que tenha peça no
+componentes-ui e não use a peça. **Não há lista de exceções**: faltou peça, ela nasce aqui.
+
+- **Rails** (`require "componentes_ui/conformidade"`): `ComponentesUi::Conformidade.verificar(Rails.root)` devolve as
+  violações (`regra`, `arquivo`, `linha`, `trecho`) em `app/views`, `app/components`, `app/helpers`, `app/javascript` e
+  `app/assets`. Reprova: gem fora de `tag:` (ou por path no lock); `minha_suite_ui`/`Ui::`; classe do DaisyUI; cor da
+  paleta do Tailwind e cor literal; `<button>`/`<input>`/`<select>`/`<textarea>`/`<table>`/`<dialog>` crus (até em
+  comentário), os helpers que os geram e campo do FormBuilder fora do `ss_*` (`hidden_field` é livre); Chart.js; hover
+  do Tailwind 3; CSS além de `@import`/`@source`; JS com classe que não é `ss-*`/`is-*` ou estilo inline.
+  ```ruby
+  it "o web é 100% componentes_ui" do
+    problemas = ComponentesUi::Conformidade.verificar(Rails.root)
+    expect(problemas).to be_empty, problemas.join("\n")
+  end
+  ```
+- **Flutter** (`package:componentes_ui/conformidade.dart`): `conferirConformidade(Directory.current)` confere a `lib/`.
+  Reprova: o pacote fora de git + `ref:` de tag; widget do Material/Cupertino com par `Ss*` (`AppBar`, botões,
+  `AlertDialog`/`showDialog`, `SnackBar`/`ScaffoldMessenger`, `Card`, `ListTile`, `Chip`, `Switch`, `TextField`,
+  indicadores de progresso…); cor literal (`Colors.*`, `Color(0x…)`); tipografia literal (`fontSize`/`letterSpacing`
+  com número, `fontFamily`, `height`/`wordSpacing` em `TextStyle`); `fl_chart`.
+  ```dart
+  test('100% componentes_ui', () {
+    final problemas = conferirConformidade(Directory.current);
+    expect(problemas, isEmpty, reason: problemas.join('\n'));
+  });
+  ```
+
 ### v0.19.0, lado Flutter: imagem em tela cheia, grupo recolhível com subtítulo e espaçamento de texto em token
 
 O que o meu-financeiro-app ainda montava com peça crua do Material ou com número solto no estilo de texto; com isto o
@@ -970,7 +999,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
-- `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra. Lado Flutter: `showSsImageViewer`/`SsImageViewer`, `SsCollapsible(subtitle:)`, `AppType.leading`/`trackingCaps`/`trackingWide`, textos `image`/`zoomHint`. Nada quebra.
+- `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra. Conformidade: `ComponentesUi::Conformidade.verificar` e `conferirConformidade` (teste "100% componentes-ui" dos produtos, sem exceções). Lado Flutter: `showSsImageViewer`/`SsImageViewer`, `SsCollapsible(subtitle:)`, `AppType.leading`/`trackingCaps`/`trackingWide`, textos `image`/`zoomHint`. Nada quebra.
 - `v0.18.0` (10/11/2026): seção "v0.18.0" (fase final do meu-financeiro, web e app). `Ss::SpeedDialComponent` ↔ `SsSpeedDial`, `Ss::DialogComponent(global:, header:, clear_on_close:, refresh_on_close:, follow_missing:)` + `data-ss-dialog-keep-open`/`-refresh`/`-dismiss`, `Ss::RowActionsComponent` e `t.actions` (hover só com mouse, à vista no toque), `DataTableComponent(row_attrs:, empty_art:)`, `Ss::FormErrorsComponent`, `Ss::FormActionsComponent`, `ComboboxComponent` com ícone/imagem por opção e `input:`, `PopoverComponent(trigger_attrs:)`, `ss_status` com `:warn`/`:warning` (e `ComponentesUi.tone`), `Ss::IconButtonComponent`, `Ss::PrivacyToggleComponent`, AppShell sem a barra vazia no computador (`with_top_mobile`, ícone no grupo), utilitários `text-on-accent`/`bg-grad`/`text-info`…; no app `SsMoneyField(controller:, focusNode:, autofocus:, …)` + `SsMoneyField.parse`, `showSsToastGlobal`/`SsToastHost.navigatorKey`, `SsFab(iconTurns:)`. Nada quebra; o diálogo com frame passa a seguir a URL quando a resposta não tem o frame.
 - `v0.17.1` (10/11/2026): seção "v0.17.1". `.ss-fab` respeita a área segura e o `lift:` (o do `engine.css` vencia na cascata) e `.ss-hero-chip` fora do herói em fundo de campo. Nada quebra.
 - `v0.17.0` (10/11/2026): seção "v0.17.0". `Ss::FabComponent` (o `.ss-fab` como componente: círculo, pílula ou `:wide`, área segura, acima da `.ss-sticky-bar`, `lift:`, id estável para o morph do Turbo) ↔ `SsFab(extended:, extendedFrom:)`, e o cabeçalho compacto `Ss::PageComponent(eyebrow:, compact:)` ↔ `SsTopBar(eyebrow:)`. Nada quebra.
