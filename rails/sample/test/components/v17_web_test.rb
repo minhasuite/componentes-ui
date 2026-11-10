@@ -32,6 +32,9 @@ class V17WebTest < ComponentTest
     assert_includes css, "body:has(.ss-sticky-bar) .ss-fab"
     assert_includes css, ".ss-fab:focus-visible"
     assert_includes CSS.join("engine.css").read, %(@import "./v17_web.css";)
+    # v0.17.1: acima do .ss-fab antigo do engine.css (mais tarde na cascata) e o selo fora do herói.
+    assert_includes css, ".ss-fab:not(.is-static) { bottom: calc("
+    assert_includes css, ".ss-hero-chip:not(:is(.ss-hero, .ss-aurora, .is-grad) *) { background: var(--field); color: var(--ink); }"
   end
 
   test "PageComponent(eyebrow:, compact:): linha de cima antes do título e cabeçalho menor" do
