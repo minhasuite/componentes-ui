@@ -345,6 +345,8 @@ module ComponentesUi
     # Tons: neutral, info, success, warning, danger, accent. Fora do mapa: neutro.
     def ss_status(status, map)
       text, tone = map[status] || map[status.to_s] || map[status.to_s.to_sym] || [status.to_s, :neutral]
+      # v0.18: :warn e :warning dão o mesmo âmbar (sai data-tone="warning", o de sempre).
+      tone = :warning if tone.to_s == "warn"
       %(<span class="ss-status" data-tone="#{ERB::Util.h(tone)}">#{ERB::Util.h(text)}</span>).html_safe
     end
 

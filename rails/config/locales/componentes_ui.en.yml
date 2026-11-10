@@ -86,6 +86,9 @@ en:
       open: open
       placeholder: Search…
     common:
+      edit: Edit
+      remove: Remove
+      saving: Saving…
       back: Back
       cancel: Cancel
       close: Close
@@ -129,6 +132,7 @@ en:
       volume_down: Volume down
       volume_up: Volume up
     data_table:
+      actions: Actions
       bulk_actions: Bulk actions
       choose_columns: Choose columns
       clear_selection: Clear selection
@@ -600,3 +604,10 @@ en:
       of: '%{value} of %{limit}'
       over: '%{value} over'
       to_go: '%{value} to go'
+    form_errors:
+      title: Check the fields
+    privacy:
+      hide: Hide values
+      hint: '%{label} (P)'
+    speed_dial:
+      label: Quick actions

@@ -26,6 +26,16 @@ module ComponentesUi
 
   HEX = /\A#\h{6}\z/
 
+  # v0.18: um nome de tom só para a gem toda. "warning" (o do ss_status antigo e de quem vem do
+  # Bootstrap) vira "warn" (o de Callout, Note, CardHeader, ProgressRow); "error" vira "danger",
+  # "ok" vira "success", "neutral"/"default" viram "muted". O resto passa como veio (símbolo).
+  TONE_ALIASES = { warning: :warn, error: :danger, ok: :success, neutral: :muted, default: :muted }.freeze
+
+  def self.tone(value)
+    t = value.to_s.strip.downcase.to_sym
+    TONE_ALIASES.fetch(t, t)
+  end
+
   # v0.13: variáveis CSS da marca a partir de uma ou duas cores (#rrggbb): o que um tema de
   # usuário, um painel ou um cliente com a própria cor põe no style= de um trecho. Mesmas
   # misturas do SsBrand.fromColors (Flutter). accent2 nulo = a própria accent. Inválida = nil.

@@ -33,7 +33,7 @@ module Ss
                    unread: false, footer: nil, **rest)
       super(**rest)
       @title, @text, @icon, @time = title, text, icon, time
-      @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :info
+      @tone = TONES.include?(t = (tone.to_s == "warning" ? :warn : tone.to_s.to_sym)) ? t : :info
       @actions = Array(actions).map { |a| a.to_h.transform_keys(&:to_sym) }
       @dismiss_url, @dismiss_method, @dismissible, @dismiss_label = dismiss_url, dismiss_method, dismissible, dismiss_label
       @url, @image_url, @image_alt, @unread, @footer_text = url.presence, image_url.presence, image_alt, unread, footer.presence

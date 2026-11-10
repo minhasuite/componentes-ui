@@ -24,7 +24,7 @@ module Ss
 
     def self.tone_css(tone)
       return nil if tone.nil?
-      return TONES[tone.to_sym] if TONES.key?(tone.to_s.to_sym)
+      return TONES[ComponentesUi.tone(tone)] if TONES.key?(ComponentesUi.tone(tone))
 
       tone.to_s if tone.to_s.match?(/\A[#\w\s(),.%-]+\z/)
     end

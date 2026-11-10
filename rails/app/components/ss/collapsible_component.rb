@@ -15,7 +15,7 @@ module Ss
     def initialize(title:, count: nil, label: nil, tone: :accent, icon: nil, open: false, **rest)
       super(**rest)
       @title, @count, @label, @icon, @open = title, count, label, icon, open
-      @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :accent
+      @tone = TONES.include?(t = (tone.to_s == "warning" ? :warn : tone.to_s.to_sym)) ? t : :accent
     end
 
     def call

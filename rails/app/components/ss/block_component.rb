@@ -25,7 +25,7 @@ module Ss
       @delete_confirm, @delete_confirm_title, @delete_method = delete_confirm, delete_confirm_title, delete_method
       @duplicable, @deletable = duplicable, deletable
       @list, @position, @id, @title, @summary, @icon = list, position, id.to_s, title, summary, icon
-      @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :accent
+      @tone = TONES.include?(t = (tone.to_s == "warning" ? :warn : tone.to_s.to_sym)) ? t : :accent
       @enabled, @error, @open, @focused = enabled, error, open, focused
       @toggle_url, @duplicate_url, @delete_url = toggle_url, duplicate_url, delete_url
     end

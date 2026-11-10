@@ -19,7 +19,8 @@ module Ss
 
     def initialize(tone: :info, title: nil, icon: true, **opts)
       super(**opts)
-      @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :info
+      tone = ComponentesUi.tone(tone)
+      @tone = TONES.include?(tone) ? tone : :info
       @title, @icon = title, icon
     end
 

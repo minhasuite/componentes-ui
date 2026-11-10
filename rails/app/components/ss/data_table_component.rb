@@ -15,6 +15,14 @@ module Ss
   #   <% end %>
   #
   # A ordenação é do servidor (o app ordena a consulta); sort_rows: true ordena um array em memória.
+  #
+  # v0.18:
+  # - row_attrs: atributos de cada <tr>: Hash fixo ou ->(row) { { id: dom_id(row), data: { edit_url: … }, class: "…" } }
+  #   (data:/aria: somam aos da tabela; class: soma).
+  # - empty_art: false = vazio compacto, só a frase, sem a ilustração (tabela dentro de um card).
+  # - t.actions(label: "Ações", reveal: true) { |row| … }: última coluna com as ações da linha, no hover
+  #   do computador e sempre à vista no toque (as regras do Ss::RowActionsComponent); a célula não entra
+  #   na escolha de colunas.
   class DataTableComponent < BaseComponent
     Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, keyword_init: true)
 
@@ -22,7 +30,7 @@ module Ss
 
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
-                   max_height: nil, show_caption: false, tools: true, **opts)
+                   max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -41,6 +49,8 @@ module Ss
       @max_height = max_height
       @show_caption = show_caption
       @tools = tools
+      @row_attrs = row_attrs
+      @empty_art = empty_art
       @columns = []
     end
 
@@ -51,6 +61,27 @@ module Ss
     end
 
     def expansion(&block) = (@expansion = block) && nil
+
+    # Coluna de ações da linha (v0.18): cabeçalho só para leitor de tela, células à direita.
+    def actions(label: nil, reveal: true, &block)
+      label ||= tt("actions", default: "Ações")
+      reveal_block = lambda do |row|
+        inner = capture_block(block, row)
+        tag.div(inner, class: ["ss-row-actions", ("is-reveal" if reveal)].compact.join(" "))
+      end
+      @columns << Column.new(key: "_actions", label:, align: :right, sortable: false, format: :actions, hideable: false, block: reveal_block)
+      nil
+    end
+
+    def empty_class = @empty_art ? "ss-empty" : "ss-empty ss-empty-plain is-compact"
+
+    # Atributos do <tr> da linha: os do app (row_attrs:) + o alvo do ss-table.
+    def tr_attrs(row)
+      extra = @row_attrs.respond_to?(:call) ? @row_attrs.call(row) : @row_attrs
+      extra = extra.to_h.transform_keys(&:to_sym)
+      data = extra.delete(:data).to_h.merge(ss_table_target: "row")
+      { **extra, data: }
+    end
     def bulk_actions(&block) = (@bulk = block) && nil
 
     def before_render
@@ -81,6 +112,7 @@ module Ss
     def page_href(n) = query((@pagination[:param] || :page) => n)
 
     def cell(row, col)
+      return col.block.call(row) if col.format == :actions
       return capture_block(col.block, row) if col.block
 
       v = value_of(row, col.key)
@@ -93,7 +125,8 @@ module Ss
     end
 
     def cell_class(col)
-      [("r" if col.align == :right), ("num" if %i[money number date].include?(col.format))].compact.join(" ").presence
+      [("r" if col.align == :right), ("num" if %i[money number date].include?(col.format)),
+       ("ss-dt-actions" if col.format == :actions)].compact.join(" ").presence
     end
 
     def expansion? = !@expansion.nil?

@@ -134,7 +134,7 @@ void showSsToast(
   Duration duration = const Duration(seconds: 4),
   double bottom = 104,
 }) => _mostrar(
-  context,
+  Overlay.of(context, rootOverlay: true),
   message,
   icon: icon,
   tone: tone,
@@ -143,6 +143,72 @@ void showSsToast(
   duration: duration,
   bottom: bottom,
 );
+
+/// v0.18: o navegador do app, para avisar sem o `BuildContext` de uma tela
+/// (push com o app aberto, serviço, fim de upload em segundo plano). Ponha a
+/// mesma chave no `MaterialApp(navigatorKey:)` (ou no `GoRouter(navigatorKey:)`)
+/// e chame [showSsToastGlobal] / [showSsUndoGlobal] de qualquer lugar:
+///
+/// ```dart
+/// final rootKey = GlobalKey<NavigatorState>();
+/// SsToastHost.navigatorKey = rootKey; // no main(), antes do runApp
+/// GoRouter(navigatorKey: rootKey, ...);
+/// showSsToastGlobal('Fatura fechou', actionLabel: 'Abrir', onAction: abrir);
+/// ```
+abstract final class SsToastHost {
+  /// Chave do navegador de cima do app. Sem ela (ou antes da 1ª tela), os
+  /// avisos globais não aparecem e devolvem `false`.
+  static GlobalKey<NavigatorState>? navigatorKey;
+
+  static OverlayState? get _overlay => navigatorKey?.currentState?.overlay;
+}
+
+/// [showSsToast] sem `BuildContext`, pelo [SsToastHost.navigatorKey]. Devolve
+/// `false` (e não mostra nada) se o navegador ainda não existe.
+bool showSsToastGlobal(
+  String message, {
+  IconData? icon,
+  Color? tone,
+  String? actionLabel,
+  VoidCallback? onAction,
+  Duration duration = const Duration(seconds: 4),
+  double bottom = 104,
+}) {
+  final overlay = SsToastHost._overlay;
+  if (overlay == null || !overlay.mounted) return false;
+  _mostrar(
+    overlay,
+    message,
+    icon: icon,
+    tone: tone,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+    bottom: bottom,
+  );
+  return true;
+}
+
+/// [showSsUndo] sem `BuildContext`, pelo [SsToastHost.navigatorKey]. Sem o
+/// navegador, volta `false` na hora (não desfeito).
+Future<bool> showSsUndoGlobal(
+  String message, {
+  String? label,
+  IconData? icon = Icons.delete_outline,
+  Duration duration = const Duration(seconds: 5),
+  double bottom = 104,
+}) {
+  final overlay = SsToastHost._overlay;
+  if (overlay == null || !overlay.mounted) return Future.value(false);
+  return _desfazer(
+    overlay,
+    message,
+    label: label ?? SsStrings.of(overlay.context).undo,
+    icon: icon,
+    duration: duration,
+    bottom: bottom,
+  );
+}
 
 /// Aviso com "Desfazer" e a contagem na borda. Devolve `true` se a pessoa
 /// desfez: quem chama só executa a exclusão de verdade quando volta `false`
@@ -157,12 +223,30 @@ Future<bool> showSsUndo(
   Duration duration = const Duration(seconds: 5),
   double bottom = 104,
 }) {
+  return _desfazer(
+    Overlay.of(context, rootOverlay: true),
+    message,
+    label: label ?? SsStrings.of(context).undo,
+    icon: icon,
+    duration: duration,
+    bottom: bottom,
+  );
+}
+
+Future<bool> _desfazer(
+  OverlayState overlay,
+  String message, {
+  required String label,
+  IconData? icon,
+  required Duration duration,
+  required double bottom,
+}) {
   final r = Completer<bool>();
   _mostrar(
-    context,
+    overlay,
     message,
     icon: icon,
-    actionLabel: label ?? SsStrings.of(context).undo,
+    actionLabel: label,
     onAction: () {},
     duration: duration,
     bottom: bottom,
@@ -172,7 +256,7 @@ Future<bool> showSsUndo(
 }
 
 void _mostrar(
-  BuildContext context,
+  OverlayState overlay,
   String message, {
   IconData? icon,
   Color? tone,
@@ -183,7 +267,6 @@ void _mostrar(
   void Function(bool acted)? onClosed,
 }) {
   _fecharAtual?.call();
-  final overlay = Overlay.of(context, rootOverlay: true);
   late final OverlayEntry entry;
   var fechado = false;
   void fechar([bool acted = false]) {

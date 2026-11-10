@@ -4,7 +4,7 @@ import { ssFormat, ssLang } from "componentes_ui/controllers/ss_intl"
 // Combobox: busca no servidor (url, GET ?q=, JSON ou HTML) ou local (options = JSON [{id,label,hint}]).
 // Teclado: ↑ ↓ movem, Enter escolhe, Esc fecha. aria-activedescendant aponta a opção ativa.
 export default class extends Controller {
-  static targets = ["input", "list", "hidden", "created"]
+  static targets = ["input", "list", "hidden", "created", "lead"]
   static values = { url: String, options: Array, create: Boolean, debounce: { type: Number, default: 250 }, min: { type: Number, default: 1 },
                     // Textos vindos do componente (I18n do Rails); %{q} = o que foi digitado.
                     createLabel: { type: String, default: "Criar “%{q}”" }, emptyLabel: { type: String, default: "Nada encontrado" },
@@ -19,7 +19,7 @@ export default class extends Controller {
     if (this.hiddenTarget.value && q !== this.chosen) this.setValue("", "")
     if (q.length < this.minValue) { if (!this.optionsValue.length || q.length) return this.close(); }
     if (this.urlValue) this.timer = setTimeout(() => this.remote(q), this.debounceValue)
-    else this.renderItems(this.localMatch(q), q)
+    else this.renderItems(this.localMatch(q), q, true)
   }
 
   localMatch(q) {
@@ -46,12 +46,31 @@ export default class extends Controller {
     } finally { this.inputTarget.removeAttribute("aria-busy") }
   }
 
-  renderItems(items, q) {
+  // v0.18: ícone (SVG desenhado pela gem, só nas opções locais) ou imagem (URL) antes do rótulo.
+  media(o, local) {
+    if (o.image) {
+      const img = document.createElement("img")
+      img.src = o.image; img.alt = ""; img.loading = "lazy"; img.decoding = "async"
+      return img
+    }
+    if (local && o.icon_svg) {
+      const span = document.createElement("span")
+      span.className = "ss-combobox-ico"
+      span.innerHTML = o.icon_svg
+      if (o.color) span.style.setProperty("--c", o.color)
+      return span
+    }
+    return null
+  }
+
+  renderItems(items, q, local = false) {
     this.listTarget.replaceChildren(...items.map((o) => {
       const li = document.createElement("li")
       li.setAttribute("role", "option")
       li.dataset.value = o.id ?? o.value ?? ""
       li.dataset.label = o.label
+      const m = this.media(o, local)
+      if (m) { m.setAttribute("aria-hidden", "true"); m.classList.add("ss-combobox-media"); li.append(m) }
       li.append(this.highlight(o.label, q))
       if (o.hint) { const s = document.createElement("small"); s.textContent = o.hint; li.append(s) }
       return li
@@ -129,9 +148,19 @@ export default class extends Controller {
 
   setValue(id, label) {
     this.hiddenTarget.value = id
+    this.syncLead(id)
     this.chosen = label
     if (label) this.inputTarget.value = label
     this.hiddenTarget.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
+  // Ícone/imagem da escolhida no campo (só opções locais).
+  syncLead(id) {
+    if (!this.hasLeadTarget) return
+    const o = id !== "" && id != null ? this.optionsValue.find((x) => String(x.id ?? x.value) === String(id)) : null
+    const m = o ? this.media(o, true) : null
+    this.leadTarget.replaceChildren(...(m ? [m] : []))
+    this.leadTarget.parentElement.classList.toggle("has-lead", !!m)
   }
 
   open() { this.listTarget.hidden = false; this.inputTarget.setAttribute("aria-expanded", "true") }

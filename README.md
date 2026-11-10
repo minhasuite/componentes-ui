@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.17.1
+      ref: v0.18.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.17.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.18.0"
 ```
 
 ```css
@@ -610,6 +610,76 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.18.0: speed dial, diálogo com formulário em frame, ações de linha, rodapé e erros de formulário, combobox com ícone, botão que alterna e o que faltava no app (fase final do meu-financeiro)
+
+O que o Meu Financeiro (web Rails e app Flutter) ainda tinha de genérico por falta de peça aqui; com esta versão os
+dois produtos podem ficar 100% no componentes-ui. Tudo aditivo (parâmetro novo sempre opcional); a API não quebra.
+Vitrine Rails: "Financeiro (v0.18): speed dial, diálogo, ações de linha" (grupo Tela); catálogo nos dois lados
+(`flutter/test/catalogo_v18.dart`; `rails/catalogo/index.html`, seções de `rails/sample/script/catalogo_v018.rb`).
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Botão flutuante com várias ações | `SsSpeedDial(actions: [SsSpeedDialAction(label, icon, onPressed, tooltip:)], icon:, openIcon:, label:, tooltip:, extended:, extendedFrom:, onOpenChanged:, useRootNavigator: true)`; `SsFab(iconTurns:)` | `Ss::SpeedDialComponent(items: [{ label:, icon:, href:, turbo_frame:, method:, action:, data:, id: }], label: "Ações rápidas", icon: "plus", position:, lift:, static:, permanent:, id: "ss-speed-dial")` · Stimulus `ss-speed-dial` · `.ss-speed-dial`, `-menu`, `-item`, `-ico`, `-toggle` | `shared/_speed_dial` + `speed_dial_controller.js` + `.mf-speed-dial` (web), `NewTransactionFab` (app) |
+| Diálogo com formulário em frame | `showSsSheet` (já cobre) | `Ss::DialogComponent(…, global: true, header: false, clear_on_close:, refresh_on_close:, follow_missing: true)`; `data-ss-dialog-keep-open` no form/botão; `[data-ss-dialog-refresh]` (ou `[data-modal-refresh-on-close]`) na resposta; `[data-ss-dialog-dismiss]` fecha | `modal_controller.js` + `dialog#modal-dialog` do layout |
+| Ações de linha (hover no computador, à vista no toque) | — (o app usa deslizar/menu) | `Ss::RowActionsComponent(edit:, destroy:, confirm:, edit_frame: "modal", icons:, reveal: true, method: :delete)` (+ bloco) · `t.actions { \|row\| … }` no DataTable · `.ss-row-actions.is-reveal` | `md:opacity-0 md:group-hover:opacity-100` + `@custom-variant hover`, `mf_row_actions` |
+| Tabela | `SsDataTable` (já cobre) | `DataTableComponent(row_attrs: Hash \| ->(row) { { id:, data:, class: } }, empty_art: false)` | `<tr>` à mão com `data-*`, vazio ilustrado numa tabela pequena |
+| Resumo de erros | — (o app mostra o erro no campo e no toast) | `Ss::FormErrorsComponent(record:, errors:, title: "Confira os campos", base_only:)` · `.ss-form-errors` | `mf_form_errors` |
+| Rodapé do formulário | `SsButtonPair` / `SsButton` (já cobrem) | `Ss::FormActionsComponent(form:, submit: "Salvar", submitting: "Salvando…", cancel: true, cancel_label:, cancel_href:, dialog: true, sticky:, align: :end/:start/:between)` (+ bloco para "Salvar e criar outro") · `.ss-form-actions.is-sticky` | `mf_modal_footer` |
+| Combobox com ícone/imagem | `showSsPicker` (já cobre ícone por item) | `ComboboxComponent(options: [{ id:, label:, hint:, icon: "nome", color:, image: url }], input: { title:, data:, aria: })`; a escolhida aparece no campo (`.ss-combobox-lead`) | logo do banco e ícone do perfil que se perderam na migração |
+| Popover com atributos no botão | — | `PopoverComponent(trigger_attrs: { title:, data:, aria:, class: })`; com `trigger:`, o `label:` vira também o `title` | `<button popovertarget>` à mão no menu ⋯ da linha |
+| Tons | — | `ss_status` aceita `:warn` e `:warning` (sai `data-tone="warning"`; CSS também lê `warn`); Callout, Note, CardHeader, NoticeCard, Collapsible e Block aceitam `:warning` (= `:warn`); `ComponentesUi.tone(t)` normaliza (`warning`→`warn`, `error`→`danger`, `ok`→`success`) | `:warn` virando cinza no `ss_status` e `:warning` virando "info" no Callout |
+| Botão de ícone e de alternar | `SsIconButton` (já cobre) | `Ss::IconButtonComponent(icon:, label:, href:, pressed:, pressed_icon:, variant: :ghost/:tonal/:outline/:danger, size:, title:)` · `.ss-icon-btn.is-toggle` + `[aria-pressed]` | `<button class="ss-icon-btn">` à mão |
+| Esconder valores (olho) | `SsPrivacyToggle` (já existia) | `Ss::PrivacyToggleComponent(label:, hint:, text:, size:)` (controller `ss-privacy` num ancestral) | `shared/_privacy_button` com `<button>` cru |
+| Moldura | — | `AppShellComponent`: a barra de cima sem busca, `top` e `user` some no computador (`.ss-shell-top.is-bare`); `with_top_mobile { … }` só no celular; grupo com `icon:` | faixa vazia no topo do desktop |
+| Cores sobre a marca | `SsColors` (já cobre) | Tailwind: `text-on-accent` (e `/80`, `/60`), `bg-on-accent/15`, `ring-on-accent/25`, `bg-accent-solid`, `bg-accent-hover`, `text-info`/`bg-info-soft`, `bg-head`; `bg-grad` (gradiente + texto claro) e `bg-grad-soft`; variável `--on-accent` | `text-white`, `text-white/80`, `bg-white/15`, `.bg-brand-gradient` |
+| Campo de dinheiro com controller de fora | `SsMoneyField(controller:, focusNode:, autofocus:, required:, errorText:, calculator: true, onKeypad:, textInputAction:, onSubmitted:)` (`cents`/`onChanged` passam a ser opcionais); `SsMoneyField.parse(texto, formats:)` → centavos | `MoneyInputComponent` (já cobre) | `MoneyField` de `lib/core/ui` (app) |
+| Barra de topo de detalhe/formulário | `SsTopBar` (já cobria: `title`, `subtitle` em duas linhas, `titleWidget`, `actions`, `leading`, voltar automático, `onBack`, `bottom`, `centerTitle`, `style:`, `PreferredSizeWidget`) | `Ss::PageComponent` / `TopBarComponent` | `AppBar` cru |
+| Aviso sem `BuildContext` (push em segundo plano) | `SsToastHost.navigatorKey = rootKey` + `showSsToastGlobal(msg, icon:, tone:, actionLabel:, onAction:, duration:)` → `bool`, `showSsUndoGlobal(...)` → `Future<bool>` | `Ss::ToastComponent` (já cobre) | `SnackBar` + `appMessengerKey` |
+| Botão de texto e carregando | `SsButton.text(label:, icon:, tone:, onPressed:)`, `SsSpinner`, `SsSplash` (já cobriam) | `.ss-btn-ghost`, `.ss-spinner`, `Ss::SplashComponent` | `TextButton`, `CircularProgressIndicator` |
+
+**SsMoneyField com controller.** O controller guarda o texto em reais, sem o símbolo ("1.234,56"): o que o app escreve
+(IA, boleto, histórico) aparece no campo, e o que a pessoa digita ou confirma no teclado vai para o controller. Com
+`expression: true` a conta ("45+12,5") vira o valor ao sair do campo; sem ela, texto escrito de fora é posto no formato
+("81000,00" → "81.000,00"). Do `MoneyField` do app: `label:` igual (passe "Valor" onde ele era o padrão), `isRequired:` →
+`required:`, `currency:` → `formats:`, `errorText`, `signed`, `autofocus`, `focusNode`, `onKeypad` iguais; quem não tinha
+o botão da calculadora passa `calculator: false`. Leia o valor com `SsMoneyField.parse(c.text)` (aceita "1.234,56",
+"1234.56", "45+12,50", "-10").
+
+**SsSpeedDial.** Fechado é um `SsFab` (sem `label`, o círculo com "Ações rápidas" na dica e no leitor, com o estado no
+Semantics). Abre numa rota com véu: voltar, toque no véu e o × fecham; a 1ª ação fica mais perto do botão, as ações sobem
+com a mola em escada e o + gira até ×; escolher fecha e depois roda a ação; linha da ação com 48 de alvo. Com uma ação
+vira o `SsFab` dela; sem ações não desenha. Reduzir movimento abre e fecha sem animação.
+
+**Speed dial no web.** Renderize uma vez, no layout, fora do `<main>` (o `id` estável evita duplicar no morph). A ação
+de um item sem `href` (`action: "assistant#toggle"`) só alcança controllers ancestrais: envolva o componente no
+elemento do controller do app. Com uma ação só vira o `Ss::FabComponent` dela. O botão tem `aria-expanded`,
+`aria-haspopup="menu"` e `aria-controls`; abrir põe o foco na 1ª ação, ↑ ↓ Home End movem, Esc fecha e devolve o foco,
+clique fora/Tab para fora/escolher fecham; antes do cache do Turbo ele fecha.
+
+**Diálogo global (o modal do layout).** No layout, um só:
+`render Ss::DialogComponent.new(id: "modal-dialog", title: "Formulário", global: true, header: false, size: :lg)`; qualquer
+link com `data-turbo-frame="modal"` abre e carrega. Abre também quando o frame enche por turbo-stream, fecha quando
+esvazia, limpa o frame ao fechar e fecha antes do cache do Turbo. "Salvar e criar outro": o botão leva
+`data-ss-dialog-keep-open` (o redirect para o formulário limpo carrega no frame) e fechar depois disso recarrega a página
+de trás (`Turbo.visit(location.href, { action: "replace" })`), a menos que uma visita já esteja em curso (o envio
+normal que redireciona a página inteira). Resposta sem o frame (`turbo:frame-missing`) fecha e segue a URL. Cancelar
+e o X de um cabeçalho vindo na resposta usam `data-ss-dialog-dismiss` (no lugar do `data-action="modal#close"`); o
+`[data-ss-dialog-close]` continua significando "fechar ao carregar esta resposta". Com `header: false` o nome lido vem
+de `title:` ou do 1º `h1/h2` da resposta. Esc, X e clique no fundo, como antes.
+
+**Ações de linha.** CSS puro do Tailwind 4: `@media (hover: hover) and (pointer: fine)` esconde as ações
+(`opacity: 0`) enquanto a linha (`tr`, `li`, `.ss-item`, `.ss-row`, `.ss-card` ou `[data-ss-row]`) não está com o mouse
+nem com o foco, e nunca esconde com um popover/`details` aberto dentro; no toque ficam sempre à vista. O produto pode
+tirar o `@custom-variant hover (&:hover)` quando trocar o `md:opacity-0 md:group-hover:opacity-100`.
+
+**Padrões que mudaram.** `Ss::DialogComponent` com `frame_id:` passa a seguir a URL quando a resposta não tem o frame
+(antes, o Turbo mostrava "Content missing"; `follow_missing: false` volta). `PopoverComponent` com `trigger:` ganha
+`title` igual ao `label:` (a dica do botão de ícone). `ss_status(…, :warn)` passa de cinza para âmbar. O vazio da
+`DataTableComponent` e o resto ficam iguais por padrão. No app, nada muda para quem já usa o `SsMoneyField` sem controller. Quem trocar o `MoneyField` do app por `SsMoneyField(expression: true)`: vazio obrigatório diz "Informe um valor", conta que não fecha diz "Conta ou valor inválido", negativo sem `signed: true` é recusado, aparece a dica "0,00" (`hint: ''` tira) e a linha "= R$ 57,50" durante a conta.
+
+**Textos novos:** Rails `speed_dial.label`, `form_errors.title`, `privacy.hide`, `privacy.hint`, `common.edit`,
+`common.remove`, `common.saving`, `data_table.actions` (pt-BR, en, es); Flutter `quickActions` (pt, en, es).
+
 ## v0.17.1: o botão flutuante na área segura de verdade e o selo do topo fora do herói
 
 Correção da v0.17.0, achada nas capturas do minha-automacao. O `.ss-fab` antigo do `engine.css` vem depois na cascata e
@@ -830,6 +900,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.18.0` (10/11/2026): seção "v0.18.0" (fase final do meu-financeiro, web e app). `Ss::SpeedDialComponent` ↔ `SsSpeedDial`, `Ss::DialogComponent(global:, header:, clear_on_close:, refresh_on_close:, follow_missing:)` + `data-ss-dialog-keep-open`/`-refresh`/`-dismiss`, `Ss::RowActionsComponent` e `t.actions` (hover só com mouse, à vista no toque), `DataTableComponent(row_attrs:, empty_art:)`, `Ss::FormErrorsComponent`, `Ss::FormActionsComponent`, `ComboboxComponent` com ícone/imagem por opção e `input:`, `PopoverComponent(trigger_attrs:)`, `ss_status` com `:warn`/`:warning` (e `ComponentesUi.tone`), `Ss::IconButtonComponent`, `Ss::PrivacyToggleComponent`, AppShell sem a barra vazia no computador (`with_top_mobile`, ícone no grupo), utilitários `text-on-accent`/`bg-grad`/`text-info`…; no app `SsMoneyField(controller:, focusNode:, autofocus:, …)` + `SsMoneyField.parse`, `showSsToastGlobal`/`SsToastHost.navigatorKey`, `SsFab(iconTurns:)`. Nada quebra; o diálogo com frame passa a seguir a URL quando a resposta não tem o frame.
 - `v0.17.1` (10/11/2026): seção "v0.17.1". `.ss-fab` respeita a área segura e o `lift:` (o do `engine.css` vencia na cascata) e `.ss-hero-chip` fora do herói em fundo de campo. Nada quebra.
 - `v0.17.0` (10/11/2026): seção "v0.17.0". `Ss::FabComponent` (o `.ss-fab` como componente: círculo, pílula ou `:wide`, área segura, acima da `.ss-sticky-bar`, `lift:`, id estável para o morph do Turbo) ↔ `SsFab(extended:, extendedFrom:)`, e o cabeçalho compacto `Ss::PageComponent(eyebrow:, compact:)` ↔ `SsTopBar(eyebrow:)`. Nada quebra.
 - `v0.16.0` (10/11/2026): seção "v0.16.0" (etapa 5 da migração do minhas-compras e do minhas-viagens). `SsChartLegend` ↔ `Ss::ChartLegendComponent`, `SsOfferCard(badges:, meta:, actions:, menu:, hit:, kind:, unit:, estimate:, savings:, stacked:, fill:)` ↔ `.ss-offer` completa, `SsInputChip` ↔ `.ss-tag`, `SsColors.seriesInk`/`inkFor` ↔ `--series-ink-1..6`, `AppTheme.build(highContrast:)`/`SsBrand.highContrast()` ↔ `data-ss-contrast="high"` (gerado das paletas), `SsSliverHeader(background:)`, `showSsPicker(allowCustom:, noneLabel:)`, `showSsDatePicker`, `SsDivergingBars` ↔ `Ss::DivergingBarsComponent`, `SsValidators.qty`/`moneyText`, `SsNetImage(placeholderColor:)`, `SsTimelineItem(endTime:, alert:)`, `SsRating` ↔ `Ss::RatingComponent`, `SsCompareTable` ↔ `CompareTableComponent(best:, mono:)` e os ajustes (`SsFilterChip` com reticências, `SsSparkline(target:, markMin:)`, `SsButton.text(trailingIcon:, tone:, onDark:)`, `SsDelta.neutral`, `SsCountdownRing(warnAt:)`, `SsProportionBar(onDark:, legendValue:)`, `SsReorderableList(primary:)`). Nada quebra; o calendário do `SsDateField` passa a usar os textos do `SsStrings`.

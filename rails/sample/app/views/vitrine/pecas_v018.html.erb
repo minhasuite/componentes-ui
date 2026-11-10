@@ -1,0 +1,58 @@
+<%# titulo: Financeiro (v0.18): speed dial, diálogo, ações de linha | grupo: Tela | ordem: 41 %>
+<%# v0.18: o que o Meu Financeiro (web) ainda tinha de genérico. %>
+<% rows = [{ id: 1, nome: "Nubank", saldo: 1234.56 }, { id: 2, nome: "Inter", saldo: -80.1 }] %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::SpeedDialComponent", "O + do canto abre as ações (Esc, clique fora ou Tab fecham; ↑ ↓ movem). O desta página é o do canto de baixo. Par: SsSpeedDial.",
+           uso: 'render Ss::SpeedDialComponent.new(items: [{ label: "Novo lançamento", icon: "plus", href: new_path, turbo_frame: "modal" }, { label: "Assistente", icon: "chat-bubble-left-right", action: "assistant#toggle" }])' do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::SpeedDialComponent.new(static: true, id: "vt-sd-1", items: [{ label: "Novo lançamento", icon: "plus", href: "#vt-dialog" }, { label: "Assistente", icon: "chat-bubble-left-right", href: "#" }]) %></div>
+  <% end %>
+
+  <%= demo "Ss::DialogComponent(global: true)", "Um diálogo só no layout: qualquer link com data-turbo-frame=\"modal\" abre. data-ss-dialog-keep-open fica aberto e recarrega a página ao fechar; resposta sem o frame segue a URL.",
+           uso: 'render Ss::DialogComponent.new(id: "modal-dialog", title: "Formulário", global: true, header: false, size: :lg)' do %>
+    <div class="ss-card ss-card-pad">
+      <button type="button" class="ss-btn ss-btn-outline" data-ss-dialog-open="vt-dialog">Abrir</button>
+      <%= render(Ss::DialogComponent.new(id: "vt-dialog", title: "Nova conta")) do %>
+        <%= render Ss::FormErrorsComponent.new(errors: ["Nome não pode ficar em branco"]) %>
+        <div class="ss-field"><label for="vt-nome">Nome</label><input id="vt-nome" class="ss-input"></div>
+        <%= render(Ss::FormActionsComponent.new) do %><button type="button" class="ss-btn ss-btn-outline" data-ss-dialog-keep-open>Salvar e criar outro</button><% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::RowActionsComponent · t.actions", "Com mouse, as ações aparecem ao passar na linha ou focar nela; no toque ficam sempre à vista. Sem @custom-variant no produto.",
+           uso: 't.actions { |c| render Ss::RowActionsComponent.new(edit: edit_path(c), destroy: path(c), confirm: "Remover?") }' do %>
+    <%= render(Ss::DataTableComponent.new(rows:, id: "vt-ra", caption: "Contas", tools: false, row_attrs: ->(r) { { id: "conta_#{r[:id]}" } })) do |t| %>
+      <% t.column :nome, "Nome" %>
+      <% t.column :saldo, "Saldo", format: :money %>
+      <% t.actions do |r| %><%= render Ss::RowActionsComponent.new(edit: "#", destroy: "#", confirm: "Remover #{r[:nome]}?") %><% end %>
+    <% end %>
+    <div style="margin-top:1rem"><%= render(Ss::DataTableComponent.new(rows: [], id: "vt-vz", caption: "Vazio", tools: false, empty: "Nenhuma conta ainda.", empty_art: false)) { |t| t.column :nome, "Nome" } %></div>
+  <% end %>
+
+  <%= demo "Ss::ComboboxComponent (ícone/imagem)", "Opções com ícone (pintado por color:) ou imagem; a escolhida aparece no campo. input: {} vai no <input>.",
+           uso: 'options: [{ id: 1, label: "Nubank", image: logo_url }, { id: 2, label: "Mercado", icon: "shopping-cart", color: "#16a34a" }]' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::ComboboxComponent.new(name: "b", label: "Banco", id: "vt-cb", min_chars: 0, value: 2, text: "Inter", input: { title: "Banco da conta" },
+            options: [{ id: 1, label: "Nubank", icon: "credit-card", color: "#8a05be" }, { id: 2, label: "Inter", icon: "office-building", color: "#ff7a00" }, { id: 3, label: "Caixa", icon: "library" }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::IconButtonComponent · Ss::PrivacyToggleComponent", "Botão só de ícone, o de alternar (aria-pressed troca o ícone) e o olho de esconder valores (ss-privacy, tecla P).",
+           uso: 'render Ss::PrivacyToggleComponent.new(css: "lg:hidden")' do %>
+    <div class="ss-card ss-card-pad" style="display:flex;gap:.5rem;align-items:center" data-controller="ss-privacy">
+      <%= render Ss::IconButtonComponent.new(icon: "pencil", label: "Editar") %>
+      <%= render Ss::IconButtonComponent.new(icon: "bell", pressed_icon: "x", label: "Silenciar", pressed: false, variant: :tonal, onclick: "this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')") %>
+      <%= render Ss::PrivacyToggleComponent.new %>
+      <span class="money"><%= ss_money(1234.56) %></span>
+      <%= ss_status("a", { "a" => ["Atenção", :warn] }) %>
+    </div>
+  <% end %>
+
+  <%= demo "text-on-accent · bg-grad", "Texto e véus sobre o gradiente da marca sem text-white solto.", uso: 'class="bg-grad" … class="text-on-accent/80"' do %>
+    <div class="bg-grad" style="padding:1.25rem;border-radius:var(--r-card)">
+      <p style="font-weight:800;font-size:1.4rem"><%= ss_money(1234.56) %></p>
+      <p class="text-on-accent/80">livre para gastar no mês</p>
+    </div>
+  <% end %>
+</div>
+<%= render Ss::SpeedDialComponent.new(id: "vt-sd", items: [{ label: "Abrir diálogo", icon: "plus", href: "#", data: { ss_dialog_open: "vt-dialog" } }, { label: "Topo", icon: "arrow-up", href: "#" }]) %>

@@ -27,7 +27,9 @@
           <% if expansion? %><th scope="col" class="ss-dt-x"><span class="ss-sr"><%= tt("details", default: "Detalhes") %></span></th><% end %>
           <% columns.each do |c| %>
             <%= tag.th(scope: "col", class: (c.align == :right ? "r" : nil), "aria-sort": aria_sort(c), data: { col: c.key }) do %>
-              <% if c.sortable %>
+              <% if c.format == :actions %>
+                <span class="ss-sr"><%= c.label %></span>
+              <% elsif c.sortable %>
                 <a class="ss-sort" href="<%= sort_href(c) %>"><%= c.label %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
               <% else %>
                 <%= c.label %>
@@ -38,17 +40,17 @@
       </thead>
       <tbody>
         <% if rows.empty? %>
-          <tr class="ss-dt-empty"><td colspan="<%= span %>"><div class="ss-empty"><%= @empty %></div></td></tr>
+          <tr class="ss-dt-empty"><td colspan="<%= span %>"><div class="<%= empty_class %>"><%= @empty %></div></td></tr>
         <% end %>
         <% rows.each_with_index do |row, i| %>
           <% k = row_key(row, i) %>
-          <tr data-ss-table-target="row">
+          <%= tag.tr(**tr_attrs(row)) do %>
             <% if selectable? %><td class="ss-dt-check"><input type="checkbox" name="ids[]" value="<%= k %>" form="<%= form_id %>" aria-label="<%= tt("select_row", default: "Selecionar linha %{row}", row: k) %>" data-ss-table-target="check" data-action="ss-table#toggleRow"></td><% end %>
             <% if expansion? %><td class="ss-dt-x"><button type="button" class="ss-dt-toggle" aria-expanded="false" aria-controls="<%= id %>-d-<%= k %>" aria-label="<%= tt("show_details", default: "Ver detalhes") %>" data-action="ss-table#expand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td><% end %>
             <% columns.each do |c| %>
               <%= tag.td(cell(row, c), class: cell_class(c), data: { col: c.key, label: c.label }) %>
             <% end %>
-          </tr>
+          <% end %>
           <% if expansion? %>
             <tr class="ss-dt-detail" id="<%= id %>-d-<%= k %>" hidden><td colspan="<%= span %>"><%= expansion_for(row) %></td></tr>
           <% end %>

@@ -36,7 +36,7 @@
         <% end %>
         <% if group[:title] %>
           <details <%= "open" if group_open?(group) %>>
-            <summary><span class="ss-shell-label"><%= group[:title] %></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg></summary>
+            <summary><% if (gi = icon(group[:icon])) %><span class="ss-shell-group-ico" aria-hidden="true"><%= gi %></span><% end %><span class="ss-shell-label"><%= group[:title] %></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg></summary>
             <%= items %>
           </details>
         <% else %>
@@ -48,7 +48,7 @@
   </aside>
   <div class="ss-shell-scrim" data-action="click->ss-shell#close" aria-hidden="true"></div>
   <div class="ss-shell-main">
-    <header class="ss-shell-top">
+    <header class="<%= top_class %>">
       <button type="button" class="ss-shell-burger ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-shell#open" aria-controls="ss-shell-side" aria-expanded="false" data-ss-shell-target="burger" aria-label="<%= open_label %>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></svg>
       </button>
@@ -60,6 +60,7 @@
         </button>
       <% end %>
       <div class="ss-shell-top-end">
+        <% if top_mobile? %><div class="ss-shell-top-mobile"><%= top_mobile %></div><% end %>
         <%= top if top? %>
         <%= user if user? %>
       </div>

@@ -14,7 +14,8 @@ module Ss
     def initialize(text: nil, icon: nil, tone: :muted, **rest)
       super(**rest)
       @text, @icon = text, icon
-      @tone = TONES.include?(tone.to_s.to_sym) ? tone.to_s.to_sym : :muted
+      tone = ComponentesUi.tone(tone)
+      @tone = TONES.include?(tone) ? tone : :muted
     end
 
     def call

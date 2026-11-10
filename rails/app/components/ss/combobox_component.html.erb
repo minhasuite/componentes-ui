@@ -1,11 +1,11 @@
-<%= tag.div(class: classes("ss-field", "ss-combobox"), **root_attrs(data: data_attrs)) do %>
+<%= tag.div(class: classes("ss-field", "ss-combobox", ("has-media" if media?)), **root_attrs(data: data_attrs)) do %>
   <label for="<%= id %>"><%= label %></label>
-  <div class="ss-combobox-box">
-    <input id="<%= id %>" type="text" class="ss-input" role="combobox" autocomplete="off" spellcheck="false"
-           aria-autocomplete="list" aria-expanded="false" aria-controls="<%= id %>-list"<% if help %> aria-describedby="<%= id %>-help"<% end %>
-           placeholder="<%= placeholder %>" value="<%= text %>"
-           data-ss-combobox-target="input"
-           data-action="input->ss-combobox#search keydown->ss-combobox#key focus->ss-combobox#search blur->ss-combobox#close">
+  <div class="ss-combobox-box<%= " has-lead" if lead? %>">
+    <span class="ss-combobox-lead" aria-hidden="true" data-ss-combobox-target="lead"><%= lead_html(selected_option) %></span>
+    <%= tag.input(id: id, type: "text", class: input_class, role: "combobox", autocomplete: "off", spellcheck: "false",
+                  placeholder: placeholder, value: text, **input_extra,
+                  aria: { autocomplete: "list", expanded: "false", controls: "#{id}-list", describedby: ("#{id}-help" if help) }.compact.merge(input_aria),
+                  data: input_data) %>
     <ul id="<%= id %>-list" role="listbox" class="ss-combobox-list" aria-label="<%= label %>" hidden data-ss-combobox-target="list"
         data-action="mousedown->ss-combobox#hold click->ss-combobox#pick"></ul>
   </div>

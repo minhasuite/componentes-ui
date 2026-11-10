@@ -323,6 +323,7 @@ class SsFab extends StatelessWidget {
     required this.onPressed,
     this.extended = true,
     this.extendedFrom,
+    this.iconTurns = 0,
   });
 
   final IconData icon;
@@ -337,6 +338,9 @@ class SsFab extends StatelessWidget {
 
   /// Largura mínima da tela para mostrar o [label] (abaixo, só o ícone).
   final double? extendedFrom;
+
+  /// v0.18: giro do ícone, em voltas (o [SsSpeedDial] gira o "+" até virar "×").
+  final double iconTurns;
 
   @override
   Widget build(BuildContext context) {
@@ -364,7 +368,10 @@ class SsFab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.onDark, size: d.iconSize + 4),
+            Transform.rotate(
+              angle: iconTurns * 2 * math.pi,
+              child: Icon(icon, color: AppColors.onDark, size: d.iconSize + 4),
+            ),
             if (shown != null) ...[
               SizedBox(width: d.space(8)),
               Text(

@@ -1,4 +1,5 @@
 <%= tag.dialog(**dialog_attrs) do %>
+  <% if header? %>
   <header class="ss-dialog-panel-head">
     <% if icon %><span class="ss-icon-tile" aria-hidden="true"><%= icon %></span><% end %>
     <div class="ss-dialog-panel-text">
@@ -9,6 +10,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
     </button></form>
   </header>
+  <% end %>
   <div class="ss-dialog-panel-body">
     <% if frame_id %>
       <turbo-frame id="<%= frame_id %>" data-ss-dialog-target="frame"><%= content %></turbo-frame>

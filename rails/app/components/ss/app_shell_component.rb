@@ -33,6 +33,14 @@ module Ss
   #   main_max: "72rem" limita a largura do conteúdo (centralizado).
   # - Item: class: vai no link; { separator: true } (ou divider: true) é uma linha divisória,
   #   no meio dos itens ou entre os grupos. badge: 0 (ou vazio) não aparece.
+  #
+  # v0.18:
+  # - Barra de cima sem nada no computador (search: false, sem top, sem user) não aparece mais
+  #   (antes ficava uma faixa vazia); no celular ela segue (menu e marca). with_top_mobile { … } é o
+  #   que só aparece na barra do celular (ex. o olho de esconder valores, que no computador mora
+  #   no rodapé do menu): não conta para a barra do computador.
+  # - Grupo com ícone: { title: "Cadastros", icon: ss_icon("folder", size: nil), items: [...] }; o
+  #   ícone vai antes do título (com o menu recolhido o grupo segue sendo só a linha divisória).
   class AppShellComponent < BaseComponent
     COOKIE = "ss_shell_collapsed".freeze
 
@@ -40,6 +48,7 @@ module Ss
     renders_one :mark
     renders_one :user
     renders_one :top
+    renders_one :top_mobile
     renders_one :side_footer
 
     attr_reader :nav, :tenants
@@ -90,6 +99,11 @@ module Ss
       { class: ["ss-shell-content", @main_class].compact.join(" "), id: "conteudo", tabindex: "-1",
         data: (@main_max ? { max: "" } : nil), style: (@main_max ? "--shell-main-max:#{ERB::Util.html_escape(@main_max)}" : nil) }.compact
     end
+
+    # Nada para a barra de cima do computador: ela some (CSS, a partir de 1024 px).
+    def top_bare? = !@search && !top? && !user?
+
+    def top_class = ["ss-shell-top", ("is-bare" if top_bare?)].compact.join(" ")
 
     def mobile_brand? = @mobile_brand && (@brand.present? || logo?)
 

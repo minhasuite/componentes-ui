@@ -70,6 +70,9 @@ class HelpersTest < Minitest::Test
     assert_equal '<span class="ss-status" data-tone="success">Pago</span>', ss_status(:pago, map)
     assert_includes ss_status("atrasado", map), 'data-tone="danger"'
     assert_equal '<span class="ss-status" data-tone="neutral">outro</span>', ss_status("outro", map)
+    # v0.18: :warn e :warning dão o mesmo âmbar.
+    assert_includes ss_status("a", { "a" => ["Atenção", :warn] }), 'data-tone="warning"'
+    assert_includes ss_status("a", { "a" => ["Atenção", "warning"] }), 'data-tone="warning"'
   end
 
   def test_icone_svg_inline_e_apelido_da_v2

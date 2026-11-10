@@ -430,12 +430,25 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
 ///   embaixo aparece "= R$ 57,50", [onChanged] recebe o resultado (nulo se a
 ///   conta não fecha, que também é erro de validação) e, ao sair do campo, o
 ///   texto vira o valor. O teclado ([keypad]) ganha + − × ÷ e vírgula.
+///
+/// v0.18 (o formulário que guarda o valor em texto, preenchido de fora):
+/// - [controller]: o texto do campo em reais, sem o símbolo ("1.234,56",
+///   "1234,56", "57.5" e, com [expression], "45+12,50"). O que o app escreve
+///   nele aparece no campo; o que a pessoa digita (ou confirma no teclado) vai
+///   para ele. Leia o valor com [SsMoneyField.parse]. Sem [expression], o texto
+///   escrito de fora é posto no formato do campo ("1234,5" → "1.234,50"). Com
+///   ele, [cents] e [onChanged] são opcionais ([cents] só preenche o vazio);
+/// - [focusNode], [autofocus], [textInputAction], [onSubmitted];
+/// - [required] (vazio → "Informe um valor") e [errorText] (o erro do
+///   servidor, que ganha de tudo na validação);
+/// - [calculator]: falso tira o botão de calculadora do modo conta;
+///   [onKeypad] troca o teclado do pacote pelo do app (botão e toque com [keypad]).
 class SsMoneyField extends StatefulWidget {
   const SsMoneyField({
     super.key,
     this.label,
-    required this.cents,
-    required this.onChanged,
+    this.cents,
+    this.onChanged,
     this.validator,
     this.hint,
     this.keypad = false,
@@ -443,16 +456,28 @@ class SsMoneyField extends StatefulWidget {
     this.formats,
     this.signed = false,
     this.expression = false,
+    this.controller,
+    this.focusNode,
+    this.autofocus = false,
+    this.required = false,
+    this.errorText,
+    this.calculator = true,
+    this.onKeypad,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   final String? label;
+
+  /// Valor em centavos. Com [controller], só o inicial (se o texto estiver vazio)
+  /// e as trocas seguintes.
   final int? cents;
-  final ValueChanged<int?> onChanged;
+  final ValueChanged<int?>? onChanged;
 
   /// Recebe os centavos (ex.: [SsValidators.money]).
   final String? Function(int? cents)? validator;
 
-  /// Padrão: zero no formato da moeda ("0,00").
+  /// Padrão: zero no formato da moeda ("0,00"). `''` tira a dica.
   final String? hint;
   final bool keypad;
   final bool enabled;
@@ -461,6 +486,33 @@ class SsMoneyField extends StatefulWidget {
   final SsFormats? formats;
   final bool signed;
   final bool expression;
+
+  /// v0.18: texto do campo, em reais sem o símbolo; nulo = o campo cria o seu.
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final bool autofocus;
+
+  /// Vazio é erro ("Informe um valor"; zero passa).
+  final bool required;
+
+  /// Erro vindo de fora (servidor): aparece na validação no lugar dos outros.
+  final String? errorText;
+
+  /// Botão de calculadora no modo conta ([expression]) sem [keypad].
+  final bool calculator;
+
+  /// Troca o [showSsAmountKeypad] pelo teclado do app (quem abre escreve no [controller]).
+  final VoidCallback? onKeypad;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  /// Centavos do texto do campo ("1.234,56", "57.5", "45+12,50", "-10"), ou
+  /// nulo se não é valor. O mesmo que o campo usa para validar.
+  static int? parse(String text, {SsFormats? formats}) {
+    final f = formats ?? SsFormats.brl;
+    if (text.trim().isEmpty) return null;
+    return ssEvalAmount(text, f) ?? _comSinal(text, f);
+  }
 
   @override
   State<SsMoneyField> createState() => _SsMoneyFieldState();
@@ -498,60 +550,118 @@ class _CentavosFormatter extends TextInputFormatter {
 
 class _SsMoneyFieldState extends State<SsMoneyField> {
   SsFormats get _f => widget.formats ?? SsFormats.of(context);
-  late final _ctrl = TextEditingController(text: _semRs(widget.cents, _f));
-  final _focus = FocusNode();
-  // Modo conta: o resultado da última digitação (nulo = não fecha).
-  int? _conta;
+  TextEditingController? _own;
+  FocusNode? _ownFocus;
+
+  TextEditingController get _ctrl =>
+      widget.controller ?? (_own ??= TextEditingController(text: _semRs(widget.cents, _f)));
+  FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
 
   @override
   void initState() {
     super.initState();
     _focus.addListener(_saiu);
+    widget.controller?.addListener(_externo);
+    if (widget.controller != null) {
+      // Fora do build de quem está montando a tela (o app pode ouvir o controller).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || widget.controller == null) return;
+        if (_ctrl.text.isEmpty && widget.cents != null) _ctrl.text = _semRs(widget.cents, _f);
+        _externo();
+      });
+    }
   }
 
   @override
   void didUpdateWidget(SsMoneyField old) {
     super.didUpdateWidget(old);
-    final atual = widget.expression ? ssEvalAmount(_ctrl.text, _f) : _comSinal(_ctrl.text, _f);
+    if (old.focusNode != widget.focusNode) {
+      (old.focusNode ?? _ownFocus)?.removeListener(_saiu);
+      _focus.addListener(_saiu);
+    }
+    if (old.controller != widget.controller) {
+      old.controller?.removeListener(_externo);
+      widget.controller?.addListener(_externo);
+      if (widget.controller == null) _own ??= TextEditingController(text: old.controller?.text ?? '');
+    }
+    if (widget.controller != null) {
+      if (widget.cents != old.cents && widget.cents != null && widget.cents != _valor()) {
+        _ctrl.text = _semRs(widget.cents, _f);
+      }
+      return;
+    }
+    final atual = _valor();
     if (widget.cents != atual) _ctrl.text = _semRs(widget.cents, _f);
   }
 
   @override
   void dispose() {
-    _focus.dispose();
-    _ctrl.dispose();
+    widget.controller?.removeListener(_externo);
+    _focus.removeListener(_saiu);
+    _ownFocus?.dispose();
+    _own?.dispose();
     super.dispose();
   }
 
+  int? _valor() => widget.expression ? ssEvalAmount(_ctrl.text, _f) : _comSinal(_ctrl.text, _f);
+
   bool _vale(int? v) => v != null && (widget.signed || v >= 0);
 
+  /// Sem conta, o texto escrito de fora vai para o formato do campo ("1234,5" → "1.234,50").
+  void _externo() {
+    if (widget.expression || !mounted) return;
+    final t = _ctrl.text;
+    if (t.isEmpty || t == '-') return;
+    var v = ssEvalAmount(t, _f) ?? _comSinal(t, _f);
+    if (v == null) return;
+    if (!widget.signed && v < 0) v = -v;
+    final canon = _semRs(v, _f);
+    if (canon == t) return;
+    _ctrl.value = TextEditingValue(
+      text: canon,
+      selection: TextSelection.collapsed(offset: canon.length),
+    );
+  }
+
   void _saiu() {
-    if (_focus.hasFocus || !widget.expression) return;
+    if (_focus.hasFocus || !widget.expression || !mounted) return;
     final v = ssEvalAmount(_ctrl.text, _f);
-    if (_vale(v) && ssIsAmountExpression(_ctrl.text)) setState(() => _ctrl.text = _semRs(v, _f));
+    if (_vale(v) && ssIsAmountExpression(_ctrl.text)) _ctrl.text = _semRs(v, _f);
   }
 
   void _digitouConta(String s) {
     final v = s.trim().isEmpty ? null : ssEvalAmount(s, _f);
-    setState(() => _conta = v);
-    widget.onChanged(_vale(v) ? v : null);
+    widget.onChanged?.call(_vale(v) ? v : null);
   }
 
   Future<void> _abrir() async {
+    if (widget.onKeypad != null) return widget.onKeypad!();
     final v = await showSsAmountKeypad(
       context,
-      initial: widget.cents,
+      initial: widget.controller != null ? _valor() : widget.cents,
       title: widget.label,
       expression: widget.expression,
       signed: widget.signed,
       formats: widget.formats,
     );
     if (v == null || !mounted) return;
-    setState(() {
-      _ctrl.text = _semRs(v, _f);
-      _conta = v;
-    });
-    widget.onChanged(v);
+    _ctrl.text = _semRs(v, _f);
+    widget.onChanged?.call(v);
+  }
+
+  FormFieldValidator<String>? _validador(SsStrings s, SsFormats f) {
+    if (widget.validator == null && !widget.required && widget.errorText == null && !widget.expression) return null;
+    return (t) {
+      if (widget.errorText != null) return widget.errorText;
+      final txt = (t ?? '').trim();
+      if (txt.isEmpty) return widget.required ? s.enterAmount : widget.validator?.call(null);
+      if (widget.expression) {
+        final v = ssEvalAmount(txt, f);
+        if (!_vale(v)) return s.invalidAmount;
+        return widget.validator?.call(v);
+      }
+      return widget.validator?.call(_comSinal(txt, f));
+    };
   }
 
   @override
@@ -562,53 +672,63 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
     final prefixo = f.symbolAfter ? null : f.prefix;
     final sufixo = f.symbolAfter ? f.suffix : null;
     final estilo = AppTheme.number(context, size: AppType.md, color: c.ink);
+    final dica = widget.hint ?? f.amount(0);
     if (widget.expression) {
-      final mostra = _conta != null && _vale(_conta) && ssIsAmountExpression(_ctrl.text);
-      return SsTextField(
-        label: widget.label,
-        controller: _ctrl,
-        focusNode: _focus,
-        hint: widget.hint ?? f.amount(0),
-        prefixText: prefixo,
-        suffixText: sufixo,
-        enabled: widget.enabled,
-        readOnly: widget.keypad,
-        onTap: widget.keypad ? _abrir : null,
-        keyboardType: TextInputType.numberWithOptions(decimal: true, signed: widget.signed),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
-        style: estilo,
-        helperText: mostra ? '= ${f.money(_conta)}' : null,
-        suffix: widget.keypad
-            ? null
-            : IconButton(
-                tooltip: s.calculator,
-                icon: Icon(Icons.calculate_outlined, color: c.muted),
-                onPressed: widget.enabled ? _abrir : null,
-              ),
-        validator: (t) {
-          final txt = t ?? '';
-          final v = txt.trim().isEmpty ? null : ssEvalAmount(txt, f);
-          if (txt.trim().isNotEmpty && !_vale(v)) return s.invalidAmount;
-          return widget.validator?.call(v);
+      // O "= R$ 57,50" acompanha o texto, também quando ele vem de fora.
+      return ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _ctrl,
+        builder: (context, valor, _) {
+          final txt = valor.text;
+          final conta = txt.trim().isEmpty ? null : ssEvalAmount(txt, f);
+          final mostra = _vale(conta) && ssIsAmountExpression(txt);
+          return SsTextField(
+            label: widget.label,
+            controller: _ctrl,
+            focusNode: _focus,
+            autofocus: widget.autofocus,
+            hint: dica.isEmpty ? null : dica,
+            prefixText: prefixo,
+            suffixText: sufixo,
+            enabled: widget.enabled,
+            readOnly: widget.keypad,
+            onTap: widget.keypad ? _abrir : null,
+            keyboardType: TextInputType.numberWithOptions(decimal: true, signed: widget.signed),
+            textInputAction: widget.textInputAction,
+            onSubmitted: widget.onSubmitted,
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
+            style: estilo,
+            helperText: mostra ? '= ${f.money(conta)}' : null,
+            suffix: widget.keypad || !widget.calculator
+                ? null
+                : IconButton(
+                    tooltip: s.calculator,
+                    icon: Icon(Icons.calculate_outlined, color: c.muted),
+                    onPressed: widget.enabled ? _abrir : null,
+                  ),
+            validator: _validador(s, f),
+            onChanged: _digitouConta,
+          );
         },
-        onChanged: _digitouConta,
       );
     }
     return SsTextField(
       label: widget.label,
       controller: _ctrl,
       focusNode: _focus,
-      hint: widget.hint ?? f.amount(0),
+      autofocus: widget.autofocus,
+      hint: dica.isEmpty ? null : dica,
       prefixText: prefixo,
       suffixText: sufixo,
       enabled: widget.enabled,
       readOnly: widget.keypad,
       onTap: widget.keypad ? _abrir : null,
       keyboardType: TextInputType.numberWithOptions(signed: widget.signed),
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
       inputFormatters: [_CentavosFormatter(f, signed: widget.signed)],
       style: estilo,
-      validator: widget.validator == null ? null : (t) => widget.validator!(_comSinal(t ?? '', f)),
-      onChanged: (t) => widget.onChanged(_comSinal(t, f)),
+      validator: _validador(s, f),
+      onChanged: (t) => widget.onChanged?.call(_comSinal(t, f)),
     );
   }
 }

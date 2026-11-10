@@ -388,6 +388,7 @@ class SsStrings {
     required this.included,
     required this.notIncluded,
     required this.attention,
+    required this.quickActions,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -974,6 +975,9 @@ class SsStrings {
   /// v0.16: [SsTimelineItem] com `alert: true` (conflito de horário) para o leitor de tela.
   final String attention;
 
+  /// v0.18: nome do [SsSpeedDial] (o botão que abre as ações).
+  final String quickActions;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1368,6 +1372,7 @@ class SsStrings {
     included: 'Incluído',
     notIncluded: 'Não incluído',
     attention: 'Atenção',
+    quickActions: 'Ações rápidas',
   );
 
   /// Inglês.
@@ -1750,6 +1755,7 @@ class SsStrings {
     included: 'Included',
     notIncluded: 'Not included',
     attention: 'Attention',
+    quickActions: 'Quick actions',
   );
 
   /// Espanhol.
@@ -2132,6 +2138,7 @@ class SsStrings {
     included: 'Incluido',
     notIncluded: 'No incluido',
     attention: 'Atención',
+    quickActions: 'Acciones rápidas',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2501,6 +2508,7 @@ class SsStrings {
     'included': included,
     'notIncluded': notIncluded,
     'attention': attention,
+    'quickActions': quickActions,
   };
 
   /// Os idiomas prontos.
@@ -2905,6 +2913,7 @@ class SsStrings {
     String? included,
     String? notIncluded,
     String? attention,
+    String? quickActions,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3271,6 +3280,7 @@ class SsStrings {
     included: included ?? this.included,
     notIncluded: notIncluded ?? this.notIncluded,
     attention: attention ?? this.attention,
+    quickActions: quickActions ?? this.quickActions,
   );
 }
 

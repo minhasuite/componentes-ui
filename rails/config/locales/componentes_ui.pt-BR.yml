@@ -88,6 +88,9 @@ pt-BR:
       open: abrir
       placeholder: Buscar…
     common:
+      edit: Editar
+      remove: Remover
+      saving: Salvando…
       back: Voltar
       cancel: Cancelar
       close: Fechar
@@ -131,6 +134,7 @@ pt-BR:
       volume_down: Diminuir volume
       volume_up: Aumentar volume
     data_table:
+      actions: Ações
       bulk_actions: Ações em massa
       choose_columns: Escolher colunas
       clear_selection: Limpar seleção
@@ -602,3 +606,10 @@ pt-BR:
       of: '%{value} de %{limit}'
       over: '%{value} acima'
       to_go: 'Faltam %{value}'
+    form_errors:
+      title: Confira os campos
+    privacy:
+      hide: Ocultar valores
+      hint: '%{label} (P)'
+    speed_dial:
+      label: Ações rápidas

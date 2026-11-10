@@ -1,0 +1,128 @@
+/* v0.18 · o que o Meu Financeiro (web) ainda tinha de genérico: botão flutuante com várias ações
+   (Ss::SpeedDialComponent), ações de linha no hover só onde há hover de verdade
+   (Ss::RowActionsComponent, t.actions do DataTable), rodapé de formulário (Ss::FormActionsComponent),
+   vazio compacto da tabela, ícone/imagem no combobox, botão de ícone que alterna
+   (Ss::IconButtonComponent, Ss::PrivacyToggleComponent), barra de cima vazia que some e ícone no grupo
+   do menu (AppShell), e os utilitários de cor "sobre a marca" (text-on-accent, bg-grad). Cor só por
+   token. */
+
+/* Cores para o Tailwind do produto: texto/ícone/borda sobre o gradiente ou o accent sólido
+   (text-on-accent, text-on-accent/80, bg-on-accent/15, ring-on-accent/25), o accent sólido e o
+   hover, a cor de informação e a superfície do cabeçalho. */
+@theme {
+  --color-on-accent: var(--on-accent);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-hover: var(--accent-hover);
+  --color-info: var(--ss-info);
+  --color-info-soft: color-mix(in srgb, var(--ss-info) 14%, var(--surface));
+  --color-head: var(--head);
+}
+:root { --on-accent: #fff; }
+
+/* Gradiente da marca como fundo (herói, marca): bg-grad; o suave: bg-grad-soft. */
+@utility bg-grad { background-image: var(--grad); color: var(--on-accent); }
+@utility bg-grad-soft { background-image: var(--grad-soft); }
+
+@layer components {
+  /* ── Botão flutuante com várias ações ── */
+  .ss-speed-dial { position: fixed; z-index: 40; display: flex; flex-direction: column; align-items: flex-end; gap: .75rem;
+                   bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--ss-fab-lift, 0px)); right: max(1rem, env(safe-area-inset-right)); }
+  .ss-speed-dial.is-start { right: auto; left: max(1rem, env(safe-area-inset-left)); align-items: flex-start; }
+  .ss-speed-dial.is-static { position: static; }
+  .ss-speed-dial-menu { display: flex; flex-direction: column; align-items: inherit; gap: .5rem; }
+  .ss-speed-dial-menu[hidden] { display: none; }
+  .ss-speed-dial-item { display: inline-flex; align-items: center; gap: .65rem; min-height: var(--ss-control-h); padding: .25rem .3rem .25rem calc(var(--ss-pad-x) * .9);
+                        border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer;
+                        font: 700 calc(.875rem * var(--ss-font-scale, 1)) / 1.2 var(--font-sans); text-decoration: none; white-space: nowrap;
+                        box-shadow: var(--shadow-hover); transition: background-color .15s, border-color .15s, scale var(--ss-dur-indicator, .3s) var(--ss-bounce); }
+  .ss-speed-dial.is-start .ss-speed-dial-item { flex-direction: row-reverse; padding: .25rem calc(var(--ss-pad-x) * .9) .25rem .3rem; }
+  .ss-speed-dial-item:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .ss-speed-dial-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-speed-dial-item:active { scale: .97; transition-duration: .08s; }
+  .ss-speed-dial-ico { display: grid; place-items: center; width: calc(var(--ss-control-h) - .6rem); height: calc(var(--ss-control-h) - .6rem); flex: none;
+                       border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+  .ss-speed-dial-ico svg { width: var(--ss-icon); height: var(--ss-icon); }
+  .ss-speed-dial-toggle svg { transition: rotate .25s var(--ss-bounce); }
+  .ss-speed-dial-toggle[aria-expanded="true"] svg { rotate: 45deg; }
+  /* As ações sobem com a mola, a de baixo primeiro. */
+  .ss-speed-dial-menu:not([hidden]) > * { animation: ss-sd-in .32s var(--ss-bounce) both; }
+  .ss-speed-dial-menu:not([hidden]) > :nth-last-child(2) { animation-delay: 35ms; }
+  .ss-speed-dial-menu:not([hidden]) > :nth-last-child(3) { animation-delay: 70ms; }
+  .ss-speed-dial-menu:not([hidden]) > :nth-last-child(n+4) { animation-delay: 105ms; }
+  @media (max-width: 767px) {
+    body:has(.ss-sticky-bar) .ss-speed-dial:not(.is-static) { --ss-fab-lift: calc(var(--ss-control-h) + 2.5rem); }
+  }
+  body:has(.ss-speed-dial:not(.is-static)) .ss-shell-main { padding-bottom: calc(var(--ss-control-h) + 2rem); }
+
+  /* ── Ações de linha: escondidas só onde há hover de verdade (mouse), sempre à vista no toque ── */
+  .ss-row-actions { display: flex; align-items: center; justify-content: flex-end; gap: .25rem; white-space: nowrap; transition: opacity .15s ease; }
+  .ss-row-actions-form { display: inline; }
+  .ss-dt .ss-table td.ss-dt-actions { width: 1%; }
+  @media (max-width: 767px) { .ss-dt .ss-table td.ss-dt-actions[data-label]::before { content: none; } }
+  @media (hover: hover) and (pointer: fine) {
+    :where(tr, li, .ss-item, .ss-row, .ss-card, [data-ss-row]):not(:hover, :focus-within)
+      .ss-row-actions.is-reveal:not(:has(:popover-open, [aria-expanded="true"], details[open])) { opacity: 0; }
+  }
+
+  /* ── Rodapé do formulário (Cancelar · Salvar) ── */
+  .ss-form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; margin-top: calc(var(--ss-gap) * 1.25); }
+  .ss-form-actions.is-start { justify-content: flex-start; }
+  .ss-form-actions.is-between { justify-content: space-between; }
+  .ss-form-actions.is-between > :first-child { margin-right: auto; }
+  /* Preso no fim do painel do diálogo (o corpo rola por cima dele). */
+  .ss-dialog-panel-body .ss-form-actions.is-sticky { position: sticky; bottom: 0; z-index: 2; margin-inline: calc(-1 * var(--ss-card-pad));
+    margin-bottom: calc(-1 * var(--ss-card-pad)); padding: calc(var(--ss-card-pad) * .75) var(--ss-card-pad);
+    background: var(--surface); border-top: 1px solid var(--line); }
+  .ss-form-errors ul { margin: 0; padding-left: 1.1rem; list-style: disc; }
+
+  /* ── Diálogo sem cabeçalho (o conteúdo traz o dele) ── */
+  .ss-dialog-panel.is-headless .ss-dialog-panel-body { padding-top: var(--ss-card-pad); }
+
+  /* ── ss_status: data-tone="warn" igual a "warning" (o nome do Callout/Note/CardHeader) ── */
+  .ss-status[data-tone="warn"] { --c: var(--warn); }
+
+  /* ── Tabela: vazio compacto, sem ilustração ── */
+  .ss-empty.is-compact { padding: 1.25rem 1rem; }
+
+  /* ── Combobox com ícone/imagem por opção ── */
+  .ss-combobox-list [role="option"] { align-items: center; }
+  .ss-combobox-media { flex: none; }
+  .ss-combobox :is(.ss-combobox-list, .ss-combobox-lead) img { width: 1.5rem; height: 1.5rem; flex: none; border-radius: 6px; object-fit: contain; background: var(--surface); }
+  .ss-combobox-ico { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; flex: none; border-radius: 50%;
+                     --c: var(--accent); background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
+  .ss-combobox-ico svg { width: .95rem; height: .95rem; }
+  .ss-combobox-lead { position: absolute; left: .6rem; top: 50%; translate: 0 -50%; display: none; pointer-events: none; }
+  .ss-combobox-box.has-lead .ss-combobox-lead { display: inline-flex; }
+  .ss-combobox-box.has-lead > .ss-input { padding-left: 2.6rem; }
+
+  /* ── Botão de ícone que alterna (aria-pressed troca o ícone) ── */
+  .ss-icon-btn.is-toggle .ss-icon-on, .ss-icon-btn.is-toggle[aria-pressed="true"] .ss-icon-off { display: none; }
+  .ss-icon-btn.is-toggle[aria-pressed="true"] .ss-icon-on { display: contents; }
+  .ss-icon-btn.is-toggle .ss-icon-off { display: contents; }
+  .ss-icon-btn[aria-pressed="true"] { color: var(--accent); }
+  .ss-icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-privacy-toggle > :is(.ss-eye-on, .ss-eye-off) { align-items: center; }
+
+  /* ── Moldura: ícone no grupo do menu; o que só vai na barra do celular ── */
+  .ss-shell-group-ico { display: inline-grid; place-items: center; flex: none; }
+  .ss-shell-group-ico svg { width: .95rem; height: .95rem; }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-group-ico { display: none; }
+  .ss-shell-top-mobile { display: contents; }
+}
+
+/* Fora das camadas: a barra vazia some no computador; o "só celular" some também. */
+@media (min-width: 1024px) {
+  .ss-shell-top.is-bare { display: none; }
+  .ss-shell-top-mobile { display: none; }
+}
+/* Gaveta do menu recolhido não vale no celular: o ícone do grupo volta. */
+@media (max-width: 1023px) {
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-group-ico { display: inline-grid; }
+}
+
+@keyframes ss-sd-in { from { opacity: 0; translate: 0 .75rem; scale: .9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-speed-dial-menu:not([hidden]) > * { animation: none; }
+  .ss-speed-dial-toggle svg, .ss-row-actions { transition: none; }
+}

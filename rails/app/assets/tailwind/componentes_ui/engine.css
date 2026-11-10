@@ -33,6 +33,8 @@
 @import "./v16_web.css";
 /* v0.17: botão flutuante como componente e cabeçalho compacto com a linha de cima. */
 @import "./v17_web.css";
+/* v0.18: speed dial, ações de linha, rodapé de formulário, combobox com mídia, botão que alterna, cores sobre a marca. */
+@import "./v18_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
