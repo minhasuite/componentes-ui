@@ -293,9 +293,15 @@ class SsFilterChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     marca,
-                    Text(
-                      label,
-                      style: TextStyle(color: fg, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w700),
+                    // v0.16: rótulo longo termina em "…" (estourava a 1,3× num Wrap estreito).
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: TextStyle(color: fg, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w700),
+                      ),
                     ),
                     if (count != null) ...[
                       SizedBox(width: d.space(6)),

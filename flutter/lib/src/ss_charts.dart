@@ -9,8 +9,19 @@ import 'ss_aurora.dart';
 
 /// Linha sem eixo com preenchimento que some para baixo e um ponto no último
 /// valor. Desenha-se da esquerda para a direita quando entra na tela (700 ms).
+///
+/// v0.16: [target] desenha a linha tracejada do alvo (preço desejado, meta),
+/// que entra na escala; [markMin] marca o menor valor com um ponto verde.
 class SsSparkline extends StatelessWidget {
-  const SsSparkline(this.values, {super.key, this.color, this.height = 40, this.edgeToEdge = false});
+  const SsSparkline(
+    this.values, {
+    super.key,
+    this.color,
+    this.height = 40,
+    this.edgeToEdge = false,
+    this.target,
+    this.markMin = false,
+  });
 
   final List<double> values;
   final Color? color;
@@ -19,34 +30,55 @@ class SsSparkline extends StatelessWidget {
   /// Encostada nas bordas (base de card): sem respiro nas laterais.
   final bool edgeToEdge;
 
+  /// Alvo (mesma unidade de [values]): linha tracejada apagada.
+  final double? target;
+
+  /// Ponto verde no menor valor (o mais barato do histórico).
+  final bool markMin;
+
   @override
   Widget build(BuildContext context) {
-    final cor = color ?? SsColors.of(context).accent;
+    final c = SsColors.of(context);
+    final cor = color ?? c.accent;
     return SizedBox(
       height: height,
       width: double.infinity,
       child: SsTweenInView(
         end: 1,
         duration: const Duration(milliseconds: 700),
-        builder: (_, t, _) => CustomPaint(painter: _SparkPainter(values, cor, t, inset: edgeToEdge ? 0 : 4)),
+        builder: (_, t, _) => CustomPaint(
+          painter: _SparkPainter(
+            values,
+            cor,
+            t,
+            inset: edgeToEdge ? 0 : 4,
+            target: target,
+            targetColor: c.muted,
+            minColor: markMin ? AppColors.success : null,
+          ),
+        ),
       ),
     );
   }
 }
 
 class _SparkPainter extends CustomPainter {
-  _SparkPainter(this.values, this.color, this.t, {required this.inset});
+  _SparkPainter(this.values, this.color, this.t, {required this.inset, this.target, this.targetColor, this.minColor});
 
   final List<double> values;
   final Color color;
   final double t;
   final double inset;
+  final double? target;
+  final Color? targetColor;
+  final Color? minColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (values.length < 2) return;
-    final lo = values.reduce(math.min);
-    final hi = values.reduce(math.max);
+    final todos = [...values, ?target];
+    final lo = todos.reduce(math.min);
+    final hi = todos.reduce(math.max);
     final span = hi - lo == 0 ? 1 : hi - lo;
     final w = size.width - inset * 2;
     // Respiro em cima para o ponto e embaixo para o preenchimento não colar.
@@ -56,6 +88,16 @@ class _SparkPainter extends CustomPainter {
       for (var i = 0; i < values.length; i++)
         Offset(inset + w * i / (values.length - 1), top + h * (1 - (values[i] - lo) / span)),
     ];
+    if (target != null) {
+      // Alvo: tracejado de 3 px a cada 6 px, atrás da linha.
+      final y = top + h * (1 - (target! - lo) / span);
+      final p = Paint()
+        ..color = (targetColor ?? color).withValues(alpha: .7)
+        ..strokeWidth = 1;
+      for (var x = 0.0; x < size.width; x += 6) {
+        canvas.drawLine(Offset(x, y), Offset(math.min(x + 3, size.width), y), p);
+      }
+    }
     // Curva suave (Catmull-Rom em cúbicas), sem passar do mínimo/máximo demais.
     final line = Path()..moveTo(pts.first.dx, pts.first.dy);
     for (var i = 0; i < pts.length - 1; i++) {
@@ -92,6 +134,13 @@ class _SparkPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
     canvas.restore();
+    if (t >= .98 && minColor != null) {
+      final i = values.indexOf(values.reduce(math.min));
+      if (i != values.length - 1) {
+        canvas.drawCircle(pts[i], 5, Paint()..color = minColor!.withValues(alpha: .22));
+        canvas.drawCircle(pts[i], 3, Paint()..color = minColor!);
+      }
+    }
     if (t >= .98) {
       final last = pts.last.translate(inset == 0 ? -4 : 0, 0);
       canvas.drawCircle(last, 5, Paint()..color = color.withValues(alpha: .22));
@@ -100,7 +149,8 @@ class _SparkPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SparkPainter old) => old.t != t || old.values != values || old.color != color;
+  bool shouldRepaint(_SparkPainter old) =>
+      old.t != t || old.values != values || old.color != color || old.target != target || old.minColor != minColor;
 }
 
 /// Um anel do [SsRings].

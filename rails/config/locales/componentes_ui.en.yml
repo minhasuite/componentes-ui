@@ -416,6 +416,11 @@ en:
       label: Sidebar
     rank_list:
       label: Ranking
+    rating:
+      field: Rating
+      label: Rating %{rating} of %{max}
+      star_one: 1 star
+      star_other: "%{n} stars"
     review_card:
       rating: Rated %{rating} out of 5
     scan_radar:

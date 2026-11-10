@@ -106,7 +106,13 @@ class SsReorderableList extends StatelessWidget {
     this.physics,
     this.header,
     this.footer,
+    this.primary,
   });
+
+  /// v0.16: `false` dentro de um `NestedScrollView` (aba com cabeçalho que
+  /// encolhe): a lista não pega o `PrimaryScrollController` e a rolagem não
+  /// vaza para o de fora. Nulo = o padrão do Flutter.
+  final bool? primary;
 
   final int itemCount;
 
@@ -150,6 +156,7 @@ class SsReorderableList extends StatelessWidget {
       padding: padding,
       shrinkWrap: shrinkWrap,
       physics: physics,
+      primary: primary,
       header: header,
       footer: footer,
       buildDefaultDragHandles: false,

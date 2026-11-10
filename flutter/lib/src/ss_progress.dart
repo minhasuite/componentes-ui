@@ -164,12 +164,26 @@ class _BarPainter extends CustomPainter {
 /// Categorias numa barra só ([parts]: `(valor, rótulo, cor?)`), com legenda
 /// e % em DM Mono. Tocar numa parte (na barra ou na legenda) destaca ela e
 /// apaga as outras; tocar de novo desfaz. Sem cor: a paleta da suíte.
+///
+/// v0.16: [onDark] para o herói em gradiente (trilha translúcida, legenda
+/// clara e as cores da paleta clareadas); [legendValue] `count` troca o "%"
+/// pela contagem antes do rótulo ("3 vencidos", "9 em dia") e esconde as
+/// partes zeradas da legenda.
 class SsProportionBar extends StatefulWidget {
-  const SsProportionBar({super.key, required this.parts, this.legend = true, this.height = 14});
+  const SsProportionBar({
+    super.key,
+    required this.parts,
+    this.legend = true,
+    this.height = 14,
+    this.onDark = false,
+    this.legendValue = SsLegendValue.percent,
+  });
 
   final List<(double, String, Color?)> parts;
   final bool legend;
   final double height;
+  final bool onDark;
+  final SsLegendValue legendValue;
 
   @override
   State<SsProportionBar> createState() => _SsProportionBarState();
@@ -186,7 +200,10 @@ class _SsProportionBarState extends State<SsProportionBar> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final paleta = c.series;
+    final escuro = widget.onDark;
+    final paleta = [for (final cor in c.series) escuro ? ssMix(cor, AppColors.onDark, .45) : cor];
+    final contagem = widget.legendValue == SsLegendValue.count;
+    final f = SsFormats.of(context);
     final total = widget.parts.fold<double>(0, (s, p) => s + math.max(0, p.$1));
     final partes = [
       for (var i = 0; i < widget.parts.length; i++)
@@ -198,6 +215,9 @@ class _SsProportionBarState extends State<SsProportionBar> {
         ),
     ];
     Color tom(int i) => _sel == null || _sel == i ? partes[i].$3 : partes[i].$3.withValues(alpha: .3);
+    String rotulo(int i) => contagem ? '${f.qty(partes[i].$1)} ${partes[i].$2}' : '${partes[i].$2}: ${partes[i].$4}%';
+    final tinta = escuro ? AppColors.onDark : c.ink2;
+    final apagado = escuro ? AppColors.onDarkSoft : c.muted;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +227,7 @@ class _SsProportionBarState extends State<SsProportionBar> {
           borderRadius: BorderRadius.circular(AppRadius.pill),
           child: Container(
             height: widget.height,
-            color: c.field,
+            color: escuro ? AppColors.onDark.withValues(alpha: .2) : c.field,
             alignment: Alignment.centerLeft,
             child: SsTweenInView(
               end: 1,
@@ -221,7 +241,7 @@ class _SsProportionBarState extends State<SsProportionBar> {
                         child: Semantics(
                           button: true,
                           selected: _sel == i,
-                          label: '${partes[i].$2}: ${partes[i].$4}%',
+                          label: rotulo(i),
                           excludeSemantics: true,
                           child: GestureDetector(
                             onTap: () => _toca(i),
@@ -245,43 +265,58 @@ class _SsProportionBarState extends State<SsProportionBar> {
             runSpacing: 6,
             children: [
               for (var i = 0; i < partes.length; i++)
-                Semantics(
-                  button: true,
-                  selected: _sel == i,
-                  label: '${partes[i].$2}: ${partes[i].$4}%',
-                  excludeSemantics: true,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => _toca(i),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(color: tom(i), shape: BoxShape.circle),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            partes[i].$2,
-                            style: TextStyle(
-                              fontSize: AppType.meta,
-                              fontWeight: _sel == i ? FontWeight.w800 : FontWeight.w600,
-                              color: _sel == null || _sel == i ? c.ink2 : c.muted,
+                if (!contagem || partes[i].$1 > 0)
+                  Semantics(
+                    button: true,
+                    selected: _sel == i,
+                    label: rotulo(i),
+                    excludeSemantics: true,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _toca(i),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(color: tom(i), shape: BoxShape.circle),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            '${partes[i].$4}%',
-                            style: AppTheme.number(context, size: AppType.meta, color: c.muted),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            if (contagem) ...[
+                              Text(
+                                f.qty(partes[i].$1),
+                                style: AppTheme.number(
+                                  context,
+                                  size: AppType.meta,
+                                  weight: FontWeight.w700,
+                                  color: tinta,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              partes[i].$2,
+                              style: TextStyle(
+                                fontSize: AppType.meta,
+                                fontWeight: _sel == i || contagem ? FontWeight.w800 : FontWeight.w600,
+                                color: _sel == null || _sel == i ? tinta : apagado,
+                              ),
+                            ),
+                            if (!contagem) ...[
+                              const SizedBox(width: 5),
+                              Text(
+                                '${partes[i].$4}%',
+                                style: AppTheme.number(context, size: AppType.meta, color: apagado),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
             ],
           ),
         ],
@@ -378,4 +413,13 @@ class _LoaderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LoaderPainter old) => old.cores != cores || old.track != track || old.parado != parado;
+}
+
+/// O que a legenda do [SsProportionBar] mostra ao lado do rótulo (v0.16).
+enum SsLegendValue {
+  /// "Mercado 42%" (padrão).
+  percent,
+
+  /// "3 vencidos": a contagem antes do rótulo; partes zeradas saem da legenda.
+  count,
 }

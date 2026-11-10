@@ -374,6 +374,20 @@ class SsStrings {
     required this.chatCancelled,
     required this.chatFailed,
     required this.waitingElapsed,
+    required this.estimateLabel,
+    required this.removeItem,
+    required this.useCustom,
+    required this.enterQuantity,
+    required this.invalidNumber,
+    required this.notNegative,
+    required this.mustBePositive,
+    required this.invalidValue,
+    required this.ratingOf,
+    required this.starCount,
+    required this.recommended,
+    required this.included,
+    required this.notIncluded,
+    required this.attention,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -918,6 +932,48 @@ class SsStrings {
   /// v0.15.2: tempo decorrido no [ssRunBlocking] (`showElapsedAfter:`): "12 s · ainda trabalhando, não feche o app".
   final String Function(int seconds) waitingElapsed;
 
+  /// v0.16: tipo do [SsOfferCard] com `estimate: true` (montado por conta, não oferta de verdade).
+  final String estimateLabel;
+
+  /// v0.16: dica do ✕ do [SsInputChip]: "Remover Lisboa".
+  final String Function(String label) removeItem;
+
+  /// v0.16: linha do [showSsPicker] com `allowCustom`: "Usar “Feira do bairro”".
+  final String Function(String text) useCustom;
+
+  /// v0.16: [SsValidators.qty] vazio e obrigatório.
+  final String enterQuantity;
+
+  /// v0.16: [SsValidators.qty] com texto que não é número.
+  final String invalidNumber;
+
+  /// v0.16: [SsValidators.qty] negativo.
+  final String notNegative;
+
+  /// v0.16: [SsValidators.qty] com `allowZero: false` e zero ou menos.
+  final String mustBePositive;
+
+  /// v0.16: [SsValidators.moneyText] com texto que não é dinheiro.
+  final String invalidValue;
+
+  /// v0.16: [SsRating] para o leitor de tela: "Nota 4,5 de 5" (o `review_card.rating` da gem).
+  final String Function(String value, int max) ratingOf;
+
+  /// v0.16: cada estrela do [SsRating] editável: "3 estrelas".
+  final String Function(int n) starCount;
+
+  /// v0.16: fita da coluna recomendada do [SsCompareTable] (`compare_table.recommended`).
+  final String recommended;
+
+  /// v0.16: ✓ do [SsCompareTable] para o leitor de tela.
+  final String included;
+
+  /// v0.16: — do [SsCompareTable] para o leitor de tela.
+  final String notIncluded;
+
+  /// v0.16: [SsTimelineItem] com `alert: true` (conflito de horário) para o leitor de tela.
+  final String attention;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1298,6 +1354,20 @@ class SsStrings {
     chatCancelled: 'Cancelado',
     chatFailed: 'Não deu certo',
     waitingElapsed: (s) => '$s s · ainda trabalhando, não feche o app',
+    estimateLabel: 'Estimativa',
+    removeItem: (label) => 'Remover $label',
+    useCustom: (text) => 'Usar “$text”',
+    enterQuantity: 'Informe a quantidade',
+    invalidNumber: 'Número inválido',
+    notNegative: 'Não pode ser negativo',
+    mustBePositive: 'Precisa ser maior que zero',
+    invalidValue: 'Valor inválido',
+    ratingOf: (value, max) => 'Nota $value de $max',
+    starCount: (n) => n == 1 ? '1 estrela' : '$n estrelas',
+    recommended: 'Recomendado',
+    included: 'Incluído',
+    notIncluded: 'Não incluído',
+    attention: 'Atenção',
   );
 
   /// Inglês.
@@ -1666,6 +1736,20 @@ class SsStrings {
     chatCancelled: 'Cancelled',
     chatFailed: 'It did not work',
     waitingElapsed: (s) => "$s s · still working, don't close the app",
+    estimateLabel: 'Estimate',
+    removeItem: (label) => 'Remove $label',
+    useCustom: (text) => 'Use “$text”',
+    enterQuantity: 'Enter a quantity',
+    invalidNumber: 'Invalid number',
+    notNegative: 'Cannot be negative',
+    mustBePositive: 'Must be greater than zero',
+    invalidValue: 'Invalid amount',
+    ratingOf: (value, max) => 'Rating $value of $max',
+    starCount: (n) => n == 1 ? '1 star' : '$n stars',
+    recommended: 'Recommended',
+    included: 'Included',
+    notIncluded: 'Not included',
+    attention: 'Attention',
   );
 
   /// Espanhol.
@@ -2034,6 +2118,20 @@ class SsStrings {
     chatCancelled: 'Cancelado',
     chatFailed: 'No funcionó',
     waitingElapsed: (s) => '$s s · todavía trabajando, no cierres la app',
+    estimateLabel: 'Estimación',
+    removeItem: (label) => 'Quitar $label',
+    useCustom: (text) => 'Usar “$text”',
+    enterQuantity: 'Ingresa la cantidad',
+    invalidNumber: 'Número inválido',
+    notNegative: 'No puede ser negativo',
+    mustBePositive: 'Debe ser mayor que cero',
+    invalidValue: 'Valor inválido',
+    ratingOf: (value, max) => 'Nota $value de $max',
+    starCount: (n) => n == 1 ? '1 estrella' : '$n estrellas',
+    recommended: 'Recomendado',
+    included: 'Incluido',
+    notIncluded: 'No incluido',
+    attention: 'Atención',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2389,6 +2487,20 @@ class SsStrings {
     'chatCancelled': chatCancelled,
     'chatFailed': chatFailed,
     'waitingElapsed': waitingElapsed(12),
+    'estimateLabel': estimateLabel,
+    'removeItem': removeItem('X'),
+    'useCustom': useCustom('X'),
+    'enterQuantity': enterQuantity,
+    'invalidNumber': invalidNumber,
+    'notNegative': notNegative,
+    'mustBePositive': mustBePositive,
+    'invalidValue': invalidValue,
+    'ratingOf': ratingOf('4,5', 5),
+    'starCount': starCount(3),
+    'recommended': recommended,
+    'included': included,
+    'notIncluded': notIncluded,
+    'attention': attention,
   };
 
   /// Os idiomas prontos.
@@ -2779,6 +2891,20 @@ class SsStrings {
     String? chatCancelled,
     String? chatFailed,
     String Function(int seconds)? waitingElapsed,
+    String? estimateLabel,
+    String Function(String label)? removeItem,
+    String Function(String text)? useCustom,
+    String? enterQuantity,
+    String? invalidNumber,
+    String? notNegative,
+    String? mustBePositive,
+    String? invalidValue,
+    String Function(String value, int max)? ratingOf,
+    String Function(int n)? starCount,
+    String? recommended,
+    String? included,
+    String? notIncluded,
+    String? attention,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3131,6 +3257,20 @@ class SsStrings {
     chatCancelled: chatCancelled ?? this.chatCancelled,
     chatFailed: chatFailed ?? this.chatFailed,
     waitingElapsed: waitingElapsed ?? this.waitingElapsed,
+    estimateLabel: estimateLabel ?? this.estimateLabel,
+    removeItem: removeItem ?? this.removeItem,
+    useCustom: useCustom ?? this.useCustom,
+    enterQuantity: enterQuantity ?? this.enterQuantity,
+    invalidNumber: invalidNumber ?? this.invalidNumber,
+    notNegative: notNegative ?? this.notNegative,
+    mustBePositive: mustBePositive ?? this.mustBePositive,
+    invalidValue: invalidValue ?? this.invalidValue,
+    ratingOf: ratingOf ?? this.ratingOf,
+    starCount: starCount ?? this.starCount,
+    recommended: recommended ?? this.recommended,
+    included: included ?? this.included,
+    notIncluded: notIncluded ?? this.notIncluded,
+    attention: attention ?? this.attention,
   );
 }
 

@@ -84,3 +84,8 @@ export 'src/v15/chat_action.dart';
 export 'src/v15/icons.dart';
 export 'src/v15/privacy.dart';
 export 'src/v15/progress_row.dart';
+export 'src/v16/chart_legend.dart';
+export 'src/v16/compare_table.dart';
+export 'src/v16/diverging_bars.dart';
+export 'src/v16/input_chip.dart';
+export 'src/v16/rating.dart';

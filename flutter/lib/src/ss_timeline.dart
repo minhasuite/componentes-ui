@@ -10,6 +10,8 @@ import 'ss_strings.dart';
 /// Um passo do [SsTimeline]. [done] = já passou (nó cheio), [current] = é
 /// agora (anel que pulsa uma vez); nenhum dos dois = futuro (tracejado).
 /// [tone] troca a cor da marca do nó; [child] vai embaixo do texto.
+/// v0.16: [endTime] ("11:00") vai depois do [time] ("09:30 – 11:00") e
+/// [alert] (conflito de horário, atraso) pinta o horário de vermelho com um ⚠.
 class SsTimelineItem {
   const SsTimelineItem({
     required this.title,
@@ -20,7 +22,15 @@ class SsTimelineItem {
     this.done = false,
     this.current = false,
     this.child,
+    this.endTime,
+    this.alert = false,
   });
+
+  /// Fim do intervalo, depois do [time], apagado.
+  final String? endTime;
+
+  /// Horário em vermelho com ⚠ ("Atenção" para o leitor de tela).
+  final bool alert;
 
   final String title;
   final String? subtitle;
@@ -105,7 +115,7 @@ class _Linha extends StatelessWidget {
         ? s.stepNow
         : s.stepNext;
     return Semantics(
-      label: '${s.stepOf(index + 1, count)}, $estado',
+      label: '${s.stepOf(index + 1, count)}, $estado${item.alert ? ', ${s.attention}' : ''}',
       selected: item.current,
       child: IntrinsicHeight(
         child: Row(
@@ -132,16 +142,30 @@ class _Linha extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (item.time != null)
+                    if (item.time != null || item.alert)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 3),
-                        child: Text(
-                          item.time!,
-                          style: AppTheme.number(
-                            context,
-                            size: AppType.label,
-                            color: item.current ? c.accentText : c.muted,
-                          ),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 4,
+                          children: [
+                            if (item.alert) Icon(Icons.warning_amber_rounded, size: 14, color: c.dangerText),
+                            if (item.time != null)
+                              Text(
+                                item.time!,
+                                style: AppTheme.number(
+                                  context,
+                                  size: AppType.label,
+                                  weight: item.alert ? FontWeight.w700 : FontWeight.w500,
+                                  color: item.alert ? c.dangerText : (item.current ? c.accentText : c.muted),
+                                ),
+                              ),
+                            if (item.endTime != null)
+                              Text(
+                                '– ${item.endTime}',
+                                style: AppTheme.number(context, size: AppType.label, color: c.muted),
+                              ),
+                          ],
                         ),
                       ),
                     Text(

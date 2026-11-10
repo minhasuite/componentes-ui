@@ -28,6 +28,10 @@ import 'ss_list.dart';
 /// largura por [aspectRatio] (padrão 4:3); sem largura nem altura, fica em
 /// 96 × 96.
 ///
+/// v0.16: [placeholderColor] (a cor média da foto, vinda da API, ou a da
+/// categoria) troca as listras por um degradê dessa cor, com o ícone e as
+/// iniciais claros: a capa não pisca de cinza para colorido.
+///
 /// `SsNetImage(p.photoUrl, width: 56, height: 56, name: p.name)`
 class SsNetImage extends StatelessWidget {
   const SsNetImage(
@@ -42,6 +46,7 @@ class SsNetImage extends StatelessWidget {
     this.provider,
     this.image,
     this.aspectRatio,
+    this.placeholderColor,
   });
 
   /// Bytes de uma função assíncrona (imagem atrás de login, câmera):
@@ -59,6 +64,7 @@ class SsNetImage extends StatelessWidget {
     this.fallbackIcon = Icons.image_outlined,
     this.name,
     this.aspectRatio,
+    this.placeholderColor,
   }) : url = null,
        provider = null,
        image = SsBytesImage(load, cacheKey: cacheKey);
@@ -83,6 +89,10 @@ class SsNetImage extends StatelessWidget {
   /// Largura ÷ altura quando não há altura (nem [height] nem limite de fora).
   /// Padrão: 4:3.
   final double? aspectRatio;
+
+  /// Fundo do vazio (carregando, erro, sem foto): degradê desta cor no lugar
+  /// das listras.
+  final Color? placeholderColor;
 
   /// Lado quando não há largura nem altura.
   static const fallbackSize = 96.0;
@@ -121,7 +131,7 @@ class SsNetImage extends StatelessWidget {
           height: height,
           child: LayoutBuilder(
             builder: (context, box) {
-              final placeholder = _Striped(icon: fallbackIcon, name: name);
+              final placeholder = _Striped(icon: fallbackIcon, name: name, color: placeholderColor);
               final u = url?.trim() ?? '';
               if (image == null && u.isEmpty) return placeholder;
               final w = width ?? (box.hasBoundedWidth ? box.maxWidth : null);
@@ -191,9 +201,12 @@ class SsBytesImage extends ImageProvider<SsBytesImage> {
 }
 
 class _Striped extends StatelessWidget {
-  const _Striped({required this.icon, this.name});
+  const _Striped({required this.icon, this.name, this.color});
   final IconData icon;
   final String? name;
+
+  /// Com cor: degradê dela (até 35% mais escura) e ícone/iniciais claros.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -202,18 +215,33 @@ class _Striped extends StatelessWidget {
       builder: (context, box) {
         final side = math.min(box.hasBoundedWidth ? box.maxWidth : 48.0, box.hasBoundedHeight ? box.maxHeight : 48.0);
         final n = name?.trim() ?? '';
+        final cor = color;
+        final tinta = cor == null ? c.muted : AppColors.onDarkIcon;
+        final miolo = SizedBox.expand(
+          child: Center(
+            child: n.isEmpty
+                ? Icon(icon, color: tinta, size: side * .4)
+                : Text(
+                    SsAvatar.initials(n),
+                    style: TextStyle(color: tinta, fontSize: side * .32, fontWeight: FontWeight.w800, height: 1),
+                  ),
+          ),
+        );
+        if (cor != null) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [cor, ssMix(cor, AppColors.scrim, .35)],
+              ),
+            ),
+            child: miolo,
+          );
+        }
         return CustomPaint(
           painter: _StripePainter(c.field, Color.alphaBlend(c.ink.withValues(alpha: .05), c.field)),
-          child: SizedBox.expand(
-            child: Center(
-              child: n.isEmpty
-                  ? Icon(icon, color: c.muted, size: side * .4)
-                  : Text(
-                      SsAvatar.initials(n),
-                      style: TextStyle(color: c.muted, fontSize: side * .32, fontWeight: FontWeight.w800, height: 1),
-                    ),
-            ),
-          ),
+          child: miolo,
         );
       },
     );

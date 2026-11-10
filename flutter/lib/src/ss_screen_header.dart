@@ -79,6 +79,12 @@ class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
 /// [summary] (ex.: total do mês em SsAmount) fica sempre na barra; [bottom]
 /// (ex.: SsChipBar, SsSegmented) fica preso embaixo, com [bottomHeight].
 /// Respeita a área segura de cima.
+///
+/// v0.16: com [background] (capa com foto, herói do registro), a área grande
+/// mostra esse widget (altura [backgroundHeight]) no lugar do título grande;
+/// o título fica sempre na barra, a capa sobe e some ao rolar e o [bottom]
+/// (abas) continua preso. Dentro de um `NestedScrollView`, vai num
+/// `SliverOverlapAbsorber` como o `SliverAppBar`.
 class SsSliverHeader extends StatelessWidget {
   const SsSliverHeader({
     super.key,
@@ -91,9 +97,17 @@ class SsSliverHeader extends StatelessWidget {
     this.leading,
     this.titleLeading,
     this.titleWidget,
+    this.background,
+    this.backgroundHeight = 180,
   });
 
   final String title;
+
+  /// Capa entre a barra e o [bottom] (foto com gradiente, cartão do registro).
+  final Widget? background;
+
+  /// Altura da capa aberta (sem a barra e sem o [bottom]).
+  final double backgroundHeight;
 
   /// Antes do título grande (ícone tonal, avatar, herói pequeno): até 40 px
   /// de altura, centrado no bloco do título. Some junto com o título ao rolar.
@@ -158,7 +172,8 @@ class _Delegate extends SliverPersistentHeaderDelegate {
   final bool reduce;
   final SsColors c;
 
-  double get _large => (header.subtitle == null ? 52 : 74) * math.max(1, scale);
+  double get _large =>
+      header.background != null ? header.backgroundHeight : (header.subtitle == null ? 52 : 74) * math.max(1, scale);
   double get _bottom => header.bottom == null ? 0 : header.bottomHeight;
 
   @override
@@ -171,8 +186,9 @@ class _Delegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final t = (shrinkOffset / _large).clamp(0.0, 1.0);
     // O título pequeno só entra quando o grande já quase saiu.
-    final small = ((t - .6) / .4).clamp(0.0, 1.0);
     final h = header;
+    final capa = h.background != null;
+    final small = capa ? 1.0 : ((t - .6) / .4).clamp(0.0, 1.0);
     return Material(
       color: Theme.of(context).scaffoldBackgroundColor,
       shape: Border(
@@ -180,50 +196,71 @@ class _Delegate extends SliverPersistentHeaderDelegate {
       ),
       child: Stack(
         children: [
-          Positioned(
-            left: 20,
-            right: 20,
-            top: top + _bar - shrinkOffset.clamp(0, _large),
-            height: _large,
-            child: Opacity(
-              opacity: 1 - t,
-              child: Semantics(
-                header: true,
-                label: h.titleWidget == null ? null : h.title,
-                child: h.titleWidget != null
-                    ? Align(alignment: Alignment.centerLeft, child: h.titleWidget)
-                    : _comLeading(
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              h.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: c.ink,
-                                fontSize: AppType.screenTitle,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.01 * AppType.screenTitle,
-                                height: 1.2,
-                              ),
-                            ),
-                            if (h.subtitle != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  h.subtitle!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+          if (capa)
+            // A capa sobe por baixo da barra (recortada embaixo dela) e apaga no fim.
+            Positioned(
+              left: 0,
+              right: 0,
+              top: top + _bar,
+              height: math.max(0.0, _large - shrinkOffset),
+              child: ClipRect(
+                child: OverflowBox(
+                  minHeight: _large,
+                  maxHeight: _large,
+                  alignment: Alignment.bottomCenter,
+                  child: Opacity(opacity: reduce ? (t < 1 ? 1 : 0) : 1 - t * t, child: h.background),
+                ),
+              ),
+            )
+          else
+            Positioned(
+              left: 20,
+              right: 20,
+              top: top + _bar - shrinkOffset.clamp(0, _large),
+              height: _large,
+              child: Opacity(
+                opacity: 1 - t,
+                child: Semantics(
+                  header: true,
+                  label: h.titleWidget == null ? null : h.title,
+                  child: h.titleWidget != null
+                      ? Align(alignment: Alignment.centerLeft, child: h.titleWidget)
+                      : _comLeading(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                h.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: c.ink,
+                                  fontSize: AppType.screenTitle,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.01 * AppType.screenTitle,
+                                  height: 1.2,
                                 ),
                               ),
-                          ],
+                              if (h.subtitle != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    h.subtitle!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: c.muted,
+                                      fontSize: AppType.sub,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
+                ),
               ),
             ),
-          ),
           Positioned(
             left: 0,
             right: 0,

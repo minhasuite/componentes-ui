@@ -18,6 +18,10 @@ Regras de acessibilidade (falha se quebrar):
   accent sólido (--accent-solid / SsBrand.accentSolid*: preenchimento de checkbox,
   rádio, switch e botão sólido) com texto branco ≥ 4,5:1, no claro e no escuro.
 Só avisa: accent sobre o próprio soft (selo) abaixo de 4,5 e brandTo sob texto branco abaixo de 3.
+
+Alto contraste (v0.16, data-ss-contrast="high" no web; SsBrand.highContrast() no Flutter, mesma
+conta): accent claro puxado para o preto e escuro para o branco, em passos de 5%, até 7:1 (AAA)
+sobre todos os fundos e o suave da marca; accent sólido até 7:1 com texto branco.
 """
 import json
 import re
@@ -113,6 +117,24 @@ def accent_solido(p):
                 escuro = c
                 break
     return claro, escuro
+
+
+def ate_contraste(cor, alvo, fundos, minimo):
+    """cor puxada para alvo em passos de 5% até passar minimo:1 sobre todos os fundos
+    (a mesma conta do ssUntilContrast do Flutter)."""
+    for i in range(21):
+        c = mistura(cor, alvo, i / 20)
+        if all(contraste(c, f) >= minimo for f in fundos):
+            return c
+    return alvo
+
+
+def alto_contraste(p):
+    """(accent claro, hover claro, sólido claro, accent escuro, hover escuro, sólido escuro) do alto contraste."""
+    claro = ate_contraste(p["accentLight"], "#000000", [*FUNDOS_CLAROS.values(), p["accentSoftLight"]], 7)
+    escuro = ate_contraste(p["accentDark"], "#ffffff", [*FUNDOS_ESCUROS.values(), p["accentSoftDark"]], 7)
+    solido_claro, solido_escuro = (ate_contraste(c, "#000000", ["#ffffff"], 7) for c in accent_solido(p))
+    return claro, mistura(claro, "#000000", .14), solido_claro, escuro, mistura(escuro, "#ffffff", .2), solido_escuro
 
 
 def grad_rails(p):
@@ -295,6 +317,31 @@ def css(familias, paletas):
     out += ["", "/* …e preferência do sistema (mesmos valores). */", "@media (prefers-color-scheme: dark) {"]
     for p in outras:
         out.append(f'  :root:not([data-theme="light"])[data-palette="{p["slug"]}"] {{ {escuro(p)} }}')
+    out.append("}")
+    out.append("")
+
+    # Alto contraste: no <html> ou num contêiner (data-ss-contrast="high"), de todas as paletas.
+    def sel(base, p):
+        pal = (':is(:not([data-palette]), [data-palette="violeta"])' if p.get("padrao") else f'[data-palette="{p["slug"]}"]')
+        return f'{base}{pal}[data-ss-contrast="high"], {base}{pal} [data-ss-contrast="high"]'
+
+    def hc(p, escuro):
+        cl, hcl, scl, es, hes, ses = alto_contraste(p)
+        acc, hov, sol = (es, hes, ses) if escuro else (cl, hcl, scl)
+        return (f"--accent: {acc}; --accent-hover: {hov}; --accent-solid: {sol}; "
+                f"--grad: linear-gradient(135deg, {hcl} 0%, {cl} 100%); --ring: {rgba(acc, '.3')};")
+
+    out += ["/* Alto contraste (v0.16, par do AppTheme.build(highContrast: true)): data-ss-contrast=\"high\" no <html>",
+            "   ou num contêiner. Accent a 7:1 (AAA) sobre os fundos, sólido e --grad a 7:1 com texto branco; o",
+            "   texto apagado e as linhas ficam no v16_web.css. Claro: */"]
+    for p in paletas:
+        out.append(f'{sel(":root:not([data-theme=\"dark\"])", p)} {{ {hc(p, False)} }}')
+    out += ["/* …escuro explícito… */"]
+    for p in paletas:
+        out.append(f'{sel(":root[data-theme=\"dark\"]", p)} {{ {hc(p, True)} }}')
+    out += ["/* …e escuro do sistema. */", "@media (prefers-color-scheme: dark) {"]
+    for p in paletas:
+        out.append(f'  {sel(":root:not([data-theme=\"light\"])", p)} {{ {hc(p, True)} }}')
     out.append("}")
     out.append("")
     return "\n".join(out)

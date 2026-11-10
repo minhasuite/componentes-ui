@@ -37,6 +37,67 @@ abstract final class SsValidators {
     if (n == null) return s.enterNumber;
     return n < min || n > max ? s.numberRange(min, max) : null;
   };
+
+  /// v0.16: quantidade em texto ("1,5", "2.25"; vírgula ou ponto, o [parseQty]).
+  /// Vazio só passa sem [required]; negativo nunca; zero só com [allowZero].
+  /// `validator: (v) => SsValidators.qty(v, allowZero: false)`.
+  static String? qty(String? text, {bool required = true, bool allowZero = true, SsStrings? strings}) {
+    final s = strings ?? SsStrings.pt;
+    final t = (text ?? '').trim();
+    if (t.isEmpty) return required ? s.enterQuantity : null;
+    final v = parseQty(t);
+    if (v == null) return s.invalidNumber;
+    if (v < 0) return s.notNegative;
+    if (!allowZero && v == 0) return s.mustBePositive;
+    return null;
+  }
+
+  /// v0.16: dinheiro digitado num campo de texto comum ("12,50", "R\$ 1.234,56",
+  /// pelo [parseMoney]). Vazio passa, a menos que [required]. `validator: SsValidators.moneyText`.
+  static String? moneyText(String? text, {bool required = false, SsStrings? strings, SsFormats? formats}) {
+    final s = strings ?? SsStrings.pt;
+    final t = (text ?? '').trim();
+    if (t.isEmpty) return required ? s.enterAmount : null;
+    return parseMoney(t, formats) == null ? s.invalidValue : null;
+  }
+}
+
+/// v0.16: o calendário do pacote fora do [SsDateField] (chip, linha, botão):
+/// textos do [SsStrings] (título, Cancelar, Confirmar, idioma do calendário),
+/// a data inicial presa entre [firstDate] e [lastDate] (padrão 2000–2100) e o
+/// tema do app. Devolve o dia (sem hora) ou nulo se cancelar. No lugar do
+/// `showDatePicker` cru.
+///
+/// `final d = await showSsDatePicker(context, initialDate: item.expiresOn, firstDate: hoje)`
+Future<DateTime?> showSsDatePicker(
+  BuildContext context, {
+  DateTime? initialDate,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  String? helpText,
+  String? confirmText,
+  String? cancelText,
+  DatePickerEntryMode initialEntryMode = DatePickerEntryMode.calendar,
+  bool Function(DateTime day)? selectableDayPredicate,
+}) {
+  final s = SsStrings.of(context);
+  final first = DateUtils.dateOnly(firstDate ?? DateTime(2000));
+  final last = DateUtils.dateOnly(lastDate ?? DateTime(2100));
+  var inicial = DateUtils.dateOnly(initialDate ?? DateTime.now());
+  if (inicial.isBefore(first)) inicial = first;
+  if (inicial.isAfter(last)) inicial = last;
+  return showDatePicker(
+    context: context,
+    initialDate: inicial,
+    firstDate: first,
+    lastDate: last,
+    locale: s.locale,
+    helpText: helpText ?? s.pickDate,
+    confirmText: confirmText ?? s.confirm,
+    cancelText: cancelText ?? s.cancel,
+    initialEntryMode: initialEntryMode,
+    selectableDayPredicate: selectableDayPredicate,
+  );
 }
 
 /// Rótulo acima dos campos `Ss*` (o mesmo de [SsTextField]). Público para o
@@ -792,18 +853,11 @@ class SsDateField extends StatelessWidget {
   DateTime _comHora(DateTime d) => _hora ? DateTime(d.year, d.month, d.day, value?.hour ?? 9, value?.minute ?? 0) : d;
 
   Future<void> _outra(BuildContext context) async {
-    final hoje = DateUtils.dateOnly(DateTime.now());
-    final first = firstDate ?? DateTime(2000);
-    final last = lastDate ?? DateTime(2100);
-    var inicial = value ?? initialDate ?? hoje;
-    if (inicial.isBefore(first)) inicial = first;
-    if (inicial.isAfter(last)) inicial = last;
-    final d = await showDatePicker(
-      context: context,
-      initialDate: inicial,
-      firstDate: first,
-      lastDate: last,
-      locale: SsStrings.of(context).locale,
+    final d = await showSsDatePicker(
+      context,
+      initialDate: value ?? initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (d != null) onChanged(_comHora(d));
   }

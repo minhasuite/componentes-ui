@@ -1,0 +1,115 @@
+/* v0.16 · o que a migração do minhas-compras e do minhas-viagens pediu: legenda de gráfico, barras
+   divergentes, estrelas editáveis, tabela de comparação com o melhor valor, etiqueta e chip que não
+   estouram, a série em variante de texto, o alto contraste e os ajustes do minigráfico, do anel em
+   gomos, da proporção e da linha do tempo. Tudo aditivo; cor só por token. */
+
+/* Série em variante de texto (par do SsColors.seriesInk): a cor da série puxada para a tinta
+   (mais escura no claro, mais clara no escuro) para texto, carimbo ou ícone pequeno. */
+:root, [data-theme] {
+  --series-ink-1: color-mix(in srgb, var(--series-1), var(--ink) 45%);
+  --series-ink-2: color-mix(in srgb, var(--series-2), var(--ink) 45%);
+  --series-ink-3: color-mix(in srgb, var(--series-3), var(--ink) 45%);
+  --series-ink-4: color-mix(in srgb, var(--series-4), var(--ink) 45%);
+  --series-ink-5: color-mix(in srgb, var(--series-5), var(--ink) 45%);
+  --series-ink-6: color-mix(in srgb, var(--series-6), var(--ink) 45%);
+}
+
+/* Alto contraste (par do AppTheme.build(highContrast: true)): o accent vem do paletas.css (gerado);
+   aqui o texto apagado sobe para o --ink-2 e as linhas ficam mais fortes. <html> ou contêiner. */
+html:root[data-ss-contrast="high"], [data-ss-contrast="high"]:not(:root) {
+  --muted: var(--ink-2);
+  --line: color-mix(in srgb, var(--ink) 24%, var(--surface));
+}
+
+@layer components {
+  /* Legenda (Ss::ChartLegendComponent ↔ SsChartLegend): <ul class="ss-legend"><li style="--c:…"><i></i><span>Rótulo</span><b class="num">valor</b></li></ul>. */
+  .ss-legend { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: 0; padding: 0; list-style: none; font-size: calc(.78rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink-2); }
+  .ss-legend li { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; max-width: 100%; }
+  .ss-legend i { flex: none; width: .55rem; height: .55rem; border-radius: 50%; background: var(--c, var(--accent)); }
+  .ss-legend li.is-line i { width: .9rem; height: .2rem; border-radius: 2px; }
+  .ss-legend li.is-dashed i { background: linear-gradient(90deg, var(--c) 0 35%, transparent 35% 65%, var(--c) 65%); }
+  .ss-legend span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-legend b { font: 500 calc(.76rem * var(--ss-font-scale)) var(--font-mono); color: var(--muted); white-space: nowrap; }
+
+  /* Barras divergentes (Ss::DivergingBarsComponent ↔ SsDivergingBars). --f = |valor| / maior. */
+  .ss-diverging { display: grid; gap: calc(var(--ss-gap) * .9); margin: 0; padding: 0; list-style: none; }
+  .ss-diverging li { display: grid; gap: .2rem; }
+  .ss-diverging-head { display: flex; align-items: baseline; gap: .5rem; }
+  .ss-diverging-head b { flex: 1; min-width: 0; font-size: calc(.88rem * var(--ss-font-scale)); font-weight: 700; color: var(--ink); }
+  .ss-diverging-head span { font-size: calc(.78rem * var(--ss-font-scale)); white-space: nowrap; }
+  .ss-diverging small { font-size: calc(.76rem * var(--ss-font-scale)); color: var(--muted); }
+  .ss-diverging-bar { position: relative; height: .5rem; margin-top: .15rem; border-radius: 999px; background: var(--field); }
+  .ss-diverging-bar::after { content: ""; position: absolute; left: calc(50% - .75px); top: -2px; bottom: -2px; width: 1.5px; background: var(--line); }
+  .ss-diverging-bar i { position: absolute; top: 0; bottom: 0; width: calc(var(--f) * 50%); border-radius: 999px; background: var(--muted);
+                        animation: ss-div-grow .6s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+  .ss-diverging [data-side="up"] i { left: 50%; transform-origin: left; }
+  .ss-diverging [data-side="down"] i { right: 50%; transform-origin: right; }
+  .ss-diverging [data-tone="bad"] i { background: var(--danger); }
+  .ss-diverging [data-tone="good"] i { background: var(--success); }
+  .ss-diverging [data-tone="bad"] .ss-diverging-head span { color: var(--danger); }
+  .ss-diverging [data-tone="good"] .ss-diverging-head span { color: var(--success); }
+  .ss-diverging [data-tone="flat"] .ss-diverging-head span { color: var(--muted); }
+  .ss-iv:not([data-in-view]) .ss-diverging-bar i, .ss-diverging.ss-iv:not([data-in-view]) .ss-diverging-bar i { animation-play-state: paused; }
+
+  /* Estrelas: .ss-stars aceita --max (padrão 5) e --star-size; .ss-rating é o campo (rádios). */
+  .ss-stars { width: calc(var(--max, 5) * var(--star-size, 1.2rem)); height: var(--star-size, 1.2rem);
+              background: linear-gradient(90deg, var(--star) calc(var(--v) / var(--max, 5) * 100%), var(--line) 0);
+              mask-size: var(--star-size, 1.2rem) var(--star-size, 1.2rem); }
+  .ss-rating { --star: color-mix(in oklab, #f5a524 65%, var(--warn)); display: inline-flex; gap: .1rem; margin: 0; padding: 0; border: 0; }
+  .ss-rating input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .ss-rating label { display: grid; place-items: center; min-width: 2.25rem; min-height: 2.75rem; cursor: pointer; color: var(--line); border-radius: 10px;
+                     transition: color .15s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-rating label svg { width: var(--star-size, 1.2rem); height: var(--star-size, 1.2rem); fill: currentColor; }
+  .ss-rating label:has(~ input:checked), .ss-rating input:checked + label { color: var(--star); }
+  .ss-rating:hover label { color: var(--line); }
+  .ss-rating:hover label:hover, .ss-rating:hover label:has(~ label:hover) { color: var(--star); }
+  .ss-rating label:active { scale: .85; transition: scale 80ms ease-out; }
+  .ss-rating input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* Oferta completa (par do SsOfferCard v0.16): tipo, unidade, economia, selos, linha pequena, ações,
+     preço no alvo (.is-hit) e estimativa montada por conta (.is-estimate: tracejado e fundo de campo). */
+  .ss-offer-kind { font-size: .66rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .ss-offer-unit { font-size: .74rem; font-weight: 600; color: var(--muted); }
+  .ss-offer-savings { font-size: .78rem; font-weight: 800; color: var(--success); }
+  .ss-offer-savings.is-bad { color: var(--muted); }
+  .ss-offer-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .25rem; }
+  .ss-offer-meta { font-size: .72rem; color: var(--muted); }
+  .ss-offer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .25rem; }
+  .ss-offer.is-hit .ss-offer-price { color: var(--success); }
+  .ss-offer.is-estimate { background: var(--field); box-shadow: none; border: 1.5px dashed var(--muted); }
+  .ss-offer.is-estimate .ss-offer-price::before { content: "≈ "; }
+
+  /* Comparação: célula do melhor valor (best:) em verde. */
+  .ss-compare-t td.is-best > span { color: var(--success); font-weight: 700; }
+
+  /* Etiqueta removível (.ss-tag ↔ SsInputChip): ícone antes e rótulo com reticências. */
+  .ss-tag { max-width: 100%; min-width: 0; }
+  .ss-tag > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-tag > svg { flex: none; width: 1rem; height: 1rem; margin-right: .1rem; }
+  /* Chip com o texto num <span>: termina em … em vez de estourar (par do SsFilterChip). */
+  .ss-chip { max-width: 100%; }
+  .ss-chip > span:not(.ss-chip-count, .ss-chip-swatch) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Minigráfico: alvo tracejado (target:) e o menor valor (mark_min:). */
+  .ss-spark .target { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; vector-effect: non-scaling-stroke; }
+  .ss-spark .min { fill: var(--success); }
+
+  /* Anel em gomos com warn_at: âmbar quando falta pouco, vermelho no zero. */
+  .ss-countdown[data-tone="warn"]::before { background: conic-gradient(var(--warn) calc(var(--left) / var(--n) * 360deg), var(--line) 0); }
+  .ss-countdown[data-tone="warn"] b { color: var(--warn); }
+  .ss-countdown[data-tone="over"] b { color: var(--danger); }
+
+  /* Proporção sobre o gradiente do herói (par do SsProportionBar(onDark:)). */
+  .ss-proportion.is-on-dark > div { background: rgb(255 255 255 / .2); }
+  .ss-proportion.is-on-dark ul, .ss-proportion.is-on-dark li b { color: #fff; }
+  .ss-proportion.is-on-dark li b { opacity: .85; }
+
+  /* Linha do tempo: horário (<time>, com fim) e o passo em alerta (.is-alert, conflito). */
+  .ss-timeline time { display: block; margin-bottom: .1rem; font: 500 .74rem var(--font-mono); color: var(--muted); }
+  .ss-timeline .is-alert time { color: var(--danger); font-weight: 700; }
+  .ss-timeline .is-alert time::before { content: "⚠ "; }
+  .ss-timeline .is-alert::before { border-color: var(--danger); }
+}
+
+@keyframes ss-div-grow { from { scale: 0 1; } }
+@media (prefers-reduced-motion: reduce) { .ss-diverging-bar i { animation: none; } }

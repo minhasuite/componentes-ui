@@ -416,6 +416,11 @@ es:
       label: Columna lateral
     rank_list:
       label: Ranking
+    rating:
+      field: Nota
+      label: Nota %{rating} de %{max}
+      star_one: 1 estrella
+      star_other: "%{n} estrellas"
     review_card:
       rating: Nota %{rating} de 5
     scan_radar:

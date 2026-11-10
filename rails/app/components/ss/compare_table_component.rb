@@ -4,6 +4,8 @@ module Ss
   #   render Ss::CompareTableComponent.new(caption: "Planos",
   #     plans: [{ name: "Grátis", price: "R$ 0" }, { name: "Pro", price: "R$ 19,90/mês", recommended: true }],
   #     features: [{ label: "Lançamentos", values: ["50/mês", "Ilimitado"] }, { label: "IA", values: [false, true] }])
+  # v0.16 (par do SsCompareTable): best: índice da coluna cuja célula dessa linha sai em verde (o menor
+  # total); mono: false tira o DM Mono do texto da linha (fuso, visto).
   class CompareTableComponent < BaseComponent
     YES = %(<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>).freeze
 
@@ -39,15 +41,15 @@ module Ss
 
     def feature(f)
       tag.tr do
-        safe_join([tag.th(f[:label], scope: "row"), *f[:values].each_with_index.map { |v, i| tag.td(value(v), class: ("is-rec" if rec?(i))) }])
+        safe_join([tag.th(f[:label], scope: "row"), *f[:values].each_with_index.map { |v, i| tag.td(value(v, mono: f.fetch(:mono, true)), class: [("is-rec" if rec?(i)), ("is-best" if f[:best] == i)].compact.join(" ").presence) }])
       end
     end
 
-    def value(v)
+    def value(v, mono: true)
       case v
       when true then tag.span(safe_join([YES.html_safe, tag.span(ss_t("compare_table.included", default: "Incluído"), class: "ss-sr")]), class: "ss-compare-yes")
       when false, nil then tag.span(safe_join([tag.span("—", "aria-hidden": true), tag.span(ss_t("compare_table.not_included", default: "Não incluído"), class: "ss-sr")]), class: "ss-compare-no")
-      else tag.span(v, class: "num")
+      else tag.span(v, class: ("num" if mono))
       end
     end
   end

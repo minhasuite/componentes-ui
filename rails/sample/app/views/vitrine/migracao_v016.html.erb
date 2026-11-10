@@ -1,0 +1,54 @@
+<%# titulo: Legenda, barras divergentes, estrelas, comparação, alto contraste e ajustes | grupo: Compras e viagens (v0.16) | ordem: 10 %>
+<%# v0.16: etapa 5 da migração do minhas-compras e do minhas-viagens. Pares Flutter no README (SsChartLegend, SsDivergingBars, SsRating, SsCompareTable, AppTheme.build(highContrast:), SsColors.seriesInk, SsInputChip, SsSparkline(target:, markMin:), SsCountdownRing(warnAt:), SsTimelineItem(endTime:, alert:)). %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::ChartLegendComponent", "Cor da série, rótulo e valor opcional; line:/dashed: para série de linha e alvo. Par: SsChartLegend.",
+           uso: 'render Ss::ChartLegendComponent.new(items: [{ label: "menor", value: ss_money(2148), tone: :success }, { label: "alvo", tone: :muted, line: true, dashed: true }])' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <div style="color:var(--accent)"><%= ss_sparkline([329, 312, 298, 305, 279, 301, 318], height: 56, target: 290, mark_min: true) %></div>
+      <%= render Ss::ChartLegendComponent.new(items: [{ label: "Atacadão" }, { label: "menor", value: ss_money(279), tone: :success }, { label: "alvo", value: ss_money(290), tone: :muted, line: true, dashed: true }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::DivergingBarsComponent", "Subiu à direita (vermelho), caiu à esquerda (verde), proporcional ao maior; up_is_good: true inverte. Par: SsDivergingBars.",
+           uso: 'render Ss::DivergingBarsComponent.new(unit: "p.p.", items: [{ label: "Café", value: 1.8, detail: "+32%" }, { label: "Tomate", value: -0.6 }])' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::DivergingBarsComponent.new(unit: "p.p.", items: [{ label: "Café torrado", value: 1.8, detail: "+32% · 9% da cesta" }, { label: "Azeite extra virgem", value: 0.9 }, { label: "Tomate", value: -0.6, detail: "−18%" }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::RatingComponent", "Leitura com meia (.ss-stars) e campo com um rádio por estrela (name:), sem JS. Par: SsRating.",
+           uso: 'render Ss::RatingComponent.new(value: 4.5) · render Ss::RatingComponent.new(name: "review[rating]", value: 3)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <%= render Ss::RatingComponent.new(value: 4.5) %>
+      <%= render Ss::RatingComponent.new(name: "nota", value: 3, size: :lg) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::CompareTableComponent(best:, mono:)", "best: pinta de verde a célula da coluna indicada; mono: false para texto. Par: SsCompareTable.",
+           uso: 'features: [{ label: "Total", values: [...], best: 1 }, { label: "Fuso", values: [...], mono: false }]' do %>
+    <%= render Ss::CompareTableComponent.new(caption: "Destinos", plans: [{ name: "Lisboa", price: "maio" }, { name: "Porto", price: "maio", recommended: true }],
+          features: [{ label: "Total", values: [ss_money(8000, precision: 0), ss_money(7200, precision: 0)], best: 1 }, { label: "Voo direto", values: [true, false] }, { label: "Fuso", values: ["+3 h", "+3 h"], mono: false }]) %>
+  <% end %>
+
+  <%= demo "data-ss-contrast=\"high\"", "Alto contraste gerado das paletas: accent a 7:1, texto apagado no --ink-2, linhas fortes. No <html> ou num contêiner. Par: AppTheme.build(highContrast: true).",
+           uso: '<html data-ss-contrast="high"> · <section data-ss-contrast="high">' do %>
+    <div style="display:grid;gap:.75rem">
+      <% [nil, "high"].each do |hc| %>
+        <div class="ss-card ss-card-pad" data-ss-contrast="<%= hc %>" style="display:grid;gap:.35rem">
+          <b><%= hc ? "Alto contraste" : "Normal" %></b><small style="color:var(--muted)">12 dias · 2 pessoas</small>
+          <div style="display:flex;gap:.5rem;align-items:center"><span class="ss-badge ss-badge-accent">Confirmada</span><button class="ss-btn ss-btn-primary ss-btn-sm">Ver roteiro</button></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Série em tinta, etiqueta, chip, anel e linha do tempo", "--series-ink-1..6 (par do SsColors.seriesInk), .ss-tag com ícone e …, .ss-chip com …, ss_countdown(warn_at:) e .ss-timeline com <time> e .is-alert.",
+           uso: 'color: var(--series-ink-2) · ss_countdown(total: 7, left: 2, warn_at: 2)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1rem">
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem 1rem"><% (1..6).each do |i| %><b style="color:var(--series-ink-<%= i %>)">Série <%= i %></b><% end %></div>
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;max-width:16rem"><span class="ss-tag"><%= ss_icon("location-marker", size: nil) %><span>Lisboa</span><button type="button" aria-label="Remover Lisboa">×</button></span><button class="ss-chip" aria-pressed="false"><span>Quanto gastei com café este ano?</span></button></div>
+      <div style="display:flex;gap:1rem"><% [6, 2, 0].each do |n| %><%= ss_countdown(total: 7, left: n, label: "dias", warn_at: 2) %><% end %></div>
+      <ol class="ss-timeline"><li class="is-done"><time>09:30 – 11:00</time><b>Voo GRU → LIS</b></li><li class="is-current is-alert"><time>10:45</time><b>Check-in</b><small>Conflita com o voo</small></li></ol>
+    </div>
+  <% end %>
+</div>

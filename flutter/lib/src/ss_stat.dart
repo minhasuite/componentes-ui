@@ -112,13 +112,22 @@ class SsAmount extends StatelessWidget {
 }
 
 /// Variação numa pílula colorida pelo **sentido**, não pelo sinal: [good]
-/// verde, ruim vermelho, `null` neutro. Despesa que caiu é `up: false, good: true`.
+/// verde, ruim vermelho. Despesa que caiu é `up: false, good: true`.
+/// [SsDelta.neutral] (v0.16) é o "0%"/"igual": traço no lugar da seta, cinza.
 class SsDelta extends StatelessWidget {
-  const SsDelta(this.text, {super.key, required this.up, bool? good, this.onDark = false}) : good = good ?? up;
+  const SsDelta(this.text, {super.key, required this.up, bool? good, this.onDark = false})
+    : good = good ?? up,
+      neutral = false;
+
+  /// Sem variação ("0%", "igual ao mês passado"): traço e tom apagado.
+  const SsDelta.neutral(this.text, {super.key, this.onDark = false}) : up = false, good = null, neutral = true;
 
   final String text;
   final bool up;
   final bool? good;
+
+  /// v0.16: sem sentido (nem subiu nem desceu).
+  final bool neutral;
 
   /// Sobre o [SsAuroraCard]: fundo translúcido branco.
   final bool onDark;
@@ -138,7 +147,11 @@ class SsDelta extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, size: 13, color: fg),
+          Icon(
+            neutral ? Icons.remove_rounded : (up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded),
+            size: 13,
+            color: fg,
+          ),
           const SizedBox(width: 2),
           Text(
             text,

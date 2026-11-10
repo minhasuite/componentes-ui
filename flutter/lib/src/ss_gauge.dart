@@ -150,6 +150,8 @@ class _GaugePainter extends CustomPainter {
 /// e o número vai no meio, com [label] embaixo ("dias"). [format] troca o
 /// número (`SsCountdownRing.mmss` para descanso em segundos); [onDark] é
 /// para fundo escuro ou gradiente (texto claro, trilha translúcida).
+/// [warnAt] (v0.16) troca os 20% do aquecimento por uma conta fixa
+/// (`warnAt: 2` = aquece com 2 ou menos).
 class SsCountdownRing extends StatelessWidget {
   const SsCountdownRing({
     super.key,
@@ -159,7 +161,11 @@ class SsCountdownRing extends StatelessWidget {
     this.size = 104,
     this.format,
     this.onDark = false,
+    this.warnAt,
   });
+
+  /// Aquece (âmbar) quando restam [warnAt] ou menos; nulo = 20% de [total].
+  final int? warnAt;
 
   final int total;
   final int left;
@@ -179,7 +185,7 @@ class SsCountdownRing extends StatelessWidget {
     final resta = left.clamp(0, math.max(total, 0)).toInt();
     final cor = resta == 0
         ? AppColors.danger
-        : total > 0 && resta / total <= .2
+        : (warnAt != null ? resta <= warnAt! : total > 0 && resta / total <= .2)
         ? AppColors.aquecFg
         : c.accent;
     final texto = onDark

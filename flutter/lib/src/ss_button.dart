@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'density.dart';
 import 'motion.dart';
+import 'ss_badge.dart' show SsTone;
 
 enum SsButtonVariant { primary, ghost, success, danger }
 
@@ -14,6 +15,10 @@ enum SsButtonVariant { primary, ghost, success, danger }
 ///
 /// [SsButton.text] é o botão de texto (link): sem fundo, na cor da marca
 /// ("Esqueci a senha", "Ver tudo", "Desfazer"); [danger] o deixa vermelho.
+///
+/// v0.16: [trailingIcon] vai depois do rótulo ("Ver todas →"); no
+/// [SsButton.text], `tone:` pinta o texto no tom ([SsTone.warning],
+/// [SsTone.danger]...) e `onDark:` o deixa claro sobre foto, câmera ou gradiente.
 class SsButton extends StatelessWidget {
   const SsButton({
     super.key,
@@ -24,8 +29,11 @@ class SsButton extends StatelessWidget {
     this.small = false,
     this.loading = false,
     this.expand = true,
+    this.trailingIcon,
   }) : _text = false,
-       _danger = false;
+       _danger = false,
+       _tone = null,
+       _onDark = false;
 
   /// Botão de texto: sem fundo nem sombra, rótulo na cor da marca (ou do
   /// perigo, com [danger]); altura 40 (32 com [small], na densidade padrão); não ocupa a
@@ -39,13 +47,25 @@ class SsButton extends StatelessWidget {
     this.loading = false,
     this.expand = false,
     bool danger = false,
+    this.trailingIcon,
+    SsTone? tone,
+    bool onDark = false,
   }) : variant = SsButtonVariant.ghost,
        _text = true,
        // ignore: prefer_initializing_formals
-       _danger = danger;
+       _danger = danger,
+       // ignore: prefer_initializing_formals
+       _tone = tone,
+       // ignore: prefer_initializing_formals
+       _onDark = onDark;
 
   final bool _text;
   final bool _danger;
+  final SsTone? _tone;
+  final bool _onDark;
+
+  /// v0.16: ícone depois do rótulo (seta de "ver mais", abrir fora).
+  final IconData? trailingIcon;
 
   final String label;
   final VoidCallback? onPressed;
@@ -82,7 +102,11 @@ class SsButton extends StatelessWidget {
 
     if (_text) {
       bg = Colors.transparent;
-      fg = _danger ? c.dangerText : c.accentText;
+      fg = _onDark
+          ? AppColors.onDark
+          : _danger
+          ? c.dangerText
+          : (_tone?.colors(context).text ?? c.accentText);
       shadow = null;
     }
 
@@ -112,6 +136,10 @@ class SsButton extends StatelessWidget {
               style: TextStyle(color: fg, fontSize: fontSize, fontWeight: FontWeight.w800),
             ),
           ),
+          if (trailingIcon != null) ...[
+            SizedBox(width: d.gap - 6),
+            Icon(trailingIcon, size: small ? d.iconSize - 4 : d.iconSize - 2, color: fg),
+          ],
         ],
       );
     }

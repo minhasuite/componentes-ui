@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -101,6 +103,24 @@ class AppColors {
 /// veio de fora (tema do usuário) sem escrever cor solta na tela:
 /// `ssMix(cor, AppColors.scrim, .14)` = 14% mais escura.
 Color ssMix(Color a, Color b, double t) => Color.lerp(a, b, t.clamp(0.0, 1.0))!;
+
+/// Contraste WCAG entre duas cores (1 a 21): 4,5 é o AA de texto, 3 o de
+/// ícone e borda, 7 o AAA (v0.16).
+double ssContrast(Color a, Color b) {
+  final la = a.computeLuminance(), lb = b.computeLuminance();
+  return (math.max(la, lb) + .05) / (math.min(la, lb) + .05);
+}
+
+/// [color] puxada para [toward] em passos de 5% até passar [min]:1 sobre
+/// todos os [over] (a mesma conta do `paletas/gerar.py`). Já passando, volta
+/// a própria cor.
+Color ssUntilContrast(Color color, Color toward, List<Color> over, double min) {
+  for (var i = 0; i <= 20; i++) {
+    final c = ssMix(color, toward, i / 20);
+    if (over.every((b) => ssContrast(c, b) >= min)) return c;
+  }
+  return toward;
+}
 
 /// Cor da marca do produto. Vai no `ThemeData.extensions` (ver [AppTheme.build])
 /// e os `Ss*` leem daqui; o resto da paleta é comum à suíte.
@@ -271,6 +291,44 @@ class SsBrand extends ThemeExtension<SsBrand> {
     brandDeep: ssMix(accent, AppColors.scrim, .35),
   );
 
+  /// Fundos claros do alto contraste (superfície, página, campo e o suave da marca).
+  static const _hcClaros = [AppColors.surfaceLight, AppColors.pageLight, AppColors.fieldLight];
+
+  /// Fundos escuros do alto contraste (normal e OLED).
+  static const _hcEscuros = [
+    AppColors.surfaceDark,
+    AppColors.pageDark,
+    AppColors.fieldDark,
+    AppColors.surfaceOled,
+    AppColors.pageOled,
+    AppColors.fieldOled,
+  ];
+
+  /// Alto contraste (v0.16): a mesma marca com o acento mais forte, gerado da
+  /// paleta (não à mão). Claro: o accent puxado para o preto até 7:1 (AAA)
+  /// sobre superfície, página, campo e o suave da marca; escuro: puxado para o
+  /// branco até 7:1 sobre as superfícies escuras e OLED; sólido com texto
+  /// branco ≥ 7:1. Gradiente e suaves ficam. A mesma conta do
+  /// `paletas/gerar.py` (que gera o `data-ss-contrast="high"` do web).
+  /// Use pelo `AppTheme.build(b, brand:, highContrast: true)`.
+  SsBrand highContrast() {
+    final claro = ssUntilContrast(accentLight, AppColors.scrim, [..._hcClaros, accentSoftLight], 7);
+    final escuro = ssUntilContrast(accentDark, AppColors.onDark, [..._hcEscuros, accentSoftDark], 7);
+    return SsBrand(
+      accentLight: claro,
+      accentHoverLight: claro,
+      accentSoftLight: accentSoftLight,
+      accentDark: escuro,
+      accentSoftDark: accentSoftDark,
+      brandFrom: brandFrom,
+      brandTo: brandTo,
+      brandDeep: brandDeep,
+      stops: gradientColors,
+      accentSolidLight: ssUntilContrast(accentSolidLight, AppColors.scrim, const [AppColors.onDark], 7),
+      accentSolidDark: ssUntilContrast(accentSolidDark, AppColors.scrim, const [AppColors.onDark], 7),
+    );
+  }
+
   @override
   SsBrand copyWith() => this;
 
@@ -357,22 +415,37 @@ class AppType {
 /// Cores resolvidas do tema atual — atalho para os widgets `Ss*` lerem tokens
 /// que não existem no `ColorScheme` (ex.: field, muted2, ink2, accentBright).
 class SsColors {
-  SsColors._(this._dark, this.brand, [this._oled = false]);
+  SsColors._(this._dark, this.brand, [this._oled = false, this._hc = false]);
   final bool _dark;
   final bool _oled;
+  final bool _hc;
   final SsBrand brand;
 
   static SsColors of(BuildContext context) {
     final t = Theme.of(context);
     final dark = t.brightness == Brightness.dark;
-    return SsColors._(dark, t.extension<SsBrand>() ?? SsBrand.violeta, dark && (t.extension<_SsOled>()?.on ?? false));
+    return SsColors._(
+      dark,
+      t.extension<SsBrand>() ?? SsBrand.violeta,
+      dark && (t.extension<_SsOled>()?.on ?? false),
+      t.extension<_SsContrast>()?.high ?? false,
+    );
   }
 
-  /// Para testes de contraste.
-  factory SsColors.forDark(bool dark, [SsBrand brand = SsBrand.violeta, bool oled = false]) =>
-      SsColors._(dark, brand, dark && oled);
+  /// Para testes de contraste. [highContrast] não troca a marca: passe
+  /// `brand.highContrast()` junto, como o [AppTheme.build] faz.
+  factory SsColors.forDark(
+    bool dark, [
+    SsBrand brand = SsBrand.violeta,
+    bool oled = false,
+    bool highContrast = false,
+  ]) => SsColors._(dark, brand, dark && oled, highContrast);
 
   bool get isDark => _dark;
+
+  /// Alto contraste (v0.16, `AppTheme.build(highContrast: true)`): acento da
+  /// marca a 7:1, texto apagado ([muted]) no tom do [ink2] e divisórias mais fortes.
+  bool get isHighContrast => _hc;
 
   /// Escuro OLED: página preta pura e superfícies quase pretas.
   bool get isOled => _oled;
@@ -406,6 +479,17 @@ class SsColors {
   /// (e não `AppColors.series[0]`, que é sempre o violeta).
   List<Color> get series => [accent, ...AppColors.series.skip(1)];
 
+  /// v0.16: [color] na variante de texto (tinta) do tema atual: puxada para o
+  /// [ink] (mais escura no claro, mais clara no escuro) só até passar 4,5:1
+  /// (AA; 7:1 no alto contraste) sobre a superfície, a página e o campo. Para
+  /// texto, carimbo ou ícone pequeno na cor de uma série ou de uma categoria.
+  Color inkFor(Color color) => ssUntilContrast(color, ink, [surface, page, field], _hc ? 7 : 4.5);
+
+  /// v0.16: [series] em variante de texto ([inkFor]), na mesma ordem:
+  /// `seriesInk[i]` escreve sobre o fundo o que `series[i]` pinta (ponto,
+  /// barra, faixa). No web, `--series-ink-1..6`.
+  List<Color> get seriesInk => [for (final c in series) inkFor(c)];
+
   /// Glow direcional do botão primário e do card ativo, na cor da marca.
   List<BoxShadow> get primaryShadow => [
     BoxShadow(
@@ -425,12 +509,14 @@ class SsColors {
   ];
   Color get ink => _dark ? AppColors.inkDark : AppColors.inkLight;
   Color get ink2 => _dark ? AppColors.ink2Dark : AppColors.ink2Light;
-  Color get muted => _dark ? AppColors.mutedDark : AppColors.mutedLight;
-  Color get muted2 => _dark ? AppColors.muted2Dark : AppColors.muted2Light;
+  Color get muted => _hc ? ink2 : (_dark ? AppColors.mutedDark : AppColors.mutedLight);
+  Color get muted2 => _hc
+      ? (_dark ? AppColors.mutedDark : AppColors.mutedLight)
+      : (_dark ? AppColors.muted2Dark : AppColors.muted2Light);
   Color get surface => _oled ? AppColors.surfaceOled : (_dark ? AppColors.surfaceDark : AppColors.surfaceLight);
   Color get field => _oled ? AppColors.fieldOled : (_dark ? AppColors.fieldDark : AppColors.fieldLight);
   Color get page => _oled ? AppColors.pageOled : (_dark ? AppColors.pageDark : AppColors.pageLight);
-  Color get line => _dark ? AppColors.lineDark : AppColors.lineLight;
+  Color get line => _hc ? ink.withValues(alpha: .22) : (_dark ? AppColors.lineDark : AppColors.lineLight);
   Color get headerBg => _oled ? AppColors.headerOledBg : (_dark ? AppColors.headerDarkBg : AppColors.headerLightBg);
   Color get headerLine => AppColors.headerLine;
   Color get danger => AppColors.danger;
@@ -443,6 +529,19 @@ class SsColors {
   Color get dangerText => _dark ? const Color(0xFFF2899A) : const Color(0xFFB42335);
   Color get aquecText => _dark ? const Color(0xFFF0B054) : const Color(0xFF8A4B00);
   Color get aquecSoft => _dark ? const Color(0xFF3A2A12) : AppColors.aquecBg;
+}
+
+/// Marca do tema de alto contraste (lida por [SsColors.of]).
+@immutable
+class _SsContrast extends ThemeExtension<_SsContrast> {
+  const _SsContrast(this.high);
+  final bool high;
+
+  @override
+  _SsContrast copyWith() => this;
+
+  @override
+  _SsContrast lerp(_SsContrast? other, double t) => t < .5 || other == null ? this : other;
 }
 
 /// Marca do tema OLED (lida por [SsColors.of]).
@@ -472,13 +571,19 @@ class AppTheme {
   /// [density] (v0.11): `SsDensity.compact`, `standard` (padrão) ou
   /// `comfortable`. Vai no `extensions` (os `Ss*` leem com `SsDensity.of`) e
   /// alinha o `visualDensity` e os botões/campos Material que sobram.
+  ///
+  /// [highContrast] (v0.16): acento a 7:1 gerado da marca ([SsBrand.highContrast]),
+  /// texto apagado no tom do `ink2` e divisórias mais fortes
+  /// (`SsColors.isHighContrast`). O web é o `data-ss-contrast="high"`.
   static ThemeData build(
     Brightness brightness, {
     SsBrand brand = SsBrand.violeta,
     bool oled = false,
     SsDensity density = SsDensity.standard,
+    bool highContrast = false,
   }) {
     final d = density;
+    if (highContrast) brand = brand.highContrast();
     final isDark = brightness == Brightness.dark;
     final isOled = isDark && oled;
     final accent = isDark ? brand.accentDark : brand.accentLight;
@@ -487,8 +592,10 @@ class AppTheme {
     final surface = isOled ? AppColors.surfaceOled : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final field = isOled ? AppColors.fieldOled : (isDark ? AppColors.fieldDark : AppColors.fieldLight);
     final ink = isDark ? AppColors.inkDark : AppColors.inkLight;
-    final muted = isDark ? AppColors.mutedDark : AppColors.mutedLight;
-    final line = isDark ? AppColors.lineDark : AppColors.lineLight;
+    final muted = highContrast
+        ? (isDark ? AppColors.ink2Dark : AppColors.ink2Light)
+        : (isDark ? AppColors.mutedDark : AppColors.mutedLight);
+    final line = highContrast ? ink.withValues(alpha: .22) : (isDark ? AppColors.lineDark : AppColors.lineLight);
 
     // ColorScheme montado à mão — cada papel aponta para um token real, sem os
     // tons lavanda/teal que o fromSeed inventava.
@@ -531,7 +638,7 @@ class AppTheme {
     final text = _textTheme(manrope, ink, muted);
 
     return base.copyWith(
-      extensions: [brand, d, if (isOled) const _SsOled(true)],
+      extensions: [brand, d, if (isOled) const _SsOled(true), if (highContrast) const _SsContrast(true)],
       visualDensity: d.visualDensity,
       colorScheme: scheme,
       scaffoldBackgroundColor: page,

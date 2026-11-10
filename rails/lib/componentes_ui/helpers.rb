@@ -187,14 +187,16 @@ module ComponentesUi
     end
 
     # Minigráfico sem eixo (curva suave). Vai na base de um .ss-stat ou solto.
-    def ss_sparkline(values, height: 44, area: true)
+    # v0.16 (par do SsSparkline(target:, markMin:)): target: desenha a linha tracejada do alvo (entra
+    # na escala); mark_min: true marca o menor valor com um ponto verde.
+    def ss_sparkline(values, height: 44, area: true, target: nil, mark_min: false)
       vals = values.map(&:to_f)
       return "".html_safe if vals.size < 2
 
       w = 100.0
       top = 6.0
       h = height - top - 2
-      lo, hi = vals.minmax
+      lo, hi = (target ? vals + [target.to_f] : vals).minmax
       span = (hi - lo).zero? ? 1 : hi - lo
       pts = vals.each_with_index.map { |v, i| [w * i / (vals.size - 1), top + h * (1 - (v - lo) / span)] }
       d = +"M#{fmt(pts[0])}"
@@ -206,8 +208,12 @@ module ComponentesUi
         d << " C#{fmt(c1)} #{fmt(c2)} #{fmt(p2)}"
       end
       area_path = area ? %(<path class="area" d="#{d} L#{w},#{height} L0,#{height} Z"/>) : ""
+      alvo = target ? %(<path class="target" d="M0,#{(top + h * (1 - (target.to_f - lo) / span)).round(2)} H#{w.to_i}"/>) : ""
+      i = vals.index(vals.min)
+      # Ponto do menor (não repete o último); a elipse compensa o preserveAspectRatio="none".
+      minimo = mark_min && i != vals.size - 1 ? %(<ellipse class="min" cx="#{pts[i][0].round(2)}" cy="#{pts[i][1].round(2)}" rx="1.6" ry="3"/>) : ""
       (%(<svg class="ss-spark" viewBox="0 0 #{w.to_i} #{height}" preserveAspectRatio="none" aria-hidden="true">) +
-        %(#{area_path}<path class="line" d="#{d}"/></svg>)).html_safe
+        %(#{alvo}#{area_path}<path class="line" d="#{d}"/>#{minimo}</svg>)).html_safe
     end
 
     # Anéis concêntricos (até 3), valores de 0 a 1; center = texto do meio.
@@ -271,14 +277,17 @@ module ComponentesUi
     end
 
     # Anel em gomos: um gomo por unidade (até 60; acima disso, proporcional).
-    def ss_countdown(total:, left:, label: nil)
+    # v0.16 (par do SsCountdownRing(warnAt:)): warn_at: n deixa o anel âmbar com n ou menos
+    # (data-tone="warn") e vermelho no zero (data-tone="over").
+    def ss_countdown(total:, left:, label: nil, warn_at: nil)
       total = [total.to_i, 1].max
       left = left.to_i.clamp(0, total)
+      tone = if warn_at.nil? then nil elsif left.zero? then "over" elsif left <= warn_at.to_i then "warn" end
       n = [total, 60].min
       lit = total == n ? left : (left * n.to_f / total).round
       small = label ? %(<small>#{ERB::Util.h(label)}</small>) : ""
       aria = ERB::Util.h(ss_t("countdown.aria", default: "%{left} de %{total}", left: [left, label].compact.join(" "), total:))
-      %(<div class="ss-countdown" style="--n:#{n};--left:#{lit}" role="img" aria-label="#{aria}"><b>#{left}</b>#{small}</div>).html_safe
+      %(<div class="ss-countdown" style="--n:#{n};--left:#{lit}"#{%( data-tone="#{tone}") if tone} role="img" aria-label="#{aria}"><b>#{left}</b>#{small}</div>).html_safe
     end
 
     # Grade de constância: values_by_date = { Date|"aaaa-mm-dd" => número }.

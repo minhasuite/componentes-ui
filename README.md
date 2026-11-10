@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.15.2
+      ref: v0.16.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.2"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.16.0"
 ```
 
 ```css
@@ -610,6 +610,55 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.16.0: legenda, oferta completa, chip removível, alto contraste, capa no cabeçalho, escolha livre, barras divergentes, estrelas e comparação
+
+Etapa 5 da migração do minhas-compras-app e do minhas-viagens-app (`../docs/MIGRACAO-minhas-compras-viagens.md`):
+as lacunas médias e os pedidos das etapas 2–4. Tudo aditivo (parâmetro novo sempre opcional); a API não quebra.
+Vitrine Rails: grupo "Compras e viagens (v0.16)"; catálogo nos dois lados (`flutter/test/catalogo_v16.dart`,
+`rails/catalogo/index.html`, seções de `rails/sample/script/catalogo_v016.rb`).
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Legenda de gráfico | `SsChartLegend(items: [SsLegendItem(label, color, value:, line:, dashed:)], alignment:)`: bolinha (ou traço, tracejado) + rótulo com "…" + valor em DM Mono; repetidos uma vez | `Ss::ChartLegendComponent(items: [{ label:, value:, tone: :success/:muted/:s1..:s6 \| color:, line:, dashed: }])` · `.ss-legend` | `ChartLegend` (compras), `_Legend` (viagens) |
+| Oferta completa | `SsOfferCard(…, badges: [Widget], meta: String, actions: [Widget], menu: Widget, hit: bool, kind: String, kindIcon:, unit: String, estimate: bool, savings: String, savingsGood: bool, stacked: bool, fill: bool)` | `.ss-offer` + `.is-hit`, `.is-estimate`, `.ss-offer-kind`, `-unit`, `-savings` (`.is-bad`), `-badges`, `-meta`, `-actions` | `McOfferCard`, `MvOfferCard` |
+| Chip removível | `SsInputChip(label, icon:, onPressed:, onDeleted:, deleteTooltip:, tooltip:)`: fundo suave da marca, ✕ com alvo 48 ("Remover Lisboa"), rótulo com "…" | `.ss-tag` (já havia) com ícone (`<svg>` antes) e texto num `<span>` com "…" | `InputChip` |
+| Série em variante de texto | `SsColors.seriesInk` (mesma ordem de `series`) e `SsColors.inkFor(cor)`: a cor puxada para o `ink` até 4,5:1 (7:1 no alto contraste) sobre superfície, página e campo; `ssContrast(a, b)`, `ssUntilContrast(cor, alvo, fundos, min)` | `--series-ink-1..6` (`color-mix` com `--ink` a 45%) | tons do `MvTone`, tintas do carimbo |
+| Alto contraste | `AppTheme.build(b, brand:, highContrast: true)`: `SsBrand.highContrast()` (accent a 7:1 gerado da marca, sólido a 7:1 com branco), `muted` no tom do `ink2`, `line` mais forte; `SsColors.isHighContrast` | `data-ss-contrast="high"` no `<html>` ou num contêiner (todas as paletas, claro e escuro, gerado pelo `paletas/gerar.py`) | `_brandHc` + `HighContrast` (viagens) |
+| Cabeçalho com capa | `SsSliverHeader(…, background: Widget, backgroundHeight: 180)`: capa no lugar do título grande, título sempre na barra, capa sobe por baixo da barra e o `bottom` (abas) fica preso | — (só app) | `SliverAppBar` + `FlexibleSpaceBar` (detalhe da viagem) |
+| Escolher ou digitar | `showSsPicker(…, allowCustom: true, customOf: (texto) => T, customLabel: (texto) => String, noneLabel: 'Sem loja')` (e `SsPickerSheet` com os mesmos) | `Ss::ComboboxComponent(create: true)` (já havia) | `askStoreName` (`AlertDialog` + `Autocomplete`) |
+| Calendário | `showSsDatePicker(context, initialDate:, firstDate:, lastDate:, helpText:, confirmText:, cancelText:, initialEntryMode:, selectableDayPredicate:)` → `Future<DateTime?>` | — (só app; o web usa `<input type="date">`) | `showDatePicker` cru |
+| Barras divergentes | `SsDivergingBars(items: [SsDivergingBar(label, value, detail:)], unit: 'p.p.', format:, upIsGood: false)`; `SsDivergingBars.signed(v, f)` | `Ss::DivergingBarsComponent(items: [{ label:, value:, detail: }], unit:, format: ->(v) {}, up_is_good:, label:)` · `.ss-diverging` | `McImpactBars` |
+| Validadores de texto | `SsValidators.qty(texto, required: true, allowZero: true, strings:)` e `SsValidators.moneyText(texto, required: false, strings:, formats:)` | — (só app; o web valida no modelo) | `qtyError`, `moneyError` |
+| Foto com cor | `SsNetImage(…, placeholderColor: Color)`: degradê da cor (até 35% mais escura) com ícone/iniciais claros no vazio | — (só app) | `NetImage(color:)` / `ImageFallback` (viagens) |
+| Linha do tempo | `SsTimelineItem(…, endTime: '11:00', alert: true)`: "09:30 – 11:00"; alerta pinta o horário de vermelho com ⚠ ("Atenção") | `.ss-timeline` com `<time>` e `li.is-alert` | `MvItineraryStop(endTime:, alert:)` |
+| Estrelas | `SsRating(value, max: 5, size: 18, onChanged: (int) {}, label:)`: leitura com meia; editável com uma estrela por toque (alvo 48) e ajuste do leitor de tela | `Ss::RatingComponent(value:, max: 5, name:, label:, size: :sm/:md/:lg, id:)`: sem `name:` é o `.ss-stars` (agora com `--max`/`--star-size`); com `name:`, `.ss-rating` com um rádio por estrela (sem JS) | `Stars` (viagens) |
+| Comparação | `SsCompareTable(caption:, plans: [SsComparePlan(name, price:, recommended:)], features: [SsCompareFeature(label, values, best:, mono:)], columnWidth: 132, labelWidth: 132)` | `Ss::CompareTableComponent` (já havia) + `best:` (índice da célula em verde) e `mono: false` por linha | `CompareTable` (viagens) |
+| Ajustes | `SsFilterChip` com "…" (estourava 35 px a 1,3×); `SsSparkline(target:, markMin:)`; `SsButton(trailingIcon:)` e `SsButton.text(trailingIcon:, tone: SsTone.warning, onDark: true)`; `SsDelta.neutral('0%')`; `SsCountdownRing(warnAt: 2)`; `SsProportionBar(onDark: true, legendValue: SsLegendValue.count)`; `SsReorderableList(primary: false)` | `.ss-chip > span` com "…"; `ss_sparkline(target:, mark_min:)`; `.ss-delta` sem classe já era o neutro; `ss_countdown(warn_at:)` (`data-tone="warn"/"over"`); `.ss-proportion.is-on-dark` | `ActionChip` do assistente, `McSparkline`, "Usar inteira" sobre a câmera, `McSpectrum` |
+
+**Só app (Flutter):** `SsSliverHeader(background:)`, `showSsDatePicker`, `SsValidators.qty`/`moneyText`,
+`SsNetImage(placeholderColor:)`, `SsReorderableList(primary:)` e `SsButton.text(tone:, onDark:, trailingIcon:)` (no web o
+`.ss-btn` já aceita o `<svg>` antes ou depois do texto). Os demais têm o par no web (tabela).
+
+**Alto contraste.** A conta é a mesma nos dois lados: o accent claro vai para o preto e o escuro para o branco, em passos
+de 5%, até 7:1 sobre superfície, página, campo e o suave da marca; o sólido (texto branco) também a 7:1. Gradiente e suaves
+ficam. No app, um trecho com alto contraste é um `Theme(data: AppTheme.build(b, brand:, highContrast: true))` em `static
+final`. No web, `[data-ss-contrast="high"]` também troca `--muted` por `--ink-2` e engrossa `--line`; o `paletas.css` traz
+as regras das 30 paletas (`python3 paletas/gerar.py`).
+
+**Escolha livre.** Com `allowCustom`, a 1ª linha vira "Usar “texto”" quando o texto não é igual (sem acento) a um item, e o
+Enter usa o item igual ou o texto. `customOf` é obrigatório quando `T` não é `String`. `noneLabel` aparece com a busca
+vazia e devolve `customOf('')` (no `String`, `''`).
+
+**Padrões que mudaram.** O calendário do `SsDateField` passa pelo `showSsDatePicker`: título "Escolher data" e botões
+"Cancelar"/"Confirmar" do `SsStrings` (antes, os do Material: "Selecionar data"/"OK"). `SsFilterChip` com rótulo maior que
+a largura que sobra termina em "…" em vez de estourar. No `SsOfferCard`, selos, ações e menu ficam acessíveis ao leitor de
+tela (o rótulo do cartão é o mesmo de antes, mais tipo, unidade, economia e a linha pequena quando houver). No web,
+`.ss-chip` e `.ss-tag` ganham `max-width: 100%` e o texto num `<span>` termina em "…".
+
+**Textos novos:** Flutter `estimateLabel`, `removeItem`, `useCustom`, `enterQuantity`, `invalidNumber`, `notNegative`,
+`mustBePositive`, `invalidValue`, `ratingOf`, `starCount`, `recommended`, `included`, `notIncluded`, `attention` (pt, en,
+es); Rails `rating.field`, `rating.label`, `rating.star_one`, `rating.star_other` (pt-BR, en, es).
+
 ## v0.15.2: badge sem estouro, dinheiro com espaço não separável, moeda por código, litro, espera longa e paletas Azul e Petróleo
 
 Etapa 1 da migração do minhas-compras-app e do minhas-viagens-app (`../docs/MIGRACAO-minhas-compras-viagens.md`).
@@ -748,6 +797,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.16.0` (10/11/2026): seção "v0.16.0" (etapa 5 da migração do minhas-compras e do minhas-viagens). `SsChartLegend` ↔ `Ss::ChartLegendComponent`, `SsOfferCard(badges:, meta:, actions:, menu:, hit:, kind:, unit:, estimate:, savings:, stacked:, fill:)` ↔ `.ss-offer` completa, `SsInputChip` ↔ `.ss-tag`, `SsColors.seriesInk`/`inkFor` ↔ `--series-ink-1..6`, `AppTheme.build(highContrast:)`/`SsBrand.highContrast()` ↔ `data-ss-contrast="high"` (gerado das paletas), `SsSliverHeader(background:)`, `showSsPicker(allowCustom:, noneLabel:)`, `showSsDatePicker`, `SsDivergingBars` ↔ `Ss::DivergingBarsComponent`, `SsValidators.qty`/`moneyText`, `SsNetImage(placeholderColor:)`, `SsTimelineItem(endTime:, alert:)`, `SsRating` ↔ `Ss::RatingComponent`, `SsCompareTable` ↔ `CompareTableComponent(best:, mono:)` e os ajustes (`SsFilterChip` com reticências, `SsSparkline(target:, markMin:)`, `SsButton.text(trailingIcon:, tone:, onDark:)`, `SsDelta.neutral`, `SsCountdownRing(warnAt:)`, `SsProportionBar(onDark:, legendValue:)`, `SsReorderableList(primary:)`). Nada quebra; o calendário do `SsDateField` passa a usar os textos do `SsStrings`.
 - `v0.15.2` (10/11/2026): seção "v0.15.2" (etapa 1 da migração do minhas-compras e do minhas-viagens). `SsBadge`/`.ss-badge` com reticências em vez de estourar, dinheiro com espaço não separável nos dois lados, `SsFormats.forCurrency(iso)` ↔ `ss_money(currency:)`, `SsFormats.qty(q, unit)`/`ss_qty` com litro em maiúscula, `ssRunBlocking(art:, showElapsedAfter:, cancelAfter:)` + `SsBlockingCancelled` e as paletas Azul e Petróleo (30). A API não quebra; muda o texto do dinheiro (U+00A0 no lugar do espaço).
 - `v0.15.1` (10/11/2026): correção. `ss_number`/`ss_money` e os componentes que formatam com `format(...)` (CountUp, Donut, DataTable com `format: :money`, ProgressRow, BarChart, AreaChart, MoneyInput, relógio, QR, mídia…) quebravam no ViewComponent 3.x, que tem um `format` próprio sem argumentos; agora chamam `Kernel.format`. Nada quebra.
 - `v0.15.0` (09/11/2026): seção "v0.15" (fase 0 do meu-financeiro). `ss_icon`/`Ss::IconComponent` ↔ `SsIcons.named` (Heroicons v1 + apelidos da v2, fonte `rails/icones/`), `Ss::DialogComponent` (turbo-frame), `Ss::MonthSwitcherComponent`, `SsBarChart`/`Ss::BarChartComponent` (agrupado, empilhado, negativos, linha), conta e sinal no dinheiro (`SsMoneyField(expression:, signed:, formats:)` ↔ `MoneyInputComponent(expression:, signed:)`, `ComponentesUi::AmountExpression`, `ssEvalAmount`), `SsPrivacyScope`/`SsPrivate`/`SsPrivacyToggle`, `SsProgressRow`/`Ss::ProgressRowComponent`, `Ss::ChatComponent` + `SsChatActionCard`/`Ss::ChatActionComponent`, `Ss::FormSectionComponent` e `Ss::ConfettiComponent`. Nada quebra.

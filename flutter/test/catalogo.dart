@@ -32,6 +32,7 @@ import 'catalogo_v13.dart';
 import 'catalogo_v14.dart';
 import 'catalogo_v15.dart';
 import 'catalogo_v152.dart';
+import 'catalogo_v16.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -104,7 +105,7 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV152(_catalogo);
+final catalogo = comV16(comV152(_catalogo));
 
 final _catalogo = comV08(<Componente>[
   Componente(
@@ -934,6 +935,7 @@ final _catalogo = comV08(<Componente>[
   ...catalogoV13,
   ...catalogoV14,
   ...catalogoV15,
+  ...catalogoV16,
 ]);
 
 const _verde = SsBrand(

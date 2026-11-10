@@ -29,6 +29,8 @@
 @import "./v14_web.css";
 /* v0.15: o que o meu-financeiro pediu (ícones, diálogo, mês, barras, dinheiro com conta, progresso, chat, seção, confete). */
 @import "./v15_web.css";
+/* v0.16: o que a migração do minhas-compras e do minhas-viagens pediu (legenda, barras divergentes, estrelas, alto contraste…). */
+@import "./v16_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
