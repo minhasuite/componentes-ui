@@ -71,4 +71,19 @@ class HelpersTest < Minitest::Test
     assert_includes ss_status("atrasado", map), 'data-tone="danger"'
     assert_equal '<span class="ss-status" data-tone="neutral">outro</span>', ss_status("outro", map)
   end
+
+  def test_icone_svg_inline_e_apelido_da_v2
+    svg = ss_icon("magnifying-glass")
+    assert_includes svg, 'data-icon="search"'
+    assert_includes svg, 'class="ss-icon"'
+    assert_includes svg, 'aria-hidden="true"'
+    assert_includes ss_icon("star", variant: :solid, size: :lg), 'viewBox="0 0 20 20"'
+    assert_includes ss_icon("xyz"), 'data-icon="question-mark-circle"'
+    assert_includes ss_icon("bell", title: "<b>"), "&lt;b&gt;"
+  end
+
+  def test_expressao_de_valor
+    assert_equal BigDecimal("57"), ss_amount_expression("45+12")
+    assert_nil ss_amount_expression("45+")
+  end
 end

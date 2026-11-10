@@ -1,6 +1,8 @@
 require "erb"
 require "date"
 require "i18n"
+require "componentes_ui/icons"
+require "componentes_ui/amount_expression"
 
 module ComponentesUi
   # Helpers de view para as peças que precisam de conta (pontos, matiz).
@@ -268,6 +270,43 @@ module ComponentesUi
       end.join
       %(<div class="ss-heat" role="img" aria-label="#{ERB::Util.h(label)}">#{cells}</div>).html_safe
     end
+
+    # ── Ícones (v0.15) ────────────────────────────────────────────────
+    # SVG inline do conjunto da gem (Heroicons v1, MIT; ComponentesUi::Icons), na cor do texto.
+    # Aceita o nome da v1 e o da v2 ("magnifying-glass" → search); nome que não existe vira o
+    # "question-mark-circle" (a tela nunca quebra por um ícone salvo no banco).
+    #   ss_icon("credit-card")                      → .ss-icon (1,25rem)
+    #   ss_icon("star", variant: :solid, size: :xs, css: "text-warn")
+    #   ss_icon("bell", title: "Avisos")            → role="img" + <title>
+    #   render Ss::NoteComponent.new(icon: ss_icon("bell", size: nil))  (o componente dimensiona)
+    # size: :xs (1rem), :sm (1,25rem, padrão), :md (1,5rem), :lg (1,75rem) ou nil (sem tamanho).
+    ICON_SIZES = %i[xs sm md lg].freeze
+    ICON_FALLBACK = "question-mark-circle".freeze
+
+    def ss_icon_name(name)
+      n = name.to_s.strip.downcase.delete_prefix("heroicon-").tr("_", "-")
+      n = ComponentesUi::Icons::ALIASES.fetch(n, n)
+      ComponentesUi::Icons::OUTLINE.key?(n) ? n : nil
+    end
+
+    def ss_icon?(name) = !ss_icon_name(name).nil?
+
+    def ss_icon_names = ComponentesUi::Icons::OUTLINE.keys
+
+    def ss_icon(name, variant: :outline, size: :sm, css: nil, title: nil)
+      n = ss_icon_name(name) || ICON_FALLBACK
+      solid = variant.to_s == "solid" && ComponentesUi::Icons::SOLID.key?(n)
+      paint = solid ? %(viewBox="0 0 20 20" fill="currentColor") : %(viewBox="0 0 24 24" fill="none" stroke="currentColor")
+      klass = ["ss-icon", ("is-#{size}" if ICON_SIZES.include?(size&.to_sym) && size.to_sym != :sm), (size.nil? ? "is-free" : nil), css].compact.join(" ")
+      a11y = title.to_s.empty? ? %(aria-hidden="true") : %(role="img" aria-label="#{ERB::Util.h(title)}")
+      body = (solid ? ComponentesUi::Icons::SOLID : ComponentesUi::Icons::OUTLINE).fetch(n)
+      label = title.to_s.empty? ? "" : "<title>#{ERB::Util.h(title)}</title>"
+      %(<svg xmlns="http://www.w3.org/2000/svg" #{paint} class="#{ERB::Util.h(klass)}" data-icon="#{n}" #{a11y} focusable="false">#{label}#{body}</svg>).html_safe
+    end
+
+    # ── Valor digitado como conta (v0.15) ─────────────────────────────
+    # "45+12,50" → BigDecimal("57.5"); nil se não fecha. Ver ComponentesUi::AmountExpression.
+    def ss_amount_expression(text) = ComponentesUi::AmountExpression.call(text)
 
     # Situação com pontinho: map = { "pago" => ["Pago", :success], … }.
     # Tons: neutral, info, success, warning, danger, accent. Fora do mapa: neutro.

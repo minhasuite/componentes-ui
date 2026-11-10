@@ -27,6 +27,8 @@
 @import "./v13_web.css";
 /* v0.14: nota, botão sobre o gradiente, item-botão, tarefa com comando, tema em swatch, peças sem moldura e tokens do card. */
 @import "./v14_web.css";
+/* v0.15: o que o meu-financeiro pediu (ícones, diálogo, mês, barras, dinheiro com conta, progresso, chat, seção, confete). */
+@import "./v15_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

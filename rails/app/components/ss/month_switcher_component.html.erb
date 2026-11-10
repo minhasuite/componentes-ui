@@ -1,0 +1,19 @@
+<%= tag.nav(**root_attrs(class: classes("ss-month-switcher"), "aria-label": label,
+      data: { controller: "ss-month-switcher", action: "keydown->ss-month-switcher#key" })) do %>
+  <% if allowed?(prev_month) %>
+    <%= link_to href(prev_month), class: "ss-month-switcher-arrow", rel: "prev", "aria-label": "#{prev_label}: #{title_of(prev_month)}", title: prev_label, data: link_data("prev").merge(ss_month_switcher_target: "prev") do %><%= chevron("m15 6-6 6 6 6") %><% end %>
+  <% else %>
+    <span class="ss-month-switcher-arrow" aria-disabled="true" title="<%= prev_label %>"><%= chevron("m15 6-6 6 6 6") %></span>
+  <% end %>
+  <% if current? || !allowed?(@today) %>
+    <span class="ss-month-switcher-title" aria-current="date" aria-live="polite"><%= title_of(month) %></span>
+  <% else %>
+    <%= link_to title_of(month), href(@today), class: "ss-month-switcher-title is-link", "aria-label": "#{title_of(month)}. #{current_label}", title: current_label,
+                data: link_data(@today > month ? "next" : "prev") %>
+  <% end %>
+  <% if allowed?(next_month) %>
+    <%= link_to href(next_month), class: "ss-month-switcher-arrow", rel: "next", "aria-label": "#{next_label}: #{title_of(next_month)}", title: next_label, data: link_data("next").merge(ss_month_switcher_target: "next") do %><%= chevron("m9 6 6 6-6 6") %><% end %>
+  <% else %>
+    <span class="ss-month-switcher-arrow" aria-disabled="true" title="<%= next_label %>"><%= chevron("m9 6 6 6-6 6") %></span>
+  <% end %>
+<% end %>

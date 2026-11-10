@@ -1,0 +1,112 @@
+<%# titulo: Ícones, diálogo, mês, barras, dinheiro com conta, progresso, chat e confete | grupo: Financeiro (v0.15) | ordem: 10 %>
+<%# v0.15: fase 0 do meu-financeiro. Pares Flutter no README (SsIcons.named, showSsSheet, SsMonthSwitcher, SsBarChart, SsMoneyField(expression:), SsProgressRow, SsChatActionCard, SsFieldGroup, showSsConfetti). %>
+<% money = ->(v) { ss_money(v) } %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "ss_icon · Ss::IconComponent", "SVG inline do conjunto da gem (Heroicons v1, MIT, #{ss_icon_names.size} ícones) na cor do texto. Aceita o nome da v2 (magnifying-glass → search); o que não existe vira o ponto de interrogação. Par: SsIcons.named.",
+           uso: 'ss_icon("credit-card") · ss_icon("star", variant: :solid, size: :xs) · render Ss::IconComponent.new(name: "banknotes", size: :lg)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;color:var(--ink-2)">
+        <% %w[credit-card banknotes office-building chart-pie arrow-trending-up arrow-trending-down calendar-days magnifying-glass funnel bell-alert eye-slash cog-6-tooth sparkles globe-alt bolt gift].each do |n| %>
+          <span title="<%= n %>"><%= ss_icon(n, size: :md) %></span>
+        <% end %>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center">
+        <%= ss_icon("star", variant: :solid, size: :xs, css: "text-warn") %><%= ss_icon("check-circle", variant: :solid, css: "text-success") %>
+        <%= render Ss::IconComponent.new(name: "x-circle", variant: :solid, size: :lg, css: "text-danger", title: "Erro") %>
+        <%= ss_icon("nao-existe") %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::MonthSwitcherComponent", "‹ Outubro 2026 ›: link para o mês vizinho (sem JS para funcionar); o título fora do mês atual volta para ele; min:/max: travam as setas; ← → com o foco trocam. Par: SsMonthSwitcher.",
+           uso: 'render Ss::MonthSwitcherComponent.new(month: @mes, param: :mes, frame: "lancamentos")' do %>
+    <% mes = Ss::MonthSwitcherComponent.parse(params[:mes]) || Date.today.beginning_of_month %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.5rem">
+      <%= render Ss::MonthSwitcherComponent.new(month: mes, param: :mes, max: Date.today.next_month) %>
+      <p class="ss-note" style="justify-content:center">Mês na URL: <span class="num"><%= mes.strftime("%Y-%m") %></span></p>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::DialogComponent", "O <dialog> genérico: cabeçalho com ícone, título e subtítulo, corpo livre ou num turbo-frame, rodapé de ações. Folha de baixo no celular, caixa no centro no desktop. Envio que deu certo fecha. Par: showSsSheet.",
+           uso: 'render Ss::DialogComponent.new(id: "novo", title: "Novo lançamento", frame_id: "dialogo") · link_to "Novo", new_path, data: { turbo_frame: "dialogo" }' do %>
+    <div class="ss-card ss-card-pad" style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button type="button" class="ss-btn ss-btn-primary" data-ss-dialog-open="vt-dialogo"><%= ss_icon("plus", size: :xs) %>Novo lançamento</button>
+    </div>
+    <%= render(Ss::DialogComponent.new(id: "vt-dialogo", title: "Novo lançamento", subtitle: "Despesa no cartão", icon: ss_icon("credit-card", size: nil))) do |d| %>
+      <% d.with_footer do %><button type="button" class="ss-btn ss-btn-ghost" data-action="ss-dialog#close">Cancelar</button><button type="button" class="ss-btn ss-btn-primary" data-action="ss-dialog#close">Salvar</button><% end %>
+      <div style="display:grid;gap:.75rem">
+        <%= render Ss::MoneyInputComponent.new(name: "valor_cents", label: "Valor", expression: true, signed: false) %>
+        <div class="ss-field"><label for="vt-desc">Descrição</label><input id="vt-desc" class="ss-input" placeholder="Mercado"></div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= demo "Ss::MoneyInputComponent(expression:, signed:)", "Com expression: true aceita conta (45+12,50, 3×19,90): embaixo sai o resultado, o hidden recebe os centavos e, ao sair, o texto vira o valor. signed: false trava o sinal. No servidor, ComponentesUi::AmountExpression. Par: SsMoneyField(expression:, signed:, formats:).",
+           uso: 'render Ss::MoneyInputComponent.new(name: "t[amount_cents]", label: "Valor", expression: true, signed: false, currency: "USD")' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <%= render Ss::MoneyInputComponent.new(name: "a", label: "Valor (com conta)", expression: true, signed: false, help: "Ex.: 45+12,50") %>
+      <%= render Ss::MoneyInputComponent.new(name: "b", label: "Saldo inicial (aceita negativo)", value_cents: -12050) %>
+      <%= render Ss::MoneyInputComponent.new(name: "c", label: "Em dólar", currency: "USD", value_cents: 9990) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::BarChartComponent", "Barras agrupadas ou empilhadas, com negativos (a linha do zero separa) e linha combinada por cima. SVG do servidor, legenda, dica por grupo e tabela para leitor de tela. Par: SsBarChart.",
+           uso: 'render Ss::BarChartComponent.new(title:, labels:, series: [{ name:, values:, tone: :success }], line: { name:, values: }, stacked: true, format: ->(v) { ss_money(v) })' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1.25rem">
+      <%= render Ss::BarChartComponent.new(title: "Receitas × despesas", show_title: true, stacked: true, active: 5, format: ->(v) { ss_money(v, precision: 0) },
+            labels: %w[jun jul ago set out nov],
+            series: [{ name: "Receitas", values: [5200, 4800, 5100, 5300, 4900, 5600], tone: :success }, { name: "Despesas", values: [-4100, -5200, -3900, -4700, -5000, -4300], tone: :danger }],
+            line: { name: "Saldo", values: [1100, -400, 1200, 600, -100, 1300] }) %>
+      <%= render Ss::BarChartComponent.new(title: "Por cartão", show_title: true, height: 200, format: ->(v) { ss_money(v, precision: 0) }, labels: %w[ago set out nov],
+            series: [{ name: "Nubank", values: [1200, 980, 1430, 1100] }, { name: "Inter", values: [600, 720, 410, 830] }, { name: "C6", values: [300, 0, 250, 190] }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::ProgressRowComponent", "Rótulo, gasto de limite, % e a barra no tom do estado: limite (até 80% na marca, aviso até 100%, estouro em vermelho) ou meta (100% é verde). Par: SsProgressRow.",
+           uso: 'render Ss::ProgressRowComponent.new(label: "Mercado", value: 720, limit: 1000, format: ->(v) { ss_money(v) })' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1rem">
+      <%= render Ss::ProgressRowComponent.new(label: "Mercado", value: 520, limit: 1000, format: money, icon: ss_icon("shopping-cart", size: nil)) %>
+      <%= render Ss::ProgressRowComponent.new(label: "Lazer", value: 870, limit: 1000, format: money, icon: ss_icon("film", size: nil)) %>
+      <%= render Ss::ProgressRowComponent.new(label: "Restaurantes", value: 1240, limit: 1000, format: money, icon: ss_icon("cake", size: nil), href: "#") %>
+      <%= render Ss::ProgressRowComponent.new(label: "Reserva de emergência", value: 6000, limit: 6000, kind: :goal, format: money, icon: ss_icon("shield-check", size: nil)) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::ChatComponent + Ss::ChatActionComponent", "Lista de mensagens (role=log), o pensando e o campo (Enter envia, Shift+Enter quebra linha). O cartão de ação mostra o que o assistente propõe com Confirmar/Cancelar; a resposta troca o cartão pelo resultado. Par: SsChatBubble, SsThinking, SsChatInput e SsChatActionCard.",
+           uso: 'render(Ss::ChatComponent.new(id: "ia", url: mensagens_path)) { |c| c.with_message(from: :me, text: "…") } · render Ss::ChatActionComponent.new(title:, rows:, confirm_url:, cancel_url:)' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render(Ss::ChatComponent.new(id: "vt-chat", url: "#", placeholder: "Pergunte ou peça um lançamento", style: "--ss-chat-h:26rem")) do |chat| %>
+        <% chat.with_message(from: :me, text: "Gastei 45 no mercado com o Nubank", time: "14:05") %>
+        <% chat.with_message(from: :ai) do %>
+          <p>Posso lançar assim?</p>
+          <%= render Ss::ChatActionComponent.new(id: "vt-acao", title: "Lançar despesa", icon: ss_icon("credit-card", size: nil),
+                rows: [["Valor", "R$ 45,00"], ["Cartão", "Nubank"], ["Categoria", "Mercado"], ["Data", "Hoje"]], confirm_url: "#", cancel_url: "#") %>
+        <% end %>
+        <% chat.with_message(from: :ai) do %>
+          <%= render Ss::ChatActionComponent.new(title: "Lançar receita", rows: [["Valor", "R$ 5.200,00"]], state: :confirmed, result: "Lançado em Conta corrente") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::FormSectionComponent", "Título, ajuda e os campos num <fieldset>, com divisória acima e grade de colunas (vira uma no celular). Par: SsFieldGroup.",
+           uso: 'render(Ss::FormSectionComponent.new(title: "Recorrência", help: "…", divider: true, columns: 2)) { campos }' do %>
+    <form class="ss-card ss-card-pad" style="display:grid;gap:1rem" onsubmit="return false">
+      <%= render(Ss::FormSectionComponent.new(title: "Detalhes", icon: ss_icon("document-text", size: nil))) do %>
+        <div class="ss-field"><label for="vt-fs1">Descrição</label><input id="vt-fs1" class="ss-input" value="Aluguel"></div>
+      <% end %>
+      <%= render(Ss::FormSectionComponent.new(title: "Recorrência", help: "Repete todo mês até a data final.", divider: true, columns: 2)) do %>
+        <div class="ss-field"><label for="vt-fs2">Dia</label><input id="vt-fs2" class="ss-input" value="5"></div>
+        <div class="ss-field"><label for="vt-fs3">Até</label><input id="vt-fs3" type="date" class="ss-input"></div>
+      <% end %>
+    </form>
+  <% end %>
+
+  <%= demo "Ss::ConfettiComponent", "Confete em canvas nas cores da marca e das séries, ~2,6 s, nada com reduzir movimento. Só em conquista. key: não repete no mesmo navegador. Par: showSsConfetti.",
+           uso: 'render Ss::ConfettiComponent.new(key: "meta-#{meta.id}") · render(Ss::ConfettiComponent.new(on: :click)) { botão com data-action="ss-confetti#burst" }' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render(Ss::ConfettiComponent.new(on: :click)) do %><button type="button" class="ss-btn ss-btn-primary" data-action="ss-confetti#burst"><%= ss_icon("sparkles", size: :xs) %>Comemorar</button><% end %>
+    </div>
+  <% end %>
+</div>

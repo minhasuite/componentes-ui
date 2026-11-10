@@ -1,0 +1,20 @@
+<%= tag.dialog(**dialog_attrs) do %>
+  <header class="ss-dialog-panel-head">
+    <% if icon %><span class="ss-icon-tile" aria-hidden="true"><%= icon %></span><% end %>
+    <div class="ss-dialog-panel-text">
+      <h2 id="<%= id %>-title" data-ss-dialog-target="title"><%= title %></h2>
+      <p id="<%= id %>-sub" data-ss-dialog-target="subtitle"<% unless subtitle %> hidden<% end %>><%= subtitle %></p>
+    </div>
+    <form method="dialog"><button class="ss-btn ss-btn-ghost ss-btn-sm ss-dialog-panel-x" data-action="ss-dialog#close" aria-label="<%= close_label %>" title="<%= close_label %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+    </button></form>
+  </header>
+  <div class="ss-dialog-panel-body">
+    <% if frame_id %>
+      <turbo-frame id="<%= frame_id %>" data-ss-dialog-target="frame"><%= content %></turbo-frame>
+    <% else %>
+      <%= content %>
+    <% end %>
+  </div>
+  <% if footer? %><footer class="ss-dialog-panel-foot"><%= footer %></footer><% end %>
+<% end %>

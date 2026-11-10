@@ -568,3 +568,28 @@ es:
       more: '%{n} secciones'
     top_bar:
       back: 'Volver'
+    # v0.15
+    chat:
+      action: 'Acción propuesta'
+      cancel: 'Cancelar'
+      cancelled: 'Cancelado'
+      confirm: 'Confirmar'
+      confirmed: 'Hecho'
+      failed: 'No funcionó'
+      label: 'Conversación'
+      placeholder: 'Escribe un mensaje'
+      send: 'Enviar'
+      thinking: 'Pensando'
+    money_input:
+      invalid: 'Cuenta o valor inválido'
+    month_switcher:
+      current: 'Volver al mes actual'
+      label: 'Mes'
+      next: 'Mes siguiente'
+      previous: 'Mes anterior'
+    progress_row:
+      done: 'Meta alcanzada'
+      left: 'Quedan %{value}'
+      of: '%{value} de %{limit}'
+      over: '%{value} por encima'
+      to_go: 'Faltan %{value}'

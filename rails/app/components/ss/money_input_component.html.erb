@@ -1,11 +1,14 @@
-<%= tag.div(class: classes("ss-field", "ss-money-input"), **root_attrs(data: { controller: "ss-money", ss_money_currency_value: currency })) do %>
+<%= tag.div(class: classes("ss-field", "ss-money-input", ("is-expression" if expression?)),
+      **root_attrs(data: { controller: "ss-money", ss_money_currency_value: currency, ss_money_signed_value: signed?,
+                           ss_money_expression_value: expression?, ss_money_invalid_value: (invalid_text if expression?) }.compact)) do %>
   <label for="<%= id %>"><%= label %></label>
   <div class="ss-money-box">
-    <input id="<%= id %>" type="text" inputmode="numeric" autocomplete="off" class="ss-input ss-money" value="<%= formatted %>"
-           placeholder="<%= placeholder %>"<% if required %> required<% end %><% if help %> aria-describedby="<%= id %>-help"<% end %>
-           data-ss-money-target="input" data-action="input->ss-money#format focus->ss-money#toEnd click->ss-money#toEnd keydown->ss-money#key">
-    <span class="ss-money-view num" aria-hidden="true" data-ss-money-target="view"><%= helpers.ss_amount(formatted) unless formatted.empty? %></span>
+    <input id="<%= id %>" type="text" inputmode="<%= expression? ? "decimal" : "numeric" %>" autocomplete="off" class="ss-input ss-money" value="<%= formatted %>"
+           placeholder="<%= placeholder %>"<% if required %> required<% end %><% if described_by %> aria-describedby="<%= described_by %>"<% end %>
+           data-ss-money-target="input" data-action="input->ss-money#format focus->ss-money#toEnd click->ss-money#toEnd keydown->ss-money#key<%= " blur->ss-money#settle" if expression? %>">
+    <span class="ss-money-view num" aria-hidden="true" data-ss-money-target="view"><%= helpers.ss_amount(formatted) unless formatted.empty? || expression? %></span>
   </div>
+  <% if expression? %><small class="ss-money-result num" id="<%= id %>-result" aria-live="polite" data-ss-money-target="result"></small><% end %>
   <% if help %><small class="ss-field-help" id="<%= id %>-help"><%= help %></small><% end %>
   <input type="hidden" name="<%= name %>" value="<%= value_cents %>" data-ss-money-target="hidden">
 <% end %>

@@ -570,3 +570,28 @@ pt-BR:
       more: '%{n} seções'
     top_bar:
       back: 'Voltar'
+    # v0.15
+    chat:
+      action: 'Ação proposta'
+      cancel: 'Cancelar'
+      cancelled: 'Cancelado'
+      confirm: 'Confirmar'
+      confirmed: 'Feito'
+      failed: 'Não deu certo'
+      label: 'Conversa'
+      placeholder: 'Escreva uma mensagem'
+      send: 'Enviar'
+      thinking: 'Pensando'
+    money_input:
+      invalid: 'Conta ou valor inválido'
+    month_switcher:
+      current: 'Voltar ao mês atual'
+      label: 'Mês'
+      next: 'Próximo mês'
+      previous: 'Mês anterior'
+    progress_row:
+      done: 'Meta batida'
+      left: 'Restam %{value}'
+      of: '%{value} de %{limit}'
+      over: '%{value} acima'
+      to_go: 'Faltam %{value}'

@@ -1,0 +1,19 @@
+<%= tag.article(**root_attrs(id: id, class: classes("ss-chat-action", "is-#{state}", ("is-danger" if danger?)), "aria-labelledby": "#{id}-t",
+      data: { controller: "ss-chat-action" })) do %>
+  <header class="ss-chat-action-head">
+    <% if icon %><span class="ss-icon-tile" aria-hidden="true"><%= icon %></span><% end %>
+    <div><span class="ss-chat-action-kicker"><%= kicker %></span><h3 id="<%= id %>-t"><%= title %></h3></div>
+  </header>
+  <% if description %><p class="ss-chat-action-desc"><%= description %></p><% end %>
+  <% if rows.any? %>
+    <dl class="ss-chat-action-rows"><% rows.each do |(k, v)| %><div><dt><%= k %></dt><dd><%= v %></dd></div><% end %></dl>
+  <% end %>
+  <% if pending? %>
+    <div class="ss-chat-action-btns">
+      <% if cancel_url %><%= button_to cancel_label, cancel_url, method: http_method, class: "ss-btn ss-btn-ghost", form_class: "ss-chat-action-form", form: { data: { action: "submit->ss-chat-action#busy" } } %><% end %>
+      <% if confirm_url %><%= button_to confirm_label, confirm_url, method: http_method, class: "ss-btn ss-btn-primary", form_class: "ss-chat-action-form", form: { data: { action: "submit->ss-chat-action#busy" } } %><% end %>
+    </div>
+  <% else %>
+    <p class="ss-chat-action-result" data-tone="<%= tone %>" role="status"><%= result %></p>
+  <% end %>
+<% end %>

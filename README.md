@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.14.1
+      ref: v0.15.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.14.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.0"
 ```
 
 ```css
@@ -610,6 +610,50 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.15: ícones, diálogo, mês, barras, dinheiro com conta, progresso, chat e confete (fase 0 do meu-financeiro)
+
+O que faltava para o meu-financeiro (web e app) migrar sem peça genérica própria. Tudo aditivo; nada quebra da
+v0.14.1 (o `SsAmount` só muda dentro de um `SsPrivacyScope(hidden: true)`). Vitrine Rails: grupo "Financeiro
+(v0.15)"; vitrine Flutter: seção "Financeiro (v0.15)"; catálogo nos dois lados.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Ícone por nome (o nome salvo na API desenha o mesmo nos dois lados) | `Icon(SsIcons.named('credit-card'))`, `SsIcons.named(n, solid: true)`, `SsIcons.has`/`resolve`/`names` | `ss_icon("credit-card", size: :xs/:sm/:md/:lg/nil, variant: :solid, title:, css:)`, `Ss::IconComponent`, `ss_icon?`, `ss_icon_names` · `.ss-icon` |
+| Diálogo genérico com formulário num turbo-frame | `showSsSheet` (já cobre) | `Ss::DialogComponent(id:, title:, subtitle:, icon:, frame_id:, size: :sm/:md/:lg, close_on_submit:)` + slot `footer` · Stimulus `ss-dialog` · `.ss-dialog-panel` |
+| Seletor de mês ‹ Outubro 2026 › | `SsMonthSwitcher` (já cobre) | `Ss::MonthSwitcherComponent(month:, url: ->(m) {…} \| param: :month, min:, max:, frame:)` · `ss-month-switcher` |
+| Barras agrupadas/empilhadas com negativos e linha combinada | `SsBarChart(labels:, series: [SsSeries…], line:, stacked:, format:, active:)` | `Ss::BarChartComponent(labels:, series: [{name:, values:, tone:/color:}], line:, stacked:, format:, active:)` · `.ss-barc` |
+| Dinheiro com conta ("45+12,50"), sinal e moeda | `SsMoneyField(expression:, signed:, formats:)`, `showSsAmountKeypad(expression:, signed:, formats:)`, `ssEvalAmount` | `MoneyInputComponent(expression:, signed:, currency:)`, `ComponentesUi::AmountExpression` (`.call`, `.cents`), `ss_amount_expression`, JS `ssAmountExpression` |
+| Esconder valores | `SsPrivacyScope(hidden:)` (todo `SsAmount` vira "R$ •••"), `SsPrivate` (borra), `SsPrivacyToggle`, `ssPrivacyMask` | `[data-privacy="on"]` + `ss-privacy` (já havia; agora borra também barras, progresso, resultado da conta e linhas da ação) |
+| Linha de progresso (orçamento, limite, meta) | `SsProgressRow(label:, value:, limit:, kind: SsProgressKind.limit/goal, format:, icon:, warnAt:, color:, onTap:)` | `Ss::ProgressRowComponent(label:, value:, limit:, kind: :limit/:goal, format:, icon:, warn_at:, color:, href:)` · `.ss-progress-row[data-tone=ok\|warn\|over\|done]` |
+| Chat com o assistente | `SsChatBubble`, `SsThinking`, `SsChatInput` (já cobrem) | `Ss::ChatComponent(id:, url:, name:, placeholder:, thinking:, echo:)` + `with_message(from: :me/:ai, text:, time:)` e slot `empty` · `ss-chat` · `.ss-chat-panel`, `.ss-chat-form` |
+| Cartão de ação a confirmar ("lançar R$ 45 no Nubank") | `SsChatActionCard(title:, rows:, icon:, state: SsChatActionState.*, busy:, danger:, onConfirm:, onCancel:)` | `Ss::ChatActionComponent(id:, title:, rows:, icon:, confirm_url:, cancel_url:, state: :pending/:confirmed/:cancelled/:failed, result:, danger:)` · `.ss-chat-action` |
+| Seção de formulário | `SsFieldGroup` (já cobre) | `Ss::FormSectionComponent(title:, help:, icon:, divider:, columns:)` · `.ss-form-section` |
+| Confete | `showSsConfetti` (já cobre) | `Ss::ConfettiComponent(key:, on: :connect/:click)`, `data-action="ss-confetti#burst"`, `window.ssConfetti()` |
+
+**Ícones (fonte única `rails/icones/`).** Heroicons v1 contorno (MIT, `rails/icones/LICENSE-heroicons`, 230) + 9 de
+casa no mesmo traço (os do minha-automacao) + 14 cheios, e `aliases.json` com os nomes da v2 (`magnifying-glass` →
+`search`, `banknotes` → `cash`, `x-mark` → `x`…). `python3 rails/icones/gerar.py` (no host) escreve
+`rails/lib/componentes_ui/icons.rb` e `flutter/lib/src/v15/icon_names.g.dart`; `--check` falha se atrasados. O
+par Material de cada nome fica em `flutter/lib/src/v15/icons.dart` (o teste confere que todo nome da gem tem par).
+Nome que não existe vira o `question-mark-circle` nos dois lados. O tamanho do `.ss-icon` tem especificidade zero:
+a peça que envolve (`.ss-icon-tile svg`…) e o Tailwind (`size-4`) ganham; para passar a um componente, `size: nil`.
+No lugar de: `Ui::IconComponent` + gem `heroicon` (meu-financeiro), `icon()` + `app/assets/images/icons`
+(minha-automacao), `categoryIcons` (app do financeiro).
+
+**Diálogo.** Link com `data-turbo-frame="<frame_id>"` abre e carrega; a resposta pode trocar o título
+(`data-dialog-title`/`data-dialog-subtitle` no frame) e fechar (`[data-ss-dialog-close]`). Envio que deu certo (2xx/3xx)
+fecha; 422 fica aberto com o erro. `elemento.ssDialog.open()/close()`.
+
+**Conta no valor.** Mesmas regras nos três lados (Ruby, JS, Dart): vírgula decimal com 1–2 casas, ponto + 3 dígitos é
+milhar ("1.500"), ponto com 1–2 casas é decimal ("12.5"), "1,500" é ambíguo (nulo); + − × ÷ * / e parênteses.
+
+**Textos novos:** Rails `chat.*`, `money_input.invalid`, `month_switcher.*`, `progress_row.*`; Flutter `hiddenValue`,
+`showValues`, `hideValues`, `invalidAmount`, `calculator`, `toggleSign`, `progressOf/Left/OverBy/ToGo`, `goalReached`,
+`chatAction`, `chatConfirmed`, `chatCancelled`, `chatFailed` (pt, en, es).
+
+**Catálogo web:** as `<section>` da v0.15 saem de `rails/sample/script/catalogo_v015.rb`
+(`bin/rails runner script/catalogo_v015.rb` em `sample`), renderizando os componentes de verdade.
+
 ## v0.14.1: rótulo com ícone, painel rebaixado e o quadro de arrastar no web
 
 Pedido do minha-automacao (recursos do tile iguais no web e no app; primeira configuração sem painel nem
@@ -654,6 +698,7 @@ podman run --rm -v "$PWD":/r -w /r/flutter -v flutter_pub:/root/.pub-cache ghcr.
 # Rails
 podman run --rm -v "$PWD":/r -w /r/rails/sample -v cui_sample_gems:/usr/local/bundle localhost/ci-ruby:3.3-suite \
   bash -c 'bundle install --quiet; bin/rails test; bin/rails tailwindcss:build'
+# Gerados (no host): python3 paletas/gerar.py --check; python3 rails/icones/gerar.py --check
 ```
 
 ## Catálogo e SVG
@@ -671,6 +716,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.15.0` (09/11/2026): seção "v0.15" (fase 0 do meu-financeiro). `ss_icon`/`Ss::IconComponent` ↔ `SsIcons.named` (Heroicons v1 + apelidos da v2, fonte `rails/icones/`), `Ss::DialogComponent` (turbo-frame), `Ss::MonthSwitcherComponent`, `SsBarChart`/`Ss::BarChartComponent` (agrupado, empilhado, negativos, linha), conta e sinal no dinheiro (`SsMoneyField(expression:, signed:, formats:)` ↔ `MoneyInputComponent(expression:, signed:)`, `ComponentesUi::AmountExpression`, `ssEvalAmount`), `SsPrivacyScope`/`SsPrivate`/`SsPrivacyToggle`, `SsProgressRow`/`Ss::ProgressRowComponent`, `Ss::ChatComponent` + `SsChatActionCard`/`Ss::ChatActionComponent`, `Ss::FormSectionComponent` e `Ss::ConfettiComponent`. Nada quebra.
 - `v0.14.1` (09/11/2026): seção "v0.14.1". `SsFieldLabel(icon:)`/`SsValueRow(icon:)` ↔ svg no `.ss-label`/`.ss-value-row`, `SsCard(soft:)` ↔ `.ss-card.is-soft`, e no web a coluna, o título e o cartão do quadro de arrastar (`.ss-kanban-col/-head/-card`, `.ss-kanban.is-wrap`). Nada quebra.
 - `v0.14.0` (09/11/2026): seção "v0.14". `SsNote`/`Ss::NoteComponent`, `SsTaskItem`/`.ss-checklist [role=checkbox]` + `.ss-checklist-x`, `SsIconTile(image:)`/img no `.ss-icon-tile`, `.ss-icon-tile.is-heat`, tema em `label.ss-swatch > input`, `.ss-btn.is-on-grad`, `button.ss-item`, `is-flush`, tokens `--ss-card-bg/-border/-filter`, `.ss-label-chip`, `.ss-bars` em card estreito e `.ss-cam-actions [aria-pressed]`. Nada quebra.
 - `v0.13.0` (09/11/2026): seção "v0.13". `SsSection(icon:)`/`Ss::SectionComponent`, `SsSectionHeader(icon:)`/`Ss::SectionHeaderComponent`, `SsMasonry`/`Ss::MasonryComponent`, `SsAsideLayout`/`Ss::AsideLayoutComponent`, `SsMosaicTile(facts:)`/`Ss::MosaicTileComponent`, `SsPhotoCard`/`Ss::PhotoCardComponent`, chip com `aria-pressed`/`.is-icon`/`.ss-chip-swatch`, `ss_avatar(ring:)` marca a partir de duas cores (`SsBrand.fromColors`, `ssMix` / `ss_brand_style`), texto longo e abertura (`SsProse`/`SsIntro` ↔ `ProseComponent`/`IntroComponent`), grupo de campos com ajuda (`SsFieldGroup` ↔ `ss_fieldset`), `wrapper_class:`/`selected:`/`ss_submit(variant:)` no form builder e `TreeViewComponent(wrap:)`. Nada quebra.

@@ -6,6 +6,8 @@ import 'ss_list.dart';
 import 'motion.dart';
 import 'motion_view.dart';
 import 'ss_charts.dart';
+import 'ss_strings.dart';
+import 'v15/privacy.dart';
 
 /// Valor em DM Mono com os centavos menores e apagados: "R$ 1.234" + ",56".
 /// Sem vírgula seguida de 2 dígitos no fim, mostra o texto inteiro.
@@ -67,6 +69,14 @@ class SsAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // v0.15: dentro de um SsPrivacyScope(hidden: true), "R$ •••" (e o leitor diz "valor oculto").
+    if (SsPrivacyScope.hiddenOf(context)) {
+      return Semantics(
+        label: SsStrings.of(context).hiddenValue,
+        excludeSemantics: true,
+        child: _texto(context, ssPrivacyMask(text)),
+      );
+    }
     Widget fixo() =>
         roll ? SsRollSwitcher(value: parse(text) ?? text, child: _texto(context, text)) : _texto(context, text);
     final alvo = countUp ? parse(text) : null;

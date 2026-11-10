@@ -16,6 +16,7 @@ import 'ss_picker.dart';
 import 'ss_sheet.dart';
 import 'ss_stat.dart';
 import 'ss_strings.dart';
+import 'v15/amount.dart';
 
 /// Validadores prontos para os campos `Ss*`. As mensagens saem em português;
 /// para outro idioma, passe [SsStrings] (ex.:
@@ -357,8 +358,17 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
 
 /// Dinheiro em centavos: digita só números e o valor cresce da direita
 /// (0,00 → 0,05 → 0,50 → 5,00), em DM Mono com "R$" na frente. Moeda e
-/// separadores vêm de [SsFormats.of] (padrão: real).
+/// separadores vêm de [SsFormats.of] (padrão: real) ou de [formats] (v0.15: a
+/// moeda da conta, "US$").
 /// [keypad] troca o teclado do sistema pelo [showSsAmountKeypad].
+///
+/// v0.15 (o mesmo do `Ss::MoneyInputComponent(signed:, expression:)` do web):
+/// - [signed]: aceita negativo (saldo inicial): "-" na frente, tecla ± no
+///   teclado. Sem ele, o sinal não entra;
+/// - [expression]: aceita conta ("45+12,50", "3×19,90"): o campo fica livre,
+///   embaixo aparece "= R$ 57,50", [onChanged] recebe o resultado (nulo se a
+///   conta não fecha, que também é erro de validação) e, ao sair do campo, o
+///   texto vira o valor. O teclado ([keypad]) ganha + − × ÷ e vírgula.
 class SsMoneyField extends StatefulWidget {
   const SsMoneyField({
     super.key,
@@ -369,6 +379,9 @@ class SsMoneyField extends StatefulWidget {
     this.hint,
     this.keypad = false,
     this.enabled = true,
+    this.formats,
+    this.signed = false,
+    this.expression = false,
   });
 
   final String? label;
@@ -383,22 +396,38 @@ class SsMoneyField extends StatefulWidget {
   final bool keypad;
   final bool enabled;
 
+  /// Moeda e separadores do campo; nulo = [SsFormats.of].
+  final SsFormats? formats;
+  final bool signed;
+  final bool expression;
+
   @override
   State<SsMoneyField> createState() => _SsMoneyFieldState();
 }
 
 String _semRs(int? cents, SsFormats f) => cents == null ? '' : f.amount(cents);
 
+int? _comSinal(String text, SsFormats f) {
+  final v = parseMoney(text, f);
+  if (v == null) return null;
+  return text.trimLeft().startsWith(RegExp('[-−]')) ? -v : v;
+}
+
 /// Só dígitos; os 2 últimos são centavos. Até 11 dígitos (R$ 999.999.999,99).
+/// Com [signed], o "-" na frente fica (e digitar "-" em qualquer lugar troca o sinal).
 class _CentavosFormatter extends TextInputFormatter {
-  _CentavosFormatter(this.f);
+  _CentavosFormatter(this.f, {this.signed = false});
   final SsFormats f;
+  final bool signed;
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue value) {
     final d = value.text.replaceAll(RegExp(r'\D'), '');
     if (d.length > 11) return old;
-    final t = d.isEmpty ? '' : _semRs(int.parse(d), f);
+    final eraNeg = old.text.startsWith('-');
+    final menos = '-'.allMatches(value.text).length;
+    final neg = signed && (eraNeg ? menos == 1 : menos >= 1);
+    final t = d.isEmpty ? (neg ? '-' : '') : '${neg ? '-' : ''}${_semRs(int.parse(d), f)}';
     return TextEditingValue(
       text: t,
       selection: TextSelection.collapsed(offset: t.length),
@@ -407,64 +436,156 @@ class _CentavosFormatter extends TextInputFormatter {
 }
 
 class _SsMoneyFieldState extends State<SsMoneyField> {
-  late final _ctrl = TextEditingController(text: _semRs(widget.cents, SsFormats.of(context)));
+  SsFormats get _f => widget.formats ?? SsFormats.of(context);
+  late final _ctrl = TextEditingController(text: _semRs(widget.cents, _f));
+  final _focus = FocusNode();
+  // Modo conta: o resultado da última digitação (nulo = não fecha).
+  int? _conta;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_saiu);
+  }
 
   @override
   void didUpdateWidget(SsMoneyField old) {
     super.didUpdateWidget(old);
-    final f = SsFormats.of(context);
-    if (widget.cents != parseMoney(_ctrl.text, f)) _ctrl.text = _semRs(widget.cents, f);
+    final atual = widget.expression ? ssEvalAmount(_ctrl.text, _f) : _comSinal(_ctrl.text, _f);
+    if (widget.cents != atual) _ctrl.text = _semRs(widget.cents, _f);
   }
 
   @override
   void dispose() {
+    _focus.dispose();
     _ctrl.dispose();
     super.dispose();
   }
 
+  bool _vale(int? v) => v != null && (widget.signed || v >= 0);
+
+  void _saiu() {
+    if (_focus.hasFocus || !widget.expression) return;
+    final v = ssEvalAmount(_ctrl.text, _f);
+    if (_vale(v) && ssIsAmountExpression(_ctrl.text)) setState(() => _ctrl.text = _semRs(v, _f));
+  }
+
+  void _digitouConta(String s) {
+    final v = s.trim().isEmpty ? null : ssEvalAmount(s, _f);
+    setState(() => _conta = v);
+    widget.onChanged(_vale(v) ? v : null);
+  }
+
   Future<void> _abrir() async {
-    final v = await showSsAmountKeypad(context, initial: widget.cents, title: widget.label);
+    final v = await showSsAmountKeypad(
+      context,
+      initial: widget.cents,
+      title: widget.label,
+      expression: widget.expression,
+      signed: widget.signed,
+      formats: widget.formats,
+    );
     if (v == null || !mounted) return;
-    _ctrl.text = _semRs(v, SsFormats.of(context));
+    setState(() {
+      _ctrl.text = _semRs(v, _f);
+      _conta = v;
+    });
     widget.onChanged(v);
   }
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final f = SsFormats.of(context);
+    final f = _f;
+    final s = SsStrings.of(context);
+    final prefixo = f.symbolAfter ? null : f.prefix;
+    final sufixo = f.symbolAfter ? f.suffix : null;
+    final estilo = AppTheme.number(context, size: AppType.md, color: c.ink);
+    if (widget.expression) {
+      final mostra = _conta != null && _vale(_conta) && ssIsAmountExpression(_ctrl.text);
+      return SsTextField(
+        label: widget.label,
+        controller: _ctrl,
+        focusNode: _focus,
+        hint: widget.hint ?? f.amount(0),
+        prefixText: prefixo,
+        suffixText: sufixo,
+        enabled: widget.enabled,
+        readOnly: widget.keypad,
+        onTap: widget.keypad ? _abrir : null,
+        keyboardType: TextInputType.numberWithOptions(decimal: true, signed: widget.signed),
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
+        style: estilo,
+        helperText: mostra ? '= ${f.money(_conta)}' : null,
+        suffix: widget.keypad
+            ? null
+            : IconButton(
+                tooltip: s.calculator,
+                icon: Icon(Icons.calculate_outlined, color: c.muted),
+                onPressed: widget.enabled ? _abrir : null,
+              ),
+        validator: (t) {
+          final txt = t ?? '';
+          final v = txt.trim().isEmpty ? null : ssEvalAmount(txt, f);
+          if (txt.trim().isNotEmpty && !_vale(v)) return s.invalidAmount;
+          return widget.validator?.call(v);
+        },
+        onChanged: _digitouConta,
+      );
+    }
     return SsTextField(
       label: widget.label,
       controller: _ctrl,
+      focusNode: _focus,
       hint: widget.hint ?? f.amount(0),
-      prefixText: f.symbolAfter ? null : f.prefix,
-      suffixText: f.symbolAfter ? f.suffix : null,
+      prefixText: prefixo,
+      suffixText: sufixo,
       enabled: widget.enabled,
       readOnly: widget.keypad,
       onTap: widget.keypad ? _abrir : null,
-      keyboardType: TextInputType.number,
-      inputFormatters: [_CentavosFormatter(f)],
-      style: AppTheme.number(context, size: AppType.md, color: c.ink),
-      validator: widget.validator == null ? null : (s) => widget.validator!(parseMoney(s ?? '', f)),
-      onChanged: (s) => widget.onChanged(parseMoney(s, f)),
+      keyboardType: TextInputType.numberWithOptions(signed: widget.signed),
+      inputFormatters: [_CentavosFormatter(f, signed: widget.signed)],
+      style: estilo,
+      validator: widget.validator == null ? null : (t) => widget.validator!(_comSinal(t ?? '', f)),
+      onChanged: (t) => widget.onChanged(_comSinal(t, f)),
     );
   }
 }
 
 /// Abre a folha com o valor grande (DM Mono) e um teclado 3×4 próprio
 /// (1–9, 00, 0, ⌫; segurar ⌫ zera). Devolve os centavos, ou nulo se fechar.
-Future<int?> showSsAmountKeypad(BuildContext context, {int? initial, String? title}) => showSsSheet<int>(
+/// v0.15: [expression] troca pelo teclado 4×4 com + − × ÷ e vírgula (mostra
+/// "= R$ 57,50" enquanto a conta fecha; devolve o resultado); [signed] põe a
+/// tecla ± (no modo conta, o "−" no começo já vale); [formats] é a moeda.
+Future<int?> showSsAmountKeypad(
+  BuildContext context, {
+  int? initial,
+  String? title,
+  bool expression = false,
+  bool signed = false,
+  SsFormats? formats,
+}) => showSsSheet<int>(
   context,
   title: title ?? SsStrings.of(context).amount,
-  child: SsAmountKeypad(initial: initial),
+  child: SsAmountKeypad(initial: initial, expression: expression, signed: signed, formats: formats),
 );
 
 /// O corpo do [showSsAmountKeypad]. Sem [onConfirm], fecha a rota com o valor.
 class SsAmountKeypad extends StatefulWidget {
-  const SsAmountKeypad({super.key, this.initial, this.onConfirm});
+  const SsAmountKeypad({
+    super.key,
+    this.initial,
+    this.onConfirm,
+    this.expression = false,
+    this.signed = false,
+    this.formats,
+  });
 
   final int? initial;
   final ValueChanged<int>? onConfirm;
+  final bool expression;
+  final bool signed;
+  final SsFormats? formats;
 
   @override
   State<SsAmountKeypad> createState() => _SsAmountKeypadState();
@@ -472,29 +593,54 @@ class SsAmountKeypad extends StatefulWidget {
 
 class _SsAmountKeypadState extends State<SsAmountKeypad> {
   late int _c = widget.initial ?? 0;
+  // Modo conta: o texto digitado ("45+12,5").
+  late String _t = widget.initial == null || widget.initial == 0 ? '' : _semRs(widget.initial, _f);
+
+  SsFormats get _f => widget.formats ?? SsFormats.of(context);
+
+  static const _apaga = '⌫';
 
   void _tecla(String k) => setState(() {
-    if (k == '⌫') {
+    SsHaptics.tick();
+    if (widget.expression) {
+      if (k == _apaga) {
+        if (_t.isNotEmpty) _t = _t.substring(0, _t.length - 1);
+      } else {
+        _t += k;
+      }
+      return;
+    }
+    if (k == _apaga) {
       _c ~/= 10;
-    } else if (_c < 1000000000) {
-      _c = k == '00' ? _c * 100 : _c * 10 + int.parse(k);
+    } else if (k == '±') {
+      _c = -_c;
+    } else if (_c.abs() < 1000000000) {
+      final d = k == '00' ? 100 : 10;
+      final soma = k == '00' ? 0 : int.parse(k);
+      _c = _c < 0 ? _c * d - soma : _c * d + soma;
     }
   });
+
+  void _limpa() => setState(() => widget.expression ? _t = '' : _c = 0);
+
+  void _ok(int v) => widget.onConfirm != null ? widget.onConfirm!(v) : Navigator.pop(context, v);
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final s = SsStrings.of(context);
+    final f = _f;
+    final operador = RegExp(r'^[÷×−+±]$');
     Widget tecla(String k) => Expanded(
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Semantics(
           button: true,
-          label: k == '⌫' ? s.backspaceHold : k,
+          label: k == _apaga ? s.backspaceHold : (k == '±' ? s.toggleSign : k),
           excludeSemantics: true,
           child: GestureDetector(
-            onLongPress: k == '⌫' ? () => setState(() => _c = 0) : null,
+            onLongPress: k == _apaga ? _limpa : null,
             child: SsPressable(
               scale: .9,
               onTap: () => _tecla(k),
@@ -502,34 +648,70 @@ class _SsAmountKeypadState extends State<SsAmountKeypad> {
                 height: d.target(d.fieldHeight + 4),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(d.radiusField)),
-                child: k == '⌫'
+                child: k == _apaga
                     ? Icon(Icons.backspace_outlined, color: c.ink2)
-                    : Text(k, style: AppTheme.number(context, size: 22, color: c.ink)),
+                    : Text(
+                        k,
+                        style: AppTheme.number(context, size: 22, color: operador.hasMatch(k) ? c.accentText : c.ink),
+                      ),
               ),
             ),
           ),
         ),
       ),
     );
+
+    if (widget.expression) {
+      final v = _t.isEmpty ? null : ssEvalAmount(_t, f);
+      final vale = v != null && (widget.signed || v >= 0);
+      final conta = ssIsAmountExpression(_t);
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            liveRegion: true,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SsAmount('${f.prefix}${_t.isEmpty ? '0' : _t}${f.suffix}', size: 30),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            vale && conta
+                ? '= ${f.money(v)}'
+                : (_t.isNotEmpty && !vale && !RegExp(r'[-+*/×÷−(]$').hasMatch(_t) ? s.invalidAmount : ' '),
+            textAlign: TextAlign.right,
+            style: TextStyle(color: vale ? c.muted : c.dangerText),
+          ),
+          const SizedBox(height: 8),
+          for (final linha in [
+            const ['7', '8', '9', '÷'],
+            const ['4', '5', '6', '×'],
+            const ['1', '2', '3', '−'],
+            [f.decimalSeparator, '0', _apaga, '+'],
+          ])
+            Row(children: [for (final k in linha) tecla(k)]),
+          const SizedBox(height: 12),
+          SsButton(label: s.confirm, icon: Icons.check_rounded, onPressed: vale ? () => _ok(v) : null),
+        ],
+      );
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(liveRegion: true, child: Center(child: SsAmount(money(_c, SsFormats.of(context)), size: 44))),
+        Semantics(liveRegion: true, child: Center(child: SsAmount(money(_c, f), size: 44))),
         const SizedBox(height: 14),
-        for (final linha in const [
-          ['1', '2', '3'],
-          ['4', '5', '6'],
-          ['7', '8', '9'],
-          ['00', '0', '⌫'],
+        for (final linha in [
+          const ['1', '2', '3'],
+          const ['4', '5', '6'],
+          const ['7', '8', '9'],
+          [widget.signed ? '±' : '00', '0', _apaga],
         ])
           Row(children: [for (final k in linha) tecla(k)]),
         const SizedBox(height: 12),
-        SsButton(
-          label: s.confirm,
-          icon: Icons.check_rounded,
-          onPressed: () => widget.onConfirm != null ? widget.onConfirm!(_c) : Navigator.pop(context, _c),
-        ),
+        SsButton(label: s.confirm, icon: Icons.check_rounded, onPressed: () => _ok(_c)),
       ],
     );
   }

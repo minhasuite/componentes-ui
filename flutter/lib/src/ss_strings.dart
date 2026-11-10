@@ -358,6 +358,21 @@ class SsStrings {
     required this.copy,
     required this.copied,
     required this.dangerZone,
+    required this.hiddenValue,
+    required this.showValues,
+    required this.hideValues,
+    required this.invalidAmount,
+    required this.calculator,
+    required this.toggleSign,
+    required this.progressOf,
+    required this.progressLeft,
+    required this.progressOverBy,
+    required this.progressToGo,
+    required this.goalReached,
+    required this.chatAction,
+    required this.chatConfirmed,
+    required this.chatCancelled,
+    required this.chatFailed,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -854,6 +869,51 @@ class SsStrings {
   /// Título padrão do SsDangerZone.
   final String dangerZone;
 
+  /// Leitura do valor escondido pelo SsPrivacyScope (v0.15).
+  final String hiddenValue;
+
+  /// Botão do SsPrivacyToggle com os valores escondidos.
+  final String showValues;
+
+  /// Botão do SsPrivacyToggle com os valores à mostra.
+  final String hideValues;
+
+  /// Conta ou valor que não fecha no SsMoneyField(expression:).
+  final String invalidAmount;
+
+  /// Botão que abre o teclado com conta no SsMoneyField.
+  final String calculator;
+
+  /// Tecla ± do teclado de valor (SsMoneyField(signed:)).
+  final String toggleSign;
+
+  /// "R$ 720 de R$ 1.000" do SsProgressRow.
+  final String Function(String value, String limit) progressOf;
+
+  /// "Restam R$ 280" do SsProgressRow (limite).
+  final String Function(String value) progressLeft;
+
+  /// "R$ 120 acima" do SsProgressRow (estouro).
+  final String Function(String value) progressOverBy;
+
+  /// "Faltam R$ 280" do SsProgressRow (meta).
+  final String Function(String value) progressToGo;
+
+  /// Meta batida no SsProgressRow(kind: goal).
+  final String goalReached;
+
+  /// Sobrelinha do SsChatActionCard.
+  final String chatAction;
+
+  /// SsChatActionCard confirmado.
+  final String chatConfirmed;
+
+  /// SsChatActionCard cancelado.
+  final String chatCancelled;
+
+  /// SsChatActionCard que falhou.
+  final String chatFailed;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1218,6 +1278,21 @@ class SsStrings {
     copy: 'Copiar',
     copied: 'Copiado',
     dangerZone: 'Zona de perigo',
+    hiddenValue: 'Valor oculto',
+    showValues: 'Mostrar valores',
+    hideValues: 'Esconder valores',
+    invalidAmount: 'Conta ou valor inválido',
+    calculator: 'Calculadora',
+    toggleSign: 'Trocar o sinal',
+    progressOf: (value, limit) => '$value de $limit',
+    progressLeft: (value) => 'Restam $value',
+    progressOverBy: (value) => '$value acima',
+    progressToGo: (value) => 'Faltam $value',
+    goalReached: 'Meta batida',
+    chatAction: 'Ação proposta',
+    chatConfirmed: 'Feito',
+    chatCancelled: 'Cancelado',
+    chatFailed: 'Não deu certo',
   );
 
   /// Inglês.
@@ -1570,6 +1645,21 @@ class SsStrings {
     copy: 'Copy',
     copied: 'Copied',
     dangerZone: 'Danger zone',
+    hiddenValue: 'Hidden amount',
+    showValues: 'Show amounts',
+    hideValues: 'Hide amounts',
+    invalidAmount: 'Invalid amount or sum',
+    calculator: 'Calculator',
+    toggleSign: 'Toggle sign',
+    progressOf: (value, limit) => '$value of $limit',
+    progressLeft: (value) => '$value left',
+    progressOverBy: (value) => '$value over',
+    progressToGo: (value) => '$value to go',
+    goalReached: 'Goal reached',
+    chatAction: 'Suggested action',
+    chatConfirmed: 'Done',
+    chatCancelled: 'Cancelled',
+    chatFailed: 'It did not work',
   );
 
   /// Espanhol.
@@ -1922,6 +2012,21 @@ class SsStrings {
     copy: 'Copiar',
     copied: 'Copiado',
     dangerZone: 'Zona de peligro',
+    hiddenValue: 'Valor oculto',
+    showValues: 'Mostrar valores',
+    hideValues: 'Ocultar valores',
+    invalidAmount: 'Cuenta o valor inválido',
+    calculator: 'Calculadora',
+    toggleSign: 'Cambiar el signo',
+    progressOf: (value, limit) => '$value de $limit',
+    progressLeft: (value) => 'Quedan $value',
+    progressOverBy: (value) => '$value por encima',
+    progressToGo: (value) => 'Faltan $value',
+    goalReached: 'Meta alcanzada',
+    chatAction: 'Acción propuesta',
+    chatConfirmed: 'Hecho',
+    chatCancelled: 'Cancelado',
+    chatFailed: 'No funcionó',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2261,6 +2366,21 @@ class SsStrings {
     'copy': copy,
     'copied': copied,
     'dangerZone': dangerZone,
+    'hiddenValue': hiddenValue,
+    'showValues': showValues,
+    'hideValues': hideValues,
+    'invalidAmount': invalidAmount,
+    'calculator': calculator,
+    'toggleSign': toggleSign,
+    'progressOf': progressOf('X', 'Y'),
+    'progressLeft': progressLeft('X'),
+    'progressOverBy': progressOverBy('X'),
+    'progressToGo': progressToGo('X'),
+    'goalReached': goalReached,
+    'chatAction': chatAction,
+    'chatConfirmed': chatConfirmed,
+    'chatCancelled': chatCancelled,
+    'chatFailed': chatFailed,
   };
 
   /// Os idiomas prontos.
@@ -2635,6 +2755,21 @@ class SsStrings {
     String? copy,
     String? copied,
     String? dangerZone,
+    String? hiddenValue,
+    String? showValues,
+    String? hideValues,
+    String? invalidAmount,
+    String? calculator,
+    String? toggleSign,
+    String Function(String value, String limit)? progressOf,
+    String Function(String value)? progressLeft,
+    String Function(String value)? progressOverBy,
+    String Function(String value)? progressToGo,
+    String? goalReached,
+    String? chatAction,
+    String? chatConfirmed,
+    String? chatCancelled,
+    String? chatFailed,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -2971,6 +3106,21 @@ class SsStrings {
     copy: copy ?? this.copy,
     copied: copied ?? this.copied,
     dangerZone: dangerZone ?? this.dangerZone,
+    hiddenValue: hiddenValue ?? this.hiddenValue,
+    showValues: showValues ?? this.showValues,
+    hideValues: hideValues ?? this.hideValues,
+    invalidAmount: invalidAmount ?? this.invalidAmount,
+    calculator: calculator ?? this.calculator,
+    toggleSign: toggleSign ?? this.toggleSign,
+    progressOf: progressOf ?? this.progressOf,
+    progressLeft: progressLeft ?? this.progressLeft,
+    progressOverBy: progressOverBy ?? this.progressOverBy,
+    progressToGo: progressToGo ?? this.progressToGo,
+    goalReached: goalReached ?? this.goalReached,
+    chatAction: chatAction ?? this.chatAction,
+    chatConfirmed: chatConfirmed ?? this.chatConfirmed,
+    chatCancelled: chatCancelled ?? this.chatCancelled,
+    chatFailed: chatFailed ?? this.chatFailed,
   );
 }
 

@@ -568,3 +568,28 @@ en:
       more: '%{n} sections'
     top_bar:
       back: 'Back'
+    # v0.15
+    chat:
+      action: 'Suggested action'
+      cancel: 'Cancel'
+      cancelled: 'Cancelled'
+      confirm: 'Confirm'
+      confirmed: 'Done'
+      failed: 'It did not work'
+      label: 'Conversation'
+      placeholder: 'Write a message'
+      send: 'Send'
+      thinking: 'Thinking'
+    money_input:
+      invalid: 'Invalid amount or sum'
+    month_switcher:
+      current: 'Back to this month'
+      label: 'Month'
+      next: 'Next month'
+      previous: 'Previous month'
+    progress_row:
+      done: 'Goal reached'
+      left: '%{value} left'
+      of: '%{value} of %{limit}'
+      over: '%{value} over'
+      to_go: '%{value} to go'

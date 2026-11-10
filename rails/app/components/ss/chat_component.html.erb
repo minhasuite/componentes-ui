@@ -1,0 +1,17 @@
+<%= tag.section(**root_attrs(id: id, class: classes("ss-chat-panel"), "aria-label": label,
+      data: { controller: "ss-chat", ss_chat_echo_value: echo?, ss_chat_thinking_value: thinking? })) do %>
+  <div class="ss-chat" id="<%= messages_id %>" role="log" aria-live="polite" aria-relevant="additions" data-ss-chat-target="log">
+    <% if messages.any? %><% messages.each do |m| %><%= m %><% end %><% elsif empty? %><div class="ss-chat-empty" data-ss-chat-target="empty"><%= empty %></div><% end %>
+  </div>
+  <span class="ss-thinking" role="status" aria-label="<%= thinking_label %>" data-ss-chat-target="thinking"<% unless thinking? %> hidden<% end %>><i></i><i></i><i></i></span>
+  <% if url %>
+    <%= form_with url: url, method: http_method, class: "ss-chat-form", data: { ss_chat_target: "form", action: "submit->ss-chat#sending turbo:submit-end->ss-chat#sent" } do %>
+      <label class="ss-sr" for="<%= id %>-input"><%= placeholder %></label>
+      <textarea id="<%= id %>-input" name="<%= name %>" rows="1" class="ss-input ss-chat-input" placeholder="<%= placeholder %>" maxlength="<%= max_length %>" required
+                autocomplete="off"<% if disabled? %> disabled<% end %> data-ss-chat-target="input" data-action="keydown->ss-chat#key input->ss-chat#grow"></textarea>
+      <button type="submit" class="ss-btn ss-btn-primary ss-chat-send" aria-label="<%= send_label %>" title="<%= send_label %>"<% if disabled? %> disabled<% end %> data-ss-chat-target="send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+      </button>
+    <% end %>
+  <% end %>
+<% end %>

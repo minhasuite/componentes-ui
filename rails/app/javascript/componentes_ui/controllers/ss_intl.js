@@ -59,3 +59,57 @@ export function ssSplitCents(text, lang = ssLang()) {
 export function ssFormat(template, vars = {}) {
   return String(template ?? "").replace(/%\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : ""))
 }
+
+// v0.15: valor digitado como conta ("45+12,50-3", "3×19,90", "(10+5)/3"), o mesmo
+// ComponentesUi::AmountExpression do servidor e o ssEvalAmount do Flutter. Só números,
+// + − × ÷ e parênteses; devolve centavos inteiros ou null se não fecha. decimal: "," (pt/es)
+// ou "." (en). Número: vírgula decimal (1–2 casas), ponto + 3 dígitos é milhar ("1.500").
+export function ssAmountNumber(text, decimal = ",") {
+  let s = String(text).trim()
+  if (decimal === ".") s = s.replace(/[.,]/g, (c) => (c === "." ? "," : "."))
+  if (/^[1-9]\d{0,2}(\.\d{3})+(,\d{1,2})?$/.test(s)) return Number(s.replace(/\./g, "").replace(",", "."))
+  if (/^\d+(,\d{1,2})?$/.test(s)) return Number(s.replace(",", "."))
+  if (/^\d+\.\d{1,2}$/.test(s)) return Number(s)
+  if (/^,\d{1,2}$/.test(s)) return Number(`0${s.replace(",", ".")}`)
+  return null
+}
+
+export function ssAmountExpression(text, decimal = ssSeparators().decimal) {
+  const s = String(text ?? "").replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").replace(/[^\d.,+\-*/()\s]/g, "").replace(/\s+/g, "")
+  if (!s) return null
+  const tokens = s.match(/[\d.,]+|[-+*/()]/g) || []
+  if (tokens.join("") !== s) return null
+  let i = 0
+  const fail = () => { throw new Error("expr") }
+  // Em centésimos de centavo para não acumular erro de ponto flutuante na soma.
+  const factor = () => {
+    const t = tokens[i++]
+    if (t === "-") return -factor()
+    if (t === "(") { const v = expr(); if (tokens[i++] !== ")") fail(); return v }
+    if (t === undefined) fail()
+    const n = ssAmountNumber(t, decimal)
+    return n === null ? fail() : n
+  }
+  const term = () => {
+    let v = factor()
+    while (tokens[i] === "*" || tokens[i] === "/") {
+      const op = tokens[i++], b = factor()
+      if (op === "/" && b === 0) fail()
+      v = op === "*" ? v * b : v / b
+    }
+    return v
+  }
+  const expr = () => {
+    let v = term()
+    while (tokens[i] === "+" || tokens[i] === "-") { const op = tokens[i++]; const b = term(); v = op === "+" ? v + b : v - b }
+    return v
+  }
+  try {
+    const v = expr()
+    if (i !== tokens.length || !Number.isFinite(v)) return null
+    return Math.round(Math.round(v * 1e6) / 1e4)
+  } catch (_) { return null }
+}
+
+// Tem operador (é conta, não só um número)?
+export function ssIsExpression(text) { return /[-+*/×÷−()]/.test(String(text ?? "").trim().replace(/^[-−]/, "")) }
