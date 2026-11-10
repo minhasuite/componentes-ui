@@ -98,4 +98,17 @@ class HelpersTest < Minitest::Test
   def test_numero_dentro_de_componente_com_format_proprio
     assert_includes ComFormatDoViewComponent.new.ss_number(1234.5, precision: 2), "1.234,50"
   end
+
+  # v0.15.2: espaço não separável e ss_qty (fora do Rails: o default pt-BR do ss_t).
+  def test_money_com_espaco_nao_separavel_e_moeda_iso
+    assert_equal "R$\u00A01.234,50", ss_money(1234.5)
+    assert_equal "US$\u00A012,00", ss_money(12, currency: "USD")
+    assert_equal "CHF\u00A010,00", ss_money(10, currency: "CHF")
+  end
+
+  def test_qty_com_litro_maiusculo
+    assert_equal "1,5 L", ss_qty(1.5, "l")
+    assert_equal "2", ss_qty(2.0)
+    assert_equal "0,25 kg", ss_qty(0.25, "kg")
+  end
 end

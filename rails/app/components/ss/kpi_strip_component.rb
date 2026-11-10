@@ -59,8 +59,9 @@ module Ss
       s = ss_t("number.separator", locale: ss_number_locale, default: ",")
       n = m[:n].delete(d).tr(s, ".").to_f
       decimals = (m[:dec] || m[:dec2]).to_s.size
-      pre = m[:pre].to_s
-      suf = m[:suf].to_s
+      # v0.15.2: o ss_money separa o símbolo com espaço não separável (o strip não tira).
+      pre = m[:pre].to_s.tr("\u00A0", " ")
+      suf = m[:suf].to_s.tr("\u00A0", " ")
       sym = ss_currency_symbol
       if it[:money] && ((pre.strip == sym && suf.empty?) || (pre.empty? && suf.strip == sym))
         render(Ss::CountUpComponent.new(value: n, format: :money, decimals:))

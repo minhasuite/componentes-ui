@@ -75,8 +75,8 @@ class BCardsTest < ComponentTest
     assert_selector ".ss-vt.ss-vt-img[style='view-transition-name:produto-1-img']"
     assert_equal "view-transition-name:produto-2-title", Ss::TransitionComponent.style("produto-2-title")
     render_inline(Ss::CountUpComponent.new(value: 48320.5, format: :money))
-    assert_selector ".ss-count-up[data-controller=ss-count-up][data-ss-count-up-value-value='48320.5'] .ss-amount", text: "R$ 48.320,50"
-    assert_selector ".ss-count-up .ss-sr", text: "R$ 48.320,50"
+    assert_selector ".ss-count-up[data-controller=ss-count-up][data-ss-count-up-value-value='48320.5'] .ss-amount", text: "R$\u00A048.320,50"
+    assert_selector ".ss-count-up .ss-sr", text: "R$\u00A048.320,50"
     render_inline(Ss::CountUpComponent.new(value: 92.4, format: :percent, decimals: 1))
     assert_selector ".ss-count-up-n", text: "92,4%"
   end

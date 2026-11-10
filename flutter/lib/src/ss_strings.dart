@@ -373,6 +373,7 @@ class SsStrings {
     required this.chatConfirmed,
     required this.chatCancelled,
     required this.chatFailed,
+    required this.waitingElapsed,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -914,6 +915,9 @@ class SsStrings {
   /// SsChatActionCard que falhou.
   final String chatFailed;
 
+  /// v0.15.2: tempo decorrido no [ssRunBlocking] (`showElapsedAfter:`): "12 s · ainda trabalhando, não feche o app".
+  final String Function(int seconds) waitingElapsed;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1293,6 +1297,7 @@ class SsStrings {
     chatConfirmed: 'Feito',
     chatCancelled: 'Cancelado',
     chatFailed: 'Não deu certo',
+    waitingElapsed: (s) => '$s s · ainda trabalhando, não feche o app',
   );
 
   /// Inglês.
@@ -1660,6 +1665,7 @@ class SsStrings {
     chatConfirmed: 'Done',
     chatCancelled: 'Cancelled',
     chatFailed: 'It did not work',
+    waitingElapsed: (s) => "$s s · still working, don't close the app",
   );
 
   /// Espanhol.
@@ -2027,6 +2033,7 @@ class SsStrings {
     chatConfirmed: 'Hecho',
     chatCancelled: 'Cancelado',
     chatFailed: 'No funcionó',
+    waitingElapsed: (s) => '$s s · todavía trabajando, no cierres la app',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2381,6 +2388,7 @@ class SsStrings {
     'chatConfirmed': chatConfirmed,
     'chatCancelled': chatCancelled,
     'chatFailed': chatFailed,
+    'waitingElapsed': waitingElapsed(12),
   };
 
   /// Os idiomas prontos.
@@ -2770,6 +2778,7 @@ class SsStrings {
     String? chatConfirmed,
     String? chatCancelled,
     String? chatFailed,
+    String Function(int seconds)? waitingElapsed,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3121,6 +3130,7 @@ class SsStrings {
     chatConfirmed: chatConfirmed ?? this.chatConfirmed,
     chatCancelled: chatCancelled ?? this.chatCancelled,
     chatFailed: chatFailed ?? this.chatFailed,
+    waitingElapsed: waitingElapsed ?? this.waitingElapsed,
   );
 }
 
@@ -3175,9 +3185,10 @@ class SsFormats {
     this.symbolAfter = false,
     this.symbolSpace = true,
     this.locale = const Locale('pt', 'BR'),
+    this.currencyCode = 'BRL',
   });
 
-  /// Real: "R$ 1.234,56".
+  /// Real: "R$ 1.234,56" (v0.15.2: o espaço é não separável, U+00A0).
   static const brl = SsFormats();
 
   /// Dólar: "$1,234.56".
@@ -3187,10 +3198,57 @@ class SsFormats {
     thousandsSeparator: ',',
     symbolSpace: false,
     locale: Locale('en', 'US'),
+    currencyCode: 'USD',
   );
 
   /// Euro: "1.234,56 €".
-  static const eur = SsFormats(currencySymbol: '€', symbolAfter: true, locale: Locale('es', 'ES'));
+  static const eur = SsFormats(currencySymbol: '€', symbolAfter: true, locale: Locale('es', 'ES'), currencyCode: 'EUR');
+
+  /// Espaço não separável entre o símbolo e o número: "R$" nunca fica sozinho
+  /// no fim da linha (o mesmo que o `ss_money` da gem e o `Intl` do navegador).
+  static const nbsp = '\u00A0';
+
+  /// Símbolo de cada moeda (ISO 4217), o mesmo mapa do `ss_money` da gem
+  /// (`ComponentesUi::Helpers::CURRENCY_SYMBOLS`). Fora dele, sai o próprio código.
+  static const currencySymbols = {
+    'BRL': r'R$',
+    'USD': r'US$',
+    'EUR': '€',
+    'GBP': '£',
+    'ARS': r'$',
+    'CLP': r'$',
+    'COP': r'$',
+    'MXN': r'$',
+    'UYU': r'$U',
+    'PYG': '₲',
+    'PEN': 'S/',
+    'BOB': 'Bs',
+    'CAD': r'CA$',
+    'JPY': '¥',
+  };
+
+  /// Símbolo da moeda [iso] ("USD" → "US$"; "CHF" → "CHF").
+  static String symbolFor(String iso) {
+    final code = iso.trim().toUpperCase();
+    return currencySymbols[code] ?? code;
+  }
+
+  /// Os separadores e a posição do símbolo de [base] (padrão: real, pt-BR),
+  /// com a moeda [iso]: `money(4500, SsFormats.forCurrency('EUR'))` → "€ 45,00";
+  /// "US$ 12,00", "CHF 10,00". [symbol] troca o do mapa ("ARS" em vez de "$").
+  /// A mesma moeda da [base] devolve a própria [base]. Igual ao
+  /// `ss_money(v, currency: "EUR")` da gem.
+  static SsFormats forCurrency(String iso, {SsFormats base = brl, String? symbol}) {
+    final code = iso.trim().toUpperCase();
+    if (code == base.currencyCode && symbol == null) return base;
+    final sym = symbol ?? symbolFor(code);
+    return base.copyWith(
+      currencySymbol: sym,
+      currencyCode: code,
+      // "$1,234.56" sem espaço, mas "CHF 1,234.56" com (código não cola no número).
+      symbolSpace: base.symbolSpace || RegExp(r'[A-Za-z]$').hasMatch(sym),
+    );
+  }
 
   final String currencySymbol;
   final String decimalSeparator;
@@ -3199,17 +3257,33 @@ class SsFormats {
   /// Símbolo depois do número ("10,00 €").
   final bool symbolAfter;
 
-  /// Espaço entre símbolo e número.
+  /// Espaço entre símbolo e número (v0.15.2: não separável, [nbsp]).
   final bool symbolSpace;
 
   /// Locale dos números (para o app que formata com `intl`).
   final Locale locale;
 
-  /// O que vai antes do número ("R$ "), ou vazio.
-  String get prefix => symbolAfter ? '' : (symbolSpace ? '$currencySymbol ' : currencySymbol);
+  /// Código ISO 4217 da moeda ("BRL"); ver [forCurrency].
+  final String currencyCode;
 
-  /// O que vai depois do número (" €"), ou vazio.
-  String get suffix => symbolAfter ? (symbolSpace ? ' $currencySymbol' : currencySymbol) : '';
+  /// O que vai antes do número ("R$\u00A0"), ou vazio. O espaço é o [nbsp].
+  String get prefix => symbolAfter ? '' : (symbolSpace ? '$currencySymbol$nbsp' : currencySymbol);
+
+  /// O que vai depois do número ("\u00A0€"), ou vazio.
+  String get suffix => symbolAfter ? (symbolSpace ? '$nbsp$currencySymbol' : currencySymbol) : '';
+
+  /// Quantidade sem zeros inúteis e, com [unit], a unidade depois:
+  /// `qty(1.5, 'l')` → "1,5 L" (litro em maiúscula: na DM Mono "2 l" parece
+  /// "21"), `qty(2)` → "2", `qty(0.25, 'kg')` → "0,25 kg". Nulo vira "—".
+  String qty(num? q, [String? unit]) {
+    if (q == null) return '—';
+    final n = q == q.roundToDouble()
+        ? q.toInt().toString()
+        : q.toStringAsFixed(3).replaceFirst(RegExp(r'0+$'), '').replaceAll('.', decimalSeparator);
+    if (unit == null || unit.trim().isEmpty) return n;
+    final u = unit.trim();
+    return '$n ${u == 'l' ? 'L' : u}';
+  }
 
   /// Inteiro com milhar: 1234 → "1.234".
   String integer(int n) {
@@ -3253,6 +3327,7 @@ class SsFormats {
     bool? symbolAfter,
     bool? symbolSpace,
     Locale? locale,
+    String? currencyCode,
   }) => SsFormats(
     currencySymbol: currencySymbol ?? this.currencySymbol,
     decimalSeparator: decimalSeparator ?? this.decimalSeparator,
@@ -3260,6 +3335,7 @@ class SsFormats {
     symbolAfter: symbolAfter ?? this.symbolAfter,
     symbolSpace: symbolSpace ?? this.symbolSpace,
     locale: locale ?? this.locale,
+    currencyCode: currencyCode ?? this.currencyCode,
   );
 
   /// O do [SsFormatsScope] acima, ou [brl].
@@ -3274,11 +3350,12 @@ class SsFormats {
       other.thousandsSeparator == thousandsSeparator &&
       other.symbolAfter == symbolAfter &&
       other.symbolSpace == symbolSpace &&
-      other.locale == locale;
+      other.locale == locale &&
+      other.currencyCode == currencyCode;
 
   @override
   int get hashCode =>
-      Object.hash(currencySymbol, decimalSeparator, thousandsSeparator, symbolAfter, symbolSpace, locale);
+      Object.hash(currencySymbol, decimalSeparator, thousandsSeparator, symbolAfter, symbolSpace, locale, currencyCode);
 }
 
 /// Troca a moeda e os separadores dos componentes abaixo dele.

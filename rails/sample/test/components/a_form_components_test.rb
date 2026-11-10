@@ -16,7 +16,7 @@ class AFormComponentsTest < ComponentTest
 
   test "dinheiro: formata e manda centavos" do
     render_inline Ss::MoneyInputComponent.new(name: "v", label: "Valor", value_cents: 123456)
-    assert_selector "input.ss-money[value='R$ 1.234,56'][inputmode=numeric]"
+    assert_selector "input.ss-money[value='R$\u00A01.234,56'][inputmode=numeric]"
     assert_selector ".ss-money-view .ss-amount small", text: ",56"
     assert_selector "input[type=hidden][name=v][value='123456']", visible: :all
   end

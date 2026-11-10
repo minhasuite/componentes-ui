@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
@@ -302,24 +304,59 @@ class _SsPromptDialogState extends State<SsPromptDialog> {
 /// `final r = await ssRunBlocking(context, () => api.salvar(p));`
 /// Com [onCancel], o cartão ganha "Cancelar": chama [onCancel] (o app cancela
 /// o `CancelToken`, e a [task] termina com erro) e a tela fecha quando ela acabar.
+///
+/// v0.15.2, para espera longa (leitura por IA):
+/// - [art] no lugar do spinner (ilustração do produto, ícone);
+/// - [showElapsedAfter]: passado esse tempo, aparece "12 s · ainda trabalhando,
+///   não feche o app" ([SsStrings.waitingElapsed]; [elapsedLabel] troca o texto),
+///   que separa "demorando" de "travado";
+/// - [cancelAfter]: o "Cancelar" só aparece depois desse tempo. Com [onCancel],
+///   segue o caminho acima. Sem [onCancel], o toque fecha a tela na hora e o
+///   `Future` termina com [SsBlockingCancelled] (a [task] segue rodando e o
+///   resultado dela é descartado):
+///
+/// ```dart
+/// final r = await ssRunBlocking(context, () => api.ler(foto),
+///     label: 'Lendo o cupom…', art: const Icon(Icons.receipt_long),
+///     showElapsedAfter: const Duration(seconds: 8),
+///     cancelAfter: const Duration(seconds: 15), onCancel: token.cancel);
+/// ```
 Future<T> ssRunBlocking<T>(
   BuildContext context,
   Future<T> Function() task, {
   String? label,
   VoidCallback? onCancel,
+  Widget? art,
+  Duration? showElapsedAfter,
+  Duration? cancelAfter,
+  String Function(int seconds)? elapsedLabel,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
+  final cancelado = Completer<void>();
+  final soFecha = onCancel == null && cancelAfter != null;
   final rota = DialogRoute<void>(
     context: context,
     barrierDismissible: false,
     builder: (_) => PopScope(
       canPop: false,
-      child: SsBlockingIndicator(label: label, onCancel: onCancel),
+      child: SsBlockingIndicator(
+        label: label,
+        art: art,
+        showElapsedAfter: showElapsedAfter,
+        cancelAfter: cancelAfter,
+        elapsedLabel: elapsedLabel,
+        onCancel: soFecha
+            ? () {
+                if (!cancelado.isCompleted) cancelado.complete();
+              }
+            : onCancel,
+      ),
     ),
   );
   navigator.push(rota);
   try {
-    return await task();
+    if (!soFecha) return await task();
+    return await Future.any<T>([task(), cancelado.future.then<T>((_) => throw const SsBlockingCancelled())]);
   } finally {
     if (rota.isCurrent) {
       navigator.pop();
@@ -329,13 +366,46 @@ Future<T> ssRunBlocking<T>(
   }
 }
 
+/// Erro do [ssRunBlocking] quando a pessoa tocou "Cancelar" (com `cancelAfter:`
+/// e sem `onCancel:`).
+class SsBlockingCancelled implements Exception {
+  const SsBlockingCancelled();
+
+  @override
+  String toString() => 'SsBlockingCancelled';
+}
+
 /// O cartão de espera do [ssRunBlocking] (público para o catálogo).
 class SsBlockingIndicator extends StatefulWidget {
-  const SsBlockingIndicator({super.key, this.label, this.onCancel});
+  const SsBlockingIndicator({
+    super.key,
+    this.label,
+    this.onCancel,
+    this.art,
+    this.showElapsedAfter,
+    this.cancelAfter,
+    this.elapsedLabel,
+    this.elapsed = Duration.zero,
+  });
 
   /// Padrão: [SsStrings.pleaseWait].
   final String? label;
   final VoidCallback? onCancel;
+
+  /// No lugar do spinner (v0.15.2).
+  final Widget? art;
+
+  /// Tempo decorrido embaixo do texto depois disso (v0.15.2).
+  final Duration? showElapsedAfter;
+
+  /// "Cancelar" só depois disso; nulo = desde o começo (v0.15.2).
+  final Duration? cancelAfter;
+
+  /// Texto do tempo decorrido; padrão [SsStrings.waitingElapsed].
+  final String Function(int seconds)? elapsedLabel;
+
+  /// De onde a contagem começa (catálogo e teste); padrão zero.
+  final Duration elapsed;
 
   @override
   State<SsBlockingIndicator> createState() => _SsBlockingIndicatorState();
@@ -343,49 +413,90 @@ class SsBlockingIndicator extends StatefulWidget {
 
 class _SsBlockingIndicatorState extends State<SsBlockingIndicator> {
   var _cancelado = false;
+  late int _segundos = widget.elapsed.inSeconds;
+  Timer? _relogio;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.showElapsedAfter != null || widget.cancelAfter != null) {
+      _relogio = Timer.periodic(const Duration(seconds: 1), (_) => setState(() => _segundos++));
+    }
+  }
+
+  @override
+  void dispose() {
+    _relogio?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final s = SsStrings.of(context);
+    final texto = _cancelado ? s.cancelling : widget.label ?? s.pleaseWait;
+    final mostraTempo = widget.showElapsedAfter != null && _segundos >= widget.showElapsedAfter!.inSeconds;
+    final tempo = mostraTempo ? (widget.elapsedLabel ?? s.waitingElapsed)(_segundos) : null;
+    final mostraCancelar =
+        widget.onCancel != null && (widget.cancelAfter == null || _segundos >= widget.cancelAfter!.inSeconds);
     return Center(
-      child: Semantics(
-        liveRegion: true,
-        label: _cancelado ? s.cancelling : widget.label ?? s.pleaseWait,
-        child: Material(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.6, color: c.accent)),
-                    const SizedBox(width: 14),
-                    Flexible(
-                      child: Text(
-                        _cancelado ? s.cancelling : widget.label ?? s.pleaseWait,
-                        style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Semantics(
+          liveRegion: true,
+          label: tempo == null ? texto : '$texto. $tempo',
+          child: Material(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      widget.art ??
+                          SizedBox.square(
+                            dimension: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2.6, color: c.accent),
+                          ),
+                      SizedBox(width: widget.art == null ? 14 : 16),
+                      Flexible(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              texto,
+                              style: TextStyle(color: c.ink, fontWeight: FontWeight.w700, fontSize: AppType.body),
+                            ),
+                            if (tempo != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                tempo,
+                                style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                  if (mostraCancelar) ...[
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: _cancelado
+                          ? null
+                          : () {
+                              setState(() => _cancelado = true);
+                              widget.onCancel!();
+                            },
+                      child: Text(s.cancel),
                     ),
                   ],
-                ),
-                if (widget.onCancel != null) ...[
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: _cancelado
-                        ? null
-                        : () {
-                            setState(() => _cancelado = true);
-                            widget.onCancel!();
-                          },
-                    child: Text(s.cancel),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
         ),

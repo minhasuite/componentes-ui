@@ -56,15 +56,39 @@ module ComponentesUi
       "#{"-" if neg}#{int}#{"#{sep}#{dec}" if dec}"
     end
 
-    # Dinheiro no formato do idioma e na moeda da config:
+    # Espaço não separável (U+00A0) entre símbolo e número (v0.15.2): "R$" nunca fica
+    # sozinho no fim da linha. O mesmo do SsFormats (Flutter) e do Intl (JS da gem).
+    NBSP = "\u00A0"
+
+    # Dinheiro no formato do idioma e na moeda da config (ou a de currency:, ISO 4217):
     #   ss_money(1234.5) → "R$ 1.234,50" (pt-BR), "R$1,234.50" (en), "1.234,50 R$" (es).
+    #   ss_money(12, currency: "USD") → "US$ 12,00"; ss_money(10, currency: "CHF") → "CHF 10,00".
+    # O espaço do formato sai não separável (U+00A0), também no "%u %n" de um YAML do app.
     # minus: o sinal do negativo ("-" ou o "−" tipográfico).
     def ss_money(value, currency: nil, precision: 2, locale: nil, minus: "-")
       loc = locale || ss_number_locale
-      pattern = ss_t("money.format", locale: loc, default: "%u %n")
+      pattern = ss_t("money.format", locale: loc, default: "%u#{NBSP}%n").tr(" ", NBSP)
       v = value.to_f
       text = pattern.sub("%u", ss_currency_symbol(currency)).sub("%n", ss_number(v.abs, precision:, locale: loc))
       v.negative? && v.round(precision) != 0 ? "#{minus}#{text}" : text
+    end
+
+    # Quantidade sem zeros inúteis e com a unidade (v0.15.2, igual ao SsFormats.qty):
+    #   ss_qty(2) → "2", ss_qty(1.5, "l") → "1,5 L" (litro em maiúscula), ss_qty(0.25, "kg") → "0,25 kg".
+    def ss_qty(value, unit = nil, locale: nil)
+      return "—" if value.nil?
+
+      v = value.to_f
+      n = if v == v.round
+        v.round.to_s
+      else
+        sep = ss_t("number.separator", locale: locale || ss_number_locale, default: ",")
+        Kernel.format("%.3f", v).sub(/0+\z/, "").tr(".", sep)
+      end
+      u = unit.to_s.strip
+      return n if u.empty?
+
+      "#{n} #{u == "l" ? "L" : u}"
     end
 
     # Data no formato curto do idioma (strftime dos YAML da gem):

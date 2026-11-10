@@ -16,19 +16,12 @@ String moneyField(int? cents, [SsFormats? formats]) {
 }
 
 /// Quantidade sem zeros inúteis: 2.0 → "2", 1.5 → "1,5", 0.25 → "0,25".
-String qty(num? q, [SsFormats? formats]) {
-  if (q == null) return '—';
-  if (q == q.roundToDouble()) return q.toInt().toString();
-  return q
-      .toStringAsFixed(3)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceAll('.', (formats ?? SsFormats.brl).decimalSeparator);
-}
+String qty(num? q, [SsFormats? formats]) => (formats ?? SsFormats.brl).qty(q);
 
 double? parseQty(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
 
-String qtyUnit(num? q, String? unit, [SsFormats? formats]) =>
-    unit == null || unit.isEmpty ? qty(q, formats) : '${qty(q, formats)} $unit';
+/// "1,5 L", "2 un", "0,25 kg" (v0.15.2: litro sai em maiúscula). Ver [SsFormats.qty].
+String qtyUnit(num? q, String? unit, [SsFormats? formats]) => (formats ?? SsFormats.brl).qty(q, unit);
 
 String two(int n) => n.toString().padLeft(2, '0');
 

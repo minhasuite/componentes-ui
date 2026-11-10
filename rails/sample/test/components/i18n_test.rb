@@ -110,7 +110,7 @@ class I18nRenderTest < ComponentTest
       end
     end
     render_inline(table.call)
-    assert_selector "td[data-col=total] .ss-amount", text: "R$ 1.234,50"
+    assert_selector "td[data-col=total] .ss-amount", text: "R$\u00A01.234,50"
     assert_selector "td[data-col=qtd]", text: "2,5"
     assert_selector "td[data-col=dia] time", text: "31/10/2026"
     I18n.with_locale(:en) { render_inline(table.call) }
@@ -120,7 +120,7 @@ class I18nRenderTest < ComponentTest
     begin
       ComponentesUi.config.currency = "EUR"
       I18n.with_locale(:es) { render_inline(Ss::CountUpComponent.new(value: 1234.5, format: :money)) }
-      assert_selector ".ss-sr", text: "1.234,50 €"
+      assert_selector ".ss-sr", text: "1.234,50\u00A0€"
       assert_selector "[data-ss-count-up-currency-value=EUR]"
     ensure
       ComponentesUi.config.currency = "BRL"

@@ -236,6 +236,12 @@
   .ss-badge-success { background: var(--success-soft); color: var(--success); box-shadow: none; }
   .ss-badge-danger { background: var(--danger-soft); color: var(--danger); box-shadow: none; }
   .ss-badge-warn { background: var(--warn-soft); color: var(--warn); box-shadow: none; }
+  /* v0.15.2: rótulo longo num contêiner estreito termina em "…" em vez de estourar. Só texto: vira
+     inline-block (reticências só funcionam num bloco); com ícone/ponto segue flex, e o texto num <span>. */
+  .ss-badge { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ss-badge:not(:has(> *)):not(.ss-badge-dot) { display: inline-block; vertical-align: middle; }
+  .ss-badge > svg { flex: none; }
+  .ss-badge > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
   /* Sidebar escura do meu-financeiro: pílula ativa com gradiente e barra à esquerda. */
   .ss-side { background: var(--side); color: var(--side-ink); }

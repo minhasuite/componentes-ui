@@ -14,7 +14,7 @@ class BDadosTest < ComponentTest
     assert_selector "th[scope=col][data-col=total][aria-sort=descending]"
     assert_selector "th[data-col=cliente][aria-sort=none]"
     assert_no_selector "th[data-col=id][aria-sort]"
-    assert_selector "td.r.num .ss-amount", text: "R$ 30,00"
+    assert_selector "td.r.num .ss-amount", text: "R$\u00A030,00"
   end
 
   test "tabela: link de ordenar alterna o sentido e volta à página 1" do
@@ -33,7 +33,7 @@ class BDadosTest < ComponentTest
     assert_equal %w[Ana Bia Caio], page.all("td[data-col=cliente]").map(&:text)
     c2 = Ss::DataTableComponent.new(rows: ROWS, id: "t", caption: "x", sort: "total", dir: "desc", sort_rows: true, params: {})
     render_inline(c2) { |t| t.column(:total, "Total", sortable: true, format: :money) }
-    assert_equal ["R$ 30,00", "R$ 20,00", "R$ 10,50"], page.all("td[data-col=total]").map(&:text)
+    assert_equal ["R$\u00A030,00", "R$\u00A020,00", "R$\u00A010,50"], page.all("td[data-col=total]").map(&:text)
   end
 
   test "tabela: seleção, barra, expansão, paginação e vazio" do

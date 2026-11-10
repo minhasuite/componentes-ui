@@ -337,6 +337,34 @@ const _menta = SsBrand(
   stops: [Color(0xFF0C3B33), Color(0xFF138A72), Color(0xFF4FD1B0), Color(0xFFC9F5E8)],
 );
 
+const _azul = SsBrand(
+  accentLight: Color(0xFF2563EB),
+  accentHoverLight: Color(0xFF1D4ED8),
+  accentSoftLight: Color(0xFFE6EEFF),
+  accentDark: Color(0xFF5B8CFF),
+  accentSoftDark: Color(0xFF1A2547),
+  brandFrom: Color(0xFF3B82F6),
+  brandTo: Color(0xFF2563EB),
+  brandDeep: Color(0xFF1E40AF),
+  accentSolidLight: Color(0xFF2563EB),
+  accentSolidDark: Color(0xFF326DF0),
+  stops: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6), Color(0xFF5B8CFF)],
+);
+
+const _petroleo = SsBrand(
+  accentLight: Color(0xFF0E7983),
+  accentHoverLight: Color(0xFF0B6670),
+  accentSoftLight: Color(0xFFDDF3F4),
+  accentDark: Color(0xFF1F9CA6),
+  accentSoftDark: Color(0xFF123438),
+  brandFrom: Color(0xFF14B8C4),
+  brandTo: Color(0xFF0E7C86),
+  brandDeep: Color(0xFF0B4F63),
+  accentSolidLight: Color(0xFF0E7983),
+  accentSolidDark: Color(0xFF12828C),
+  stops: [Color(0xFF0B4F63), Color(0xFF0E7C86), Color(0xFF1F9CA6), Color(0xFF14B8C4)],
+);
+
 const _eucalipto = SsBrand(
   accentLight: Color(0xFF3F6B58),
   accentHoverLight: Color(0xFF335847),
@@ -418,6 +446,8 @@ const _ssPaletasMapa = <String, SsBrand>{
   'Oceano': _oceano,
   'Ártico': _artico,
   'Menta': _menta,
+  'Azul': _azul,
+  'Petróleo': _petroleo,
   'Eucalipto': _eucalipto,
   'Floresta': _floresta,
   'Oliva': _oliva,
@@ -449,6 +479,8 @@ const _ssPaletasLista = <SsPaleta>[
   SsPaleta(slug: 'oceano', nome: 'Oceano', familia: 'Frias', brand: _oceano),
   SsPaleta(slug: 'artico', nome: 'Ártico', familia: 'Frias', brand: _artico),
   SsPaleta(slug: 'menta', nome: 'Menta', familia: 'Frias', brand: _menta),
+  SsPaleta(slug: 'azul', nome: 'Azul', familia: 'Frias', brand: _azul),
+  SsPaleta(slug: 'petroleo', nome: 'Petróleo', familia: 'Frias', brand: _petroleo),
   SsPaleta(slug: 'eucalipto', nome: 'Eucalipto', familia: 'Natureza', brand: _eucalipto),
   SsPaleta(slug: 'floresta', nome: 'Floresta', familia: 'Natureza', brand: _floresta),
   SsPaleta(slug: 'oliva', nome: 'Oliva', familia: 'Natureza', brand: _oliva),

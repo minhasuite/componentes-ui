@@ -96,8 +96,8 @@ void main() {
 
   group('formatos', () {
     test('real é o padrão e não muda', () {
-      expect(money(123456), r'R$ 1.234,56');
-      expect(money(-5), r'-R$ 0,05');
+      expect(money(123456), 'R\$\u00A01.234,56');
+      expect(money(-5), '-R\$\u00A00,05');
       expect(parseMoney(r'R$ 1.234,56'), 123456);
       expect(parseMoney('12.5'), 1250);
       expect(qty(1.5), '1,5');
@@ -107,7 +107,7 @@ void main() {
       expect(money(123456, SsFormats.usd), r'$1,234.56');
       expect(money(-5, SsFormats.usd), r'-$0.05');
       expect(parseMoney(r'$1,234.56', SsFormats.usd), 123456);
-      expect(money(123456, SsFormats.eur), '1.234,56 €');
+      expect(money(123456, SsFormats.eur), '1.234,56\u00A0€');
       expect(qty(1.5, SsFormats.usd), '1.5');
     });
   });

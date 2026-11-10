@@ -125,7 +125,7 @@ void main() {
     await t.enterText(find.byType(TextField), '45+12,50');
     await t.pump();
     expect(valor, 5750);
-    expect(find.text(r'= R$ 57,50'), findsOneWidget);
+    expect(find.text('= R\$\u00A057,50'), findsOneWidget);
     await t.enterText(find.byType(TextField), '45+');
     await t.pump();
     expect(valor, isNull);
@@ -164,7 +164,7 @@ void main() {
       await t.tap(find.text(k).last);
       await t.pump();
     }
-    expect(find.text(r'= R$ 57,00'), findsOneWidget);
+    expect(find.text('= R\$\u00A057,00'), findsOneWidget);
     await t.tap(find.text('Confirmar'));
     expect(ok, 5700);
   });

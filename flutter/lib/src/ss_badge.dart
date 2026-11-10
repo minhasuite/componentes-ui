@@ -17,6 +17,7 @@ enum SsBadgeVariant {
 
 /// Badge pill "soft" do design system: fundo dessaturado + texto na cor. Espelha
 /// `.mp-badge` (font 11/700, pill). `micro` = variante compacta (10/700, uppercase).
+/// Sem largura para o rótulo inteiro, ele termina em "…" (o leitor de tela lê tudo).
 class SsBadge extends StatelessWidget {
   const SsBadge(
     this.label, {
@@ -86,14 +87,20 @@ class SsBadge extends StatelessWidget {
               ),
               const SizedBox(width: 5),
             ],
-            Text(
-              micro ? label.toUpperCase() : label,
-              style: TextStyle(
-                color: fg,
-                fontSize: micro ? AppType.micro : AppType.label,
-                fontWeight: FontWeight.w700,
-                letterSpacing: micro ? 0.5 : 0,
-                height: 1.1,
+            // v0.15.2: rótulo longo num Wrap/coluna estreita encolhe com "…" em vez de estourar.
+            Flexible(
+              child: Text(
+                micro ? label.toUpperCase() : label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: TextStyle(
+                  color: fg,
+                  fontSize: micro ? AppType.micro : AppType.label,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: micro ? 0.5 : 0,
+                  height: 1.1,
+                ),
               ),
             ),
           ],

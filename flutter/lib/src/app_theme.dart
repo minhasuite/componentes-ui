@@ -231,6 +231,12 @@ class SsBrand extends ThemeExtension<SsBrand> {
   /// Menta: verde-água fresco, do jade ao gelo de menta.
   static const menta = _menta;
 
+  /// Azul do Minhas Compras: cobalto, royal e céu.
+  static const azul = _azul;
+
+  /// Petróleo do Minhas Viagens: mar fundo, azul-petróleo e verde-água.
+  static const petroleo = _petroleo;
+
   /// Eucalipto: verdes acinzentados, calmos (jardim, saúde).
   static const eucalipto = _eucalipto;
 
@@ -243,7 +249,7 @@ class SsBrand extends ThemeExtension<SsBrand> {
   /// Sálvia: folha seca, verde-acinzentado e linho.
   static const salvia = _salvia;
 
-  /// Paletas prontas por nome em pt-BR (28, a violeta primeiro, agrupadas por família):
+  /// Paletas prontas por nome em pt-BR (30, a violeta primeiro, agrupadas por família):
   /// seletor de aparência e vitrine. Com slug e família: [SsPaleta.todas].
   static const paletas = _ssPaletasMapa;
   // </paletas>

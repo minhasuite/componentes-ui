@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.15.1
+      ref: v0.15.2
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.2"
 ```
 
 ```css
@@ -173,7 +173,7 @@ rolam), `SsActionButton` / `.ss-action-btn` (carregando → ✓), `showSsCommand
 Inspirada nas referências de `D:\Componentes`. Nada quebra da v0.8; a gem passa a
 depender do `view_component` (>= 3.9; testado na 3.24 e na 4.22).
 
-**Fundação (os dois lados).** Paletas prontas (28, ver "Paletas" abaixo: `SsBrand.tokyoNight`,
+**Fundação (os dois lados).** Paletas prontas (30, ver "Paletas" abaixo: `SsBrand.tokyoNight`,
 `eucalipto`, `safira`…, mapa `SsBrand.paletas` / `data-palette="tokyo-night|…"`),
 gradiente de 4 paradas (`SsColors.gradient4` / `--grad-4`), OLED
 (`AppTheme.build(b, oled: true)` / `[data-theme=dark][data-oled]`), sombra na cor do card
@@ -610,6 +610,38 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.15.2: badge sem estouro, dinheiro com espaço não separável, moeda por código, litro, espera longa e paletas Azul e Petróleo
+
+Etapa 1 da migração do minhas-compras-app e do minhas-viagens-app (`../docs/MIGRACAO-minhas-compras-viagens.md`).
+Parâmetros novos opcionais; a API não quebra. Muda o texto do dinheiro (ver "Padrões que mudaram").
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Selo com rótulo longo (num `Wrap`, coluna estreita) | `SsBadge` termina em "…" em vez de estourar (o leitor de tela lê o rótulo inteiro) | `.ss-badge` com `max-width: 100%` e reticências; com ícone ou ponto, o texto num `<span>` (`<span class="ss-badge ss-badge-dot"><span>Ligada</span></span>`) |
+| Dinheiro com espaço não separável ("R$" nunca sozinho no fim da linha) | `SsFormats.prefix`/`suffix` com `SsFormats.nbsp` (U+00A0): `money(123456)` → `R$ 1.234,56` | `ss_money` (e quem formata com ele: CountUp, DataTable, MoneyInput, SplitAllocator); `ComponentesUi::Helpers::NBSP`. O JS da gem (`Intl`) já saía assim |
+| Moeda por código ISO | `SsFormats.forCurrency('EUR', {base: SsFormats.brl, symbol:})` → `money(4500, f)` = `€ 45,00`; `SsFormats.symbolFor(iso)`, `SsFormats.currencySymbols`, `SsFormats.currencyCode` | `ss_money(45, currency: "EUR")` (já havia) · mesmo mapa `CURRENCY_SYMBOLS` (US$, €, £, CA$, ¥…; fora dele, o código: `CHF 10,00`) |
+| Quantidade com unidade | `SsFormats.qty(1.5, 'l')` → `1,5 L` (litro em maiúscula); `qtyUnit(q, unit)` passa a usar o mesmo | `ss_qty(1.5, "l")` → `1,5 L`, `ss_qty(0.25, "kg")`, `locale:` |
+| Espera longa (leitura por IA) | `ssRunBlocking(context, task, label:, art:, showElapsedAfter:, cancelAfter:, onCancel:, elapsedLabel:)`; `SsBlockingIndicator(art:, showElapsedAfter:, cancelAfter:, elapsed:)`; sem `onCancel:`, o Cancelar fecha e o `Future` termina com `SsBlockingCancelled` | — (espera bloqueante é do app) |
+| Paletas Azul e Petróleo (30 agora) | `SsBrand.azul`, `SsBrand.petroleo` | `data-palette="azul"`, `data-palette="petroleo"` |
+
+**Paletas.** Azul (Minhas Compras) e Petróleo (Minhas Viagens), família Frias, com os tons do `kBrand` de cada app.
+Um ajuste para passar o WCAG: o accent claro do Petróleo é `#0E7983` (o `#0E7C86` dá 4,34:1 sobre a página clara
+do Flutter `#EEF0F6`; 2,5% mais escuro dá 4,52:1). O gradiente (`brandTo`) segue `#0E7C86`. O `accentSolid*` sai do
+gerador (Azul `#2563EB`/`#326DF0`, Petróleo `#0E7983`/`#12828C`).
+
+**Espera longa.** `showElapsedAfter: Duration(seconds: 8)` mostra "12 s · ainda trabalhando, não feche o app" embaixo do
+texto; `cancelAfter: Duration(seconds: 15)` só mostra o Cancelar depois disso. Com `onCancel:` (o app cancela o
+`CancelToken`), o cartão diz "Cancelando…" e fecha quando a tarefa termina; sem `onCancel:`, fecha na hora e a tarefa
+segue, com o resultado descartado. Tradução do erro da API continua no produto.
+
+**Padrões que mudaram.** O dinheiro do `SsFormats` (`money`, `SsAmount`, `SsMoneyField`, teclado, "= R$ 57,50") e do
+`ss_money` sai com **espaço não separável** (U+00A0) entre o símbolo e o número, também no euro (`1.234,56 €`) e no
+espanhol do web (`1.234,50 R$`). Quem compara texto em teste ou golden com `'R$ 1.234,56'` (espaço comum) troca por
+`'R\$\u00A01.234,56'` (Dart) / `"R$\u00A01.234,56"` (Ruby), ou monta o esperado com `money(...)`/`ss_money(...)`. No web,
+o `.ss-badge` só de texto passa a `inline-block` com `vertical-align: middle` (para as reticências).
+
+**Textos novos:** Flutter `waitingElapsed` (pt, en, es); Rails `palettes.azul`, `palettes.petroleo` (pt-BR, en, es).
+
 ## v0.15: ícones, diálogo, mês, barras, dinheiro com conta, progresso, chat e confete (fase 0 do meu-financeiro)
 
 O que faltava para o meu-financeiro (web e app) migrar sem peça genérica própria. Tudo aditivo; nada quebra da
@@ -716,6 +748,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.15.2` (10/11/2026): seção "v0.15.2" (etapa 1 da migração do minhas-compras e do minhas-viagens). `SsBadge`/`.ss-badge` com reticências em vez de estourar, dinheiro com espaço não separável nos dois lados, `SsFormats.forCurrency(iso)` ↔ `ss_money(currency:)`, `SsFormats.qty(q, unit)`/`ss_qty` com litro em maiúscula, `ssRunBlocking(art:, showElapsedAfter:, cancelAfter:)` + `SsBlockingCancelled` e as paletas Azul e Petróleo (30). A API não quebra; muda o texto do dinheiro (U+00A0 no lugar do espaço).
 - `v0.15.1` (10/11/2026): correção. `ss_number`/`ss_money` e os componentes que formatam com `format(...)` (CountUp, Donut, DataTable com `format: :money`, ProgressRow, BarChart, AreaChart, MoneyInput, relógio, QR, mídia…) quebravam no ViewComponent 3.x, que tem um `format` próprio sem argumentos; agora chamam `Kernel.format`. Nada quebra.
 - `v0.15.0` (09/11/2026): seção "v0.15" (fase 0 do meu-financeiro). `ss_icon`/`Ss::IconComponent` ↔ `SsIcons.named` (Heroicons v1 + apelidos da v2, fonte `rails/icones/`), `Ss::DialogComponent` (turbo-frame), `Ss::MonthSwitcherComponent`, `SsBarChart`/`Ss::BarChartComponent` (agrupado, empilhado, negativos, linha), conta e sinal no dinheiro (`SsMoneyField(expression:, signed:, formats:)` ↔ `MoneyInputComponent(expression:, signed:)`, `ComponentesUi::AmountExpression`, `ssEvalAmount`), `SsPrivacyScope`/`SsPrivate`/`SsPrivacyToggle`, `SsProgressRow`/`Ss::ProgressRowComponent`, `Ss::ChatComponent` + `SsChatActionCard`/`Ss::ChatActionComponent`, `Ss::FormSectionComponent` e `Ss::ConfettiComponent`. Nada quebra.
 - `v0.14.1` (09/11/2026): seção "v0.14.1". `SsFieldLabel(icon:)`/`SsValueRow(icon:)` ↔ svg no `.ss-label`/`.ss-value-row`, `SsCard(soft:)` ↔ `.ss-card.is-soft`, e no web a coluna, o título e o cartão do quadro de arrastar (`.ss-kanban-col/-head/-card`, `.ss-kanban.is-wrap`). Nada quebra.
