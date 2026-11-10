@@ -77,3 +77,4 @@ export 'src/v10/tela.dart';
 export 'src/v12/cards.dart';
 export 'src/v13/paineis.dart';
 export 'src/v13/textos.dart';
+export 'src/v14/pecas.dart';

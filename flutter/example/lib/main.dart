@@ -19,6 +19,7 @@ import 'catalogo/catalogo_v102.dart';
 import 'catalogo/catalogo_v11.dart';
 import 'catalogo/catalogo_v12.dart';
 import 'catalogo/catalogo_v13.dart';
+import 'catalogo/catalogo_v14.dart';
 import 'aparencia.dart';
 import 'telas/tela_demo.dart';
 import 'telas/telas_a.dart';
@@ -78,6 +79,8 @@ class _InicioState extends State<_Inicio> {
       for (final x in [...catalogoV10Controles, ...catalogoV10Dados, ...catalogoV10Casa, ...catalogoV10Estrutura])
         x.slug,
     };
+    final v14 = {for (final x in catalogoV14) x.slug};
+    final v14Lista = catalogo.where((x) => v14.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final v13 = {for (final x in catalogoV13) x.slug};
     final v13Lista = catalogo.where((x) => v13.contains(x.slug) && _bate('${x.nome} ${x.descricao}')).toList();
     final v12 = {for (final x in catalogoV12) x.slug};
@@ -103,6 +106,7 @@ class _InicioState extends State<_Inicio> {
               !v11.contains(x.slug) &&
               !v12.contains(x.slug) &&
               !v13.contains(x.slug) &&
+              !v14.contains(x.slug) &&
               _bate('${x.nome} ${x.descricao}'),
         )
         .toList();
@@ -123,7 +127,7 @@ class _InicioState extends State<_Inicio> {
                       style: TextStyle(fontSize: AppType.screenTitle, fontWeight: FontWeight.w800, color: c.ink),
                     ),
                     Text(
-                      'componentes_ui v0.13.0 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
+                      'componentes_ui v0.14.0 · ${catalogo.length} componentes, ${v09.length} novos, ${movimento.length} de movimento',
                       style: TextStyle(color: c.muted),
                     ),
                     const AparenciaBar(),
@@ -135,6 +139,13 @@ class _InicioState extends State<_Inicio> {
             if (telas.isNotEmpty) ...[
               const _Titulo('Telas montadas'),
               SliverList.builder(itemCount: telas.length, itemBuilder: (context, i) => _TelaTile(telas[i])),
+            ],
+            if (v14Lista.isNotEmpty) ...[
+              const _Titulo('Painéis (v0.14)'),
+              SliverList.builder(
+                itemCount: v14Lista.length,
+                itemBuilder: (context, i) => _CompTile(v14Lista[i], novo: true),
+              ),
             ],
             if (v13Lista.isNotEmpty) ...[
               const _Titulo('Painéis (v0.13)'),

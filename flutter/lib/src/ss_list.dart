@@ -378,9 +378,14 @@ class SsIconTile extends StatelessWidget {
     this.filled = false,
     this.gradient = false,
     this.onGradient = false,
+    this.image,
   });
 
   final IconData icon;
+
+  /// Foto no lugar do [icon] (v0.14; o `<img>` dentro do `.ss-icon-tile` do
+  /// web): cobre o quadrado; o [icon] aparece enquanto carrega ou se falhar.
+  final ImageProvider? image;
 
   /// Lado do quadrado. Nulo: o `iconTile` da [SsDensity] (42 no padrão).
   final double? size;
@@ -429,7 +434,16 @@ class SsIconTile extends StatelessWidget {
         shape: circle ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: circle ? null : BorderRadius.circular(size * .31),
       ),
-      child: Icon(icon, size: size * .5, color: filled || gradient ? AppColors.onDark : cor),
+      clipBehavior: image == null ? Clip.none : Clip.antiAlias,
+      child: image == null
+          ? Icon(icon, size: size * .5, color: filled || gradient ? AppColors.onDark : cor)
+          : Image(
+              image: image!,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Icon(icon, size: size * .5, color: cor),
+            ),
     );
   }
 }

@@ -1,0 +1,85 @@
+<%# titulo: Nota, tarefa, tema em amostra, herói e peças sem moldura | grupo: Painéis (v0.14) | ordem: 10 %>
+<%# v0.14: pares Flutter no README (SsNote, SsTaskItem, SsIconTile(image:)); o resto é só do web (classes). %>
+<% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
+<% check = ico.("M9 12l2 2 4-4M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z") %>
+<% bolt = ico.("M13 2 3 14h9l-1 8 10-12h-9z") %>
+<% alert = ico.("M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z") %>
+<% mic = ico.("M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3") %>
+<% pen = ico.("M15.2 5.2l3.6 3.6M4 20h4L19 9a2.5 2.5 0 0 0-3.6-3.6L4 16.4z") %>
+<% x = ico.("M6 6l12 12M18 6 6 18") %>
+<% leaf = %(data:image/svg+xml;utf8,#{ERB::Util.url_encode(%(<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='#bbf7d0'/><path d='M8 32C8 16 20 8 32 8c0 14-8 24-24 24z' fill='#15803d'/></svg>))}) %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::NoteComponent", "A frase curta e apagada no lugar do conteúdo de um card (nada agora, escolha a fonte, sem leituras), com ícone. O tom pinta o ícone; :warn e :danger pintam a frase e viram role=status.",
+           uso: 'render Ss::NoteComponent.new(text: "Nenhum alerta aberto", icon: svg, tone: :success)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <%= render Ss::CardHeaderComponent.new(title: "Alertas") %>
+      <%= render Ss::NoteComponent.new(text: "Nenhum alerta aberto", icon: check, tone: :success) %>
+      <%= render Ss::NoteComponent.new(text: "Escolha o medidor de energia nas opções do card.", icon: bolt) %>
+      <%= render Ss::NoteComponent.new(text: "O robô parou: escova presa.", icon: alert, tone: :danger) %>
+      <%= render Ss::NoteComponent.new(text: "Sem ícone, só a frase.") %>
+    </div>
+  <% end %>
+
+  <%= demo "Tarefa com comando (.ss-checklist + [role=checkbox])", "O texto inteiro é o botão de marcar (aria-checked); o × (.ss-checklist-x) remove e aparece no hover (sempre no toque). Marcada, riscada e apagada.",
+           uso: '<ul class="ss-checklist"><li><button role="checkbox" aria-checked="false">Comprar pão</button><button class="ss-checklist-x" aria-label="Remover">×</button></li></ul>' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::CardHeaderComponent.new(title: "Compras", subtitle: "2 pendentes") %>
+      <ul class="ss-checklist" style="margin-top:.5rem">
+        <li><button type="button" role="checkbox" aria-checked="false"><span>Comprar pão</span></button><button type="button" class="ss-checklist-x" aria-label="Remover: Comprar pão"><%= x %></button></li>
+        <li><button type="button" role="checkbox" aria-checked="false"><span>Trocar o filtro do ar</span></button><button type="button" class="ss-checklist-x" aria-label="Remover: Trocar o filtro"><%= x %></button></li>
+        <li><button type="button" role="checkbox" aria-checked="true"><span>Regar as plantas</span></button><button type="button" class="ss-checklist-x" aria-label="Remover: Regar"><%= x %></button></li>
+        <li><span role="checkbox" aria-checked="false" aria-disabled="true">Sem permissão de marcar</span></li>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= demo "Tema em amostra (label.ss-swatch > input)", "A galeria de temas com o .ss-swatch: o rádio some e a marcada ganha o anel; --p1..--p4 são as cores do tema, --ss-swatch-wall o papel de parede atrás dos círculos; .is-block ocupa a célula.",
+           uso: '<label class="ss-swatch is-block" style="--p1:#5a45e8;--p2:#7b5cff;--ss-swatch-wall:linear-gradient(…)"><input type="radio" name="tema"><span class="ss-swatch-dots"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar"></span><span class="ss-swatch-name">Lista</span></label>' do %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(6.5rem,1fr));gap:.5rem">
+      <% [["Lista", "#5a45e8", "#7b5cff", "#3b82f6", "#ede9fe", nil, true], ["Oceano", "#0284c7", "#14b8a6", "#38bdf8", "#e0f2fe", "linear-gradient(135deg,#0c4a6e,#14b8a6)", false],
+          ["Pôr do sol", "#ea580c", "#db2777", "#f59e0b", "#ffedd5", "linear-gradient(135deg,#7c2d12,#db2777)", false]].each do |nome, a, b, c, d, wall, on| %>
+        <label class="ss-swatch is-block" style="--p1:<%= a %>;--p2:<%= b %>;--p3:<%= c %>;--p4:<%= d %><%= ";--ss-swatch-wall:#{wall}" if wall %>">
+          <input type="radio" name="tema-vitrine" value="<%= nome %>" <%= "checked" if on %>>
+          <span class="ss-swatch-dots"><i></i><i></i><i></i><i></i></span><span class="ss-swatch-bar"></span><span class="ss-swatch-name"><%= nome %></span>
+        </label>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Herói: .ss-btn.is-on-grad", "Botão de vidro branco sobre o gradiente da marca (herói do painel, aurora), do mesmo jeito do .ss-hero-chip.",
+           uso: '<a class="ss-btn ss-btn-sm is-on-grad" href="…">Editar</a>' do %>
+    <section class="ss-hero" style="padding:1.25rem 1.4rem">
+      <p class="ss-kicker">Casa · domingo</p>
+      <h2 style="color:#fff;margin:.25rem 0 .75rem">Boa noite, Ana</h2>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button type="button" class="ss-btn ss-btn-sm is-on-grad"><%= mic %>Falar</button>
+        <a class="ss-btn ss-btn-sm is-on-grad" href="#"><%= pen %>Editar</a>
+      </div>
+    </section>
+  <% end %>
+
+  <%= demo "Item-botão, ícone âmbar e com foto", "button.ss-item foca algo na tela (pessoa no mapa); .ss-icon-tile.is-heat é o âmbar de energia/luz (tone: :heat) e aceita uma foto (<img>) no lugar do ícone.",
+           uso: '<button class="ss-item">…</button> · <span class="ss-icon-tile is-heat">svg</span> · <span class="ss-icon-tile is-lg"><img src="…" alt=""></span>' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.25rem">
+      <button type="button" class="ss-item"><%= ss_avatar("Ana Souza", size: 36, status: "success", ring: true) %><span class="ss-item-main"><span>Ana</span><span>Em casa · desde 18:40</span></span></button>
+      <button type="button" class="ss-item" disabled><%= ss_avatar("Bruno Lima", size: 36, status: "muted") %><span class="ss-item-main"><span>Bruno</span><span>Sem localização</span></span></button>
+      <div style="display:flex;gap:.5rem;margin-top:.5rem"><span class="ss-icon-tile is-heat"><%= bolt %></span><span class="ss-icon-tile is-heat is-grad"><%= bolt %></span><span class="ss-icon-tile is-lg is-success"><img src="<%= leaf %>" alt=""></span></div>
+    </div>
+  <% end %>
+
+  <%= demo "Etiqueta, barras finas e sem moldura", ".ss-label-chip com a cor do usuário (--c); .ss-bars que afinam num card estreito (--ss-bars-h, .is-empty); css: \"is-flush\" tira a moldura do MediaPlayer/JobProgress dentro de outro card.",
+           uso: '<span class="ss-label-chip" style="--c:#16a34a">Jardim</span> · <div class="ss-bars" style="--ss-bars-h:96px">… · render Ss::MediaPlayerComponent.new(…, css: "is-flush")' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap"><span class="ss-label-chip" style="--c:#16a34a">Jardim</span><span class="ss-label-chip" style="--c:#e11d48">Segurança</span><span class="ss-label-chip">Sem cor</span></div>
+      <div class="ss-bars" style="--ss-bars-h:96px">
+        <% vals = [0.2, 0.3, 0.25, 0.1, 0.12, 0.4, 0.8, 0.6, 0.5, 0.45, 0.7, 0.9, 1, 0.85, 0.6, 0.55, 0.7, 0.95, 0.8, 0.5, nil, nil, nil, nil] %>
+        <% vals.each_with_index do |v, i| %><div class="ss-bar <%= 'is-today' if i == 19 %> <%= 'is-empty' if v.nil? %>" style="--v:<%= v || 0.04 %>"><b><%= v ? "#{(v * 1.4).round(2)} kWh" : "—" %></b><i></i><span><%= "#{i}h" if (i % 6).zero? %></span></div><% end %>
+      </div>
+      <div class="ss-card ss-card-pad">
+        <%= render Ss::CardHeaderComponent.new(title: "TV da sala", subtitle: "Tocando") %>
+        <%= render Ss::MediaPlayerComponent.new(title: "Aquarela", subtitle: "Toquinho", state: :playing, css: "is-flush") %>
+      </div>
+    </div>
+  <% end %>
+</div>

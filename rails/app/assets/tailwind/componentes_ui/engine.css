@@ -25,6 +25,8 @@
 @import "./v12_web.css";
 /* v0.13: seção, mosaico em colunas, coluna lateral, bloco do mosaico, card de foto, chip que alterna. */
 @import "./v13_web.css";
+/* v0.14: nota, botão sobre o gradiente, item-botão, tarefa com comando, tema em swatch, peças sem moldura e tokens do card. */
+@import "./v14_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -115,7 +117,10 @@
 
 @layer components {
   .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .ss-card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+  /* v0.14: --ss-card-bg / --ss-card-border / --ss-card-filter trocam a superfície (tema de vidro do produto) sem regra por cima. */
+  .ss-card { background: var(--ss-card-bg, var(--surface)); border-radius: var(--r-card); box-shadow: var(--shadow-card);
+             border: 1px solid var(--ss-card-border, color-mix(in srgb, var(--line) 70%, transparent));
+             -webkit-backdrop-filter: var(--ss-card-filter, none); backdrop-filter: var(--ss-card-filter, none); }
   a.ss-card, .ss-card-link { transition: transform .45s var(--ss-bounce), box-shadow .25s ease; }
   a.ss-card:hover, .ss-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
   .ss-card-pad { padding: var(--ss-card-pad); }

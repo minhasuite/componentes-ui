@@ -67,8 +67,8 @@
 
   /* ── Tile de aparelho (Ss::DeviceTileComponent) ──
      <div class="ss-device [is-on] [is-wide]" data-status="ready|unavailable|pending|error|locked" style="--tone:…"> */
-  .ss-device { --tone: var(--accent); position: relative; display: grid; gap: calc(var(--ss-gap) * .9); padding: calc(var(--ss-card-pad) * .7); border-radius: var(--r-card); background: var(--surface);
-               border: 1px solid var(--line); box-shadow: var(--shadow-card); min-width: 0;
+  .ss-device { --tone: var(--accent); position: relative; display: grid; gap: calc(var(--ss-gap) * .9); padding: calc(var(--ss-card-pad) * .7); border-radius: var(--r-card); background: var(--ss-card-bg, var(--surface));
+               border: 1px solid var(--ss-card-border, var(--line)); -webkit-backdrop-filter: var(--ss-card-filter, none); backdrop-filter: var(--ss-card-filter, none); box-shadow: var(--shadow-card); min-width: 0;
                transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease, opacity .3s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-device-main { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ico . end" "text text text"; align-items: start; row-gap: calc(var(--ss-gap) * .9); min-width: 0; }
   .ss-device.is-wide .ss-device-main { grid-template-areas: "ico text end"; align-items: center; column-gap: var(--ss-gap); }

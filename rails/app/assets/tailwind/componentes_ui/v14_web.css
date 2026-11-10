@@ -1,0 +1,87 @@
+/* v0.14 · o que o minha-automacao pediu para não sobrar peça genérica no CSS do produto (painéis,
+   aparência, mapa, mídia, relatório da migração). Tudo aditivo; cor só por token. */
+@layer components {
+  /* Nota (Ss::NoteComponent, par do SsNote): a frase curta e apagada no lugar do conteúdo
+     ("nada agora", "escolha a fonte"), com ícone opcional. O tom pinta o ícone; warn/danger
+     pintam a frase também (é aviso). Sem margem própria: quem põe é o contêiner. */
+  .ss-note { display: flex; align-items: flex-start; gap: .5rem; margin: 0; min-width: 0; font-size: calc(.875rem * var(--ss-font-scale)); line-height: 1.45; color: var(--muted); }
+  .ss-note-ico { flex: none; display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; color: var(--muted); }
+  .ss-note-ico svg { width: 1.15rem; height: 1.15rem; }
+  .ss-note > :last-child { min-width: 0; overflow-wrap: anywhere; }
+  .ss-note[data-tone="accent"] .ss-note-ico { color: var(--accent); }
+  .ss-note[data-tone="success"] .ss-note-ico { color: var(--success); }
+  .ss-note[data-tone="warn"] { color: var(--warn); font-weight: 600; }
+  .ss-note[data-tone="danger"] { color: var(--danger); font-weight: 600; }
+  .ss-note:is([data-tone="warn"], [data-tone="danger"]) .ss-note-ico { color: inherit; }
+
+  /* Botão sobre o gradiente da marca (herói, .ss-hero, aurora): vidro branco em pílula, como o
+     .ss-hero-chip e o .ss-icon-tile.is-on-grad. <a class="ss-btn ss-btn-sm is-on-grad">. */
+  .ss-btn.is-on-grad { border-radius: 999px; background: rgba(255, 255, 255, .16); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .24); text-decoration: none; }
+  .ss-btn.is-on-grad:hover { background: rgba(255, 255, 255, .26); color: #fff; }
+  .ss-btn.is-on-grad:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  /* Item como botão (lista que foca algo na tela: pessoa no mapa, zona). <button class="ss-item">. */
+  button.ss-item { width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+  button.ss-item:hover:not(:disabled) { background: var(--field); }
+  button.ss-item:disabled { cursor: default; opacity: .7; }
+  :is(a, button).ss-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* Ícone tonal: âmbar de energia/luz (o tone: :heat dos componentes; AppColors.aquecFg no app)
+     e foto no lugar do ícone (<span class="ss-icon-tile"><img src="…" alt=""></span>). */
+  .ss-icon-tile.is-heat { background: color-mix(in srgb, #e0952a 16%, transparent); color: color-mix(in srgb, #e0952a 82%, var(--ink)); box-shadow: none; }
+  .ss-icon-tile.is-heat.is-grad { background: linear-gradient(135deg, #fbbf24, #e0952a 55%, #f97316); color: #fff; }
+  .ss-icon-tile { overflow: hidden; }
+  .ss-icon-tile > img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Peça que já está dentro de um card: sem a moldura dela (player no card do aparelho, etapas
+     no card da execução). css: "is-flush". */
+  :is(.ss-media, .ss-job, .ss-card).is-flush { padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+  /* Câmera: ação que alterna (ao vivo, falar) acesa na cor da marca. */
+  .ss-cam-actions > [aria-pressed="true"] { background: var(--accent-solid); color: #fff; }
+
+  /* Etiqueta com a cor do usuário (rótulo, categoria): pílula tingida com o ponto. style="--c: #hex". */
+  .ss-label-chip { --c: var(--accent); display: inline-flex; align-items: center; gap: .3rem; padding: .1rem .55rem; border-radius: 999px;
+    font-size: calc(.72rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink);
+    background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); }
+  .ss-label-chip::before { content: ""; flex: none; width: .45rem; height: .45rem; border-radius: 999px; background: var(--c); }
+
+  /* Barras em pílula num card estreito: a barra afina quando não cabe; .is-empty = sem leitura
+     ainda; altura por --ss-bars-h (o height: do SsPillBars). */
+  .ss-bars { height: var(--ss-bars-h, 132px); }
+  .ss-bar { min-width: 0; }
+  .ss-bar i { max-width: 100%; }
+  .ss-bar.is-empty i { background: var(--field); }
+  .ss-bar span:empty { display: none; }
+
+  /* Tarefa com comando (par do SsTaskItem): o texto inteiro é o botão de marcar
+     (<button role="checkbox" aria-checked>), o × (.ss-checklist-x) remove. Marcada, riscada. */
+  .ss-checklist li:has(> :is(button, form) [role="checkbox"], > button[role="checkbox"]) { position: relative; padding: 0; border-radius: calc(var(--r-field) - 2px); }
+  .ss-checklist li:has(> :is(button, form) [role="checkbox"], > button[role="checkbox"])::before { content: none; }
+  .ss-checklist li:hover:has([role="checkbox"]:not([aria-disabled="true"])) { background: var(--field); }
+  .ss-checklist [role="checkbox"] { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--ss-gap); min-height: max(var(--ss-target, 2.5rem), 2.5rem);
+    padding: calc(var(--ss-row-py) * .6) .4rem; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .ss-checklist [role="checkbox"]::before { content: ""; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid var(--line); }
+  .ss-checklist [role="checkbox"][aria-checked="true"] { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); }
+  .ss-checklist [role="checkbox"][aria-checked="true"]::before { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 65% no-repeat; }
+  .ss-checklist [role="checkbox"][aria-disabled="true"] { cursor: default; }
+  .ss-checklist [role="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: inherit; }
+  .ss-checklist-x { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; margin-right: .2rem; border: 0; border-radius: calc(var(--r-field) - 4px);
+    background: transparent; color: var(--muted); cursor: pointer; opacity: 0; }
+  .ss-checklist li:hover .ss-checklist-x, .ss-checklist-x:focus-visible { opacity: 1; }
+  .ss-checklist-x:hover { color: var(--danger); background: var(--danger-soft); }
+  @media (hover: none) { .ss-checklist-x { opacity: .7; } }
+
+  /* Tema numa amostra (galeria de temas): <label class="ss-swatch"><input type="radio">…</label>; o
+     rádio some (a amostra marcada ganha o anel), --p1..--p4 são as cores do tema e --ss-swatch-wall
+     o papel de parede atrás dos círculos. .is-block ocupa a célula da grade. */
+  .ss-swatch { position: relative; }
+  .ss-swatch > input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+  .ss-swatch:has(> input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-swatch.is-block { display: grid; width: 100%; }
+  .ss-swatch.is-block .ss-swatch-bar { min-width: 0; }
+  .ss-swatch-dots { position: relative; }
+  .ss-swatch[style*="--ss-swatch-wall"] .ss-swatch-dots { padding: .35rem .85rem .35rem .4rem; border-radius: 999px; background: var(--ss-swatch-wall) center / cover; }
+  .ss-swatch-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) { .ss-checklist [role="checkbox"], .ss-checklist-x { transition: none; } }
