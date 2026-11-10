@@ -90,3 +90,4 @@ export 'src/v16/diverging_bars.dart';
 export 'src/v16/input_chip.dart';
 export 'src/v16/rating.dart';
 export 'src/v18/speed_dial.dart';
+export 'src/v19/image_viewer.dart';

@@ -410,6 +410,18 @@ class AppType {
   static const meta = 12.0;
   static const label = 11.0;
   static const micro = 10.0;
+
+  /// v0.19: entrelinha (`TextStyle.height`) de texto corrido: explicação,
+  /// mensagem, parágrafo de folha. No produto, no lugar do `height: 1.4` solto.
+  static const leading = 1.4;
+
+  /// v0.19: espaço entre letras (`letterSpacing`) de rótulo pequeno em caixa
+  /// alta: "FATURA", cabeçalho de tabela, selo.
+  static const trackingCaps = .8;
+
+  /// v0.19: espaço largo entre letras: sobrelinha ("CASA · 10 DE NOVEMBRO") e
+  /// dígitos agrupados (número do cartão, código).
+  static const trackingWide = 1.4;
 }
 
 /// Cores resolvidas do tema atual — atalho para os widgets `Ss*` lerem tokens

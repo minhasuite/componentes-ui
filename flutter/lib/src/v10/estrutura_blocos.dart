@@ -466,11 +466,17 @@ class _BlocoView extends StatelessWidget {
 
 /// Grupo recolhível: cabeçalho com seta, contagem e um selo colorido opcional;
 /// o corpo abre com a mola. `SsCollapsible(title: 'Sala', count: 6, child: ...)`
+///
+/// v0.19: [subtitle] é a linha apagada embaixo do título, à vista também
+/// fechado ("Pessoa, centro de custo, tags…": o que tem dentro), no lugar do
+/// `ExpansionTile(subtitle:)`. O corpo continua montado fechado (campos de
+/// formulário lá dentro guardam o estado e validam).
 class SsCollapsible extends StatefulWidget {
   const SsCollapsible({
     super.key,
     required this.title,
     required this.child,
+    this.subtitle,
     this.count,
     this.label,
     this.labelTone = SsTone.accent,
@@ -483,6 +489,9 @@ class SsCollapsible extends StatefulWidget {
 
   final String title;
   final Widget child;
+
+  /// v0.19: linha menor embaixo do título (até 2 linhas).
+  final String? subtitle;
 
   /// Quantos itens tem dentro (pílula ao lado do título).
   final int? count;
@@ -509,6 +518,13 @@ class _SsCollapsibleState extends State<SsCollapsible> {
     setState(() => _open = !_open);
     widget.onChanged?.call(_open);
   }
+
+  Widget _titulo(SsColors c, SsDensity d) => Text(
+    widget.title,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: d.font(AppType.md)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -542,14 +558,25 @@ class _SsCollapsibleState extends State<SsCollapsible> {
                     Icon(widget.icon, size: d.iconSize - 2, color: c.ink2),
                     SizedBox(width: d.space(6)),
                   ],
-                  Flexible(
-                    child: Text(
-                      widget.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: d.font(AppType.md)),
+                  if (widget.subtitle == null)
+                    Flexible(child: _titulo(c, d))
+                  else
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _titulo(c, d),
+                          Text(
+                            widget.subtitle!,
+                            key: const ValueKey('ss-collapsible-subtitle'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta), height: 1.3),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   if (widget.count != null) ...[
                     SizedBox(width: d.space(8)),
                     Container(
@@ -561,7 +588,7 @@ class _SsCollapsibleState extends State<SsCollapsible> {
                       ),
                     ),
                   ],
-                  const Spacer(),
+                  if (widget.subtitle == null) const Spacer() else SizedBox(width: d.space(8)),
                   if (widget.label != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
