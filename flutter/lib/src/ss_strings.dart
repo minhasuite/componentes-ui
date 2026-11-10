@@ -389,6 +389,8 @@ class SsStrings {
     required this.notIncluded,
     required this.attention,
     required this.quickActions,
+    required this.image,
+    required this.zoomHint,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -978,6 +980,12 @@ class SsStrings {
   /// v0.18: nome do [SsSpeedDial] (o botão que abre as ações).
   final String quickActions;
 
+  /// v0.19: nome lido da imagem do [showSsImageViewer] sem `semanticLabel`.
+  final String image;
+
+  /// v0.19: dica do [showSsImageViewer] (pinça e toque duplo ampliam).
+  final String zoomHint;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1373,6 +1381,8 @@ class SsStrings {
     notIncluded: 'Não incluído',
     attention: 'Atenção',
     quickActions: 'Ações rápidas',
+    image: 'Imagem',
+    zoomHint: 'Toque duas vezes ou use dois dedos para ampliar',
   );
 
   /// Inglês.
@@ -1756,6 +1766,8 @@ class SsStrings {
     notIncluded: 'Not included',
     attention: 'Attention',
     quickActions: 'Quick actions',
+    image: 'Image',
+    zoomHint: 'Double-tap or pinch to zoom',
   );
 
   /// Espanhol.
@@ -2139,6 +2151,8 @@ class SsStrings {
     notIncluded: 'No incluido',
     attention: 'Atención',
     quickActions: 'Acciones rápidas',
+    image: 'Imagen',
+    zoomHint: 'Toca dos veces o usa dos dedos para ampliar',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2509,6 +2523,8 @@ class SsStrings {
     'notIncluded': notIncluded,
     'attention': attention,
     'quickActions': quickActions,
+    'image': image,
+    'zoomHint': zoomHint,
   };
 
   /// Os idiomas prontos.
@@ -2914,6 +2930,8 @@ class SsStrings {
     String? notIncluded,
     String? attention,
     String? quickActions,
+    String? image,
+    String? zoomHint,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3281,6 +3299,8 @@ class SsStrings {
     notIncluded: notIncluded ?? this.notIncluded,
     attention: attention ?? this.attention,
     quickActions: quickActions ?? this.quickActions,
+    image: image ?? this.image,
+    zoomHint: zoomHint ?? this.zoomHint,
   );
 }
 
