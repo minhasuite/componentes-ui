@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.14.0
+      ref: v0.14.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.14.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.14.1"
 ```
 
 ```css
@@ -610,6 +610,19 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.14.1: rótulo com ícone, painel rebaixado e o quadro de arrastar no web
+
+Pedido do minha-automacao (recursos do tile iguais no web e no app; primeira configuração sem painel nem
+quadro próprios). Tudo aditivo; nada quebra da v0.14.0. Vitrine Rails: "Painéis (v0.14)"; catálogo nos dois lados.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Rótulo com ícone (recurso do tile: brilho, modo, nível) | `SsFieldLabel(text, icon:)` | `<span class="ss-label"><svg/>Brilho</span>` (`.ss-label:has(> svg)`) |
+| Linha de valor com ícone | `SsValueRow(label, value, icon:)` | `<div class="ss-value-row"><span><svg/>Umidade</span><span>9 %</span></div>` |
+| Ícone no slider e no campo −/+ | `SsFieldLabel(icon:)` em cima do `SsSlider`/`SsStepper` | `RangeComponent(icon:)` também na variante padrão, `StepperInputComponent(icon:)` |
+| Painel rebaixado (bloco dentro de um passo/card) | `SsCard(soft: true)` | `.ss-card.is-soft` |
+| Quadro de arrastar: coluna, título e cartão | `SsKanban` (já cobre) | `.ss-kanban-col` (`.is-over`), `.ss-kanban-head`, `.ss-kanban-card` (`.is-dragging`), `.ss-kanban.is-wrap` (grade em vez de rolar) |
+
 ## v0.14: nota, tarefa com comando, tema em amostra e o que sobrava de genérico no produto
 
 Pedido do minha-automacao (nenhuma peça genérica no CSS do produto: painéis, aparência, mapa, mídia, relatório da
@@ -658,6 +671,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.14.1` (09/11/2026): seção "v0.14.1". `SsFieldLabel(icon:)`/`SsValueRow(icon:)` ↔ svg no `.ss-label`/`.ss-value-row`, `SsCard(soft:)` ↔ `.ss-card.is-soft`, e no web a coluna, o título e o cartão do quadro de arrastar (`.ss-kanban-col/-head/-card`, `.ss-kanban.is-wrap`). Nada quebra.
 - `v0.14.0` (09/11/2026): seção "v0.14". `SsNote`/`Ss::NoteComponent`, `SsTaskItem`/`.ss-checklist [role=checkbox]` + `.ss-checklist-x`, `SsIconTile(image:)`/img no `.ss-icon-tile`, `.ss-icon-tile.is-heat`, tema em `label.ss-swatch > input`, `.ss-btn.is-on-grad`, `button.ss-item`, `is-flush`, tokens `--ss-card-bg/-border/-filter`, `.ss-label-chip`, `.ss-bars` em card estreito e `.ss-cam-actions [aria-pressed]`. Nada quebra.
 - `v0.13.0` (09/11/2026): seção "v0.13". `SsSection(icon:)`/`Ss::SectionComponent`, `SsSectionHeader(icon:)`/`Ss::SectionHeaderComponent`, `SsMasonry`/`Ss::MasonryComponent`, `SsAsideLayout`/`Ss::AsideLayoutComponent`, `SsMosaicTile(facts:)`/`Ss::MosaicTileComponent`, `SsPhotoCard`/`Ss::PhotoCardComponent`, chip com `aria-pressed`/`.is-icon`/`.ss-chip-swatch`, `ss_avatar(ring:)` marca a partir de duas cores (`SsBrand.fromColors`, `ssMix` / `ss_brand_style`), texto longo e abertura (`SsProse`/`SsIntro` ↔ `ProseComponent`/`IntroComponent`), grupo de campos com ajuda (`SsFieldGroup` ↔ `ss_fieldset`), `wrapper_class:`/`selected:`/`ss_submit(variant:)` no form builder e `TreeViewComponent(wrap:)`. Nada quebra.
 - `v0.12.0` (09/11/2026): seção "v0.12". `SsDeviceTile`/`Ss::DeviceTileComponent` numa linha com o ícone como chave (switch acessível nos dois lados), agenda que não estoura o card (dia inteiro numa linha; `SsDayAgenda(allDay:)` no Flutter), `SsCardHeader`/`Ss::CardHeaderComponent`, `SsKpiCard`/`Ss::KpiCardComponent` e `SsRankList`/`Ss::RankListComponent`. A API não quebra; muda o desenho do tile (a chave saiu da direita).

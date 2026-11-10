@@ -11,6 +11,7 @@ module Ss
   # - bubble: true mostra a bolha com o valor em cima do seletor enquanto arrasta.
   # - variant: :fill vira a barra grossa de tile (a parte cheia é o valor), com icon: e o rótulo dentro.
   # - disabled: true; hide_label: true (rótulo só para o leitor de tela).
+  # - v0.14.1: icon: também na variante padrão, antes do rótulo (o SsFieldLabel(icon:) do app).
   # - submit: :release envia o form ao soltar (change, com debounce: ms); :input envia arrastando.
   #   Use dentro de um form (ou um button_to/form_with do Turbo):
   #   <%= form_with url: comando_path(p), method: :post do %>

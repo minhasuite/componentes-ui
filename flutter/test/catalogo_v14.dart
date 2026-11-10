@@ -96,4 +96,33 @@ final catalogoV14 = <Componente>[
       ),
     ],
   ),
+  Componente(
+    'ss-field-label-icon',
+    'SsFieldLabel(icon:) · SsValueRow(icon:) · SsCard(soft:)',
+    'v0.14.1: rótulo e linha de valor com o ícone apagado antes (o <svg> no .ss-label e no .ss-value-row do web) e o painel rebaixado (.ss-card.is-soft).',
+    comportamentos: [
+      'O ícone fica na cor apagada, no tamanho da densidade, e o texto corta antes dele.',
+      'soft: fundo do campo, sem sombra: bloco dentro de um passo ou de outro card.',
+    ],
+    estados: [
+      Estado(
+        'recursos',
+        'rótulos de recurso · linha de valor · painel rebaixado',
+        (_) => _pad(
+          const SsCard(
+            soft: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SsFieldLabel('Brilho', icon: Icons.light_mode_outlined),
+                SsFieldLabel('Modo do ventilador', icon: Icons.air_rounded),
+                SsValueRow('Umidade', '18–24 °C', icon: Icons.water_drop_outlined),
+              ],
+            ),
+          ),
+        ),
+        tamanho: const Size(390, 200),
+      ),
+    ],
+  ),
 ];

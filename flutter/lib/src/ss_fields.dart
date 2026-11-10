@@ -40,22 +40,35 @@ abstract final class SsValidators {
 
 /// Rótulo acima dos campos `Ss*` (o mesmo de [SsTextField]). Público para o
 /// campo próprio do produto ficar igual aos do pacote.
+///
+/// v0.14.1: [icon] opcional antes do texto, na cor apagada (o `<svg>` dentro
+/// do `.ss-label` do web), para o rótulo de um recurso (brilho, modo, nível).
 class SsFieldLabel extends StatelessWidget {
-  const SsFieldLabel(this.text, {super.key});
+  const SsFieldLabel(this.text, {super.key, this.icon});
   final String text;
+  final IconData? icon;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(left: 2, bottom: SsDensity.of(context).space(6)),
-    child: Text(
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    final label = Text(
       text,
-      style: TextStyle(
-        color: SsColors.of(context).ink2,
-        fontSize: SsDensity.of(context).font(AppType.sub),
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-  );
+      style: TextStyle(color: c.ink2, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w700),
+    );
+    return Padding(
+      padding: EdgeInsets.only(left: 2, bottom: d.space(6)),
+      child: icon == null
+          ? label
+          : Row(
+              children: [
+                Icon(icon, size: d.font(16), color: c.muted),
+                SizedBox(width: d.space(6)),
+                Flexible(child: label),
+              ],
+            ),
+    );
+  }
 }
 
 /// Dica fixa embaixo do campo (o `helperText` dos campos `Ss*`): texto

@@ -29,6 +29,23 @@ class V14WebTest < ComponentTest
     assert_includes CSS.join("v10_controles.css").read, "var(--ss-card-filter, none)"
   end
 
+  test "v0.14.1: rótulo com ícone, painel rebaixado e quadro de arrastar" do
+    css = CSS.join("v14_web.css").read
+    [".ss-label:has(> svg)", ".ss-value-row > :first-child:has(> svg)", ".ss-card.is-soft", ".ss-kanban.is-wrap",
+     ".ss-kanban-col", ".ss-kanban-col.is-over", ".ss-kanban-head", ".ss-kanban-card", ".ss-kanban-card.is-dragging"].each { assert_includes css, _1 }
+  end
+
+  test "v0.14.1: icon: no slider padrão e no campo −/+" do
+    render_inline(Ss::RangeComponent.new(name: "b", label: "Brilho", icon: SVG))
+    assert_selector ".ss-range-head > label svg"
+    assert_selector ".ss-range-head > label", text: "Brilho"
+    render_inline(Ss::StepperInputComponent.new(name: "t", label: "Alvo", icon: SVG))
+    assert_selector "label.ss-label svg"
+    assert_selector "label.ss-label", text: "Alvo"
+    render_inline(Ss::StepperInputComponent.new(name: "t", label: "Sem"))
+    assert_no_selector "label.ss-label svg"
+  end
+
   test "player e etapas sem moldura pelo css:" do
     render_inline(Ss::MediaPlayerComponent.new(title: "Aquarela", state: :playing, css: "is-flush"))
     assert_selector ".ss-card.ss-media.is-flush"

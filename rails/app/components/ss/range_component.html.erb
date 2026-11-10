@@ -19,7 +19,7 @@
     </div>
   <% else %>
     <div class="ss-range-head<%= ' ss-sr' if hide_label? %>">
-      <label for="<%= id %>"><%= label %></label>
+      <label for="<%= id %>"><% if icon %><%= icon.html_safe %><% end %><%= label %></label>
       <output for="<%= id %>" class="ss-range-out num" data-ss-range-target="out"><%= text %></output>
     </div>
     <% if plain? %>

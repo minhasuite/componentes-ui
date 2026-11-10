@@ -82,4 +82,18 @@
       </div>
     </div>
   <% end %>
+
+  <%= demo "v0.14.1: rótulo com ícone, painel rebaixado e quadro de arrastar", "O <svg> dentro do .ss-label e do 1º filho do .ss-value-row vira ícone apagado (SsFieldLabel/SsValueRow(icon:)); .ss-card.is-soft é o painel rebaixado (SsCard(soft:)); .ss-kanban.is-wrap com .ss-kanban-col, .ss-kanban-head e .ss-kanban-card é o quadro de arrastar (SsKanban), com .is-over e .is-dragging.",
+           uso: '<span class="ss-label">svg Brilho</span> · <div class="ss-card ss-card-pad is-soft"> · <div class="ss-kanban is-wrap"><section class="ss-kanban-col"><h3 class="ss-kanban-head">…</h3><div class="ss-kanban-card" draggable="true">…' do %>
+    <div class="ss-card ss-card-pad is-soft" style="display:grid;gap:.5rem">
+      <span class="ss-label"><%= ico.("M12 3v2M12 19v2M5 12H3M21 12h-2M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z") %>Brilho</span>
+      <div class="ss-value-row"><span><%= ico.("M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z") %>Umidade</span><span>9 %</span></div>
+    </div>
+    <div class="ss-kanban is-wrap" style="margin-top:1rem">
+      <section class="ss-kanban-col"><h3 class="ss-kanban-head"><%= ico.("M3 11l9-8 9 8M5 10v10h14V10") %>Sala</h3>
+        <div class="ss-kanban-card" draggable="true"><span style="font-weight:600">Luz do teto</span></div>
+        <div class="ss-kanban-card is-dragging" draggable="true"><span style="font-weight:600">TV</span></div></section>
+      <section class="ss-kanban-col is-over"><h3 class="ss-kanban-head"><%= ico.("M3 11l9-8 9 8M5 10v10h14V10") %>Cozinha</h3></section>
+    </div>
+  <% end %>
 </div>

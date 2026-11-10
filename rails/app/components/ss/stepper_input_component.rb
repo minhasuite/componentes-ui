@@ -5,14 +5,15 @@ module Ss
   # travados, só o valor). Rótulos dos botões (aria-label/title): decrease_label:/increase_label:
   # (v0.10.1, nomes do SsStepper; less_label:/more_label: continuam), padrão stepper_input.less/more.
   # Não envia sozinho: o form é de quem chama (escute o change do input).
+  # v0.14.1: icon: (svg) antes do rótulo, como o SsFieldLabel(icon:) do app.
   class StepperInputComponent < BaseComponent
     attr_reader :name, :label, :value, :min, :max, :step, :unit, :id
 
     def initialize(name:, value: 0, min: nil, max: nil, step: 1, unit: nil, label: nil, disabled: false, hide_label: false,
-                   less_label: nil, more_label: nil, decrease_label: nil, increase_label: nil, id: nil, **rest)
+                   less_label: nil, more_label: nil, decrease_label: nil, increase_label: nil, id: nil, icon: nil, **rest)
       super(**rest)
       @name, @value, @min, @max, @step, @unit, @label = name, value, min, max, step, unit, label
-      @disabled, @hide_label = disabled, hide_label
+      @disabled, @hide_label, @icon = disabled, hide_label, icon
       @less_label, @more_label = decrease_label || less_label, increase_label || more_label
       @id = id || "ss-stp-#{SecureRandom.hex(3)}"
     end
@@ -26,7 +27,7 @@ module Ss
     def call
       tag.div(class: classes("ss-field", "ss-stepper-field"), **root_attrs) do
         safe_join([
-          (tag.label(label, for: id, class: ["ss-label", ("ss-sr" if @hide_label)]) if label),
+          (tag.label(safe_join([(@icon.to_s.html_safe if @icon.present?), label].compact), for: id, class: ["ss-label", ("ss-sr" if @hide_label)]) if label),
           tag.div(class: "ss-stepper ss-stepper-input", data: { controller: "ss-stepper" }) do
             safe_join([
               button(:down, "−", less_label, disabled? || at_min?),

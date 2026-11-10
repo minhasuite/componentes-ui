@@ -64,6 +64,28 @@ void main() {
     expect(t.widget<SsIconButton>(find.byType(SsIconButton)).tooltip, endsWith(': Comprar pão'));
   });
 
+  testWidgets('v0.14.1: SsFieldLabel(icon:), SsValueRow(icon:) e SsCard(soft:)', (t) async {
+    await t.pumpWidget(
+      _app(
+        const SsCard(
+          soft: true,
+          child: Column(
+            children: [
+              SsFieldLabel('Brilho', icon: Icons.light_mode_outlined),
+              SsFieldLabel('Sem ícone'),
+              SsValueRow('Umidade', '9 %', icon: Icons.water_drop_outlined),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(find.byIcon(Icons.light_mode_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
+    expect(find.text('Sem ícone'), findsOneWidget);
+    final box = t.widget<AnimatedContainer>(find.byType(AnimatedContainer)).decoration! as BoxDecoration;
+    expect(box.boxShadow, isNull);
+  });
+
   testWidgets('SsIconTile(image:): foto que falha volta ao ícone', (t) async {
     await t.pumpWidget(_app(SsIconTile(Icons.eco_outlined, image: MemoryImage(Uint8List(0)))));
     expect(find.byType(Image), findsOneWidget);

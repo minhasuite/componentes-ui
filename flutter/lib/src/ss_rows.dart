@@ -20,10 +20,15 @@ class SsValueRow extends StatelessWidget {
     this.mono = true,
     this.emphasis = false,
     this.onTap,
+    this.icon,
   });
 
   final String label;
   final String value;
+
+  /// v0.14.1: ícone apagado antes do rótulo (o `<svg>` no 1º filho do
+  /// `.ss-value-row` do web).
+  final IconData? icon;
   final String? caption;
   final bool mono;
   final bool emphasis;
@@ -64,13 +69,24 @@ class SsValueRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color: emphasis ? c.ink : c.ink2,
-                        fontSize: d.font(emphasis ? AppType.md : AppType.body),
-                        fontWeight: emphasis ? FontWeight.w800 : FontWeight.w600,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(icon, size: d.font(16), color: c.muted),
+                          SizedBox(width: d.space(6)),
+                        ],
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: emphasis ? c.ink : c.ink2,
+                              fontSize: d.font(emphasis ? AppType.md : AppType.body),
+                              fontWeight: emphasis ? FontWeight.w800 : FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     if ((caption ?? '').isNotEmpty)
                       Text(

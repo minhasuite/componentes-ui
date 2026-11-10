@@ -17,6 +17,7 @@ class SsCard extends StatelessWidget {
     this.active = false,
     this.done = false,
     this.tint,
+    this.soft = false,
   });
 
   final Widget child;
@@ -30,6 +31,10 @@ class SsCard extends StatelessWidget {
   /// Cor de um tom ([SsTone], categoria): fundo a 8% sobre a superfície.
   final Color? tint;
 
+  /// v0.14.1: painel rebaixado (fundo do campo, sem sombra), para um bloco
+  /// dentro de outro card ou de um passo. O web é o `.ss-card.is-soft`.
+  final bool soft;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -40,10 +45,10 @@ class SsCard extends StatelessWidget {
       curve: Curves.easeOut,
       padding: padding ?? EdgeInsets.all(d.cardPad),
       decoration: BoxDecoration(
-        color: tint == null ? c.surface : Color.alphaBlend(tint!.withValues(alpha: .08), c.surface),
+        color: soft ? c.field : (tint == null ? c.surface : Color.alphaBlend(tint!.withValues(alpha: .08), c.surface)),
         borderRadius: radius,
         border: active ? Border.all(color: c.accentBright, width: 2) : null,
-        boxShadow: active ? c.activeShadow : AppShadows.card,
+        boxShadow: active ? c.activeShadow : (soft ? null : AppShadows.card),
       ),
       // Material transparente: ListTile/InkWell dentro do card pintam aqui,
       // e não por baixo da decoração (o que esconderia o splash).
