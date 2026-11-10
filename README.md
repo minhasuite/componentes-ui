@@ -610,6 +610,49 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.19.0: botão como componente, entrar com o Google, cartão físico, arquivo e cor no formulário (web 100% do meu-financeiro)
+
+O que o Meu Financeiro (web) ainda escrevia à mão (`<button>`, `button_to` com classe, `<input type=file|color>`, o "G" do
+Google com hex, o cartão de crédito em CSS próprio) para chegar a 100% no componentes-ui, com um teste de conformidade que
+não aceita exceção. Só o lado Rails; tudo aditivo (a API não quebra). Vitrine "Financeiro (v0.19)" (grupo Tela); catálogo
+em `rails/catalogo/index.html` (seções de `rails/sample/script/catalogo_v019.rb`); testes `v19_web_test.rb`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Botão | `SsButton` (já cobre) | `Ss::ButtonComponent(label:, icon:, trailing_icon:, href:, method:, variant: :primary/:outline/:ghost/:danger/:on_grad/:chip/:item, size: :sm, block:, type: :submit, confirm:, confirm_tone:, confirm_button:, params:, form:, submitting:, tone: :danger)` (+ bloco) · `.ss-btn.is-block`, `.ss-item.is-danger` | `<button class="ss-btn">` à mão, `button_to … class: "ss-btn …"`, `button_tag`, `submit_tag`, `<button class="ss-chip">` |
+| Entrar com o Google | `SsGoogleButton` (já existia) | `Ss::GoogleButtonComponent(href:, label:, method: :post)` · `.ss-google-btn` | `devise/shared/_google_button` com o SVG de quatro cores no produto |
+| Cartão físico | `SsWalletCard` (já existia) | `Ss::WalletCardComponent(amount:, label:, holder:, holder_label:, number:, network:, expiry:, colors:, href:, tilt:)` (bloco = logo da bandeira) · Stimulus `ss-tilt` · `.ss-wallet-card*` | `.mf-cc` + `tilt_controller.js` do produto |
+| Arquivo e cor | `SsImageSourcePicker`, `SsColorPicker` | `f.ss_file_field`, `f.ss_color_field` (o campo inteiro, como os outros `f.ss_*`) | `f.file_field`/`f.color_field` com `class: "ss-input"` |
+| Seleção da tabela | — | `DataTableComponent(select_name: "pedido_ids[]", bulk_method: :patch)` | caixas `<input type=checkbox>` à mão com o nome do controller do app |
+| Rodapé só com a ação | — | `FormActionsComponent(submit: false)` (a ação vem no bloco, ex. um `ButtonComponent(method: :post)`) | `.ss-dialog-panel-foot` à mão |
+| Botão de ícone que envia | — | `IconButtonComponent(type: :submit, form:, name:, value:)` | `<button type="submit" class="…">` com ícone |
+| Cor da barra do navegador | — | `ss_theme_color_tag(color = nil, dark: false)` | `<meta name="theme-color" content="#5A45E8">` |
+| Barras num card largo | `SsBarChart` (já mede a largura) | `BarChartComponent(width: 1100, label_every:)`: largura do desenho (viewBox) e rótulos do eixo X de N em N quando não cabem (automático) | gráfico de 30 dias com texto gigante no computador e rótulos encostados |
+
+**Ss::ButtonComponent.** Um botão só para os três jeitos de agir: `href:` (link), sem `href:` (`<button type="button">` do JS,
+ou `type: :submit` com `name:`/`value:`/`form:`/`formaction:`) e `href:` + `method: :post/:patch/:put/:delete` (o `button_to`,
+com o `confirm:` no `<form>`, onde o Turbo lê, `params:` como campos escondidos e `form: {}` no form). `variant: :chip` é a
+ficha (`.ss-chip`, "Hoje", "+R$ 10"), `:item` a linha de menu (no popover ⋯; `tone: :danger` pinta de perigo), `:on_grad` o
+botão sobre o gradiente. O resto dos atributos (`data:`, `aria:`, `title:`, `id:`, `disabled:`) vai no elemento.
+
+**Ss::WalletCardComponent.** `number:` são só os 4 dígitos finais (sai `•••• •••• •••• 4086`); o valor (`amount:`, já
+formatado) é borrado no modo privacidade. `colors:` aceita dois `#rrggbb` (a cor do cartão é dado, vai como variável
+inline); o que não for hex é ignorado e fica o gradiente da marca. A inclinação (`ss-tilt`) só liga com mouse de verdade
+e sem "reduzir movimento".
+
+**Barras no card largo.** O SVG do `BarChartComponent` ocupa a largura do card e escala junto: com o padrão (560), num
+card de 1100 px o texto dobrava. Passe `width:` com a largura de verdade no computador e renderize outro com o padrão no
+celular (ex. `css: "hidden md:block"` e `css: "md:hidden"`).
+
+**Padrões que mudaram.** `FormActionsComponent(submit: false)` antes mostrava "Salvar" (o `false` caía no padrão).
+`BarChartComponent` com muitos grupos (mais de ~20 no padrão) mostra os rótulos do eixo X de N em N (o ativo sempre
+aparece); `label_every: 1` volta a todos. Correções: o rodapé preso do formulário (`.ss-form-actions.is-sticky`) encosta
+no fim do diálogo (antes o conteúdo aparecia por baixo dele, no padding do corpo) e a tabela para leitor de tela do
+`BarChart`/`AreaChart` fica num `.ss-sr-wrap` recortado (uma `<table>` não encolhe a 1px e empurrava a página para o lado no
+celular; o seletor `table.ss-sr` continua valendo).
+
+**Textos novos:** `google.sign_in`, `wallet_card.balance`, `wallet_card.card` (pt-BR, en, es).
+
 ## v0.18.0: speed dial, diálogo com formulário em frame, ações de linha, rodapé e erros de formulário, combobox com ícone, botão que alterna e o que faltava no app (fase final do meu-financeiro)
 
 O que o Meu Financeiro (web Rails e app Flutter) ainda tinha de genérico por falta de peça aqui; com esta versão os
@@ -900,6 +943,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra.
 - `v0.18.0` (10/11/2026): seção "v0.18.0" (fase final do meu-financeiro, web e app). `Ss::SpeedDialComponent` ↔ `SsSpeedDial`, `Ss::DialogComponent(global:, header:, clear_on_close:, refresh_on_close:, follow_missing:)` + `data-ss-dialog-keep-open`/`-refresh`/`-dismiss`, `Ss::RowActionsComponent` e `t.actions` (hover só com mouse, à vista no toque), `DataTableComponent(row_attrs:, empty_art:)`, `Ss::FormErrorsComponent`, `Ss::FormActionsComponent`, `ComboboxComponent` com ícone/imagem por opção e `input:`, `PopoverComponent(trigger_attrs:)`, `ss_status` com `:warn`/`:warning` (e `ComponentesUi.tone`), `Ss::IconButtonComponent`, `Ss::PrivacyToggleComponent`, AppShell sem a barra vazia no computador (`with_top_mobile`, ícone no grupo), utilitários `text-on-accent`/`bg-grad`/`text-info`…; no app `SsMoneyField(controller:, focusNode:, autofocus:, …)` + `SsMoneyField.parse`, `showSsToastGlobal`/`SsToastHost.navigatorKey`, `SsFab(iconTurns:)`. Nada quebra; o diálogo com frame passa a seguir a URL quando a resposta não tem o frame.
 - `v0.17.1` (10/11/2026): seção "v0.17.1". `.ss-fab` respeita a área segura e o `lift:` (o do `engine.css` vencia na cascata) e `.ss-hero-chip` fora do herói em fundo de campo. Nada quebra.
 - `v0.17.0` (10/11/2026): seção "v0.17.0". `Ss::FabComponent` (o `.ss-fab` como componente: círculo, pílula ou `:wide`, área segura, acima da `.ss-sticky-bar`, `lift:`, id estável para o morph do Turbo) ↔ `SsFab(extended:, extendedFrom:)`, e o cabeçalho compacto `Ss::PageComponent(eyebrow:, compact:)` ↔ `SsTopBar(eyebrow:)`. Nada quebra.

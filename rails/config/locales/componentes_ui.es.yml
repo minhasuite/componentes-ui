@@ -609,5 +609,10 @@ es:
     privacy:
       hide: Ocultar valores
       hint: '%{label} (P)'
+    google:
+      sign_in: Iniciar sesión con Google
+    wallet_card:
+      balance: Saldo total
+      card: Tarjeta
     speed_dial:
       label: Acciones rápidas

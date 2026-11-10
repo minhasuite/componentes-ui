@@ -23,6 +23,11 @@ module Ss
   # - t.actions(label: "Ações", reveal: true) { |row| … }: última coluna com as ações da linha, no hover
   #   do computador e sempre à vista no toque (as regras do Ss::RowActionsComponent); a célula não entra
   #   na escolha de colunas.
+  #
+  # v0.19:
+  # - select_name: o nome das caixas da seleção (padrão "ids[]"; ex. "pedido_ids[]" para o controller do app).
+  # - bulk_method: o método do form da barra de seleção (padrão :post; :patch, :delete). Os botões da barra
+  #   podem trocar o destino com formaction: (Ss::ButtonComponent(type: :submit, formaction:, name:, value:)).
   class DataTableComponent < BaseComponent
     Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, keyword_init: true)
 
@@ -30,7 +35,8 @@ module Ss
 
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
-                   max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, **opts)
+                   max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, select_name: "ids[]",
+                   bulk_method: :post, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -51,6 +57,8 @@ module Ss
       @tools = tools
       @row_attrs = row_attrs
       @empty_art = empty_art
+      @select_name = select_name.to_s
+      @bulk_method = bulk_method.to_s.downcase.presence || "post"
       @columns = []
     end
 
@@ -137,6 +145,8 @@ module Ss
     def span = @columns.size + (@selectable ? 1 : 0) + (expansion? ? 1 : 0)
     def row_key(row, i) = (value_of(row, @row_id) || i).to_s
     def form_id = "#{@id}-bulk"
+    def select_name = @select_name
+    def bulk_method = @bulk_method.to_sym
 
     # Janela de páginas: 1 … 4 5 6 … 20.
     def page_items

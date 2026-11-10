@@ -609,5 +609,10 @@ en:
     privacy:
       hide: Hide values
       hint: '%{label} (P)'
+    google:
+      sign_in: Sign in with Google
+    wallet_card:
+      balance: Total balance
+      card: Card
     speed_dial:
       label: Quick actions

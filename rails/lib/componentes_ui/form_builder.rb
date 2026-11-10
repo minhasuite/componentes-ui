@@ -14,12 +14,14 @@ module ComponentesUi
   #   ganha aria-invalid e aria-describedby (ajuda/erro). Sem erro do servidor, o
   #   campo obrigatório leva "Preencha este campo." para o :user-invalid do navegador.
   # - Não usa o field_with_errors do Rails (quebraria o grid do .ss-field).
+  # - v0.19: f.ss_file_field (arquivo: accept:, multiple:) e f.ss_color_field (cor livre do usuário, a
+  #   amostra do navegador no desenho do campo).
   # - v0.13: wrapper_class: em todo f.ss_* vai no .ss-field (coluna de grade sem <div> a mais);
   #   ss_select(selected:) sem model; ss_submit(variant: :outline/:ghost/:danger); f.ss_fieldset
   #   agrupa campos com legenda e uma ajuda do grupo.
   class FormBuilder < ActionView::Helpers::FormBuilder
     TEXT_KINDS = %i[text_field email_field number_field password_field telephone_field url_field search_field date_field
-                    datetime_local_field time_field month_field text_area].freeze
+                    datetime_local_field time_field month_field text_area file_field color_field].freeze
 
     TEXT_KINDS.each do |kind|
       define_method(:"ss_#{kind}") do |method, **opts|

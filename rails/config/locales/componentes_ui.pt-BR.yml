@@ -611,5 +611,10 @@ pt-BR:
     privacy:
       hide: Ocultar valores
       hint: '%{label} (P)'
+    google:
+      sign_in: Entrar com o Google
+    wallet_card:
+      balance: Saldo total
+      card: Cartão
     speed_dial:
       label: Ações rápidas

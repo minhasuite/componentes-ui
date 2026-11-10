@@ -11,11 +11,15 @@ module Ss
   # icon:/pressed_icon: nome do ss_icon ou SVG já seguro. href: vira <a>; sem ele, <button type="button">.
   # variant: :ghost (padrão), :tonal, :outline, :danger; size: :md (padrão), :sm. title: troca a dica
   # (padrão = label:, ex. "Ocultar valores (P)").
+  # v0.19: type: :submit envia o form (com name:/value:/form: no botão, ex. "marcar como pago" numa
+  # agenda); o resto dos atributos (data:, aria:, popovertarget:, style:) vai no elemento.
   class IconButtonComponent < BaseComponent
     VARIANTS = %i[ghost tonal outline danger].freeze
 
-    def initialize(icon:, label:, href: nil, pressed: nil, pressed_icon: nil, variant: :ghost, size: :md, title: nil, **rest)
+    def initialize(icon:, label:, href: nil, pressed: nil, pressed_icon: nil, variant: :ghost, size: :md, title: nil, type: :button,
+                   **rest)
       super(**rest)
+      @type = type.to_s == "submit" ? "submit" : "button"
       @icon, @label, @href, @pressed, @pressed_icon = icon, label.to_s, href, pressed, pressed_icon
       @variant = VARIANTS.include?(variant.to_s.to_sym) ? variant.to_s.to_sym : :ghost
       @size = size.to_s == "sm" ? :sm : :md
@@ -33,7 +37,7 @@ module Ss
              else
                svg(@icon)
              end
-      @href ? link_to(@href, **attrs) { body } : tag.button(type: "button", **attrs) { body }
+      @href ? link_to(@href, **attrs) { body } : tag.button(type: @type, **attrs) { body }
     end
 
     private

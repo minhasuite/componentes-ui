@@ -35,6 +35,8 @@
 @import "./v17_web.css";
 /* v0.18: speed dial, ações de linha, rodapé de formulário, combobox com mídia, botão que alterna, cores sobre a marca. */
 @import "./v18_web.css";
+/* v0.19: botão como componente, entrar com o Google, cartão físico, campos de arquivo e de cor. */
+@import "./v19_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

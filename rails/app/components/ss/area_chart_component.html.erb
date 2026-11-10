@@ -24,9 +24,9 @@
     <span class="ss-area-pill num" data-ss-chart-target="pill" style="left:<%= pct_x(active) %>%;top:<%= pct_y(active) %>%"><%= fmt(points[active][1]) %></span>
   </div>
   <p class="ss-sr" aria-live="polite" data-ss-chart-target="live"></p>
-  <table class="ss-sr">
+  <div class="ss-sr-wrap"><table class="ss-sr">
     <caption><%= title %></caption>
     <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><th scope="col"><%= ss_t("chart.value", default: "Valor") %></th></tr></thead>
     <tbody><% points.each do |(label, v)| %><tr><th scope="row"><%= label %></th><td><%= fmt(v) %></td></tr><% end %></tbody>
-  </table>
+  </table></div>
 <% end %>

@@ -13,6 +13,8 @@ module Ss
   # texto enquanto envia (data-turbo-submits-with; padrão "Salvando…"; false tira); cancel: false tira o
   # Cancelar; cancel_label:; dialog: true (padrão) = Cancelar com data-ss-dialog-dismiss e preso no fim
   # do painel; sticky: false solta; align: :end (padrão), :start, :between.
+  # v0.19: submit: false tira o botão de enviar (a ação vem no bloco, ex. um Ss::ButtonComponent com
+  # method: :post fora de formulário: "Cancelar · Aplicar em 12").
   class FormActionsComponent < BaseComponent
     ALIGN = %i[end start between].freeze
 
@@ -20,6 +22,7 @@ module Ss
                    sticky: nil, align: :end, **rest)
       super(**rest)
       @form, @cancel, @cancel_href, @dialog = form, cancel, cancel_href, dialog
+      @no_submit = submit == false
       @submit = submit || ss_t("common.save", default: "Salvar")
       @submitting = submitting.nil? ? ss_t("common.saving", default: "Salvando…") : submitting
       @cancel_label = cancel_label || ss_t("common.cancel", default: "Cancelar")
@@ -43,6 +46,8 @@ module Ss
     end
 
     def submit_button
+      return if @no_submit
+
       data = @submitting ? { turbo_submits_with: @submitting } : {}
       return @form.button(@submit, type: "submit", class: "ss-btn ss-btn-primary", data:) if @form
 

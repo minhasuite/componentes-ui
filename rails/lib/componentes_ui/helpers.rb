@@ -166,6 +166,19 @@ module ComponentesUi
       %(<a href="#{ERB::Util.html_escape(target)}" class="ss-skip">#{ERB::Util.html_escape(label)}</a>).html_safe
     end
 
+    # Cor da barra do navegador no celular (v0.19): <meta name="theme-color"> com a cor da marca da
+    # suíte (o violeta padrão), para o produto não escrever hex no layout. color: troca (ex. a cor de
+    # um cliente); dark: põe também a do tema escuro (o fundo da página no escuro).
+    #   <%= ss_theme_color_tag %>
+    THEME_COLOR = { light: "#5a45e8", dark: "#0e0d16" }.freeze
+
+    def ss_theme_color_tag(color = nil, dark: false)
+      c = color.to_s.match?(ComponentesUi::HEX) ? color.to_s : THEME_COLOR[:light]
+      tags = [%(<meta name="theme-color" content="#{c}"#{' media="(prefers-color-scheme: light)"' if dark}>)]
+      tags << %(<meta name="theme-color" content="#{THEME_COLOR[:dark]}" media="(prefers-color-scheme: dark)">) if dark
+      tags.join("\n").html_safe
+    end
+
     # Nome da paleta e da família no idioma da página (paletas.rb tem o pt-BR, gerado).
     def ss_palette_name(slug)
       pt = ComponentesUi::PALETAS[slug.to_s] if defined?(ComponentesUi::PALETAS)

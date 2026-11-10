@@ -1,8 +1,8 @@
 <%= tag.figure(**root_attrs(class: classes("ss-barc", ("is-stacked" if stacked?)), id: uid)) do %>
   <figcaption class="<%= show_title? ? "ss-barc-title" : "ss-sr" %>"><%= title %></figcaption>
-  <svg viewBox="0 0 <%= W %> <%= h %>" aria-hidden="true">
+  <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
     <% guides.each do |(gy, _v, zero)| %>
-      <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= W - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
+      <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= w - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
     <% end %>
     <% labels.each_with_index do |label, i| %>
       <g class="ss-barc-g<%= " is-active" if active?(i) %>" style="--i:<%= i %>">
@@ -11,7 +11,7 @@
         <% bars(i).each do |(bx, by, bw, bh, s, v)| %>
           <rect class="ss-barc-bar<%= " is-neg" if v.negative? %>" x="<%= bx %>" y="<%= by %>" width="<%= bw %>" height="<%= bh %>" rx="<%= [bw / 6, 4].min.round(2) %>" style="fill:<%= s[:color] %>"/>
         <% end %>
-        <text class="ss-barc-xtext" x="<%= cx(i) %>" y="<%= h - 8 %>" text-anchor="middle"><%= label %></text>
+        <% if show_label?(i) %><text class="ss-barc-xtext" x="<%= cx(i) %>" y="<%= h - 8 %>" text-anchor="middle"><%= label %></text><% end %>
       </g>
     <% end %>
     <% if line && line_points.size > 1 %>
@@ -30,9 +30,9 @@
       <% if line %><li class="is-line"><i style="background:<%= line[:color] %>"></i><%= line[:name] %></li><% end %>
     </ul>
   <% end %>
-  <table class="ss-sr">
+  <div class="ss-sr-wrap"><table class="ss-sr">
     <caption><%= title %></caption>
     <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if line %><th scope="col"><%= line[:name] %></th><% end %></tr></thead>
     <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if line %><td><%= line[:values][i].nil? ? "—" : fmt(line[:values][i]) %></td><% end %></tr><% end %></tbody>
-  </table>
+  </table></div>
 <% end %>

@@ -14,6 +14,11 @@ module Ss
   #
   # Série: { name:, values:, color: "var(--…)" ou tone: :accent/:success/:danger/:warn/:muted }.
   # Sem cor, --series-1..6 (a 1ª é a marca). active: índice do grupo em destaque (rótulo forte).
+  #
+  # v0.19: width: a largura do desenho (viewBox; padrão 560). O SVG ocupa a largura do card e escala
+  # junto: num card largo (painel no computador), passe a largura de verdade (ex. 1100) para o texto
+  # não crescer; no celular, renderize outro com a largura padrão (ex. com hidden/md:block). Com muitos
+  # grupos (30 dias), os rótulos do eixo X saem de N em N para não encostar (label_every: força o N).
   class BarChartComponent < BaseComponent
     W = 560
     PT = 26.0
@@ -24,7 +29,7 @@ module Ss
     attr_reader :title, :labels, :series, :line
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
-                   show_title: false, legend: true, **rest)
+                   show_title: false, legend: true, width: W, label_every: nil, **rest)
       super(**rest)
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
@@ -32,6 +37,8 @@ module Ss
       @stacked = stacked
       @format = format
       @h = height.to_i.clamp(120, 600)
+      @w = width.to_i.clamp(280, 1600)
+      @label_every = label_every&.to_i&.clamp(1, 100)
       @active = active
       @show_title = show_title
       @legend = legend
@@ -40,6 +47,12 @@ module Ss
     def render? = labels.any? && series.any?
 
     def h = @h
+    def w = @w
+
+    # De quantos em quantos rótulos do eixo X mostrar (v0.19): sem label_every:, o que cabe sem
+    # encostar (~26 unidades por rótulo); o grupo ativo sempre mostra o dele.
+    def label_every = @label_every || [((labels.size * 26.0) / (w - 2 * PX)).ceil, 1].max
+    def show_label?(i) = active?(i) || (i % label_every).zero?
     def stacked? = @stacked
     def show_title? = @show_title
     def legend? = @legend && (series.size + (line ? 1 : 0)) > 1
@@ -77,7 +90,7 @@ module Ss
     end
 
     def zero_y = y(0)
-    def slot = (W - 2 * PX) / labels.size.to_f
+    def slot = (w - 2 * PX) / labels.size.to_f
     def cx(i) = (PX + slot * (i + 0.5)).round(2)
 
     # Retângulos de um grupo: [x, y, w, h, série, valor].

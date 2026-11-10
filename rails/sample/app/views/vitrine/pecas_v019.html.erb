@@ -1,0 +1,40 @@
+<%# titulo: Financeiro (v0.19): botão, Google, cartão físico, arquivo e cor | grupo: Tela | ordem: 42 %>
+<%# v0.19: o que o Meu Financeiro (web) ainda escrevia à mão para ficar 100% na gem. %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::ButtonComponent", "O .ss-btn como componente: link, botão do JS, envio (name/value/formaction) e button_to (method:, confirm:). Variantes primary, outline, ghost, danger, on_grad, chip e item. Par: SsButton.",
+           uso: 'render Ss::ButtonComponent.new(label: "Remover", href: pedido_path(p), method: :delete, variant: :danger, size: :sm, confirm: "Remover?")' do %>
+    <div class="ss-card ss-card-pad" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
+      <%= render Ss::ButtonComponent.new(label: "Novo", icon: "plus", href: "#") %>
+      <%= render Ss::ButtonComponent.new(label: "Ler", variant: :outline) %>
+      <%= render Ss::ButtonComponent.new(label: "Cancelar", variant: :ghost) %>
+      <%= render Ss::ButtonComponent.new(label: "Remover", icon: "trash", href: "#", method: :delete, variant: :danger, size: :sm, confirm: "Remover?") %>
+      <%= render Ss::ButtonComponent.new(label: "Hoje", variant: :chip) %>
+      <%= render Ss::ButtonComponent.new(label: "Ontem", variant: :chip) %>
+      <div style="width:100%"><%= render Ss::ButtonComponent.new(label: "Largura toda", block: true, variant: :outline) %></div>
+      <div class="ss-card" style="width:100%;padding:.25rem"><%= render Ss::ButtonComponent.new(label: "Editar", variant: :item) %><%= render Ss::ButtonComponent.new(label: "Remover", variant: :item, tone: :danger) %></div>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::GoogleButtonComponent", "Entrar com o Google: o G de quatro cores (marca do Google, fica na gem), POST sem Turbo para o OmniAuth. Par: SsGoogleButton.",
+           uso: 'render Ss::GoogleButtonComponent.new(href: user_google_oauth2_omniauth_authorize_path)' do %>
+    <div class="ss-card ss-card-pad"><%= render Ss::GoogleButtonComponent.new(href: "#", method: :get) %></div>
+  <% end %>
+
+  <%= demo "Ss::WalletCardComponent", "Cartão físico: chip, bandeira, final, nome e valor; inclina com o mouse (ss-tilt). colors: as do cartão; sem ele, a marca. Par: SsWalletCard.",
+           uso: 'render(Ss::WalletCardComponent.new(amount: ss_money(1234.5), label: "Fatura", holder: "Nubank", number: "4086", href: cartao_path(c))) { logo }' do %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem">
+      <%= render Ss::WalletCardComponent.new(amount: ss_money(1234.56), label: "Fatura", holder: "Nubank Roxinho", number: "4086", network: "visa", href: "#") %>
+      <%= render Ss::WalletCardComponent.new(amount: ss_money(89.9), label: "Fatura", holder: "Inter", number: "1123", network: "elo", colors: ["#1f1b2e", "#eb5e28"]) %>
+    </div>
+  <% end %>
+
+  <%= demo "f.ss_file_field · f.ss_color_field", "Arquivo e cor no desenho do campo do ss_form_with.",
+           uso: 'f.ss_file_field :arquivo, label: "Arquivo", accept: ".csv"   ·   f.ss_color_field :cor, label: "Cor"' do %>
+    <div class="ss-card ss-card-pad">
+      <%= ss_form_with url: "#", scope: :demo19 do |f| %>
+        <%= f.ss_file_field :arquivo, label: "Extrato (CSV, OFX)", accept: ".csv,.ofx" %>
+        <%= f.ss_color_field :cor, label: "Cor", value: "#0ea5e9" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
