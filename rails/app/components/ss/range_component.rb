@@ -115,7 +115,7 @@ module Ss
         g = 288.1221695283 * ((t - 60)**-0.0755148492)
         b = 255
       end
-      format("#%02x%02x%02x", *[r, g, b].map { |x| x.clamp(0, 255).round })
+      Kernel.format("#%02x%02x%02x", *[r, g, b].map { |x| x.clamp(0, 255).round })
     end
 
     def controller_data

@@ -64,7 +64,7 @@ module Ss
     def self.fmt(sec)
       sec = sec.to_i
       h, m, s = sec / 3600, (sec % 3600) / 60, sec % 60
-      h.positive? ? format("%d:%02d:%02d", h, m, s) : format("%d:%02d", m, s)
+      h.positive? ? Kernel.format("%d:%02d:%02d", h, m, s) : Kernel.format("%d:%02d", m, s)
     end
 
     def fmt(sec) = self.class.fmt(sec)

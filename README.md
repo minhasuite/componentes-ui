@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.15.0
+      ref: v0.15.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.15.1"
 ```
 
 ```css
@@ -716,6 +716,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.15.1` (10/11/2026): correção. `ss_number`/`ss_money` e os componentes que formatam com `format(...)` (CountUp, Donut, DataTable com `format: :money`, ProgressRow, BarChart, AreaChart, MoneyInput, relógio, QR, mídia…) quebravam no ViewComponent 3.x, que tem um `format` próprio sem argumentos; agora chamam `Kernel.format`. Nada quebra.
 - `v0.15.0` (09/11/2026): seção "v0.15" (fase 0 do meu-financeiro). `ss_icon`/`Ss::IconComponent` ↔ `SsIcons.named` (Heroicons v1 + apelidos da v2, fonte `rails/icones/`), `Ss::DialogComponent` (turbo-frame), `Ss::MonthSwitcherComponent`, `SsBarChart`/`Ss::BarChartComponent` (agrupado, empilhado, negativos, linha), conta e sinal no dinheiro (`SsMoneyField(expression:, signed:, formats:)` ↔ `MoneyInputComponent(expression:, signed:)`, `ComponentesUi::AmountExpression`, `ssEvalAmount`), `SsPrivacyScope`/`SsPrivate`/`SsPrivacyToggle`, `SsProgressRow`/`Ss::ProgressRowComponent`, `Ss::ChatComponent` + `SsChatActionCard`/`Ss::ChatActionComponent`, `Ss::FormSectionComponent` e `Ss::ConfettiComponent`. Nada quebra.
 - `v0.14.1` (09/11/2026): seção "v0.14.1". `SsFieldLabel(icon:)`/`SsValueRow(icon:)` ↔ svg no `.ss-label`/`.ss-value-row`, `SsCard(soft:)` ↔ `.ss-card.is-soft`, e no web a coluna, o título e o cartão do quadro de arrastar (`.ss-kanban-col/-head/-card`, `.ss-kanban.is-wrap`). Nada quebra.
 - `v0.14.0` (09/11/2026): seção "v0.14". `SsNote`/`Ss::NoteComponent`, `SsTaskItem`/`.ss-checklist [role=checkbox]` + `.ss-checklist-x`, `SsIconTile(image:)`/img no `.ss-icon-tile`, `.ss-icon-tile.is-heat`, tema em `label.ss-swatch > input`, `.ss-btn.is-on-grad`, `button.ss-item`, `is-flush`, tokens `--ss-card-bg/-border/-filter`, `.ss-label-chip`, `.ss-bars` em card estreito e `.ss-cam-actions [aria-pressed]`. Nada quebra.

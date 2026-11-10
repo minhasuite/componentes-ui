@@ -21,7 +21,7 @@ module Ss
 
     def qr = content.presence || @qr
     def left = @expires_at ? [(@expires_at - Time.current).to_i, 0].max : 0
-    def mmss = format("%02d:%02d", left / 60, left % 60)
+    def mmss = Kernel.format("%02d:%02d", left / 60, left % 60)
     def uid = @uid ||= "ss-qr-#{object_id}"
   end
 end

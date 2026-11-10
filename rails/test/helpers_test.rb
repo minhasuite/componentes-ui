@@ -86,4 +86,16 @@ class HelpersTest < Minitest::Test
     assert_equal BigDecimal("57"), ss_amount_expression("45+12")
     assert_nil ss_amount_expression("45+")
   end
+
+  # ViewComponent 3.x tem um `format` sem argumentos (formato do request): o
+  # helper dentro de componente chamava esse em vez do Kernel e quebrava.
+  class ComFormatDoViewComponent
+    include ComponentesUi::Helpers
+
+    def format = :html
+  end
+
+  def test_numero_dentro_de_componente_com_format_proprio
+    assert_includes ComFormatDoViewComponent.new.ss_number(1234.5, precision: 2), "1.234,50"
+  end
 end

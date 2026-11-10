@@ -46,7 +46,7 @@ module Ss
     def chip_style(i)
       a = -Math::PI / 2 + i * (2 * Math::PI / 6) + (i.odd? ? 0.25 : 0)
       r = i.even? ? 40 : 33
-      format("left: %.2f%%; top: %.2f%%; --i: %d", 50 + Math.cos(a) * r, 50 + Math.sin(a) * r, i)
+      Kernel.format("left: %.2f%%; top: %.2f%%; --i: %d", 50 + Math.cos(a) * r, 50 + Math.sin(a) * r, i)
     end
   end
 end

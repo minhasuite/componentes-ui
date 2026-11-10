@@ -57,7 +57,7 @@ module Ss
 
     def pos_style(n)
       size = n.r * 2 * 100.0 / W
-      format("left: %.3f%%; top: %.3f%%; --d: %.3fcqw; --c: %s", n.x * 100.0 / W, n.y * 100.0 / H, size, n.color)
+      Kernel.format("left: %.3f%%; top: %.3f%%; --d: %.3fcqw; --c: %s", n.x * 100.0 / W, n.y * 100.0 / H, size, n.color)
     end
 
     # Pontos da ligação: 3 círculos que andam de (x1,y1) até (x2,y2) em dur segundos, defasados.
@@ -65,7 +65,7 @@ module Ss
       dx, dy = (l.x2 - l.x1).round(2), (l.y2 - l.y1).round(2)
       safe_join(Array.new(3) do |i|
         tag.circle(cx: l.x1, cy: l.y1, r: 4, class: "ss-flow-dot",
-                   style: format("--dx: %spx; --dy: %spx; --dur: %.2fs; animation-delay: %.2fs", dx, dy, l.dur, -l.dur * i / 3.0))
+                   style: Kernel.format("--dx: %spx; --dy: %spx; --dur: %.2fs; animation-delay: %.2fs", dx, dy, l.dur, -l.dur * i / 3.0))
       end)
     end
 

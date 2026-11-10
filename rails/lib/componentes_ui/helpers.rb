@@ -49,7 +49,7 @@ module ComponentesUi
       sep = ss_t("number.separator", locale: loc, default: ",")
       del = ss_t("number.delimiter", locale: loc, default: ".")
       v = value.to_f
-      str = format("%.#{precision.to_i}f", v.abs)
+      str = Kernel.format("%.#{precision.to_i}f", v.abs)
       int, dec = str.split(".")
       int = int.gsub(/(\d)(?=(\d{3})+\z)/, "\\1#{del}")
       neg = v.negative? && str.to_f != 0

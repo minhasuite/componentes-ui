@@ -22,7 +22,7 @@
   <% end %>
   <div class="ss-agenda-body">
     <ol class="ss-agenda-hours" aria-hidden="true">
-      <% hours.each do |h| %><li class="num"><%= format("%02d:00", h) %></li><% end %>
+      <% hours.each do |h| %><li class="num"><%= Kernel.format("%02d:00", h) %></li><% end %>
     </ol>
     <div class="ss-agenda-grid">
       <div class="ss-agenda-lines" aria-hidden="true"><% hours.each do %><i></i><% end %></div>

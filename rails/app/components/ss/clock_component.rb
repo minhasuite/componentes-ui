@@ -28,8 +28,8 @@ module Ss
     def digits? = @seconds.to_s == "digits"
     def dot? = @seconds && !digits?
 
-    def hh = @hour12 ? ((now.hour % 12).zero? ? 12 : now.hour % 12).to_s : format("%02d", now.hour)
-    def mm = format("%02d", now.min)
+    def hh = @hour12 ? ((now.hour % 12).zero? ? 12 : now.hour % 12).to_s : Kernel.format("%02d", now.hour)
+    def mm = Kernel.format("%02d", now.min)
     def ampm = (@hour12 ? (now.hour < 12 ? "AM" : "PM") : nil)
 
     # Data no idioma pela tradução da gem (date.weekdays/months) ou pt-BR: "quarta-feira, 4 de novembro".
@@ -42,7 +42,7 @@ module Ss
       I18n.interpolate(tpl, weekday: wd[now.wday], day: now.day, month: ms[now.month - 1])
     end
 
-    def aria_text = ["#{hh}:#{mm}#{":#{format("%02d", now.sec)}" if digits?}#{" #{ampm}" if ampm}", (date_text if @date)].compact.join(", ")
+    def aria_text = ["#{hh}:#{mm}#{":#{Kernel.format("%02d", now.sec)}" if digits?}#{" #{ampm}" if ampm}", (date_text if @date)].compact.join(", ")
 
     def call
       own = @attrs.to_h[:data].to_h
@@ -56,7 +56,7 @@ module Ss
           tag.span(class: "ss-clock-time num", "aria-hidden": true) do
             safe_join([tag.span(hh, data: { ss_clock_target: "h" }), tag.span(":", class: "ss-clock-colon"),
                        tag.span(mm, data: { ss_clock_target: "m" }),
-                       (tag.small(format("%02d", now.sec), class: "ss-clock-sec", data: { ss_clock_target: "s" }) if digits?),
+                       (tag.small(Kernel.format("%02d", now.sec), class: "ss-clock-sec", data: { ss_clock_target: "s" }) if digits?),
                        (tag.i(class: "ss-clock-dot", data: { ss_clock_target: "dot", on: now.sec.even? }) if dot?),
                        (tag.small(ampm, class: "ss-clock-ampm", data: { ss_clock_target: "ampm" }) if ampm)].compact)
           end,
