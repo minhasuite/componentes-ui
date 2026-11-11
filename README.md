@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.20.0
+      ref: v0.20.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.1"
 ```
 
 ```css
@@ -609,6 +609,14 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 28% mais claro, fundo do gradiente 35% mais escuro. Use no tema do usuário em vez de `Colors.black/white`.
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
+
+## v0.20.1: botão sem `expand` do tamanho do texto
+
+Correção do Flutter achada pelo meu-gestor-app: `SsButton(expand: false)` (e os construtores que já nascem sem `expand`)
+dentro de `Wrap`, `Align` ou `Row` sem limite esticava até a largura toda, porque o `Center` interno não tinha
+`widthFactor`. Agora fica do tamanho do conteúdo. Quem envolveu o botão em `IntrinsicWidth` para contornar pode tirar.
+
+**Padrões que mudaram.** Botão sem `expand` num pai sem limite de largura deixa de ocupar a linha inteira. Nada no Rails.
 
 ## v0.20.0: tabela com coluna parada, linha-link e total, máscara, rádio, rótulo escondido, barra com resumo, linhas repetíveis, ação ao lado da busca, palco de nós, termos e o que mais o minhas-vendas e o meu-gestor pediram
 
@@ -1209,6 +1217,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.20.1` (11/11/2026): `SsButton(expand: false)` fica do tamanho do texto dentro de `Wrap`/`Align` (antes esticava).
 - `v0.20.0` (10/11/2026): seção "v0.20.0" (o que o minhas-vendas e o meu-gestor pediram para chegar a 100%). `f.ss_*(hide_label:)` ↔ `SsTextField(hideLabel:)`, `f.ss_text_field(mask: :document/:phone/:cep)` + `ss-mask` ↔ `SsMask`, `f.ss_radio_buttons(checked:)` ↔ `SsRadioGroup` (novo), `ButtonComponent(variant: :ghost, tone: :danger)` ↔ `SsButton.ghost(tone:)`, `.is-dimmed` ↔ `SsDataRow(dimmed:)`, `Ss::ListItemComponent(subtitle_tone:, value_tone:)` (novo) ↔ `SsListItem(subtitleTone:, valueTone:)`, `KpiCardComponent(value_tone:)` ↔ `SsKpiCard(valueTone:)`, `CardHeaderComponent(eyebrow:)` ↔ `SsCardHeader(eyebrow:)`, `StickyActionBarComponent#with_summary` ↔ `SsStickyActionBar` (novo), `DataTableComponent(row_href:, flat:)` + `t.column(sticky:, header:)` + `t.total`/`t.footer` ↔ `SsDataTable(stickyFirstColumn:, footer:, flat:)` + `SsDataColumn(header:)`, `with_action` na paleta e no combobox ↔ `showSsPicker(actions:)`/`SsPickerAction`, `Ss::RepeaterComponent` + `ss-repeater` ↔ `SsRepeater`, `data-ss-privacy="off"`, item `external:` no `AppShellComponent`, `SsNavItem(badge:)`, `Ss::TextLinkComponent` ↔ `SsLinkText`/`SsTextLink`, `Ss::TermsNoticeComponent` ↔ `SsTermsNotice`, `Ss::EditableValueComponent` ↔ `SsEditableValue`, `Ss::NodeCanvasComponent` + `.ss-node-canvas` (pele do Drawflow, só web) e `GoogleButtonComponent(mode: :gis)`. Correção do `for=` do `f.ss_check_box(id:)`. Nada quebra.
 - `v0.19.2` (10/11/2026): seção "v0.19.2" (as últimas caixas genéricas do minhas-compras-app e do minhas-viagens-app). `SsHeroCard.custom`, `SsButton.onGradient(solid:, stacked:)` + `SsButton(stacked:)` ↔ `ButtonComponent(solid:, stacked:)`, `SsCard(stripe:, outline:)` ↔ `.ss-card.has-stripe/.has-outline`, `SsMonogram` ↔ `ss_monogram`, `SsPhotoCard(subtitle:, credit:, onCredit:, selected:, expand:)` ↔ `PhotoCardComponent(subtitle:, credit:, credit_url:, selected:)`, `SsBadge(solid:, mono:)` ↔ `.ss-badge.is-solid/.is-mono`, `SsProseList(ordered:, start:)` ↔ `ol.ss-steps`, `SsDot` ↔ `.ss-dot`, `SsIconBubble(badge:, badgeLabel:)`, `SsQuote` ↔ `.ss-quote`, `SsIllustrationStage`, `SsPageDots`, `SsGlass(tone: SsGlassTone.dark)` ↔ `.ss-glass.is-dark`, `SsSourceChip(trailing:, semanticLabel:)`, texto `photoSource`. Nada quebra.
 - `v0.19.1` (10/11/2026): seção "v0.19.1" (o que destrava o minhas-compras-app e o minhas-viagens-app no `conferirConformidade`). `SsTabsView` (conteúdo das abas), `SsTabsUnderline(stacked:)` + `stackedHeight`, `SsTooltip`, `SsDivider.vertical`/`SsDivider(vertical:)` ↔ `.ss-divider.is-vertical`, `SsMenuAction(leading:)`, `SsOverflowMenu(child:)`, `showSsFullscreen`/`SsFullscreenPage`, `AppColors.transparent`, `AppType.solid`/`tight`/`snug`/`trackingTight`/`trackingTitle`, `ssColorFromHex`/`ssTryColorFromHex`/`ssColorFromRgb` (cor que é dado), `ssIconTextStyle`/`ssPaintIcon`, texto `tapToClose`. Verificador: card à mão (Flutter e Rails) e chamada com tipo (`showDialog<void>(`). Nada quebra.

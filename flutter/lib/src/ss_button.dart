@@ -301,7 +301,8 @@ class SsButton extends StatelessWidget {
                 padding: stacked
                     ? EdgeInsets.symmetric(horizontal: 4, vertical: d.gap - 2)
                     : EdgeInsets.symmetric(horizontal: small ? d.padX - 4 : d.padX + 2),
-                child: Center(child: content),
+                // widthFactor 1 sem expand: dentro de Wrap/Align o botão fica do tamanho do texto.
+                child: Center(widthFactor: expand ? null : 1, child: content),
               ),
             ),
           ),
