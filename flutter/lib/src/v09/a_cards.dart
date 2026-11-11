@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../density.dart';
 import '../motion.dart';
 import '../motion_view.dart';
+import '../ss_badge.dart' show SsTone;
 import '../ss_list.dart' show SsAvatarStack;
 import '../ss_strings.dart';
 
@@ -38,6 +39,8 @@ class SsMosaicTile extends StatelessWidget {
   /// Pílulas de resumo no lugar do [caption] (v0.13; o `facts:` do
   /// `Ss::MosaicTileComponent`): "2 ligados", "87 W", com ícone opcional,
   /// numa linha que rola de lado se não couber (no web, quebram linha).
+  /// Desde a v0.19.3 cada pílula pode ter tom ([SsMosaicFact.tone]) e toque
+  /// próprio ([SsMosaicFact.onTap]), que ganha do [onTap] do bloco.
   final List<SsMosaicFact>? facts;
 
   /// Linha em versalete embaixo do título (contador).
@@ -70,10 +73,18 @@ class SsMosaicTile extends StatelessWidget {
     final cores = colorsFor(c, variant);
     final radius = BorderRadius.circular(AppRadius.cardActive);
     final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // Pílula com toque é um alvo à parte para o leitor de tela: o bloco deixa
+    // de engolir os filhos e só o que não é botão entra na frase dele.
+    final tocaveis = facts?.any((f) => f.onTap != null) ?? false;
+    Widget mudo(Widget w) => tocaveis ? ExcludeSemantics(child: w) : w;
     return Semantics(
+      container: tocaveis,
       button: onTap != null,
-      label: [title, if (facts?.isNotEmpty ?? false) ...facts!.map((f) => f.label) else ?caption].join(', '),
-      excludeSemantics: true,
+      label: [
+        title,
+        if (facts?.isNotEmpty ?? false) ...facts!.where((f) => f.onTap == null).map((f) => f.label) else ?caption,
+      ].join(', '),
+      excludeSemantics: !tocaveis,
       child: SsPressable(
         onTap: onTap,
         child: Container(
@@ -114,17 +125,19 @@ class SsMosaicTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (icon != null) Icon(icon, size: 34, color: AppColors.onDark, weight: 300),
+                      if (icon != null) mudo(Icon(icon, size: 34, color: AppColors.onDark, weight: 300)),
                       const Spacer(),
-                      Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.onDark,
-                          fontSize: AppType.lg,
-                          fontWeight: FontWeight.w700,
-                          height: 1.2,
+                      mudo(
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.onDark,
+                            fontSize: AppType.lg,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       if (facts?.isNotEmpty ?? false) ...[
@@ -132,7 +145,10 @@ class SsMosaicTile extends StatelessWidget {
                         // Uma linha só (a altura do bloco é fixa): o que não cabe rola de lado.
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: Row(spacing: 6, children: [for (final f in facts!) _FactPill(f)]),
+                          child: Row(
+                            spacing: 6,
+                            children: [for (final f in facts!) f.onTap == null ? mudo(_FactPill(f)) : _FactPill(f)],
+                          ),
                         ),
                       ] else if (caption != null) ...[
                         const SizedBox(height: 4),
@@ -161,12 +177,23 @@ class SsMosaicTile extends StatelessWidget {
 }
 
 /// Pílula de resumo do [SsMosaicTile.facts] (v0.13): texto e ícone opcional.
+///
+/// v0.19.3: [tone] pinta a pílula no tom semântico (fundo suave opaco e texto
+/// no tom, como o `SsStatusBadge`); sem tom fica a branca translúcida. Com
+/// [onTap] a pílula é um botão à parte dentro do bloco (ganha do toque do
+/// bloco); [semanticLabel] é o que o leitor de tela diz (padrão: [label]).
+/// Par do `facts: [{ label:, tone:, url:, title: }]` do `Ss::MosaicTileComponent`.
+///
+/// `SsMosaicFact('3 atrasados', icon: Icons.schedule, tone: SsTone.warning, onTap: abrirAtrasados)`
 @immutable
 class SsMosaicFact {
-  const SsMosaicFact(this.label, {this.icon});
+  const SsMosaicFact(this.label, {this.icon, this.onTap, this.tone, this.semanticLabel});
 
   final String label;
   final IconData? icon;
+  final VoidCallback? onTap;
+  final SsTone? tone;
+  final String? semanticLabel;
 }
 
 class _FactPill extends StatelessWidget {
@@ -175,22 +202,47 @@ class _FactPill extends StatelessWidget {
   final SsMosaicFact fact;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(color: AppColors.onDark.withValues(alpha: .2), borderRadius: BorderRadius.circular(999)),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (fact.icon != null) ...[Icon(fact.icon, size: 14, color: AppColors.onDark), const SizedBox(width: 4)],
-          Text(
-            fact.label,
-            style: const TextStyle(color: AppColors.onDark, fontSize: AppType.meta, fontWeight: FontWeight.w700),
-          ),
-        ],
+  Widget build(BuildContext context) {
+    final t = fact.tone?.colors(context);
+    // Fundo suave composto sobre a superfície: opaco, o texto no tom passa AA
+    // em cima de qualquer matiz do bloco.
+    final fundo = t == null
+        ? AppColors.onDark.withValues(alpha: .2)
+        : Color.alphaBlend(t.soft, SsColors.of(context).surface);
+    final cor = t?.text ?? AppColors.onDark;
+    final pill = DecoratedBox(
+      decoration: BoxDecoration(color: fundo, borderRadius: BorderRadius.circular(999)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (fact.icon != null) ...[Icon(fact.icon, size: 14, color: cor), const SizedBox(width: 4)],
+            Text(
+              fact.label,
+              style: TextStyle(color: cor, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+    if (fact.onTap == null) return pill;
+    return Semantics(
+      container: true,
+      button: true,
+      label: fact.semanticLabel ?? fact.label,
+      child: Material(
+        type: MaterialType.transparency,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: fact.onTap,
+          child: ExcludeSemantics(child: pill),
+        ),
+      ),
+    );
+  }
 }
 
 /// Grade "masonry" de 2 colunas com alturas variadas: cada bloco vai para a

@@ -75,7 +75,25 @@
   .ss-mosaic-fact { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
                     background: rgb(255 255 255 / .2); }
   .ss-mosaic-fact svg { width: .875rem; height: .875rem; flex: none; }
-  @media (prefers-reduced-motion: reduce) { a.ss-mosaic:hover, a.ss-mosaic:active { transform: none; } }
+  /* v0.19.3: pílula no tom (cores semânticas da suíte, fundo suave opaco: o texto passa AA em
+     qualquer matiz do bloco). */
+  .ss-mosaic-fact.is-ok { background: var(--success-soft); color: var(--success); }
+  .ss-mosaic-fact.is-warn { background: var(--warn-soft); color: var(--warn); }
+  .ss-mosaic-fact.is-danger { background: var(--danger-soft); color: var(--danger); }
+  .ss-mosaic-fact.is-info { background: color-mix(in srgb, var(--ss-info) 16%, var(--surface)); color: color-mix(in srgb, var(--ss-info) 72%, var(--ink)); }
+  /* v0.19.3: pílula com link. Com ela o bloco é <div.ss-mosaic.is-linked> e o link dele é o
+     <a.ss-mosaic-link> esticado (link dentro de link não vale); a pílula fica por cima. */
+  .ss-mosaic-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+  .ss-mosaic-link:focus-visible { outline: none; }
+  .ss-mosaic.is-linked:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .ss-mosaic.is-linked:has(.ss-mosaic-link:active) { transform: scale(.98); transition-duration: 80ms; }
+  .ss-mosaic.is-linked:has(.ss-mosaic-link:focus-visible) { outline: 3px solid var(--ring); outline-offset: 2px; }
+  a.ss-mosaic-fact { position: relative; z-index: 2; color: inherit; text-decoration: none; transition: box-shadow .15s ease, background-color .15s ease; }
+  a.ss-mosaic-fact:hover { box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .7); }
+  a.ss-mosaic-fact:not(.is-ok, .is-warn, .is-danger, .is-info):hover { background: rgb(255 255 255 / .32); }
+  a.ss-mosaic-fact:active { transform: scale(.96); }
+  a.ss-mosaic-fact:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { a.ss-mosaic:hover, a.ss-mosaic:active, .ss-mosaic.is-linked:hover, .ss-mosaic.is-linked:has(.ss-mosaic-link:active), a.ss-mosaic-fact:active { transform: none; } }
 
   /* Card de foto: imagem cobrindo, véu embaixo com título e selo; is-dimmed = cinza e escura. */
   .ss-photo { position: relative; display: block; margin: 0; padding: 0; overflow: hidden; background: var(--field); color: #fff; text-decoration: none; }

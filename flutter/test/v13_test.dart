@@ -114,6 +114,56 @@ void main() {
     expect(find.byIcon(Icons.lightbulb_outline), findsOneWidget);
   });
 
+  testWidgets('SsMosaicFact(onTap:) é um toque à parte e ganha do bloco', (t) async {
+    var bloco = 0, pilula = 0;
+    await t.pumpWidget(
+      _app(
+        SsMosaicTile(
+          title: 'Contas',
+          height: 150,
+          onTap: () => bloco++,
+          facts: [
+            const SsMosaicFact('12 em dia'),
+            SsMosaicFact('3 atrasadas', tone: SsTone.warning, semanticLabel: 'Ver 3 atrasadas', onTap: () => pilula++),
+          ],
+        ),
+      ),
+    );
+    await t.tap(find.text('3 atrasadas'));
+    await t.pumpAndSettle();
+    expect(pilula, 1);
+    expect(bloco, 0);
+    await t.tap(find.text('Contas'));
+    await t.pumpAndSettle();
+    expect(bloco, 1);
+    expect(pilula, 1);
+    // A pílula com toque é um botão próprio; a frase do bloco fica com o resto.
+    expect(find.bySemanticsLabel('Ver 3 atrasadas'), findsOneWidget);
+    expect(t.getSemantics(find.bySemanticsLabel('Ver 3 atrasadas')).flagsCollection.isButton, isTrue);
+    expect(find.bySemanticsLabel('Contas, 12 em dia'), findsOneWidget);
+  });
+
+  testWidgets('SsMosaicFact(tone:) pinta a pílula no tom', (t) async {
+    await t.pumpWidget(
+      _app(
+        const SsMosaicTile(
+          title: 'Contas',
+          height: 150,
+          facts: [
+            SsMosaicFact('1 vencida', tone: SsTone.danger),
+            SsMosaicFact('neutra'),
+          ],
+        ),
+      ),
+    );
+    final ctx = t.element(find.text('1 vencida'));
+    final esperado = SsTone.danger.colors(ctx).text;
+    expect(t.widget<Text>(find.text('1 vencida')).style!.color, esperado);
+    expect(t.widget<Text>(find.text('neutra')).style!.color, AppColors.onDark);
+    // Sem pílula com toque, o leitor de tela continua lendo tudo numa frase.
+    expect(find.bySemanticsLabel('Contas, 1 vencida, neutra'), findsOneWidget);
+  });
+
   testWidgets('SsPhotoCard: título, selo, apagada e toque', (t) async {
     var toques = 0;
     await t.pumpWidget(

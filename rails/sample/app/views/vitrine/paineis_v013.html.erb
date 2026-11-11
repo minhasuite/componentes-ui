@@ -21,13 +21,17 @@
     <%= render Ss::SectionHeaderComponent.new(title: "Sem ícone nem ação") %>
   <% end %>
 
-  <%= demo "Ss::MosaicTileComponent", "Bloco de área: gradiente da marca com o matiz deslocado (variant: 0 a 4) ou foto com véu; ícone em cima, título e pílulas de resumo (facts:) ou a linha em versalete (caption:). Com url: é link (sobe no hover).",
+  <%= demo "Ss::MosaicTileComponent", "Bloco de área: gradiente da marca com o matiz deslocado (variant: 0 a 4) ou foto com véu; ícone em cima, título e pílulas de resumo (facts:) ou a linha em versalete (caption:). Com url: é link (sobe no hover). Pílula com tone: (ok, warn, danger, info) e url:/title: próprios (v0.19.3; o bloco vira link esticado)."
            uso: 'render Ss::MosaicTileComponent.new(title: "Sala", icon: svg, url: area_path(a), variant: 1, facts: [{ label: "2 ligados", icon: bulb }])' do %>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <%= render Ss::MosaicTileComponent.new(title: "Sala", icon: sofa, url: "#", facts: [{ label: "2 ligados", icon: bulb }, { label: "87 W", icon: bolt, num: true }]) %>
       <%= render Ss::MosaicTileComponent.new(title: "Cozinha", icon: home, url: "#", variant: 1, facts: [{ label: "Movimento", icon: eye }]) %>
       <%= render Ss::MosaicTileComponent.new(title: "Quarto", icon: home, variant: 2, caption: "Tudo calmo") %>
       <%= render Ss::MosaicTileComponent.new(title: "Jardim", icon: home, url: "#", image_url: "/icon.png", facts: ["1 sem sinal"]) %>
+      <%= render Ss::MosaicTileComponent.new(title: "Contas", icon: home, url: "#contas", variant: 3,
+                                             facts: [{ label: "12 em dia", tone: :ok },
+                                                     { label: "3 atrasadas", icon: eye, tone: :warn, url: "#atrasadas", title: "Ver as 3 atrasadas" },
+                                                     { label: "1 vencida", tone: :danger, url: "#vencidas", title: "Ver a vencida" }]) %>
     </div>
   <% end %>
 
