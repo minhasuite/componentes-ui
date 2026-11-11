@@ -115,6 +115,8 @@ final catalogoV13 = <Componente>[
     comportamentos: [
       'Pílulas brancas translúcidas numa linha que rola de lado se não couber; ícone opcional (SsMosaicFact).',
       'Leitor de tela: título e as pílulas numa frase só.',
+      'v0.19.3: tone: pinta a pílula no tom semântico (SsTone; fundo suave opaco, texto no tom).',
+      'v0.19.3: onTap: na pílula é um botão à parte (ganha do toque do bloco; semanticLabel: para o leitor de tela).',
     ],
     estados: [
       Estado(
@@ -145,6 +147,25 @@ final catalogoV13 = <Componente>[
                   caption: 'Tudo calmo',
                 ),
               ),
+            ],
+          ),
+        ),
+        tamanho: const Size(390, 190),
+      ),
+      Estado(
+        'tom-e-toque',
+        'pílula no tom e com toque próprio',
+        (_) => _pad(
+          SsMosaicTile(
+            title: 'Contas a pagar',
+            icon: Icons.receipt_long_outlined,
+            height: 150,
+            variant: 1,
+            onTap: _nada,
+            facts: const [
+              SsMosaicFact('12 em dia', icon: Icons.check),
+              SsMosaicFact('3 atrasadas', icon: Icons.schedule, tone: SsTone.warning, onTap: _nada),
+              SsMosaicFact('1 vencida', tone: SsTone.danger, onTap: _nada),
             ],
           ),
         ),

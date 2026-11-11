@@ -64,6 +64,44 @@ class V13WebTest < ComponentTest
     assert_no_selector ".has-photo"
   end
 
+  test "bloco do mosaico: pílula com tom, dica e link próprio (link esticado)" do
+    html = render_inline(Ss::MosaicTileComponent.new(title: "Sala", url: "/a/1", facts: [{ label: "2 ligados" }, "87 W"])).to_html
+    assert_equal '<a class="ss-mosaic" data-variant="0" href="/a/1"><span class="ss-mosaic-title">Sala</span>' \
+                 '<span class="ss-mosaic-facts"><span class="ss-mosaic-fact">2 ligados</span><span class="ss-mosaic-fact">87 W</span></span></a>',
+                 html.gsub(/<!--.*?-->/, "").strip
+    render_inline(Ss::MosaicTileComponent.new(title: "Contas", facts: [{ label: "1 vencida", tone: :danger, title: "Vence hoje" }, { label: "x", tone: "roxo" }]))
+    assert_selector "div.ss-mosaic span.ss-mosaic-fact.is-danger[title='Vence hoje']", text: "1 vencida"
+    assert_selector "span.ss-mosaic-fact[class='ss-mosaic-fact']", text: "x"
+    render_inline(Ss::MosaicTileComponent.new(title: "Z", facts: [{ label: "a", tone: :success }, { label: "b", tone: :warning }, { label: "c", tone: :info }]))
+    assert_selector ".ss-mosaic-fact.is-ok", text: "a"
+    assert_selector ".ss-mosaic-fact.is-warn", text: "b"
+    assert_selector ".ss-mosaic-fact.is-info", text: "c"
+
+    render_inline(Ss::MosaicTileComponent.new(title: "Contas", url: "/contas", variant: 1, link_data: { turbo_frame: "_top" }, css: "mt-2",
+                                              facts: [{ label: "12 em dia" },
+                                                      { label: "3 atrasadas", tone: "warn", url: "/contas?f=atrasadas", title: "Ver as 3 atrasadas",
+                                                        link_data: { turbo_frame: "_top" } }]))
+    assert_no_selector "a.ss-mosaic"
+    root = page.find("div.ss-mosaic.is-linked.mt-2")
+    assert_equal "1", root["data-variant"]
+    assert_nil root["data-turbo-frame"]
+    link = page.find("div.ss-mosaic > a.ss-mosaic-link[href='/contas']")
+    assert_equal "Contas", link["aria-label"]
+    assert_equal "_top", link["data-turbo-frame"]
+    assert_equal "", link.text
+    fact = page.find("a.ss-mosaic-fact.is-warn[href='/contas?f=atrasadas']", text: "3 atrasadas")
+    assert_equal "Ver as 3 atrasadas", fact["aria-label"]
+    assert_equal "Ver as 3 atrasadas", fact["title"]
+    assert_equal "_top", fact["data-turbo-frame"]
+    assert_selector "span.ss-mosaic-fact", text: "12 em dia"
+    assert_no_selector "a a"
+
+    # Sem url: no bloco, a pílula com link basta (o bloco é um div comum).
+    render_inline(Ss::MosaicTileComponent.new(title: "Y", facts: [{ label: "ver", url: "/y" }]))
+    assert_selector "div.ss-mosaic:not(.is-linked) a.ss-mosaic-fact[href='/y']"
+    assert_no_selector ".ss-mosaic-link"
+  end
+
   test "card de foto: proporção, véu com título e selo, apagado e link" do
     render_inline(Ss::PhotoCardComponent.new(src: "/f.jpg", title: "Varanda", badge: "Ligada", ratio: "4 / 3", dimmed: true))
     fig = page.find("figure.ss-card.ss-photo.is-dimmed")
