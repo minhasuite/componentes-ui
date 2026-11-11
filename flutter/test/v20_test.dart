@@ -431,4 +431,26 @@ void main() {
       h.dispose();
     });
   });
+
+  // v0.20.1: sem expand, o botão não estica dentro de Wrap/Align.
+  testWidgets('SsButton(expand: false) no Wrap fica do tamanho do texto', (t) async {
+    await t.pumpWidget(
+      _app(
+        SizedBox(
+          width: 360,
+          child: Wrap(
+            spacing: 8,
+            children: [
+              SsButton(label: 'Ver card', expand: false, onPressed: () {}),
+              SsButton(label: 'Dispensar', expand: false, onPressed: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    final a = t.getRect(find.widgetWithText(SsButton, 'Ver card'));
+    final b = t.getRect(find.widgetWithText(SsButton, 'Dispensar'));
+    expect(a.width, lessThan(200));
+    expect(b.top, a.top); // lado a lado, não um por linha
+  });
 }
