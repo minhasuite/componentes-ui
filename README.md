@@ -643,6 +643,29 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.21.0: acenos de estado da casa e brilho real da lâmpada
+
+Pedido do minha-automacao ("beleza" dos painéis: ideias 16 e 18). Tudo aditivo; nada quebra. Catálogo:
+`flutter/test/catalogo_v21.dart` (`ss-cue` novo; estado `brilho` no `ss-device-tile`) e `rails/catalogo/index.html`
+(seções de `rails/sample/script/catalogo_v021.rb`: `ss-device-level-v21`, `ss-cue`); vitrine Rails "Casa (v0.21)";
+testes em `flutter/test/v21_test.dart` e `rails/sample/test/components/v21_web_test.rb`. CSS em `v21_web.css`;
+Stimulus novo `ss-cue`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Aceno de mudança de estado | `SsCue(kind: SsCueKind.on \| open \| arrive, active:, color:, radius:, child:)` | `.ss-cue` + `data: ss_cue_data(kind: :on \| :open \| :arrive, active:, key:)` (Stimulus `ss-cue`) | animação de "ligou/abriu/chegou" no CSS ou no widget do produto |
+| Brilho real no tile | `SsDeviceTile(level: 0..1)` (`intensity` = .35 a 1) | `Ss::DeviceTileComponent(level: 0..1)` → `.ss-device.has-level` + `--ss-level` | opacidade/filtro do produto em cima do `.ss-device` |
+
+- **Regra dos acenos:** tocam **uma vez** (620 ms) quando o estado vira ativo; nunca na primeira pintura (abrir a tela
+  não acena tudo) nem ao desligar. `on`: pulo .94 → 1 pela mola (`--ss-bounce`/`SsMotion.bounce`) e halo na cor
+  (`--tone`/`color:`, a cor real da lâmpada); `open`: gira ~28° pela borda esquerda (porta) e volta; `arrive`: sobe
+  8 px e assenta. No web, `key:` guarda o estado entre trocas do HTML (Turbo Frame/Stream refaz o elemento); sem
+  `key`, só a troca do atributo no mesmo elemento acena. "Menos movimento" (`prefers-reduced-motion` /
+  `MediaQuery.disableAnimations`) desliga. Não mexe no layout.
+- **Brilho:** ligado, a tinta do fundo, a borda, o degradê e o halo do ícone vão de 35% (`level` 0) a 100% (`level` 1);
+  sem `level`, igual a antes.
+
+**Padrões que mudaram.** Nenhum.
 
 ## v0.20.2: projeção tracejada no gráfico de barras
 
@@ -1286,6 +1309,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.21.0` (não lançada, branch `beleza`): seção "v0.21.0". `SsCue` ↔ `.ss-cue` + `ss-cue` + `ss_cue_data` (ligou, abriu, chegou; menos movimento desliga) e `SsDeviceTile(level:)` ↔ `DeviceTileComponent(level:)` (brilho real da lâmpada). Nada quebra.
 - `v0.20.2` (11/11/2026): seção "v0.20.2". Projeção tracejada no gráfico de barras: `SsBarChart(projection:, projectionFrom:)` ↔ `Ss::BarChartComponent(projection:, projection_from:)` (legenda tracejada, dica/balão, tabela e `Semantics` para leitor de tela, claro/escuro). Nada quebra.
 - `v0.20.1` (11/11/2026): `SsButton(expand: false)` fica do tamanho do texto dentro de `Wrap`/`Align` (antes esticava).
 - `v0.20.0` (10/11/2026): seção "v0.20.0" (o que o minhas-vendas e o meu-gestor pediram para chegar a 100%). `f.ss_*(hide_label:)` ↔ `SsTextField(hideLabel:)`, `f.ss_text_field(mask: :document/:phone/:cep)` + `ss-mask` ↔ `SsMask`, `f.ss_radio_buttons(checked:)` ↔ `SsRadioGroup` (novo), `ButtonComponent(variant: :ghost, tone: :danger)` ↔ `SsButton.ghost(tone:)`, `.is-dimmed` ↔ `SsDataRow(dimmed:)`, `Ss::ListItemComponent(subtitle_tone:, value_tone:)` (novo) ↔ `SsListItem(subtitleTone:, valueTone:)`, `KpiCardComponent(value_tone:)` ↔ `SsKpiCard(valueTone:)`, `CardHeaderComponent(eyebrow:)` ↔ `SsCardHeader(eyebrow:)`, `StickyActionBarComponent#with_summary` ↔ `SsStickyActionBar` (novo), `DataTableComponent(row_href:, flat:)` + `t.column(sticky:, header:)` + `t.total`/`t.footer` ↔ `SsDataTable(stickyFirstColumn:, footer:, flat:)` + `SsDataColumn(header:)`, `with_action` na paleta e no combobox ↔ `showSsPicker(actions:)`/`SsPickerAction`, `Ss::RepeaterComponent` + `ss-repeater` ↔ `SsRepeater`, `data-ss-privacy="off"`, item `external:` no `AppShellComponent`, `SsNavItem(badge:)`, `Ss::TextLinkComponent` ↔ `SsLinkText`/`SsTextLink`, `Ss::TermsNoticeComponent` ↔ `SsTermsNotice`, `Ss::EditableValueComponent` ↔ `SsEditableValue`, `Ss::NodeCanvasComponent` + `.ss-node-canvas` (pele do Drawflow, só web) e `GoogleButtonComponent(mode: :gis)`. Correção do `for=` do `f.ss_check_box(id:)`. Nada quebra.

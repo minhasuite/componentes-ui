@@ -74,6 +74,7 @@ class SsDeviceTile extends StatelessWidget {
     this.onLongPress,
     this.longPressLabel,
     this.onDoubleTap,
+    this.level,
   });
 
   final IconData icon;
@@ -111,6 +112,14 @@ class SsDeviceTile extends StatelessWidget {
 
   /// Toque duplo (atalho; o toque simples espera o tempo do duplo).
   final VoidCallback? onDoubleTap;
+
+  /// Brilho real do aparelho, de 0 a 1 (v0.21; o nível do dimmer da lâmpada).
+  /// Ligado, a tinta e o brilho do tile acompanham: 0 fica fraco (35%), 1
+  /// fica como sem [level]. Nulo = intensidade cheia (o de sempre).
+  final double? level;
+
+  /// Intensidade da cor de ligado, de .35 a 1, pelo [level].
+  double get intensity => level == null ? 1 : .35 + .65 * level!.clamp(0.0, 1.0);
 
   /// Chave rápida (o ícone): recebe o estado pedido. Sem ela, o ícone é só desenho.
   final ValueChanged<bool>? onToggle;
@@ -169,12 +178,12 @@ class SsDeviceTile extends StatelessWidget {
     final bg = !_available
         ? c.field
         : _lit
-        ? Color.alphaBlend(tone.withValues(alpha: c.isDark ? .16 : .10), c.surface)
+        ? Color.alphaBlend(tone.withValues(alpha: (c.isDark ? .16 : .10) * intensity), c.surface)
         : c.surface;
     final border = erro
         ? c.danger.withValues(alpha: .6)
         : _lit
-        ? Color.alphaBlend(tone.withValues(alpha: .38), c.surface)
+        ? Color.alphaBlend(tone.withValues(alpha: .38 * intensity), c.surface)
         : c.line;
 
     final s = SsStrings.of(context);
@@ -235,6 +244,7 @@ class SsDeviceTile extends StatelessWidget {
       available: _available,
       pending: status == SsDeviceStatus.pending,
       toggle: chave,
+      intensity: intensity,
     );
     if (chave) {
       final raio = BorderRadius.circular(d.radiusField);
@@ -291,7 +301,7 @@ class SsDeviceTile extends StatelessWidget {
         boxShadow: _lit
             ? [
                 BoxShadow(
-                  color: tone.withValues(alpha: c.isDark ? .32 : .22),
+                  color: tone.withValues(alpha: (c.isDark ? .32 : .22) * intensity),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                   spreadRadius: -8,
@@ -371,11 +381,15 @@ class _Icone extends StatelessWidget {
     required this.available,
     required this.pending,
     this.toggle = false,
+    this.intensity = 1,
   });
 
   final IconData icon;
   final Color tone;
   final bool lit, available, pending;
+
+  /// v0.21: brilho da lâmpada (.35 a 1) no degradê e no halo do ícone aceso.
+  final double intensity;
 
   /// É a chave (v0.12): desligado, fundo claro com contorno na cor.
   final bool toggle;
@@ -401,14 +415,17 @@ class _Icone extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color.lerp(tone, Colors.white, .18)!, tone],
+                colors: [
+                  Color.lerp(tone, Colors.white, .18)!.withValues(alpha: .55 + .45 * intensity),
+                  tone.withValues(alpha: .55 + .45 * intensity),
+                ],
               )
             : null,
         boxShadow: lit
             ? [
                 BoxShadow(
-                  color: tone.withValues(alpha: .55),
-                  blurRadius: 18,
+                  color: tone.withValues(alpha: .55 * intensity),
+                  blurRadius: 6 + 12 * intensity,
                   offset: const Offset(0, 6),
                   spreadRadius: -6,
                 ),

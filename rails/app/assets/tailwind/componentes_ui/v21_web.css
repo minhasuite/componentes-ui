@@ -1,0 +1,31 @@
+/* v0.21 · beleza dos painéis da casa (pedido do minha-automacao; pares do Flutter): micro-animações
+   padronizadas (.ss-cue + Stimulus ss-cue ↔ SsCue: ligou, abriu, chegou) e o brilho real da lâmpada no
+   tile (Ss::DeviceTileComponent(level:) ↔ SsDeviceTile(level:)). Só tokens; "menos movimento" desliga. */
+@layer components {
+  .ss-cue { --ss-cue-dur: .62s; --ss-cue-color: var(--tone, var(--accent)); border-radius: var(--ss-cue-radius, var(--r-card)); }
+  .ss-cue.is-cueing[data-ss-cue-kind-value="on"] { animation: ss-cue-on var(--ss-cue-dur) var(--ss-bounce); }
+  .ss-cue.is-cueing[data-ss-cue-kind-value="open"] { transform-origin: left center; animation: ss-cue-open var(--ss-cue-dur) ease-in-out; }
+  .ss-cue.is-cueing[data-ss-cue-kind-value="arrive"] { animation: ss-cue-arrive var(--ss-cue-dur) var(--ss-bounce); }
+  @keyframes ss-cue-on {
+    0% { scale: .94; box-shadow: 0 0 0 0 color-mix(in srgb, var(--ss-cue-color) 55%, transparent); }
+    100% { scale: 1; box-shadow: 0 0 0 14px color-mix(in srgb, var(--ss-cue-color) 0%, transparent); }
+  }
+  @keyframes ss-cue-open {
+    0%, 100% { transform: perspective(500px) rotateY(0); }
+    50% { transform: perspective(500px) rotateY(-28deg); }
+  }
+  @keyframes ss-cue-arrive {
+    0% { opacity: .3; translate: 0 8px; scale: .9; }
+    100% { opacity: 1; translate: 0 0; scale: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ss-cue.is-cueing { animation: none !important; } }
+
+  /* Brilho real (0 a 1 em --ss-level): a tinta e o halo de ligado vão de 35% a 100%. */
+  .ss-device.is-on.has-level { --ss-li: calc(.35 + .65 * var(--ss-level, 1));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tone) calc(11% * var(--ss-li)), var(--surface)), var(--surface) 78%);
+    border-color: color-mix(in srgb, var(--tone) calc(38% * var(--ss-li)), var(--line));
+    box-shadow: 0 14px 28px -16px color-mix(in srgb, var(--tone) calc(55% * var(--ss-li)), transparent); }
+  .ss-device.is-on.has-level .ss-device-ico {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tone) calc(45% + 37% * var(--ss-li)), var(--surface)), color-mix(in srgb, var(--tone) calc(55% + 45% * var(--ss-li)), var(--surface)));
+    box-shadow: 0 8px calc(8px + 12px * var(--ss-li)) -8px color-mix(in srgb, var(--tone) calc(75% * var(--ss-li)), transparent); }
+}
