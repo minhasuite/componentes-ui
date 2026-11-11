@@ -21,6 +21,13 @@ import '../ss_strings.dart';
 /// Cor de cada série: a dela, ou a paleta da suíte começando pela marca.
 /// [active] destaca um rótulo (o mês atual).
 ///
+/// v0.20: [projection] é uma segunda linha, **tracejada**, para o que ainda vai
+/// acontecer (saldo projetado de hoje ao fim do mês). Começa no índice
+/// [projectionFrom] (os valores antes dele são ignorados; a lista pode vir
+/// inteira) e entra na legenda (traço tracejado), no balão e no resumo do
+/// leitor de tela. Cor: a dela, ou a da [line]. Para a linha real parar onde a
+/// projeção começa, passe em [line] só os valores até lá (lista mais curta).
+///
 /// `SsBarChart(labels: meses, series: [SsSeries(receitas, name: 'Receitas', color: c.success), SsSeries(despesas, name: 'Despesas', color: c.danger)], line: SsSeries(saldo, name: 'Saldo'), stacked: true, format: (v) => money((v * 100).round()))`
 class SsBarChart extends StatefulWidget {
   const SsBarChart({
@@ -33,6 +40,8 @@ class SsBarChart extends StatefulWidget {
     this.height = 200,
     this.legend = true,
     this.active,
+    this.projection,
+    this.projectionFrom = 0,
   });
 
   final List<String> labels;
@@ -48,6 +57,12 @@ class SsBarChart extends StatefulWidget {
   final bool legend;
   final int? active;
 
+  /// Linha tracejada da projeção (v0.20), a partir de [projectionFrom].
+  final SsSeries? projection;
+
+  /// Índice do primeiro ponto da [projection] (normalmente o de hoje).
+  final int projectionFrom;
+
   @override
   State<SsBarChart> createState() => _SsBarChartState();
 }
@@ -60,7 +75,14 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
 
 /// Faixa (lo, hi) com o zero sempre dentro; empilhado soma positivos e negativos.
 @visibleForTesting
-(double, double) ssBarRange(List<SsSeries> series, int n, {SsSeries? line, bool stacked = false}) {
+(double, double) ssBarRange(
+  List<SsSeries> series,
+  int n, {
+  SsSeries? line,
+  bool stacked = false,
+  SsSeries? projection,
+  int projectionFrom = 0,
+}) {
   var lo = 0.0, hi = 0.0;
   for (var i = 0; i < n; i++) {
     if (stacked) {
@@ -81,6 +103,10 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
       hi = math.max(hi, line.values[i]);
       lo = math.min(lo, line.values[i]);
     }
+    if (projection != null && i >= projectionFrom && i < projection.values.length) {
+      hi = math.max(hi, projection.values[i]);
+      lo = math.min(lo, projection.values[i]);
+    }
   }
   if (hi == 0 && lo == 0) hi = 1;
   final pad = (hi - lo) * .08;
@@ -93,6 +119,12 @@ class _SsBarChartState extends State<SsBarChart> {
 
   int get _n => widget.labels.length;
   String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
+
+  /// Índice com ponto da projeção.
+  bool _temProj(int i) {
+    final p = widget.projection;
+    return p != null && i >= widget.projectionFrom && i < p.values.length;
+  }
 
   void _pick(double dx, double width) {
     if (_n == 0) return;
@@ -110,13 +142,23 @@ class _SsBarChartState extends State<SsBarChart> {
     final paleta = c.series;
     final cores = [for (var i = 0; i < widget.series.length; i++) widget.series[i].color ?? paleta[i % paleta.length]];
     final corLinha = widget.line?.color ?? c.ink;
-    final (lo, hi) = ssBarRange(widget.series, _n, line: widget.line, stacked: widget.stacked);
+    final corProj = widget.projection?.color ?? widget.line?.color ?? c.muted;
+    final (lo, hi) = ssBarRange(
+      widget.series,
+      _n,
+      line: widget.line,
+      stacked: widget.stacked,
+      projection: widget.projection,
+      projectionFrom: widget.projectionFrom,
+    );
     final nome = widget.series.map((x) => x.name).whereType<String>().join(', ');
     final resumo = [
       for (var i = 0; i < _n; i++)
-        '${widget.labels[i]}: ${[for (final x in widget.series) _fmt(_v(x.values, i)), if (widget.line != null && i < widget.line!.values.length) _fmt(widget.line!.values[i])].join(' / ')}',
+        '${widget.labels[i]}: ${[for (final x in widget.series) _fmt(_v(x.values, i)), if (widget.line != null && i < widget.line!.values.length) _fmt(widget.line!.values[i]), if (_temProj(i)) '${widget.projection!.name ?? ''} ${_fmt(widget.projection!.values[i])}'.trim()].join(' / ')}',
     ].join('; ');
-    final temLegenda = widget.legend && (widget.series.length + (widget.line == null ? 0 : 1)) > 1;
+    final temLegenda =
+        widget.legend &&
+        (widget.series.length + (widget.line == null ? 0 : 1) + (widget.projection == null ? 0 : 1)) > 1;
 
     final grafico = SizedBox(
       height: widget.height,
@@ -145,6 +187,9 @@ class _SsBarChartState extends State<SsBarChart> {
                         painter: _BarPainter(
                           series: [for (var i = 0; i < widget.series.length; i++) (widget.series[i].values, cores[i])],
                           line: widget.line == null ? null : (widget.line!.values, corLinha),
+                          projection: widget.projection == null
+                              ? null
+                              : (widget.projection!.values, corProj, widget.projectionFrom),
                           n: _n,
                           labels: widget.labels,
                           lo: lo,
@@ -182,6 +227,7 @@ class _SsBarChartState extends State<SsBarChart> {
                               (widget.series[k].name, cores[k], _fmt(_v(widget.series[k].values, sel))),
                             if (widget.line != null && sel < widget.line!.values.length)
                               (widget.line!.name, corLinha, _fmt(widget.line!.values[sel])),
+                            if (_temProj(sel)) (widget.projection!.name, corProj, _fmt(widget.projection!.values[sel])),
                           ],
                         ),
                       ),
@@ -211,6 +257,7 @@ class _SsBarChartState extends State<SsBarChart> {
                 for (var i = 0; i < widget.series.length; i++)
                   if (widget.series[i].name != null) _Legenda(widget.series[i].name!, cores[i]),
                 if (widget.line?.name != null) _Legenda(widget.line!.name!, corLinha, line: true),
+                if (widget.projection?.name != null) _Legenda(widget.projection!.name!, corProj, dashed: true),
               ],
             ),
           ],
@@ -221,11 +268,12 @@ class _SsBarChartState extends State<SsBarChart> {
 }
 
 class _Legenda extends StatelessWidget {
-  const _Legenda(this.text, this.color, {this.line = false});
+  const _Legenda(this.text, this.color, {this.line = false, this.dashed = false});
 
   final String text;
   final Color color;
   final bool line;
+  final bool dashed;
 
   @override
   Widget build(BuildContext context) {
@@ -233,11 +281,28 @@ class _Legenda extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 10,
-          height: line ? 3 : 10,
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
-        ),
+        if (dashed)
+          SizedBox(
+            width: 16,
+            height: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (var k = 0; k < 3; k++)
+                  Container(
+                    width: 4,
+                    height: 3,
+                    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(1)),
+                  ),
+              ],
+            ),
+          )
+        else
+          Container(
+            width: 10,
+            height: line ? 3 : 10,
+            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
+          ),
         const SizedBox(width: 6),
         Text(
           text,
@@ -311,6 +376,7 @@ class _BarPainter extends CustomPainter {
   _BarPainter({
     required this.series,
     required this.line,
+    this.projection,
     required this.n,
     required this.labels,
     required this.lo,
@@ -330,6 +396,7 @@ class _BarPainter extends CustomPainter {
 
   final List<(List<double>, Color)> series;
   final (List<double>, Color)? line;
+  final (List<double>, Color, int)? projection;
   final int n;
   final List<String> labels;
   final double lo, hi;
@@ -463,6 +530,50 @@ class _BarPainter extends CustomPainter {
         );
       }
     }
+
+    final pr = projection;
+    if (pr != null) {
+      final (vs, cor, from) = pr;
+      final pts = [
+        for (var i = math.max(0, from); i < math.min(n, vs.length); i++)
+          Offset(_side + slot * (i + .5), y0 + (y(vs[i]) - y0) * t),
+      ];
+      if (pts.length > 1) {
+        final p = Path()..moveTo(pts.first.dx, pts.first.dy);
+        for (final o in pts.skip(1)) {
+          p.lineTo(o.dx, o.dy);
+        }
+        _dashed(
+          canvas,
+          p,
+          Paint()
+            ..color = cor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.25
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.drawCircle(pts.last, 3.5, Paint()..color = surface);
+        canvas.drawCircle(
+          pts.last,
+          3.5,
+          Paint()
+            ..color = cor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2,
+        );
+      }
+    }
+  }
+
+  /// Traço tracejado ao longo do caminho (6 cheio, 5 vazio).
+  void _dashed(Canvas canvas, Path p, Paint paint) {
+    for (final m in p.computeMetrics()) {
+      var d = 0.0;
+      while (d < m.length) {
+        canvas.drawPath(m.extractPath(d, math.min(d + 6, m.length)), paint);
+        d += 11;
+      }
+    }
   }
 
   void _bar(Canvas canvas, Rect r, Color cor, bool neg) {
@@ -478,5 +589,12 @@ class _BarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BarPainter o) =>
-      o.t != t || o.sel != sel || o.series != series || o.line != line || o.lo != lo || o.hi != hi || o.guide != guide;
+      o.t != t ||
+      o.sel != sel ||
+      o.series != series ||
+      o.line != line ||
+      o.projection != projection ||
+      o.lo != lo ||
+      o.hi != hi ||
+      o.guide != guide;
 }

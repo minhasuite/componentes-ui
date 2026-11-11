@@ -19,6 +19,15 @@ module Ss
   # junto: num card largo (painel no computador), passe a largura de verdade (ex. 1100) para o texto
   # não crescer; no celular, renderize outro com a largura padrão (ex. com hidden/md:block). Com muitos
   # grupos (30 dias), os rótulos do eixo X saem de N em N para não encostar (label_every: força o N).
+  #
+  # v0.20: projection: uma segunda linha, tracejada, para o que ainda vai acontecer (ex. saldo projetado
+  # de hoje até o fim do mês). Mesmo formato da série ({ name:, values:, tone:/color: }; sem cor, a da
+  # linha); nil num valor = sem ponto. projection_from: N ignora os valores antes do índice N (assim a
+  # mesma lista pode vir inteira). Entra na legenda (traço tracejado), na dica do grupo e na tabela
+  # para leitor de tela. Para a linha real parar onde a projeção começa, passe nil nos dias seguintes.
+  #
+  #   render Ss::BarChartComponent.new(..., line: { name: "Saldo", values: real_ate_hoje },
+  #     projection: { name: "Projeção", values: projetado }, projection_from: Date.current.day - 1)
   class BarChartComponent < BaseComponent
     W = 560
     PT = 26.0
@@ -26,14 +35,20 @@ module Ss
     PX = 14.0
     TONES = { accent: "var(--accent)", success: "var(--success)", danger: "var(--danger)", warn: "var(--warn)", muted: "var(--muted)" }.freeze
 
-    attr_reader :title, :labels, :series, :line
+    attr_reader :title, :labels, :series, :line, :projection
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
-                   show_title: false, legend: true, width: W, label_every: nil, **rest)
+                   show_title: false, legend: true, width: W, label_every: nil, projection: nil, projection_from: nil,
+                   **rest)
       super(**rest)
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
       @line = line && normalize(line, "var(--ink)")
+      @projection = projection && normalize(projection, @line ? @line[:color] : "var(--muted)")
+      if @projection && projection_from
+        from = projection_from.to_i
+        @projection[:values] = @projection[:values].each_with_index.map { |v, i| i < from ? nil : v }
+      end
       @stacked = stacked
       @format = format
       @h = height.to_i.clamp(120, 600)
@@ -55,7 +70,7 @@ module Ss
     def show_label?(i) = active?(i) || (i % label_every).zero?
     def stacked? = @stacked
     def show_title? = @show_title
-    def legend? = @legend && (series.size + (line ? 1 : 0)) > 1
+    def legend? = @legend && (series.size + (line ? 1 : 0) + (projection ? 1 : 0)) > 1
     def active?(i) = @active == i
 
     def fmt(v)
@@ -76,6 +91,7 @@ module Ss
             vals.concat(col)
           end
           vals << line[:values][i] if line && line[:values][i]
+          vals << projection[:values][i] if projection && projection[:values][i]
         end
         lo, hi = vals.minmax
         hi = 1.0 if lo.zero? && hi.zero?
@@ -126,13 +142,16 @@ module Ss
       (marks.map { |v| [y(v), nice(v), false] } << [zero_y, 0, true]).uniq { _1[0] }
     end
 
-    def line_points = line ? labels.each_index.filter_map { |i| (v = line[:values][i]) && [cx(i), y(v)] } : []
-    def line_d = line_points.map.with_index { |(px, py), k| "#{k.zero? ? "M" : "L"}#{px},#{py}" }.join(" ")
+    def line_points = points_of(line)
+    def line_d = path_of(line_points)
+    def projection_points = points_of(projection)
+    def projection_d = path_of(projection_points)
 
     # Dica do grupo: rótulo + cada série (e a linha).
     def tip(i)
       rows = series.map { |s| "#{s[:name]}: #{s[:values][i].nil? ? "—" : fmt(s[:values][i])}" }
       rows << "#{line[:name]}: #{fmt(line[:values][i])}" if line && line[:values][i]
+      rows << "#{projection[:name]}: #{fmt(projection[:values][i])}" if projection && projection[:values][i]
       [labels[i], *rows].join("\n")
     end
 
@@ -145,6 +164,9 @@ module Ss
     def uid = @uid ||= "ss-barc-#{object_id}"
 
     private
+
+    def points_of(s) = s ? labels.each_index.filter_map { |i| (v = s[:values][i]) && [cx(i), y(v)] } : []
+    def path_of(pts) = pts.map.with_index { |(px, py), k| "#{k.zero? ? "M" : "L"}#{px},#{py}" }.join(" ")
 
     def normalize(s, fallback)
       s = s.to_h.transform_keys(&:to_sym)

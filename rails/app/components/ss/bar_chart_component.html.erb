@@ -20,6 +20,10 @@
     <% line_points.each do |(px, py)| %>
       <circle class="ss-barc-dot" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= line[:color] %>"/>
     <% end %>
+    <% if projection && projection_points.size > 1 %>
+      <path class="ss-barc-proj" d="<%= projection_d %>" style="stroke:<%= projection[:color] %>"/>
+      <% px, py = projection_points.last %><circle class="ss-barc-dot is-proj" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= projection[:color] %>"/>
+    <% end %>
     <% guides.each do |(gy, v, zero)| %><% next if zero %>
       <text class="ss-barc-ytext" x="<%= PX %>" y="<%= gy - 5 %>"><%= fmt(v) %></text>
     <% end %>
@@ -28,11 +32,12 @@
     <ul class="ss-barc-legend" aria-hidden="true">
       <% series.each do |s| %><li><i style="background:<%= s[:color] %>"></i><%= s[:name] %></li><% end %>
       <% if line %><li class="is-line"><i style="background:<%= line[:color] %>"></i><%= line[:name] %></li><% end %>
+      <% if projection %><li class="is-dashed"><i style="color:<%= projection[:color] %>"></i><%= projection[:name] %></li><% end %>
     </ul>
   <% end %>
   <div class="ss-sr-wrap"><table class="ss-sr">
     <caption><%= title %></caption>
-    <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if line %><th scope="col"><%= line[:name] %></th><% end %></tr></thead>
-    <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if line %><td><%= line[:values][i].nil? ? "—" : fmt(line[:values][i]) %></td><% end %></tr><% end %></tbody>
+    <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if line %><th scope="col"><%= line[:name] %></th><% end %><% if projection %><th scope="col"><%= projection[:name] %></th><% end %></tr></thead>
+    <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if line %><td><%= line[:values][i].nil? ? "—" : fmt(line[:values][i]) %></td><% end %><% if projection %><td><%= projection[:values][i].nil? ? "—" : fmt(projection[:values][i]) %></td><% end %></tr><% end %></tbody>
   </table></div>
 <% end %>

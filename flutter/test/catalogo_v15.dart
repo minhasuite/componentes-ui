@@ -71,6 +71,7 @@ final catalogoV15 = <Componente>[
       'Tocar ou arrastar escolhe o grupo: fundo realçado e balão com o rótulo e cada valor (haptic a cada troca); tocar fora some.',
       'As barras crescem da linha do zero com a mola quando entram na tela.',
       'Cores: a da série ou a paleta da suíte começando pela marca; legenda com mais de uma série.',
+      'projection: (v0.20) segunda linha tracejada a partir de projectionFrom (ex. saldo projetado até o fim do mês), com ponto só no fim; entra na legenda (traço tracejado), no balão e no resumo do leitor de tela.',
     ],
     estados: [
       Estado(
@@ -112,6 +113,36 @@ final catalogoV15 = <Componente>[
           ),
         ),
         tamanho: const Size(390, 270),
+        aguarde: 900,
+      ),
+      Estado(
+        'projecao',
+        'saldo real até hoje e projeção tracejada',
+        (context) => _pad(
+          SsCard(
+            child: SsBarChart(
+              labels: [for (var i = 1; i <= 12; i++) '$i'],
+              active: 6,
+              format: _reaisInteiro,
+              series: [
+                SsSeries(const [3200, 0, 0, 150, 0, 0, 80, 0, 0, 0, 0, 0], name: 'Receitas', color: AppColors.success),
+                SsSeries(
+                  const [-400, -120, -600, 0, -90, -300, -50, 0, 0, 0, 0, 0],
+                  name: 'Despesas',
+                  color: AppColors.danger,
+                ),
+              ],
+              line: SsSeries(
+                const [2800, 2680, 2080, 2230, 2140, 1840, 1870],
+                name: 'Saldo',
+                color: SsColors.of(context).accent,
+              ),
+              projection: const SsSeries([0, 0, 0, 0, 0, 0, 1870, 1870, 1320, 1320, 980, 1450], name: 'Projeção'),
+              projectionFrom: 6,
+            ),
+          ),
+        ),
+        tamanho: const Size(390, 300),
         aguarde: 900,
       ),
     ],

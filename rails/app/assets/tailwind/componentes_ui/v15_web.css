@@ -39,10 +39,13 @@
   .ss-barc-bar.is-neg { transform-origin: top; }
   .ss-barc-line { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; animation: ss-draw .9s cubic-bezier(.2, .8, .2, 1) .3s backwards; }
   .ss-barc-dot { fill: var(--surface); stroke-width: 2.5; }
+  .ss-barc-proj { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 6; opacity: .9; animation: ss-barc-fade .6s ease-out .6s backwards; }
+  .ss-barc-dot.is-proj { animation: ss-barc-fade .6s ease-out .6s backwards; }
   .ss-barc-legend { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin-top: .5rem; font-size: calc(.78rem * var(--ss-font-scale)); color: var(--muted); font-weight: 600; }
   .ss-barc-legend li { display: inline-flex; align-items: center; gap: .4rem; }
   .ss-barc-legend i { width: .65rem; height: .65rem; border-radius: 3px; }
   .ss-barc-legend li.is-line i { height: .2rem; border-radius: 2px; }
+  .ss-barc-legend li.is-dashed i { width: 1rem; height: 0; border-radius: 0; border-top: .2rem dashed currentColor; }
 
   /* Dinheiro com conta (MoneyInputComponent(expression: true) ↔ SsMoneyField(expression: true)). */
   .ss-money-input.is-expression .ss-input { color: var(--ink); }
@@ -147,11 +150,12 @@ html[data-ss-month-dir="prev"] .ss-month-switcher-title { animation: ss-month-pr
 [data-privacy="on"] :is(.ss-barc svg, .ss-progress-row-foot, .ss-progress-row-pct, .ss-money-result, .ss-chat-action-rows dd) { filter: blur(7px); user-select: none; }
 
 @keyframes ss-barc-grow { from { scale: 1 0; } }
+@keyframes ss-barc-fade { from { opacity: 0; } }
 @keyframes ss-dialog-out { to { opacity: 0; translate: 0 16px; scale: .97; } }
 @keyframes ss-month-next { from { opacity: 0; translate: 1.5rem 0; } }
 @keyframes ss-month-prev { from { opacity: 0; translate: -1.5rem 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ss-barc-bar, .ss-barc-line, .ss-progress-row .ss-progress-bar, .ss-chat-action,
+  .ss-barc-bar, .ss-barc-line, .ss-barc-proj, .ss-barc-dot.is-proj, .ss-progress-row .ss-progress-bar, .ss-chat-action,
   html[data-ss-month-dir] .ss-month-switcher-title, dialog.ss-dialog-panel.is-closing { animation: none; }
 }

@@ -111,6 +111,44 @@ void main() {
     expect(find.text('-250'), findsOneWidget);
   });
 
+  testWidgets('SsBarChart(projection:): faixa, legenda tracejada, balão e leitor de tela', (t) async {
+    // A projeção entra na faixa só a partir de projectionFrom.
+    final (lo, hi) = ssBarRange(
+      [
+        const SsSeries([10, 10, 10]),
+      ],
+      3,
+      projection: const SsSeries([-999, 50, 80]),
+      projectionFrom: 1,
+    );
+    expect(lo, 0);
+    expect(hi, greaterThan(80));
+    final sem = t.ensureSemantics();
+    await t.pumpWidget(
+      _app(
+        const SsBarChart(
+          labels: ['1', '2', '3'],
+          series: [
+            SsSeries([100, 0, 0], name: 'Receitas'),
+          ],
+          line: SsSeries([100, 90], name: 'Saldo'),
+          projection: SsSeries([0, 90, 40], name: 'Projeção'),
+          projectionFrom: 1,
+        ),
+      ),
+    );
+    await t.pump(const Duration(seconds: 1));
+    expect(find.text('Projeção'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'3: 0 / Projeção 40')), findsOneWidget);
+    final box = t.getRect(find.byType(CustomPaint).last);
+    await t.tapAt(Offset(box.left + box.width * .9, box.center.dy));
+    await t.pump();
+    // Balão do 3º dia: receitas e a projeção (a linha real parou no 2º).
+    expect(find.text('40'), findsOneWidget);
+    expect(find.text('Saldo'), findsOneWidget); // só a legenda
+    sem.dispose();
+  });
+
   testWidgets('SsMoneyField(expression:) mostra o resultado e valida', (t) async {
     int? valor = -1;
     final form = GlobalKey<FormState>();
