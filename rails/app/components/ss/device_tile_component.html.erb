@@ -1,4 +1,4 @@
-<%= tag.div(class: root_classes, style: ("--tone: #{tone_css}" if tone_css),
+<%= tag.div(class: root_classes, style: root_style,
             **root_attrs(data: root_data, aria: { busy: ("true" if status == :pending) }.compact)) do %>
   <div class="ss-device-main">
     <% if toggle? %>

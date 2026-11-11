@@ -22,6 +22,9 @@ module Ss
   # - link_data: data-* do link de detalhes (ex. { turbo_frame: "_top" }).
   # - Cor real da luz: tone: "rgb(255, 200, 120)" (qualquer cor CSS simples já valia).
   #
+  # v0.21 (par do SsDeviceTile(level:)): level: 0..1, o brilho real da lâmpada (dimmer); ligado, a
+  # tinta, a borda e o halo vão de 35% (level 0) a 100% (level 1) em .ss-device.has-level (--ss-level).
+  #
   # v0.10.3 (par do SsDeviceTile(onLongPress:) do Flutter): more_url: põe o botão ⋯ ("Mais opções
   # de %{name}", more_label: troca) à direita e liga o menu de contexto do tile (clique direito ou
   # toque longo no celular) a ele. No modo aperto, url: vira o more_url (os detalhes, que o toque
@@ -51,8 +54,9 @@ module Ss
                    toggle_method: :post, tone: nil, wide: false, error_text: nil, confirm: nil,
                    unavailable_label: nil, pending_label: nil, error_label: nil, locked_label: nil, details_label: nil,
                    link_data: {}, action_url: nil, action_params: {}, action_method: :post, action_label: nil, confirm_title: nil,
-                   more_url: nil, more_label: nil, more_data: {}, **rest)
+                   more_url: nil, more_label: nil, more_data: {}, level: nil, **rest)
       super(**rest)
+      @level = level.is_a?(Numeric) ? level.to_f.clamp(0.0, 1.0).round(3) : nil
       @more_url, @more_label, @more_data = more_url, more_label, more_data.to_h
       @link_data, @action_url, @action_params, @action_method = link_data.to_h, action_url, action_params.to_h, action_method
       @action_label, @confirm_title = action_label, confirm_title
@@ -127,7 +131,12 @@ module Ss
                             data: { ss_switch_target: "button" }, &)
     end
 
-    def root_classes = classes("ss-device", ("is-on" if on?), ("has-toggle" if toggle?), ("is-wide" if wide?), ("is-press" if press?), ("has-more" if more?))
+    # v0.21: brilho real (0 a 1) da lâmpada; ligado, a tinta e o halo acompanham (--ss-level).
+    attr_reader :level
+
+    def root_style = [ ("--tone: #{tone_css}" if tone_css), ("--ss-level: #{level}" if level) ].compact.join("; ").presence
+
+    def root_classes = classes("ss-device", ("is-on" if on?), ("has-level" if level), ("has-toggle" if toggle?), ("is-wide" if wide?), ("is-press" if press?), ("has-more" if more?))
 
     # Menu de contexto (clique direito / toque longo) segue o ⋯; junta com o controller do app.
     def root_data

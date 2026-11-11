@@ -377,6 +377,17 @@ module ComponentesUi
       %(<span class="ss-status" data-tone="#{ERB::Util.h(tone)}">#{ERB::Util.h(text)}</span>).html_safe
     end
 
+    # v0.21 · micro-animação de mudança de estado (par do SsCue): os data-* do Stimulus ss-cue
+    # para pôr num elemento com a classe .ss-cue. kind: :on (ligou), :open (abriu), :arrive (chegou);
+    # active: o estado agora; key: o mesmo objeto entre trocas do HTML (Turbo), para acenar só na
+    # mudança de falso para verdadeiro. Junte o controller com o seu, se houver (controller: "x ss-cue").
+    #   tag.div(class: "ss-cue", data: ss_cue_data(kind: :on, active: luz_ligada, key: "w1-luz")) { ... }
+    CUE_KINDS = %w[on open arrive].freeze
+    def ss_cue_data(kind:, active:, key: nil)
+      k = CUE_KINDS.include?(kind.to_s) ? kind.to_s : "on"
+      { controller: "ss-cue", ss_cue_kind_value: k, ss_cue_active_value: active ? "true" : "false", ss_cue_key_value: key&.to_s }.compact
+    end
+
     private
 
     def fmt(p) = "#{p[0].round(2)},#{p[1].round(2)}"

@@ -1,0 +1,25 @@
+<%# titulo: Casa (v0.21): acenos de estado e brilho real da lâmpada | grupo: Casa | ordem: 44 %>
+<%# v0.21: micro-animações padronizadas (ss-cue ↔ SsCue) e o tile com o brilho real (level:). %>
+<% bulb = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>' %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::DeviceTileComponent(level:)", "Brilho real da lâmpada (0 a 1, o dimmer): ligado, a tinta, a borda e o halo vão de 35% a 100%. Com tone: na cor real da lâmpada. Par: SsDeviceTile(level:).",
+           uso: 'render Ss::DeviceTileComponent.new(name: "Abajur", state: "Ligado · 15%", on: true, tone: "#ffaa5a", level: 0.15, icon: svg)' do %>
+    <div style="display:grid;gap:12px">
+      <%= render Ss::DeviceTileComponent.new(name: "Abajur", state: "Ligado · 15%", on: true, tone: "#ffaa5a", level: 0.15, icon: bulb, url: "#") %>
+      <%= render Ss::DeviceTileComponent.new(name: "Abajur", state: "Ligado · 60%", on: true, tone: "#ffaa5a", level: 0.6, icon: bulb, url: "#") %>
+      <%= render Ss::DeviceTileComponent.new(name: "Fita de LED", state: "Ligada · 100%", on: true, tone: "#5078ff", level: 1, icon: bulb, url: "#") %>
+    </div>
+  <% end %>
+
+  <%= demo "Acenos de estado (.ss-cue + ss-cue)", "Ligou (on), abriu (open), chegou (arrive): toca uma vez quando o estado vira ativo, nunca na primeira pintura; key: guarda o estado entre trocas do Turbo. Menos movimento desliga. Par: SsCue.",
+           uso: 'tag.div(class: "ss-cue", data: ss_cue_data(kind: :on, active: ligada, key: "w1")) { ... }' do %>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <% %w[on open arrive].each do |k| %>
+        <%= tag.div(class: "ss-cue", style: "--tone: var(--warn)", data: ss_cue_data(kind: k, active: false, key: "vitrine-#{k}")) do %>
+          <span class="ss-icon-tile"><%= ss_icon({ "on" => "light-bulb", "open" => "home", "arrive" => "user" }[k]) %></span>
+        <% end %>
+        <button type="button" class="ss-btn ss-btn-ghost" onclick="const el=this.previousElementSibling; el.dataset.ssCueActiveValue = el.dataset.ssCueActiveValue === 'true' ? 'false' : 'true'"><%= k %></button>
+      <% end %>
+    </div>
+  <% end %>
+</div>
