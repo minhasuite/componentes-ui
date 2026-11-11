@@ -1,0 +1,19 @@
+<%# A DOM que o Drawflow gera (parada), para ver a pele do .ss-node-canvas sem a lib. %>
+<div class="parent-drawflow ss-node-canvas is-grid" role="img" aria-label="Exemplo de fluxo" style="--ss-node-canvas-h: 20rem; margin-top: .75rem">
+  <div class="drawflow">
+    <div class="parent-node"><div class="drawflow-node selected" style="left:24px;top:40px">
+      <div class="inputs"><div class="input input_1"></div></div>
+      <div class="drawflow_content_node"><div class="ss-node"><strong>Novo pedido</strong><br><small class="text-muted">Fase · aberta</small></div></div>
+      <div class="outputs"><div class="output output_1"></div></div></div></div>
+    <div class="parent-node"><div class="drawflow-node is-branch" style="left:290px;top:40px">
+      <div class="inputs"><div class="input input_1"></div></div>
+      <div class="drawflow_content_node"><div class="ss-node"><strong>Valor &gt; R$ 5 mil?</strong><br><small class="text-muted">Condição</small></div></div>
+      <div class="outputs"><div class="output output_1"></div><div class="output output_2"></div></div></div></div>
+    <div class="parent-node"><div class="drawflow-node is-refused" style="left:290px;top:190px">
+      <div class="inputs"><div class="input input_1"></div></div>
+      <div class="drawflow_content_node"><div class="ss-node"><strong>Aprovação</strong><br><small class="text-muted">Fase · recusou a ligação</small></div></div>
+      <div class="outputs"><div class="output output_1"></div></div></div></div>
+    <svg class="connection is-yes" style="left:0;top:0;width:1px;height:1px"><path class="main-path" d="M 245 80 C 268 80, 268 80, 290 80"></path><text class="ss-node-label" x="268" y="72">sim</text></svg>
+    <svg class="connection is-no" style="left:0;top:0;width:1px;height:1px"><path class="main-path" d="M 510 96 C 560 96, 240 230, 290 230"></path><text class="ss-node-label" x="400" y="170">senão</text></svg>
+  </div>
+</div>

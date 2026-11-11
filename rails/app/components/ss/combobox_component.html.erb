@@ -1,5 +1,6 @@
 <%= tag.div(class: classes("ss-field", "ss-combobox", ("has-media" if media?)), **root_attrs(data: data_attrs)) do %>
   <label for="<%= id %>"><%= label %></label>
+  <% if actions? %><div class="ss-combobox-row"><% end %>
   <div class="ss-combobox-box<%= " has-lead" if lead? %>">
     <span class="ss-combobox-lead" aria-hidden="true" data-ss-combobox-target="lead"><%= lead_html(selected_option) %></span>
     <%= tag.input(id: id, type: "text", class: input_class, role: "combobox", autocomplete: "off", spellcheck: "false",
@@ -9,6 +10,7 @@
     <ul id="<%= id %>-list" role="listbox" class="ss-combobox-list" aria-label="<%= label %>" hidden data-ss-combobox-target="list"
         data-action="mousedown->ss-combobox#hold click->ss-combobox#pick"></ul>
   </div>
+  <% if actions? %><div class="ss-combobox-actions"><% actions.each do |a| %><%= a %><% end %></div></div><% end %>
   <% if help %><small class="ss-field-help" id="<%= id %>-help"><%= help %></small><% end %>
   <input type="hidden" name="<%= name %>" value="<%= value %>" data-ss-combobox-target="hidden">
   <% if create_name %><input type="hidden" name="<%= create_name %>" value="" data-ss-combobox-target="created"><% end %>

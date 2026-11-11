@@ -28,15 +28,30 @@ module Ss
   # - select_name: o nome das caixas da seleção (padrão "ids[]"; ex. "pedido_ids[]" para o controller do app).
   # - bulk_method: o método do form da barra de seleção (padrão :post; :patch, :delete). Os botões da barra
   #   podem trocar o destino com formaction: (Ss::ButtonComponent(type: :submit, formaction:, name:, value:)).
+  #
+  # v0.20 (o que o minhas-vendas e o meu-gestor pediram; pares do SsDataTable):
+  # - row_href: ->(row) { pedido_path(row) } (ou um texto fixo): a linha inteira vira link (tr.is-link com
+  #   data-href e tabindex=0). Clique fora de <a>, <button>, campo, <summary>/<details> navega (Turbo quando
+  #   houver); Enter com o foco na linha também; Ctrl/⌘ ou o botão do meio abrem em outra aba. A 1ª coluna
+  #   continua sendo o link de verdade para o leitor de tela (ponha um link_to nela). Par: SsDataRow(onTap:).
+  # - t.column(..., sticky: true): a coluna fica parada ao rolar de lado (só a 1ª coluna de dados; com
+  #   selectable:/expansão a caixa e a seta rolam). Par: SsDataTable(stickyFirstColumn: true).
+  # - t.column(..., header: "<b>…</b>" ou html_safe): o cabeçalho montado no lugar do texto; o label: continua
+  #   no rótulo do celular e na escolha de colunas. Par: SsDataColumn(header:).
+  # - t.total(:valor, ss_amount(…)) ou t.total(:valor) { |rows| … }: a linha de total no <tfoot> (negrito, fundo
+  #   do campo); a 1ª coluna sem total recebe "Total" (componentes_ui.data_table.total; t.total(:cliente, "Geral")
+  #   troca). t.footer { |rows| … }: um <tfoot> livre numa célula só. Par: SsDataTable(footer:).
+  # - flat: true: sem a moldura de card (tabela dentro de um card com título). Par: SsDataTable(flat: true).
+  # - Linha apagada: row_attrs: ->(r) { { class: ("is-dimmed" if r.inativo?) } } (tr.is-dimmed). Par: SsDataRow(dimmed:).
   class DataTableComponent < BaseComponent
-    Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, keyword_init: true)
+    Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, :sticky, :header, keyword_init: true)
 
     attr_reader :columns, :id, :caption
 
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
                    max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, select_name: "ids[]",
-                   bulk_method: :post, **opts)
+                   bulk_method: :post, row_href: nil, flat: false, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -59,14 +74,43 @@ module Ss
       @empty_art = empty_art
       @select_name = select_name.to_s
       @bulk_method = bulk_method.to_s.downcase.presence || "post"
+      @row_href = row_href
+      @flat = flat
+      @totals = {}
       @columns = []
     end
 
-    def column(key, label, align: nil, sortable: false, format: nil, hideable: true, &block)
+    def flat? = @flat
+
+    def column(key, label, align: nil, sortable: false, format: nil, hideable: true, sticky: false, header: nil, &block)
       align ||= %i[money number].include?(format) ? :right : :left
-      @columns << Column.new(key: key.to_s, label:, align: align.to_sym, sortable:, format:, hideable:, block:)
+      @columns << Column.new(key: key.to_s, label:, align: align.to_sym, sortable:, format:, hideable:, block:,
+                             sticky: sticky && @columns.empty?, header:)
       nil
     end
+
+    # Linha de total (v0.20): t.total(:valor, "R$ 10") ou t.total(:valor) { |rows| … }.
+    def total(key, value = nil, &block)
+      @totals[key.to_s] = block || value
+      nil
+    end
+
+    # <tfoot> livre (v0.20): t.footer { |rows| … } numa célula que ocupa a linha.
+    def footer(&block) = (@footer = block) && nil
+
+    def totals? = @totals.any?
+    def footer? = !@footer.nil?
+    def footer_html = capture_block(@footer, rows)
+
+    # Célula do total da coluna: o valor dado, ou "Total" na 1ª coluna sem valor.
+    def total_cell(col)
+      v = @totals[col.key]
+      return (v.respond_to?(:call) ? capture_block(v, rows) : v) if @totals.key?(col.key)
+
+      tt("total", default: "Total") if col.equal?(@columns.first)
+    end
+
+    def header_html(col) = col.header.nil? ? col.label : col.header
 
     def expansion(&block) = (@expansion = block) && nil
 
@@ -88,6 +132,13 @@ module Ss
       extra = @row_attrs.respond_to?(:call) ? @row_attrs.call(row) : @row_attrs
       extra = extra.to_h.transform_keys(&:to_sym)
       data = extra.delete(:data).to_h.merge(ss_table_target: "row")
+      href = @row_href.respond_to?(:call) ? @row_href.call(row) : @row_href
+      if href.present?
+        data[:href] = href
+        data[:action] = [data[:action], "click->ss-table#go auxclick->ss-table#go keydown->ss-table#go"].compact.join(" ")
+        extra[:class] = [extra[:class], "is-link"].compact.join(" ")
+        extra[:tabindex] ||= 0
+      end
       { **extra, data: }
     end
     def bulk_actions(&block) = (@bulk = block) && nil
@@ -134,7 +185,7 @@ module Ss
 
     def cell_class(col)
       [("r" if col.align == :right), ("num" if %i[money number date].include?(col.format)),
-       ("ss-dt-actions" if col.format == :actions)].compact.join(" ").presence
+       ("ss-dt-actions" if col.format == :actions), ("is-sticky" if col.sticky)].compact.join(" ").presence
     end
 
     def expansion? = !@expansion.nil?

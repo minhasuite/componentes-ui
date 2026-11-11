@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../density.dart';
 import '../motion.dart';
+import '../ss_badge.dart' show SsTone;
 import '../ss_card.dart';
 import '../ss_charts.dart';
 import '../ss_list.dart' show SsIconTile;
@@ -25,7 +26,14 @@ class SsCardHeader extends StatelessWidget {
     this.tone,
     this.trailing,
     this.titleMaxLines = 1,
+    this.eyebrow,
+    this.eyebrowTone,
   });
+
+  /// v0.20: sobrelinha em versalete em cima do título ("ESTOQUE · URGENTE");
+  /// par do `CardHeaderComponent(eyebrow:)`. [eyebrowTone] a pinta no tom.
+  final String? eyebrow;
+  final SsTone? eyebrowTone;
 
   final String title;
   final String? subtitle;
@@ -70,6 +78,21 @@ class SsCardHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (eyebrow != null && eyebrow!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    eyebrow!.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: eyebrowTone?.colors(context).text ?? SsColors.of(context).muted,
+                      fontSize: d.font(AppType.label),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: AppType.trackingTight,
+                    ),
+                  ),
+                ),
               Semantics(
                 header: true,
                 child: Text(
@@ -113,7 +136,12 @@ class SsKpiCard extends StatelessWidget {
     this.spark,
     this.onTap,
     this.valueSize = 24,
+    this.valueTone,
   });
+
+  /// v0.20: o valor no tom (saldo negativo em [SsTone.danger], meta batida em
+  /// [SsTone.success]); par do `Ss::KpiCardComponent(value_tone:)`.
+  final SsTone? valueTone;
 
   final String label;
   final String value;
@@ -150,7 +178,13 @@ class SsKpiCard extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: AlignmentDirectional.centerStart,
-                child: SsAmount(value, size: d.font(valueSize), countUp: true, roll: true),
+                child: SsAmount(
+                  value,
+                  size: d.font(valueSize),
+                  countUp: true,
+                  roll: true,
+                  color: valueTone?.colors(context).text,
+                ),
               ),
             ),
             if (delta != null || hint != null) ...[

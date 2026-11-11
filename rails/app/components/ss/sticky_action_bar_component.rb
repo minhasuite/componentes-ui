@@ -4,7 +4,14 @@ module Ss
   #   <%= form_with model: @cliente do |f| %> … <%= render Ss::StickyActionBarComponent.new %> <% end %>
   #   render Ss::StickyActionBarComponent.new(message: "Pedido alterado") { botões próprios }
   # always: true mostra sempre (sem esperar alteração).
+  # v0.20: with_summary { … } põe conteúdo livre à esquerda no lugar da mensagem (o resumo do pedido:
+  # "3 itens · R$ 120,00"), sem o ponto amarelo; par do SsStickyActionBar(summary:).
+  #   render(Ss::StickyActionBarComponent.new(always: true)) do |b|
+  #     b.with_summary { tag.span("3 itens") + ss_amount(ss_money(120)) }
+  #     render Ss::ButtonComponent.new(label: "Fechar pedido", type: :submit, size: :sm)
+  #   end
   class StickyActionBarComponent < BaseComponent
+    renders_one :summary
     def initialize(save_label: nil, cancel_label: nil, message: nil,
                    confirm: nil, always: false, **opts)
       super(**opts)

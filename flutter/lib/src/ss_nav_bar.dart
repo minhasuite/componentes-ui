@@ -10,7 +10,23 @@ import 'ss_strings.dart';
 
 /// Uma aba da [SsNavBar].
 class SsNavItem {
-  const SsNavItem(this.icon, this.label, {this.activeIcon});
+  const SsNavItem(this.icon, this.label, {this.activeIcon, this.badge});
+
+  /// v0.20: contagem no ícone (pedidos novos, cards atrasados); 0 ou nulo
+  /// some, acima de 99 vira "99+". O leitor de tela ouve "Pedidos: 3 novas".
+  /// Par do `badge:` do item do `Ss::AppShellComponent`.
+  final int? badge;
+
+  /// O ícone com a contagem por cima (quando há).
+  static Widget withBadge(Widget icon, int? n) {
+    if (n == null || n <= 0) return icon;
+    return Badge(
+      label: Text(n > 99 ? '99+' : '$n'),
+      backgroundColor: AppColors.danger,
+      textColor: AppColors.onDark,
+      child: icon,
+    );
+  }
 
   /// Contornado (inativo).
   final IconData icon;
@@ -216,7 +232,10 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                             opacity: iconIn.clamp(0.0, 1.0),
                             child: Transform.scale(
                               scale: .5 + .5 * iconIn,
-                              child: Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
+                              child: SsNavItem.withBadge(
+                                Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
+                                current.badge,
+                              ),
                             ),
                           ),
                         ),
@@ -287,7 +306,11 @@ class _Tab extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: SsStrings.of(context).tabOf(item.label, index + 1, count),
+      label: SsStrings.of(context).tabOf(
+        (item.badge ?? 0) > 0 ? SsStrings.of(context).newCount(item.label, item.badge!) : item.label,
+        index + 1,
+        count,
+      ),
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,
@@ -299,7 +322,7 @@ class _Tab extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.icon, color: c.muted, size: 24),
+              SsNavItem.withBadge(Icon(item.icon, color: c.muted, size: 24), item.badge),
               const SizedBox(height: 3),
               Text(
                 item.label,

@@ -2,7 +2,9 @@ import { Controller } from "@hotwired/stimulus"
 
 // Tabela de dados (Ss::DataTableComponent): densidade e colunas escondidas lembradas
 // no navegador (chave "ss-table:<id>"), seleção em massa com a barra flutuante e
-// linha expansível.
+// linha expansível. v0.20: linha clicável (row_href:): clique na linha (fora de link, botão, campo,
+// <summary>/<details> e da seleção de texto) ou Enter com o foco nela vai ao data-href; Ctrl/⌘ ou o
+// botão do meio abrem em outra aba. Navega pelo Turbo quando ele existe.
 export default class extends Controller {
   static targets = ["all", "check", "bar", "count"]
   static values = { key: String }
@@ -67,6 +69,21 @@ export default class extends Controller {
     button.setAttribute("aria-expanded", String(open))
     const row = document.getElementById(button.getAttribute("aria-controls"))
     if (row) row.hidden = !open
+  }
+
+  go(event) {
+    const row = event.currentTarget
+    if (event.type === "keydown") {
+      if (event.key !== "Enter" || event.target !== row) return
+    } else {
+      if (event.target.closest("a, button, input, select, textarea, label, summary, details, [role=button], [data-ss-table-no-link]")) return
+      if (window.getSelection?.().toString()) return
+    }
+    const href = row.dataset.href
+    if (!href) return
+    if (event.ctrlKey || event.metaKey || event.button === 1) { window.open(href, "_blank", "noopener"); return }
+    if (window.Turbo?.visit) window.Turbo.visit(href, row.dataset.turboFrame ? { frame: row.dataset.turboFrame } : {})
+    else window.location.assign(href)
   }
 
   load() {

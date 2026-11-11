@@ -1,7 +1,9 @@
 <%= tag.dialog(**dialog_attrs) do %>
+  <% if actions? %><div class="ss-command-bar"><% end %>
   <input type="search" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="<%= id %>-list"
          aria-label="<%= label %>" placeholder="<%= placeholder %>" autocomplete="off" spellcheck="false"
          data-ss-command-target="input" data-action="input->ss-command#filter">
+  <% if actions? %><div class="ss-command-actions"><% actions.each do |a| %><%= a %><% end %></div></div><% end %>
   <div class="ss-command-list" id="<%= id %>-list" role="listbox" aria-label="<%= label %>" data-ss-command-target="list" data-action="click->ss-command#picked mousemove->ss-command#hover">
     <% groups.each_with_index do |g, gi| %>
       <div class="ss-command-group" role="group"<% if g[:title] %> aria-labelledby="<%= id %>-g<%= gi %>"<% end %> data-ss-command-target="group">

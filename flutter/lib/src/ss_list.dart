@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'density.dart';
 import 'motion.dart';
+import 'ss_badge.dart' show SsTone;
 import 'ss_strings.dart';
 
 /// Item de lista: ícone num quadrado no tom da categoria (14%), título e
@@ -26,7 +27,17 @@ class SsListItem extends StatelessWidget {
     this.trailing,
     this.dimmed = false,
     this.maxLines = 1,
+    this.subtitleTone,
+    this.valueTone,
   });
+
+  /// v0.20: pinta o subtítulo no tom ("Vence hoje" em [SsTone.danger],
+  /// "Pago" em [SsTone.success]); par do `.ss-item-sub[data-tone]` /
+  /// `Ss::ListItemComponent(subtitle_tone:)` do web.
+  final SsTone? subtitleTone;
+
+  /// v0.20: pinta o valor no tom (o [valueColor], se houver, ganha).
+  final SsTone? valueTone;
 
   final String title;
   final IconData? icon;
@@ -83,7 +94,11 @@ class SsListItem extends StatelessWidget {
                       subtitle!,
                       maxLines: maxLines,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub)),
+                      style: TextStyle(
+                        color: subtitleTone?.colors(context).text ?? c.muted,
+                        fontSize: d.font(AppType.sub),
+                        fontWeight: subtitleTone == null ? null : FontWeight.w600,
+                      ),
                     ),
                   ],
                 ],
@@ -96,7 +111,11 @@ class SsListItem extends StatelessWidget {
                 children: [
                   Text(
                     value!,
-                    style: AppTheme.number(context, size: d.font(AppType.body), color: valueColor ?? c.ink),
+                    style: AppTheme.number(
+                      context,
+                      size: d.font(AppType.body),
+                      color: valueColor ?? valueTone?.colors(context).text ?? c.ink,
+                    ),
                   ),
                   if (valueCaption != null) ...[
                     const SizedBox(height: 4),

@@ -10,14 +10,17 @@ module Ss
   # tone: :accent (padrão), :success, :warn, :danger, :info, :muted, :heat (âmbar de energia/luz, o
   # mesmo do DeviceTile) ou uma cor CSS simples.
   # heading: a tag do título (padrão :p; :h2/:h3 quando o card é uma seção da página).
+  # v0.20: eyebrow: sobrelinha em versalete em cima do título ("Estoque · urgente"; .ss-card-eyebrow),
+  # eyebrow_tone: a pinta no tom (:danger, :warn, :success, :accent); par do SsCardHeader(eyebrow:).
   class CardHeaderComponent < BaseComponent
     TONES = { accent: "var(--accent)", success: "var(--success)", warn: "var(--warn)", danger: "var(--danger)",
               info: "var(--ss-info)", muted: "var(--muted)", heat: "#e0952a" }.freeze
 
     renders_one :action
 
-    def initialize(title:, subtitle: nil, icon: nil, tone: nil, heading: :p, **rest)
+    def initialize(title:, subtitle: nil, icon: nil, tone: nil, heading: :p, eyebrow: nil, eyebrow_tone: nil, **rest)
       super(**rest)
+      @eyebrow, @eyebrow_tone = eyebrow, eyebrow_tone
       @title, @subtitle, @icon, @tone = title, subtitle, icon, tone
       @heading = %i[p h2 h3 h4 span].include?(heading.to_s.to_sym) ? heading.to_s.to_sym : :p
     end
@@ -34,7 +37,8 @@ module Ss
       tag.div(**root_attrs(class: classes("ss-card-head"))) do
         safe_join([
           tag.div(class: "ss-card-head-text") do
-            safe_join([content_tag(@heading, @title, class: "ss-card-title"),
+            safe_join([(tag.p(@eyebrow, class: "ss-card-eyebrow", data: { tone: (ComponentesUi.tone(@eyebrow_tone).to_s if @eyebrow_tone) }.compact) if @eyebrow.present?),
+                       content_tag(@heading, @title, class: "ss-card-title"),
                        (tag.p(@subtitle, class: "ss-card-sub") if @subtitle.present?)].compact)
           end,
           (action? ? tag.div(action, class: "ss-card-head-action") : nil),

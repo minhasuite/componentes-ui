@@ -14,10 +14,16 @@ import '../ss_strings.dart';
 /// Coluna do [SsDataTable]. [numeric] alinha à direita em DM Mono; [onSort]
 /// torna o cabeçalho tocável (recebe o sentido novo: true = crescente);
 /// [flex] divide a largura (ou [width] fixa).
+///
+/// v0.20: [header] troca o texto do cabeçalho por um widget (ícone, selo,
+/// duas linhas); o [label] continua no leitor de tela e nos cartões.
 class SsDataColumn {
-  const SsDataColumn(this.label, {this.numeric = false, this.onSort, this.flex = 1, this.width});
+  const SsDataColumn(this.label, {this.numeric = false, this.onSort, this.flex = 1, this.width, this.header});
 
   final String label;
+
+  /// v0.20: cabeçalho montado (par do `t.column(..., header:)` do web).
+  final Widget? header;
   final bool numeric;
   final ValueChanged<bool>? onSort;
   final int flex;
@@ -26,14 +32,18 @@ class SsDataColumn {
 
 /// Linha do [SsDataTable]: uma célula por coluna. [onTap] torna a linha
 /// tocável.
+///
+/// v0.20: [dimmed] apaga a linha (inativo, cancelado, arquivado), par do
+/// `tr.is-dimmed` do web.
 class SsDataRow {
-  const SsDataRow(this.cells, {this.onTap});
+  const SsDataRow(this.cells, {this.onTap, this.dimmed = false});
 
   /// Atalho para células só de texto.
-  SsDataRow.text(List<String> texts, {this.onTap}) : cells = [for (final t in texts) Text(t)];
+  SsDataRow.text(List<String> texts, {this.onTap, this.dimmed = false}) : cells = [for (final t in texts) Text(t)];
 
   final List<Widget> cells;
   final VoidCallback? onTap;
+  final bool dimmed;
 }
 
 /// Tabela de dados com cabeçalho ordenável e números à direita. Abaixo de
@@ -41,6 +51,12 @@ class SsDataRow {
 /// é o título e as outras viram "RÓTULO  valor"; a ordenação passa para
 /// fichas em cima. Estados: [loading] (linhas-fantasma), vazio ([emptyTitle])
 /// e ordenada ([sortColumn] + [sortAscending], com a seta e o `aria-sort`).
+///
+/// v0.20: [footer] é a linha de total (uma célula por coluna, em negrito, no
+/// fundo do campo; no celular vira um bloco no fim), [flat] tira a moldura de
+/// card (tabela dentro de um card com título) e [stickyFirstColumn] deixa a
+/// tabela rolar de lado com a 1ª coluna parada quando as colunas não cabem
+/// (cada coluna sem `width` tem no mínimo [minColumnWidth]).
 ///
 /// `SsDataTable(columns: [SsDataColumn('Nome', onSort: ordena), SsDataColumn('Valor', numeric: true)], rows: linhas)`
 class SsDataTable extends StatelessWidget {
@@ -60,7 +76,23 @@ class SsDataTable extends StatelessWidget {
     this.sortByLabel,
     this.ascendingLabel,
     this.descendingLabel,
+    this.footer,
+    this.flat = false,
+    this.stickyFirstColumn = false,
+    this.minColumnWidth = 120,
   });
+
+  /// v0.20: linha de total (par do `t.footer`/`t.total` do web).
+  final List<Widget>? footer;
+
+  /// v0.20: sem fundo, sombra nem raio de card (par do `flat: true`).
+  final bool flat;
+
+  /// v0.20: 1ª coluna parada ao rolar de lado (par do `t.column(..., sticky: true)`).
+  final bool stickyFirstColumn;
+
+  /// v0.20: largura mínima de cada coluna com [stickyFirstColumn].
+  final double minColumnWidth;
 
   final List<SsDataColumn> columns;
   final List<SsDataRow> rows;
@@ -123,27 +155,183 @@ class SsDataTable extends StatelessWidget {
     );
   }
 
-  Widget _celula(BuildContext context, SsDataColumn col, Widget child, {bool head = false}) {
+  Widget _conteudo(BuildContext context, SsDataColumn col, Widget child, {bool head = false, bool foot = false}) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
-    final estilo = head
+    var estilo = head
         ? TextStyle(fontSize: d.font(AppType.label), fontWeight: FontWeight.w800, letterSpacing: .8, color: c.muted)
         : col.numeric
         ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
         : TextStyle(fontSize: d.font(AppType.set), color: c.ink);
+    if (foot) estilo = estilo.copyWith(fontWeight: FontWeight.w800);
     // Célula: 8×8 / 12×12 / 16×16 (horizontal pelo padX, vertical pela linha).
-    final conteudo = Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: d.padX - 4, vertical: d.rowPadV + 2),
       child: Align(
         alignment: col.numeric ? Alignment.centerRight : Alignment.centerLeft,
         child: DefaultTextStyle.merge(style: estilo, child: child),
       ),
     );
-    return col.width != null ? SizedBox(width: col.width, child: conteudo) : Expanded(flex: col.flex, child: conteudo);
+  }
+
+  Widget _celula(
+    BuildContext context,
+    SsDataColumn col,
+    Widget child, {
+    bool head = false,
+    bool foot = false,
+    double? width,
+  }) {
+    final conteudo = _conteudo(context, col, child, head: head, foot: foot);
+    final w = width ?? col.width;
+    return w != null ? SizedBox(width: w, child: conteudo) : Expanded(flex: col.flex, child: conteudo);
+  }
+
+  /// Larguras com [stickyFirstColumn]: as fixas valem; as outras dividem o
+  /// que sobra pelo flex, com o mínimo [minColumnWidth].
+  List<double> _larguras(double total) {
+    final fixas = columns.fold<double>(0, (a, col) => a + (col.width ?? 0));
+    final flexes = columns.fold<int>(0, (a, col) => a + (col.width == null ? col.flex : 0));
+    final sobra = (total - fixas).clamp(0, double.infinity);
+    return [
+      for (final col in columns)
+        col.width ??
+            (flexes == 0 ? minColumnWidth : (sobra * col.flex / flexes).clamp(minColumnWidth, double.infinity)),
+    ];
+  }
+
+  /// Uma linha (cabeçalho, dado ou total). Com [larguras], a 1ª célula fica
+  /// parada por cima ([rolagem] desloca junto com a rolagem de lado).
+  Widget _linha(
+    BuildContext context,
+    List<Widget> cells, {
+    bool head = false,
+    bool foot = false,
+    List<double>? larguras,
+    ScrollController? rolagem,
+    required Color fundo,
+  }) {
+    final c = SsColors.of(context);
+    Widget celula(int i, {bool fantasma = false}) {
+      final filho = i < cells.length ? cells[i] : const SizedBox();
+      final w = larguras?[i];
+      final cel = _celula(context, columns[i], filho, head: head, foot: foot, width: w);
+      return fantasma
+          ? Visibility(visible: false, maintainSize: true, maintainAnimation: true, maintainState: true, child: cel)
+          : cel;
+    }
+
+    final linha = Row(
+      children: [for (var i = 0; i < columns.length; i++) celula(i, fantasma: larguras != null && i == 0)],
+    );
+    if (larguras == null || columns.isEmpty) return linha;
+    final primeira = _conteudo(
+      context,
+      columns[0],
+      cells.isEmpty ? const SizedBox() : cells[0],
+      head: head,
+      foot: foot,
+    );
+    return Stack(
+      children: [
+        linha,
+        Positioned(
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: larguras[0],
+          child: AnimatedBuilder(
+            animation: rolagem!,
+            builder: (context, child) {
+              final dx = rolagem.hasClients ? rolagem.offset : 0.0;
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: fundo,
+                    border: dx > 0 ? Border(right: BorderSide(color: c.line)) : null,
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            child: primeira,
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _linhas(BuildContext context, {List<double>? larguras, ScrollController? rolagem}) {
+    final c = SsColors.of(context);
+    return [
+      Container(
+        color: c.field,
+        child: _linha(
+          context,
+          [for (var i = 0; i < columns.length; i++) _cabecalho(context, i)],
+          head: true,
+          larguras: larguras,
+          rolagem: rolagem,
+          fundo: c.field,
+        ),
+      ),
+      for (var r = 0; r < rows.length; r++)
+        SsInViewReveal(
+          index: r,
+          offset: 8,
+          child: Opacity(
+            opacity: rows[r].dimmed ? .5 : 1,
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: rows[r].onTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: c.line)),
+                  ),
+                  child: _linha(
+                    context,
+                    [
+                      for (var i = 0; i < columns.length; i++)
+                        Semantics(
+                          label: '${columns[i].label}: ',
+                          child: i < rows[r].cells.length ? rows[r].cells[i] : const SizedBox(),
+                        ),
+                    ],
+                    larguras: larguras,
+                    rolagem: rolagem,
+                    fundo: c.surface,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      if (footer != null)
+        Container(
+          decoration: BoxDecoration(
+            color: c.field,
+            border: Border(top: BorderSide(color: c.line)),
+          ),
+          child: _linha(context, footer!, foot: true, larguras: larguras, rolagem: rolagem, fundo: c.field),
+        ),
+    ];
   }
 
   Widget _tabela(BuildContext context) {
     final c = SsColors.of(context);
+    final corpo = LayoutBuilder(
+      builder: (context, box) {
+        if (stickyFirstColumn && box.hasBoundedWidth) {
+          final larguras = _larguras(box.maxWidth);
+          final total = larguras.fold<double>(0, (a, b) => a + b);
+          if (total > box.maxWidth + .5) return _RolagemFixa(tabela: this, larguras: larguras, total: total);
+        }
+        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: _linhas(context));
+      },
+    );
+    if (flat) return ClipRect(child: corpo);
     return Container(
       decoration: BoxDecoration(
         color: c.surface,
@@ -152,49 +340,7 @@ class SsDataTable extends StatelessWidget {
         border: c.isDark ? Border.all(color: c.line) : null,
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            color: c.field,
-            child: Row(
-              children: [
-                for (var i = 0; i < columns.length; i++)
-                  _celula(context, columns[i], _cabecalho(context, i), head: true),
-              ],
-            ),
-          ),
-          for (var r = 0; r < rows.length; r++)
-            SsInViewReveal(
-              index: r,
-              offset: 8,
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: rows[r].onTap,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(top: BorderSide(color: c.line)),
-                    ),
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < columns.length; i++)
-                          _celula(
-                            context,
-                            columns[i],
-                            Semantics(
-                              label: '${columns[i].label}: ',
-                              child: i < rows[r].cells.length ? rows[r].cells[i] : const SizedBox(),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+      child: corpo,
     );
   }
 
@@ -202,7 +348,9 @@ class SsDataTable extends StatelessWidget {
     final c = SsColors.of(context);
     final col = columns[i];
     final ativa = sortColumn == i;
-    final texto = Text(col.label.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis);
+    final Widget texto = col.header != null
+        ? Semantics(label: col.label, excludeSemantics: true, child: col.header)
+        : Text(col.label.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis);
     if (col.onSort == null) return Semantics(header: true, child: texto);
     return Semantics(
       header: true,
@@ -294,72 +442,125 @@ class SsDataTable extends StatelessWidget {
             offset: 10,
             child: Padding(
               padding: EdgeInsets.only(bottom: d.space(10)),
-              child: Material(
-                color: c.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(d.radiusCard - 2),
-                  side: BorderSide(color: c.line),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: rows[r].onTap,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (titleColumn < rows[r].cells.length)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: d.space(4)),
-                            child: DefaultTextStyle.merge(
-                              style: TextStyle(
-                                fontSize: d.font(AppType.body),
-                                fontWeight: FontWeight.w800,
-                                color: c.ink,
-                              ),
-                              child: rows[r].cells[titleColumn],
-                            ),
-                          ),
-                        for (var i = 0; i < columns.length; i++)
-                          if (i != titleColumn && i < rows[r].cells.length)
+              child: _apaga(
+                rows[r].dimmed,
+                Material(
+                  color: c.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(d.radiusCard - 2),
+                    side: BorderSide(color: c.line),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: rows[r].onTap,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (titleColumn < rows[r].cells.length)
                             Padding(
-                              padding: EdgeInsets.symmetric(vertical: d.space(4)),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    columns[i].label.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: d.font(AppType.label),
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: .6,
-                                      color: c.muted,
-                                    ),
-                                  ),
-                                  SizedBox(width: d.gap),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: DefaultTextStyle.merge(
-                                        textAlign: TextAlign.right,
-                                        style: columns[i].numeric
-                                            ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
-                                            : TextStyle(fontSize: d.font(AppType.set), color: c.ink),
-                                        child: rows[r].cells[i],
+                              padding: EdgeInsets.only(bottom: d.space(4)),
+                              child: DefaultTextStyle.merge(
+                                style: TextStyle(
+                                  fontSize: d.font(AppType.body),
+                                  fontWeight: FontWeight.w800,
+                                  color: c.ink,
+                                ),
+                                child: rows[r].cells[titleColumn],
+                              ),
+                            ),
+                          for (var i = 0; i < columns.length; i++)
+                            if (i != titleColumn && i < rows[r].cells.length)
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: d.space(4)),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      columns[i].label.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: d.font(AppType.label),
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: .6,
+                                        color: c.muted,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(width: d.gap),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: DefaultTextStyle.merge(
+                                          textAlign: TextAlign.right,
+                                          style: columns[i].numeric
+                                              ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
+                                              : TextStyle(fontSize: d.font(AppType.set), color: c.ink),
+                                          child: rows[r].cells[i],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
+        if (footer != null) _totalCartao(context),
       ],
+    );
+  }
+
+  static Widget _apaga(bool dimmed, Widget child) => dimmed ? Opacity(opacity: .5, child: child) : child;
+
+  /// O total no celular: um bloco no fundo do campo, "RÓTULO  valor" por coluna.
+  Widget _totalCartao(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV),
+      decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(d.radiusCard - 2)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < columns.length && i < footer!.length; i++)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: d.space(4)),
+              child: Row(
+                children: [
+                  if (i != titleColumn)
+                    Text(
+                      columns[i].label.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: d.font(AppType.label),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .6,
+                        color: c.muted,
+                      ),
+                    ),
+                  SizedBox(width: d.gap),
+                  Expanded(
+                    child: Align(
+                      alignment: i == titleColumn ? Alignment.centerLeft : Alignment.centerRight,
+                      child: DefaultTextStyle.merge(
+                        style:
+                            (columns[i].numeric
+                                    ? AppTheme.number(context, size: d.font(AppType.set), color: c.ink)
+                                    : TextStyle(fontSize: d.font(AppType.set), color: c.ink))
+                                .copyWith(fontWeight: FontWeight.w800),
+                        child: footer![i],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -433,4 +634,42 @@ class _Seta extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A tabela larga que rola de lado com a 1ª coluna parada.
+class _RolagemFixa extends StatefulWidget {
+  const _RolagemFixa({required this.tabela, required this.larguras, required this.total});
+
+  final SsDataTable tabela;
+  final List<double> larguras;
+  final double total;
+
+  @override
+  State<_RolagemFixa> createState() => _RolagemFixaState();
+}
+
+class _RolagemFixaState extends State<_RolagemFixa> {
+  final _rolagem = ScrollController();
+
+  @override
+  void dispose() {
+    _rolagem.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scrollbar(
+    controller: _rolagem,
+    child: SingleChildScrollView(
+      controller: _rolagem,
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: widget.total,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: widget.tabela._linhas(context, larguras: widget.larguras, rolagem: _rolagem),
+        ),
+      ),
+    ),
+  );
 }

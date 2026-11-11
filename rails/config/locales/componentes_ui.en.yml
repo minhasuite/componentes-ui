@@ -20,6 +20,7 @@ en:
       sources: Where this comes from
       thinking: Analyzing your data…
     app_shell:
+      external: '(opens in a new tab)'
       badge:
         one: "%{count} new"
         other: "%{count} new"
@@ -132,6 +133,7 @@ en:
       volume_down: Volume down
       volume_up: Volume up
     data_table:
+      total: Total
       actions: Actions
       bulk_actions: Bulk actions
       choose_columns: Choose columns
@@ -618,3 +620,14 @@ en:
       label: Quick actions
     photo_card:
       source: Open the photo page
+    node_canvas:
+      label: Flow editor
+    repeater:
+      add: Add
+      remove: Remove row
+      added: Row added
+      removed: Row removed
+    terms_notice:
+      text: 'By continuing, you agree to the %{terms} and the %{privacy}.'
+      terms: Terms of Use
+      privacy: Privacy Policy

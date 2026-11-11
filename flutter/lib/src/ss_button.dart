@@ -25,6 +25,9 @@ enum SsButtonVariant { primary, ghost, success, danger }
 /// botão sobre o gradiente da marca ([SsHeroCard], [SsAuroraCard]):
 /// translúcido com fio claro (o `.ss-btn.is-on-grad` do web) ou, com
 /// `solid: true`, branco com o texto na cor funda da marca (`is-solid`).
+///
+/// v0.20: `tone:` no ghost ([SsButton.ghost]) pinta o texto no tom
+/// ([SsTone.danger] no "Excluir" discreto); nas outras variantes não muda nada.
 class SsButton extends StatelessWidget {
   const SsButton({
     super.key,
@@ -37,9 +40,35 @@ class SsButton extends StatelessWidget {
     this.expand = true,
     this.trailingIcon,
     this.stacked = false,
+    SsTone? tone,
   }) : _text = false,
        _danger = false,
-       _tone = null,
+       // ignore: prefer_initializing_formals
+       _tone = tone,
+       _onDark = false,
+       _onGradient = false,
+       _solid = false;
+
+  /// v0.20: botão discreto (fundo de campo, sem sombra) com o texto no tom:
+  /// `SsButton.ghost(label: 'Excluir', icon: Icons.delete_outline, tone: SsTone.danger, onPressed: ...)`.
+  /// Igual a `SsButton(variant: SsButtonVariant.ghost, tone: ...)`. Par do
+  /// `Ss::ButtonComponent(variant: :ghost, tone: :danger)`.
+  const SsButton.ghost({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.small = false,
+    this.loading = false,
+    this.expand = true,
+    this.trailingIcon,
+    this.stacked = false,
+    SsTone? tone,
+  }) : variant = SsButtonVariant.ghost,
+       _text = false,
+       _danger = false,
+       // ignore: prefer_initializing_formals
+       _tone = tone,
        _onDark = false,
        _onGradient = false,
        _solid = false;
@@ -131,7 +160,8 @@ class SsButton extends StatelessWidget {
         shadow = enabled ? c.primaryShadow : null;
       case SsButtonVariant.ghost:
         bg = c.field;
-        fg = c.ink2;
+        // v0.20: tone: pinta o texto do ghost (ex. Excluir em vermelho).
+        fg = _tone?.colors(context).text ?? c.ink2;
       case SsButtonVariant.success:
         bg = AppColors.success;
         fg = AppColors.onDark;

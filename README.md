@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.19.2
+      ref: v0.20.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.2"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.0"
 ```
 
 ```css
@@ -610,6 +610,83 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.20.0: tabela com coluna parada, linha-link e total, máscara, rádio, rótulo escondido, barra com resumo, linhas repetíveis, ação ao lado da busca, palco de nós, termos e o que mais o minhas-vendas e o meu-gestor pediram
+
+O que o minhas-vendas (web e app) e o meu-gestor (web e app) acharam ao migrar para 100% de componentização. Tudo
+aditivo (parâmetro novo opcional; a API não quebra). Catálogo: `flutter/test/catalogo_v20.dart` (`ss-radio-group`,
+`ss-sticky-action-bar`, `ss-repeater`, `ss-link-text`, `ss-terms-notice`, `ss-editable-value` novos; estados `mascara`
+no `ss-text-field`, `ghost-perigo` no `ss-button`, `tons` no `ss-list-item`, `tom` no `ss-kpi-card`, `total` e
+`coluna-parada` no `ss-data-table`, `acao` no `ss-picker`, `contagem` no `ss-nav-bar`) e `rails/catalogo/index.html`
+(seções de `rails/sample/script/catalogo_v020.rb`: `ss-data-table-v20`, `ss-form-v20`, `ss-button-v20`, `ss-list-item`,
+`ss-kpi-tone-v20`, `ss-sticky-bar-v20`, `ss-repeater`, `ss-search-action-v20`, `ss-link-v20`, `ss-editable-value`,
+`ss-node-canvas`); vitrine Rails "Vendas e gestor (v0.20)" (grupo Tela); testes em `flutter/test/v20_test.dart` e
+`rails/sample/test/components/v20_web_test.rb`. CSS em `v20_web.css`; Stimulus novos `ss-mask` e `ss-repeater`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Rótulo só para o leitor de tela | `SsTextField(hideLabel: true)`, `SsRadioGroup(hideLabel:)` | `hide_label: true` em todo `f.ss_*` (texto, select, rádio, caixa) → `.ss-sr` | rótulo apagado com CSS do produto, `<label class="sr-only">` à mão |
+| Máscara brasileira | `SsTextField(mask: SsMask.document \| SsMask.phone \| SsMask.cep)`; `SsMask` é um `TextInputFormatter` com `format`/`unmask`/`maxLength`/`keyboardType` | `f.ss_text_field(mask: :document \| :phone \| :cep)` (também no `ss_telephone_field`) + Stimulus `ss-mask` (`inputmode`, `autocomplete`, `maxlength`) | máscara JS do produto, `mask_controller.js`, formatador próprio no app |
+| Rádio marcado sem model | `SsRadioGroup<T>(label:, value:, options: {valor: texto}, onChanged:, inline: true, validator:, helperText:)` (novo; `Radio` é reprovado no verificador) | `f.ss_radio_buttons(:tipo, opções, checked: "pj")` | `radio_button_tag` à mão, `Radio`/`RadioListTile` |
+| Caixa com id próprio | — | `f.ss_check_box(:ativo, id: "ativo-3")`: o `for=` do rótulo agora usa o `id:` (antes ia no `field_id`, **correção**) | rótulo que não marcava a caixa |
+| Botão discreto de perigo | `SsButton.ghost(label:, tone: SsTone.danger)` ou `SsButton(variant: SsButtonVariant.ghost, tone:)` | `Ss::ButtonComponent(variant: :ghost, tone: :danger)` (e `:outline`) → `.ss-btn-ghost.is-danger` (o `is-danger` já saía; faltava o CSS) | ghost com cor do produto |
+| Lista de arrastar fora do kanban | `SsReorderableList` (já existia, v0.10.2) | `Ss::SortableListComponent` + `ss-sortable` (já existia; `.ss-sortable-item.is-dragging`) | — (já cobre; ver "O que já existia") |
+| Linha apagada | `SsListItem(dimmed:)` (já existia) e `SsDataRow(dimmed: true)` (novo) | `.is-dimmed` no `.ss-item`, `tr` da `.ss-table`, `.ss-sortable-item`, `.ss-kanban-card`, `.ss-row`; `Ss::ListItemComponent(dimmed:)`; na tabela, `row_attrs: ->(r) { { class: ("is-dimmed" if r.inativo?) } }` | `opacity-50` do Tailwind solto |
+| Item de lista | `SsListItem` (já existia) + `subtitleTone:`, `valueTone:` (`SsTone`) | `Ss::ListItemComponent(title:, subtitle:, subtitle_tone:, value:, value_caption:, value_tone:, icon:, tone:, href:, dimmed:, money:)` (novo; o `.ss-item` como componente) + bloco no fim · `.ss-item-sub[data-tone]`, `.ss-item-value[data-tone]` | `.ss-item` montado à mão, `text-danger` no subtítulo |
+| Valor do indicador em tom | `SsKpiCard(valueTone: SsTone.danger)` | `Ss::KpiCardComponent(value_tone: :danger \| :success \| :warning \| :accent)` → `.ss-kpi-card-value[data-tone]` | `valueColor` à mão, classe de cor no valor |
+| Sobrelinha no cabeçalho do card | `SsCardHeader(eyebrow:, eyebrowTone:)` | `Ss::CardHeaderComponent(eyebrow:, eyebrow_tone:)` → `.ss-card-eyebrow` | `Text(kind.toUpperCase(), style: ...)` em cima do título |
+| Barra fixa com resumo | `SsStickyActionBar(summary: Widget, message:, actions: [...], visible:)` (novo; fio no topo, superfície, área segura, densidade, desce e some com `visible: false`) | `Ss::StickyActionBarComponent` + slot `with_summary { … }` (no lugar da mensagem, região viva) · `.ss-sticky-bar-summary` | barra de baixo montada com `Container`, `.ss-sticky-bar-msg` com HTML |
+| Tabela: 1ª coluna parada | `SsDataTable(stickyFirstColumn: true, minColumnWidth: 120)` (rola de lado só quando as colunas não cabem) | `t.column(:cliente, "Cliente", sticky: true)` (só a 1ª coluna de dados) → `th/td.is-sticky` | `position: sticky` no CSS do produto |
+| Tabela: cabeçalho com HTML | `SsDataColumn(label, header: Widget)` (o `label` segue no leitor e nos cartões) | `t.column(..., header: "<b>…</b>".html_safe)` (o `label` segue no celular e na escolha de colunas) | `<th>` à mão |
+| Tabela: linha clicável | `SsDataRow(cells, onTap:)` (já existia) | `Ss::DataTableComponent(row_href: ->(row) { pedido_path(row) })` → `tr.is-link[data-href][tabindex=0]` + `ss-table#go` (clique fora de `a`, `button`, campo, `summary`, `details`, `label`, `[role=button]`, `[data-ss-table-no-link]` e sem texto selecionado; Enter com o foco na linha; Ctrl/⌘ ou o botão do meio abrem em outra aba; Turbo quando houver) | `onclick` na `<tr>`, controller `row_link` do produto |
+| Tabela: total | `SsDataTable(footer: [Text('Total'), Text('R\$ 15,00'), ...])` (uma célula por coluna; no celular, bloco no fim) | `t.total(:valor, ss_amount(...))` ou `t.total(:valor) { \|rows\| ... }` (a 1ª coluna sem total recebe "Total"; `t.total(:cliente, "Geral")` troca) e `t.footer { \|rows\| ... }` (célula única) → `<tfoot>` | `<tfoot>` à mão abaixo da tabela, linha de total como linha de dado |
+| Tabela sem card | `SsDataTable(flat: true)` | `Ss::DataTableComponent(flat: true)` → `.ss-dt.is-flat` (sem `.ss-card` no rolo) | card dentro de card |
+| Ação ao lado da busca | `showSsPicker(actions: [SsPickerAction(icon:, tooltip:, onPressed: (ctx) => ...)])`: devolve um item para fechar com ele, ou nulo para continuar aberto | `Ss::CommandPaletteComponent` e `Ss::ComboboxComponent` com `with_action { … }` (vários) → `.ss-command-bar`/`.ss-command-actions`, `.ss-combobox-row`/`.ss-combobox-actions`; `data-action="ss-command#close"` fecha a paleta | ícone de leitor posicionado à mão sobre a busca |
+| Linhas repetíveis | `SsRepeater(itemCount:, itemBuilder:, onAdd:, onRemove:, minItems:, addLabel:, removeLabel:)` | `Ss::RepeaterComponent(add_label:, remove_label:, min:, placeholder: "NEW_RECORD", label:)` com `r.row { … }` e `r.with_template { … }` + Stimulus `ss-repeater` (clona o `<template>` trocando o marcador; linha salva ganha `_destroy=1` e some; eventos `ss-repeater:add/remove`) | `nested_form_controller.js`, lista + botão montados no app |
+| Valor fora do "esconder valores" | `SsPrivacyScope(hidden: false, child: ...)` (já funcionava: o escopo mais perto vale) | `data-ss-privacy="off"` num contêiner: nada lá dentro borra | `filter: none` no CSS do produto |
+| Item externo no menu | — | `AppShellComponent` item `{ label:, href:, external: true }` → `target=_blank rel=noopener`, ícone de saída (`.ss-shell-ext`) e "(abre em outra aba)" para o leitor | link externo à mão fora da moldura |
+| Contagem na aba de baixo | `SsNavItem(icon, label, badge: 3)` (0 some, > 99 vira "99+"; lido "Cards: 3 novas, aba 2 de 4") | `badge:` do item do `AppShellComponent` (já existia) | `Badge` do Material em volta do ícone |
+| Link no meio do texto | `SsLinkText(['Li os ', SsTextLink('termos', onTap: ..., external: true), '.'])` (os reconhecedores são do widget) | `Ss::TextLinkComponent(label:, href:, external:)` → `a.ss-link` | `WidgetSpan` + `SsPressable`, `<a>` com classe de cor |
+| Aviso de termos | `SsTermsNotice(termsUrl:, privacyUrl:, onOpen: (url) => ..., text:)` | `Ss::TermsNoticeComponent(terms_url:, privacy_url:, text:, align:)` → `.ss-terms-notice` | a frase "Ao criar a conta você concorda…" montada no login |
+| Valor editável ao toque | `SsEditableValue(label:, value:, onEdit:, mono: true, editLabel:, alignment:)` | `Ss::EditableValueComponent(label:, value:, href:, mono:, edit_label:, align:)` (sem `href`, `<button>` com o `data-action` do app) → `.ss-editable-value` | `InkWell` com rótulo/valor/"editar" no app |
+| Editor de nós (fluxograma) | — (só web; o app do gestor não edita fluxo) | `Ss::NodeCanvasComponent(label:, height:, grid: true, readonly:, node_delete: true, sketch:)` + bloco por cima · `.ss-node-canvas` (pele do Drawflow: grade, `.drawflow-node`, portas, `.is-branch`/`.is-condition` com saída 1 verde e 2 vermelha, `.connection.is-yes/.is-no`, `.ss-node-label`, `.drawflow-delete`, `.selected`, `.is-changed`, `.is-refused`/`.is-flash`, `.is-sketch`) e `.ss-node` (caixa padrão do bloco) | o CSS do Drawflow no `application.css` do meu-gestor |
+| Entrar com o Google (GIS) | `SsGoogleButton` (já cobre) | `Ss::GoogleButtonComponent(mode: :gis, client_id:, login_uri: \| callback:, theme:, text:, width:, locale:, one_tap:, script:)` → `g_id_onload` + `g_id_signin` com os `data-*` do Google, pílula centrada (`.ss-google-gis`) | `<div id="g_id_onload">` à mão |
+
+**Palco de nós no meu-gestor.** O CSS das linhas ~9–34 do `application.css` sai inteiro. No markup:
+`render(Ss::NodeCanvasComponent.new(label: "Desenho do fluxo", sketch: true, node_delete: false, data: { canvas_target: "stage" }))`
+(o palco já nasce com `parent-drawflow` na frente; o `canvas_controller.js` pode parar de prefixar a classe). Troque
+`is-condition` por `is-branch` quando quiser (os dois valem), `[data-node]` não precisa de classe (os estados valem para o
+filho do `.drawflow_content_node`), o rótulo da seta vira `<text class="ss-node-label">` no lugar das utilidades
+`fill-muted stroke-surface …`, e `mg-glow`/`mg-shake` viram os `ss-node-glow`/`ss-node-shake` da gem (`.is-changed`,
+`.is-refused`, `.is-flash` iguais).
+
+**Máscara.** CPF `000.000.000-00` até 11 caracteres; com 12 ou mais, ou com letra, CNPJ `00.000.000/0000-00` (o CNPJ
+alfanumérico entra: letras em maiúscula nas 12 primeiras posições, dígitos nas 2 últimas). Telefone `(00) 0000-0000`
+e, com 11 dígitos, `(00) 00000-0000`. CEP `00000-000`. O valor vai formatado; tire a pontuação no servidor (ou
+`SsMask.document.unmask(texto)` no app). O teclado é numérico; para digitar letra do CNPJ alfanumérico no celular passe
+`keyboardType: TextInputType.text` (app) ou `inputmode: "text"` (web).
+
+**O que já existia (use assim).**
+
+- Lista de arrastar fora do kanban: `Ss::SortableListComponent.new(url:, label:) { |l| l.with_item(id:, title:) { … } }`
+  com o Stimulus `ss-sortable` (alça, ↑/↓, `.is-dragging`, PATCH `{ ids: [...] }`) ↔ `SsReorderableList` (v0.10.2).
+- Linha clicável no app: `SsDataRow(cells, onTap: () => ...)`.
+- Linha apagada no app: `SsListItem(dimmed: true)`.
+- Privacidade desligada num trecho do app: `SsPrivacyScope(hidden: false, child: ...)` dentro do escopo do app.
+- Contagem no menu do web: `badge:` do item do `Ss::AppShellComponent`.
+- Login Google no app: `SsGoogleButton`.
+
+**O que ficou de fora.** `SsNodeCanvas` no Flutter: o app do meu-gestor não tem editor de fluxo (só o web desenha);
+nasce quando um app precisar. `Ss::NavBarComponent` no web: a navegação de baixo do web é a do `AppShellComponent`
+(que já tem `badge:`). Coluna parada além da 1ª (ou com `selectable:`/expansão na frente): a caixa e a seta rolam.
+
+**Textos novos (pt, en, es):** Flutter `SsStrings.addRow`, `removeRow`, `editValue`, `termsNotice`, `termsOfUse`,
+`privacyPolicy`, `opensExternal`; Rails `componentes_ui.app_shell.external`, `data_table.total`, `node_canvas.label`,
+`repeater.add/remove/added/removed`, `terms_notice.text/terms/privacy`.
+
+**Padrões que mudaram.** Nenhum desenho existente mudou. Correção: `f.ss_check_box(id:)` passa a ligar o rótulo ao
+`id:` dado (antes o `for=` apontava para o id padrão e o clique no texto não marcava a caixa). O `ss-command` ganhou a
+ação `close`. `Ss::GoogleButtonComponent` aceita `href:` nulo só com `mode: :gis` (sem `href:` no modo padrão, avisa).
+
 ## v0.19.2: herói com conteúdo livre, botão sobre o gradiente, faixa e contorno no card, monograma, foto escolhida, selo sólido, passos, ponto, recado, palco e indicador de página
 
 As últimas caixas genéricas que o minhas-compras-app e o minhas-viagens-app ainda desenhavam à mão (o verificador
@@ -1132,6 +1209,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.20.0` (10/11/2026): seção "v0.20.0" (o que o minhas-vendas e o meu-gestor pediram para chegar a 100%). `f.ss_*(hide_label:)` ↔ `SsTextField(hideLabel:)`, `f.ss_text_field(mask: :document/:phone/:cep)` + `ss-mask` ↔ `SsMask`, `f.ss_radio_buttons(checked:)` ↔ `SsRadioGroup` (novo), `ButtonComponent(variant: :ghost, tone: :danger)` ↔ `SsButton.ghost(tone:)`, `.is-dimmed` ↔ `SsDataRow(dimmed:)`, `Ss::ListItemComponent(subtitle_tone:, value_tone:)` (novo) ↔ `SsListItem(subtitleTone:, valueTone:)`, `KpiCardComponent(value_tone:)` ↔ `SsKpiCard(valueTone:)`, `CardHeaderComponent(eyebrow:)` ↔ `SsCardHeader(eyebrow:)`, `StickyActionBarComponent#with_summary` ↔ `SsStickyActionBar` (novo), `DataTableComponent(row_href:, flat:)` + `t.column(sticky:, header:)` + `t.total`/`t.footer` ↔ `SsDataTable(stickyFirstColumn:, footer:, flat:)` + `SsDataColumn(header:)`, `with_action` na paleta e no combobox ↔ `showSsPicker(actions:)`/`SsPickerAction`, `Ss::RepeaterComponent` + `ss-repeater` ↔ `SsRepeater`, `data-ss-privacy="off"`, item `external:` no `AppShellComponent`, `SsNavItem(badge:)`, `Ss::TextLinkComponent` ↔ `SsLinkText`/`SsTextLink`, `Ss::TermsNoticeComponent` ↔ `SsTermsNotice`, `Ss::EditableValueComponent` ↔ `SsEditableValue`, `Ss::NodeCanvasComponent` + `.ss-node-canvas` (pele do Drawflow, só web) e `GoogleButtonComponent(mode: :gis)`. Correção do `for=` do `f.ss_check_box(id:)`. Nada quebra.
 - `v0.19.2` (10/11/2026): seção "v0.19.2" (as últimas caixas genéricas do minhas-compras-app e do minhas-viagens-app). `SsHeroCard.custom`, `SsButton.onGradient(solid:, stacked:)` + `SsButton(stacked:)` ↔ `ButtonComponent(solid:, stacked:)`, `SsCard(stripe:, outline:)` ↔ `.ss-card.has-stripe/.has-outline`, `SsMonogram` ↔ `ss_monogram`, `SsPhotoCard(subtitle:, credit:, onCredit:, selected:, expand:)` ↔ `PhotoCardComponent(subtitle:, credit:, credit_url:, selected:)`, `SsBadge(solid:, mono:)` ↔ `.ss-badge.is-solid/.is-mono`, `SsProseList(ordered:, start:)` ↔ `ol.ss-steps`, `SsDot` ↔ `.ss-dot`, `SsIconBubble(badge:, badgeLabel:)`, `SsQuote` ↔ `.ss-quote`, `SsIllustrationStage`, `SsPageDots`, `SsGlass(tone: SsGlassTone.dark)` ↔ `.ss-glass.is-dark`, `SsSourceChip(trailing:, semanticLabel:)`, texto `photoSource`. Nada quebra.
 - `v0.19.1` (10/11/2026): seção "v0.19.1" (o que destrava o minhas-compras-app e o minhas-viagens-app no `conferirConformidade`). `SsTabsView` (conteúdo das abas), `SsTabsUnderline(stacked:)` + `stackedHeight`, `SsTooltip`, `SsDivider.vertical`/`SsDivider(vertical:)` ↔ `.ss-divider.is-vertical`, `SsMenuAction(leading:)`, `SsOverflowMenu(child:)`, `showSsFullscreen`/`SsFullscreenPage`, `AppColors.transparent`, `AppType.solid`/`tight`/`snug`/`trackingTight`/`trackingTitle`, `ssColorFromHex`/`ssTryColorFromHex`/`ssColorFromRgb` (cor que é dado), `ssIconTextStyle`/`ssPaintIcon`, texto `tapToClose`. Verificador: card à mão (Flutter e Rails) e chamada com tipo (`showDialog<void>(`). Nada quebra.
 - `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra. Conformidade: `ComponentesUi::Conformidade.verificar` e `conferirConformidade` (teste "100% componentes-ui" dos produtos, sem exceções). Lado Flutter: `showSsImageViewer`/`SsImageViewer`, `SsCollapsible(subtitle:)`, `AppType.leading`/`trackingCaps`/`trackingWide`, textos `image`/`zoomHint`. Nada quebra.

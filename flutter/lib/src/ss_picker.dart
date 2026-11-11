@@ -9,6 +9,7 @@ import 'ss_error_view.dart';
 import 'ss_list.dart';
 import 'ss_sheet.dart';
 import 'ss_strings.dart';
+import 'v10/tela_barra.dart' show SsIconButton;
 
 const _com = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
 const _sem = 'aaaaaeeeeiiiiooooouuuucn';
@@ -35,6 +36,12 @@ String foldAccents(String s) {
 /// próprio texto, para `showSsPicker<String>`). [noneLabel] ("Sem loja") põe
 /// no topo, com a busca vazia, a linha que devolve `customOf('')`.
 ///
+/// v0.20: [actions] põe botões de ícone ao lado da busca (leitor de código de
+/// barras, "novo cliente"). O `onPressed` da ação recebe o contexto da folha e
+/// devolve um item para fechar o picker com ele (o código lido virou produto)
+/// ou nulo para deixar aberto (só disparou algo):
+/// `actions: [SsPickerAction(icon: Icons.qr_code_scanner, tooltip: 'Ler código', onPressed: (ctx) => lerProduto(ctx))]`.
+///
 /// ```dart
 /// final loja = await showSsPicker<String>(context, title: 'Onde comprou?',
 ///   load: (q) async => (await repo.stores(q)).map((s) => s.label).toList(),
@@ -54,6 +61,7 @@ Future<T?> showSsPicker<T>(
   T Function(String text)? customOf,
   String Function(String text)? customLabel,
   String? noneLabel,
+  List<SsPickerAction<T>> actions = const [],
 }) => showModalBottomSheet<T>(
   context: context,
   isScrollControlled: true,
@@ -74,6 +82,7 @@ Future<T?> showSsPicker<T>(
     customOf: customOf,
     customLabel: customLabel,
     noneLabel: noneLabel,
+    actions: actions,
     onSelect: (v) => Navigator.pop(context, v),
   ),
 );
@@ -96,7 +105,11 @@ class SsPickerSheet<T> extends StatefulWidget {
     this.customOf,
     this.customLabel,
     this.noneLabel,
+    this.actions = const [],
   }) : assert(load != null || items != null, 'Passe load ou items');
+
+  /// v0.20: botões ao lado da busca (ver [showSsPicker]).
+  final List<SsPickerAction<T>> actions;
 
   /// v0.16: usar o texto digitado (ver [showSsPicker]).
   final bool allowCustom;
@@ -280,12 +293,29 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
             Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 12), child: SsSheetHeader(widget.title)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SsSearchField(
-                controller: _ctrl,
-                hint: widget.hint ?? SsStrings.of(context).search,
-                onChanged: _onQuery,
-                onSubmitted: widget.allowCustom ? (_) => _usarTexto() : null,
-                autofocus: widget.load != null || widget.allowCustom,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SsSearchField(
+                      controller: _ctrl,
+                      hint: widget.hint ?? SsStrings.of(context).search,
+                      onChanged: _onQuery,
+                      onSubmitted: widget.allowCustom ? (_) => _usarTexto() : null,
+                      autofocus: widget.load != null || widget.allowCustom,
+                    ),
+                  ),
+                  for (final a in widget.actions) ...[
+                    const SizedBox(width: 4),
+                    SsIconButton(
+                      icon: a.icon,
+                      tooltip: a.tooltip,
+                      onPressed: () async {
+                        final r = await a.onPressed(context);
+                        if (r != null && mounted) widget.onSelect(r);
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
             SizedBox(height: 2, child: _loading && _result.isNotEmpty ? const LinearProgressIndicator() : null),
@@ -296,4 +326,17 @@ class _SsPickerSheetState<T> extends State<SsPickerSheet<T>> {
       ),
     );
   }
+}
+
+/// v0.20: botão ao lado da busca do [showSsPicker]. [onPressed] devolve um
+/// item para fechar o picker com ele, ou nulo para continuar aberto.
+@immutable
+class SsPickerAction<T> {
+  const SsPickerAction({required this.icon, required this.tooltip, required this.onPressed});
+
+  final IconData icon;
+
+  /// Nome do botão (dica e leitor de tela): "Ler código de barras".
+  final String tooltip;
+  final FutureOr<T?> Function(BuildContext context) onPressed;
 }

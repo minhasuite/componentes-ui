@@ -19,6 +19,10 @@ module ComponentesUi
   # - v0.13: wrapper_class: em todo f.ss_* vai no .ss-field (coluna de grade sem <div> a mais);
   #   ss_select(selected:) sem model; ss_submit(variant: :outline/:ghost/:danger); f.ss_fieldset
   #   agrupa campos com legenda e uma ajuda do grupo.
+  # - v0.20: hide_label: true em todo f.ss_* (o rótulo fica só para o leitor de tela, .ss-sr; par do
+  #   SsTextField(hideLabel:)); mask: :document (CPF/CNPJ), :phone ou :cep no f.ss_text_field/ss_telephone_field
+  #   (Stimulus ss-mask; par do SsMask); f.ss_radio_buttons(checked:) marca a opção sem model (par do
+  #   SsRadioGroup(value:)); o id: passado ao f.ss_check_box vale no for= do rótulo.
   class FormBuilder < ActionView::Helpers::FormBuilder
     TEXT_KINDS = %i[text_field email_field number_field password_field telephone_field url_field search_field date_field
                     datetime_local_field time_field month_field text_area file_field color_field].freeze
@@ -43,25 +47,33 @@ module ComponentesUi
     end
 
     # Caixa de marcar com o texto ao lado (.ss-check).
-    def ss_check_box(method, label: nil, help: nil, checked_value: "1", unchecked_value: "0", wrapper_class: nil, **opts)
+    def ss_check_box(method, label: nil, help: nil, checked_value: "1", unchecked_value: "0", wrapper_class: nil, hide_label: false, **opts)
       ss_no_wrap do
         errs = ss_errors(method)
         box = check_box(method, opts.merge(ss_aria(method, errs, help)), checked_value, unchecked_value)
-        lbl = @template.tag.label(class: "ss-check", for: field_id(method)) { @template.safe_join([box, " ", label || ss_human(method), ss_req(method)]) }
+        text = label || ss_human(method)
+        text = @template.tag.span(text, class: "ss-sr") if hide_label
+        lbl = @template.tag.label(class: "ss-check", for: opts[:id] || field_id(method)) { @template.safe_join([box, " ", text, ss_req(method)]) }
         ss_wrap(method, errs, help, [lbl], wrapper_class:)
       end
     end
 
     # Grupo de opções (radio) num fieldset: f.ss_radio_buttons :tipo, [["Pessoa física", "pf"], ["Empresa", "pj"]], label:
-    def ss_radio_buttons(method, choices, label: nil, help: nil, inline: true, wrapper_class: nil, **opts)
+    # checked: (v0.20) o valor marcado quando não há model (ou para sobrepor o dele); hide_label: a legenda só
+    # para o leitor de tela.
+    NO_CHECKED = Object.new.freeze
+
+    def ss_radio_buttons(method, choices, label: nil, help: nil, inline: true, wrapper_class: nil, checked: NO_CHECKED, hide_label: false, **opts)
       ss_no_wrap do
         errs = ss_errors(method)
         items = choices.map do |text, value|
           value = text if value.nil?
-          radio = radio_button(method, value, opts.merge(ss_aria(method, errs, help)))
+          ropts = opts.merge(ss_aria(method, errs, help))
+          ropts[:checked] = checked.to_s == value.to_s unless checked.equal?(NO_CHECKED)
+          radio = radio_button(method, value, ropts)
           @template.tag.label(class: "ss-check", for: field_id(method, value)) { @template.safe_join([radio, " ", text]) }
         end
-        legend = @template.tag.legend(class: "ss-label") { @template.safe_join([label || ss_human(method), ss_req(method)]) }
+        legend = @template.tag.legend(class: ["ss-label", ("ss-sr" if hide_label)]) { @template.safe_join([label || ss_human(method), ss_req(method)]) }
         body = @template.tag.div(class: ["ss-radio-row", ("is-stacked" unless inline)]) { @template.safe_join(items) }
         @template.tag.fieldset(class: ["ss-field", "ss-fieldset", ("is-invalid" if errs.any?), wrapper_class]) do
           @template.safe_join([legend, body, ss_help(method, help), ss_error(method, errs)].compact)
@@ -76,6 +88,9 @@ module ComponentesUi
 
     # Botão de enviar; o texto padrão é "Salvar" (componentes_ui.form.submit).
     # variant: :primary (padrão), :outline, :ghost ou :danger (v0.13); small: true = .ss-btn-sm.
+    # Máscaras do f.ss_text_field(mask:) → tamanho já formatado (v0.20).
+    MASKS = { "document" => 18, "phone" => 15, "cep" => 9 }.freeze
+
     SUBMIT_VARIANTS = { primary: "ss-btn-primary", outline: "ss-btn-outline", ghost: "ss-btn-ghost", danger: "ss-btn-danger" }.freeze
 
     def ss_submit(value = nil, css: nil, variant: :primary, small: false, **opts)
@@ -102,11 +117,24 @@ module ComponentesUi
       prefix = opts.delete(:prefix)
       suffix = opts.delete(:suffix)
       counter = opts.delete(:counter)
+      hide_label = opts.delete(:hide_label)
+      mask = opts.delete(:mask)
       ss_no_wrap do
         errs = ss_errors(method)
         io = opts.merge(ss_aria(method, errs, help))
         io[:class] = ["ss-input", io[:class]].compact.join(" ")
         io[:required] = true if !io.key?(:required) && ss_required?(method)
+        if mask
+          kind = mask.to_s
+          raise ArgumentError, "mask: #{kind} (use :document, :phone ou :cep)" unless MASKS.key?(kind)
+
+          io[:inputmode] ||= kind == "phone" ? "tel" : "numeric"
+          io[:autocomplete] ||= { "phone" => "tel", "cep" => "postal-code" }.fetch(kind, "off")
+          io[:maxlength] ||= MASKS[kind]
+          io[:data] = (io[:data] || {}).merge(ss_mask_kind_value: kind,
+                                              controller: [io.dig(:data, :controller), "ss-mask"].compact.join(" "),
+                                              action: [io.dig(:data, :action), "input->ss-mask#format"].compact.join(" "))
+        end
         if counter
           io[:maxlength] ||= counter
           io[:data] = (io[:data] || {}).merge(ss_counter_target: "input", action: [io.dig(:data, :action), "input->ss-counter#update"].compact.join(" "))
@@ -118,7 +146,7 @@ module ComponentesUi
                                  (@template.tag.span(suffix, class: "ss-affix-suf") if suffix)].compact)
           end
         end
-        lbl = @template.tag.label(for: io[:id] || field_id(method)) { @template.safe_join([label || ss_human(method), ss_req(method)]) }
+        lbl = @template.tag.label(for: io[:id] || field_id(method), class: ("ss-sr" if hide_label)) { @template.safe_join([label || ss_human(method), ss_req(method)]) }
         count = (@template.tag.small("0/#{counter}", class: "ss-counter num", data: { ss_counter_target: "output" }, "aria-live": "polite") if counter)
         ss_wrap(method, errs, help, [lbl, input, count].compact, counter:, wrapper_class:)
       end

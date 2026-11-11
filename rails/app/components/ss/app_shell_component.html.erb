@@ -28,8 +28,9 @@
         <% items = capture do %>
           <% Array(group[:items]).each do |it| %>
             <% if separator?(it) %><hr class="ss-shell-sep"><% next %><% end %>
-            <%= link_to it[:href], class: it[:class], "aria-current": (it[:current] ? "page" : nil), title: it[:label] do %>
-              <%= icon(it[:icon]) || tag.span(it[:label].to_s[0], class: "ss-shell-initial", "aria-hidden": "true") %><span class="ss-shell-label"><%= it[:label] %></span>
+            <%= link_to it[:href], class: [it[:class], ("is-external" if it[:external])].compact.join(" ").presence, "aria-current": (it[:current] ? "page" : nil), title: it[:label],
+                        target: (it[:external] ? "_blank" : nil), rel: (it[:external] ? "noopener" : nil) do %>
+              <%= icon(it[:icon]) || tag.span(it[:label].to_s[0], class: "ss-shell-initial", "aria-hidden": "true") %><span class="ss-shell-label"><%= it[:label] %><% if it[:external] %><%= ss_icon("external-link", size: :xs, css: "ss-shell-ext") %><span class="ss-sr"> <%= ss_t("app_shell.external", default: "(abre em outra aba)") %></span><% end %></span>
               <% if badge?(it[:badge]) %><span class="ss-nav-badge ss-shell-badge" aria-label="<%= badge_label(it[:badge]) %>"><%= it[:badge] %></span><% end %>
             <% end %>
           <% end %>

@@ -1,6 +1,10 @@
 <%= tag.div(**root_attrs(class: classes("ss-sticky-bar"), role: "region", "aria-label": ss_t("sticky_action_bar.region", default: "Ações do formulário"), "data-visible": (@always ? "" : nil),
       data: { controller: "ss-dirty", ss_dirty_message_value: @confirm }.compact)) do %>
-  <span class="ss-sticky-bar-msg" aria-live="polite"><%= @message %></span>
+  <% if summary? %>
+    <div class="ss-sticky-bar-summary" aria-live="polite"><%= summary %></div>
+  <% else %>
+    <span class="ss-sticky-bar-msg" aria-live="polite"><%= @message %></span>
+  <% end %>
   <div class="ss-sticky-bar-actions">
     <% if content? %>
       <%= content %>

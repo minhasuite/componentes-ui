@@ -393,6 +393,13 @@ class SsStrings {
     required this.zoomHint,
     required this.tapToClose,
     required this.photoSource,
+    required this.addRow,
+    required this.removeRow,
+    required this.editValue,
+    required this.termsNotice,
+    required this.termsOfUse,
+    required this.privacyPolicy,
+    required this.opensExternal,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -994,6 +1001,27 @@ class SsStrings {
   /// v0.19.2: dica do crédito tocável do [SsPhotoCard] (abre a página da foto).
   final String photoSource;
 
+  /// v0.20: botão de adicionar linha do [SsRepeater].
+  final String addRow;
+
+  /// v0.20: botão de tirar uma linha do [SsRepeater].
+  final String removeRow;
+
+  /// v0.20: dica do [SsEditableValue] ("editar").
+  final String editValue;
+
+  /// v0.20: frase do [SsTermsNotice]; {terms} e {privacy} viram os links.
+  final String termsNotice;
+
+  /// v0.20: link dos termos no [SsTermsNotice].
+  final String termsOfUse;
+
+  /// v0.20: link da privacidade no [SsTermsNotice].
+  final String privacyPolicy;
+
+  /// v0.20: dica de link que sai do app ([SsTextLink] com external).
+  final String opensExternal;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1393,6 +1421,13 @@ class SsStrings {
     zoomHint: 'Toque duas vezes ou use dois dedos para ampliar',
     tapToClose: 'Toque para fechar',
     photoSource: 'Abrir a página da foto',
+    addRow: 'Adicionar',
+    removeRow: 'Remover linha',
+    editValue: 'Editar',
+    termsNotice: 'Ao continuar, você concorda com os {terms} e a {privacy}.',
+    termsOfUse: 'Termos de uso',
+    privacyPolicy: 'Política de privacidade',
+    opensExternal: 'abre fora do app',
   );
 
   /// Inglês.
@@ -1780,6 +1815,13 @@ class SsStrings {
     zoomHint: 'Double-tap or pinch to zoom',
     tapToClose: 'Tap to close',
     photoSource: 'Open the photo page',
+    addRow: 'Add',
+    removeRow: 'Remove row',
+    editValue: 'Edit',
+    termsNotice: 'By continuing, you agree to the {terms} and the {privacy}.',
+    termsOfUse: 'Terms of Use',
+    privacyPolicy: 'Privacy Policy',
+    opensExternal: 'opens outside the app',
   );
 
   /// Espanhol.
@@ -2167,6 +2209,13 @@ class SsStrings {
     zoomHint: 'Toca dos veces o usa dos dedos para ampliar',
     tapToClose: 'Toca para cerrar',
     photoSource: 'Abrir la página de la foto',
+    addRow: 'Agregar',
+    removeRow: 'Quitar fila',
+    editValue: 'Editar',
+    termsNotice: 'Al continuar, aceptas los {terms} y la {privacy}.',
+    termsOfUse: 'Términos de uso',
+    privacyPolicy: 'Política de privacidad',
+    opensExternal: 'se abre fuera de la app',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2541,6 +2590,13 @@ class SsStrings {
     'zoomHint': zoomHint,
     'tapToClose': tapToClose,
     'photoSource': photoSource,
+    'addRow': addRow,
+    'removeRow': removeRow,
+    'editValue': editValue,
+    'termsNotice': termsNotice,
+    'termsOfUse': termsOfUse,
+    'privacyPolicy': privacyPolicy,
+    'opensExternal': opensExternal,
   };
 
   /// Os idiomas prontos.
@@ -2950,6 +3006,13 @@ class SsStrings {
     String? zoomHint,
     String? tapToClose,
     String? photoSource,
+    String? addRow,
+    String? removeRow,
+    String? editValue,
+    String? termsNotice,
+    String? termsOfUse,
+    String? privacyPolicy,
+    String? opensExternal,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3321,6 +3384,13 @@ class SsStrings {
     zoomHint: zoomHint ?? this.zoomHint,
     tapToClose: tapToClose ?? this.tapToClose,
     photoSource: photoSource ?? this.photoSource,
+    addRow: addRow ?? this.addRow,
+    removeRow: removeRow ?? this.removeRow,
+    editValue: editValue ?? this.editValue,
+    termsNotice: termsNotice ?? this.termsNotice,
+    termsOfUse: termsOfUse ?? this.termsOfUse,
+    privacyPolicy: privacyPolicy ?? this.privacyPolicy,
+    opensExternal: opensExternal ?? this.opensExternal,
   );
 }
 

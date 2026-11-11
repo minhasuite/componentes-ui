@@ -17,6 +17,7 @@ import 'ss_sheet.dart';
 import 'ss_stat.dart';
 import 'ss_strings.dart';
 import 'v15/amount.dart';
+import 'v20/pecas.dart';
 
 /// Validadores prontos para os campos `Ss*`. As mensagens saem em português;
 /// para outro idioma, passe [SsStrings] (ex.:
@@ -217,9 +218,20 @@ class SsTextField extends StatefulWidget {
     this.focusNode,
     this.autocorrect = true,
     this.enableSuggestions = true,
+    this.hideLabel = false,
+    this.mask,
   });
 
   final String? label;
+
+  /// v0.20: o [label] não aparece em cima, só para o leitor de tela (campo de
+  /// busca numa barra, célula de tabela editável). Par do `f.ss_*(hide_label: true)`.
+  final bool hideLabel;
+
+  /// v0.20: máscara brasileira enquanto digita ([SsMask.document] CPF/CNPJ,
+  /// [SsMask.phone], [SsMask.cep]); põe o teclado numérico se [keyboardType]
+  /// for nulo. Par do `f.ss_text_field(mask: :document)`.
+  final SsMask? mask;
   final TextEditingController? controller;
   final String? initialValue;
   final String? hint;
@@ -338,10 +350,11 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       validator: widget.validator == null ? null : _validate,
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onSubmitted,
-      keyboardType: widget.keyboardType,
+      keyboardType: widget.keyboardType ?? widget.mask?.keyboardType,
       textInputAction: widget.textInputAction,
       inputFormatters: [
         ...?widget.inputFormatters,
+        ?widget.mask,
         if (widget.maxLength != null) LengthLimitingTextInputFormatter(widget.maxLength),
       ],
       textCapitalization: widget.textCapitalization,
@@ -398,7 +411,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (widget.label != null) SsFieldLabel(widget.label!),
+            if (widget.label != null && !widget.hideLabel) SsFieldLabel(widget.label!),
             // O halo só sem erro: com erro, a caixa ganharia a altura da mensagem.
             AnimatedContainer(
               duration: dur,
@@ -408,7 +421,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
                     ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)]
                     : const [],
               ),
-              child: campo,
+              child: widget.hideLabel && widget.label != null ? Semantics(label: widget.label, child: campo) : campo,
             ),
           ],
         ),
@@ -1766,6 +1779,146 @@ class SsCheckRow extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// v0.20: grupo de opções (rádio) com o rótulo em cima, par do
+/// `f.ss_radio_buttons(..., checked:)` do web. A marcada é [value] (sem
+/// model: o estado é do app); [options] é valor → texto, na ordem. Em linha
+/// ([inline], padrão) quebra quando não cabe; `inline: false` empilha. É um
+/// [FormField]: [validator] funciona dentro de [Form]. [onChanged] nulo
+/// desabilita. Cada opção tem alvo de 48 e é lida como "rádio, marcado".
+///
+/// `SsRadioGroup<String>(label: 'Tipo', value: _tipo, options: {'pf': 'Pessoa física', 'pj': 'Empresa'}, onChanged: (v) => setState(() => _tipo = v))`
+class SsRadioGroup<T> extends StatelessWidget {
+  const SsRadioGroup({
+    super.key,
+    this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    this.inline = true,
+    this.validator,
+    this.helperText,
+    this.hideLabel = false,
+  });
+
+  final String? label;
+  final T? value;
+  final Map<T, String> options;
+  final ValueChanged<T>? onChanged;
+  final bool inline;
+  final FormFieldValidator<T>? validator;
+  final String? helperText;
+
+  /// O [label] só para o leitor de tela.
+  final bool hideLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final d = SsDensity.of(context);
+    return FormField<T>(
+      key: ValueKey(value),
+      initialValue: value,
+      validator: validator,
+      builder: (field) {
+        final itens = [
+          for (final e in options.entries)
+            _SsRadio(
+              text: e.value,
+              selected: e.key == value,
+              onTap: onChanged == null
+                  ? null
+                  : () {
+                      HapticFeedback.selectionClick();
+                      field.didChange(e.key);
+                      onChanged!(e.key);
+                    },
+            ),
+        ];
+        return Semantics(
+          container: true,
+          label: label,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (label != null && !hideLabel) ExcludeSemantics(child: SsFieldLabel(label!)),
+              if (inline)
+                Wrap(spacing: d.gap + 4, children: itens)
+              else
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: itens),
+              if (field.errorText != null)
+                _ErrorLine(field.errorText!)
+              else if (helperText != null)
+                SsFieldHelper(helperText!),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SsRadio extends StatelessWidget {
+  const _SsRadio({required this.text, required this.selected, this.onTap});
+
+  final String text;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.fast;
+    final on = onTap != null;
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: selected,
+      enabled: on,
+      label: text,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(d.radiusField),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: d.minTarget),
+          child: Opacity(
+            opacity: on ? 1 : .5,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: dur,
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: c.surface,
+                      border: Border.all(color: selected ? c.accent : c.muted2, width: selected ? 6 : 2),
+                    ),
+                  ),
+                  SizedBox(width: d.gap - 4),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        color: c.ink,
+                        fontSize: d.font(AppType.body),
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

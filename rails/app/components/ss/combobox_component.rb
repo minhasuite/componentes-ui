@@ -11,7 +11,11 @@ module Ss
   # segurança); color: pinta o ícone (cor do usuário, ex. a da categoria); image: URL de uma <img>
   # (logo do banco, foto do perfil; alt vazio, o rótulo já diz). input: {} passa atributos ao <input>
   # visível (title:, data: { action:, …_target: }, aria:, autofocus:, disabled:, required:).
+  #
+  # v0.20: with_action { … } põe botões ao lado do campo (ler código de barras, cadastrar novo); par do
+  # showSsPicker(actions:). O botão é do app (Ss::IconButtonComponent com o data-action dele).
   class ComboboxComponent < BaseComponent
+    renders_many :actions
     attr_reader :name, :label, :placeholder, :url, :options, :create, :create_name, :value, :text, :help, :id
 
     def initialize(name:, label:, url: nil, options: nil, value: nil, text: nil, placeholder: nil,

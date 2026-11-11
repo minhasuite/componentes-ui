@@ -1,0 +1,86 @@
+<%# titulo: Vendas e gestor (v0.20): tabela, máscara, rádio, resumo, nós, linhas | grupo: Tela | ordem: 43 %>
+<%# v0.20: o que o minhas-vendas e o meu-gestor acharam ao migrar para 100% de componentização. %>
+<% linhas = [{ id: 1, cliente: "Mercado Bom Preço", cidade: "Fortaleza", vendedor: "João", total: 1250.4, ativo: true },
+             { id: 2, cliente: "Padaria Pão Quente", cidade: "Sobral", vendedor: "Maria", total: 380, ativo: false },
+             { id: 3, cliente: "Distribuidora Sol", cidade: "Juazeiro", vendedor: "Ana", total: 7420.15, ativo: true }] %>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::DataTableComponent (v0.20)", "Linha que é link (row_href:), 1ª coluna parada ao rolar de lado (sticky:), cabeçalho montado (header:), total no <tfoot> (t.total), linha apagada (row_attrs: is-dimmed) e sem card (flat:). Par: SsDataTable(stickyFirstColumn:, footer:, flat:).",
+           uso: 'render(Ss::DataTableComponent.new(rows:, id: "p", caption: "Pedidos", row_href: ->(r) { pedido_path(r) })) { |t| t.column :cliente, "Cliente", sticky: true; t.total :total, ss_money(soma) }' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::CardHeaderComponent.new(title: "Pedidos do mês", eyebrow: "Vendas · externo", subtitle: "3 clientes") %>
+      <%= render(Ss::DataTableComponent.new(rows: linhas, id: "v20-pedidos", caption: "Pedidos", tools: false, flat: true,
+                                            row_href: ->(r) { "#pedido-#{r[:id]}" }, row_attrs: ->(r) { { class: ("is-dimmed" unless r[:ativo]) } })) do |t| %>
+        <% t.column :cliente, "Cliente", sticky: true, header: safe_join([ss_icon("user", size: :xs), " Cliente"]) %>
+        <% t.column :cidade, "Cidade" %>
+        <% t.column :vendedor, "Vendedor" %>
+        <% t.column :total, "Total", format: :money %>
+        <% t.total :total, ss_amount(ss_money(linhas.sum { _1[:total] })) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Formulário (v0.20)", "hide_label: (rótulo só para o leitor de tela), mask: :document/:phone/:cep (ss-mask), f.ss_radio_buttons(checked:) sem model, f.ss_check_box(id:). Pares: SsTextField(hideLabel:, mask:), SsRadioGroup(value:).",
+           uso: 'f.ss_text_field :documento, label: "CPF ou CNPJ", mask: :document' do %>
+    <div class="ss-card ss-card-pad">
+      <%= ss_form_with url: "#", scope: :v20 do |f| %>
+        <%= f.ss_text_field :documento, label: "CPF ou CNPJ", mask: :document %>
+        <%= f.ss_telephone_field :fone, label: "Telefone", mask: :phone %>
+        <%= f.ss_text_field :cep, label: "CEP", mask: :cep %>
+        <%= f.ss_search_field :busca, label: "Buscar cliente", hide_label: true, placeholder: "Buscar cliente…" %>
+        <%= f.ss_radio_buttons :tipo, [["Pessoa física", "pf"], ["Empresa", "pj"]], label: "Tipo", checked: "pj" %>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <%= render Ss::ButtonComponent.new(label: "Excluir", icon: "trash", variant: :ghost, tone: :danger) %>
+          <%= render Ss::ButtonComponent.new(label: "Cancelar", variant: :outline, tone: :danger) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::ListItemComponent · KPI em tom", "O .ss-item como componente (par do SsListItem): subtítulo e valor em tom, ícone tonal, link e apagado. KpiCardComponent(value_tone:).",
+           uso: 'render Ss::ListItemComponent.new(title: "Boleto 12", subtitle: "Vence hoje", subtitle_tone: :danger, value: ss_money(120))' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::ListItemComponent.new(title: "Boleto 1234", subtitle: "Vence hoje", subtitle_tone: :danger, value: ss_money(120), icon: "document-text", tone: :danger, href: "#") %>
+      <%= render Ss::ListItemComponent.new(title: "Boleto 1233", subtitle: "Pago", subtitle_tone: :success, value: ss_money(80), value_tone: :success, icon: "document-text", dimmed: true) %>
+    </div>
+    <%= render Ss::KpiCardComponent.new(label: "Saldo do caixa", value: ss_money(-1250), money: true, value_tone: :danger) %>
+  <% end %>
+
+  <%= demo "Barra fixa com resumo e linhas repetíveis", "StickyActionBarComponent#with_summary (resumo livre à esquerda) e Ss::RepeaterComponent + ss-repeater (adicionar a partir do <template>, tirar marcando _destroy). Pares: SsStickyActionBar(summary:), SsRepeater.",
+           uso: 'render(Ss::RepeaterComponent.new(add_label: "Adicionar telefone")) { |r| r.row { … }; r.with_template { … } }' do %>
+    <form class="ss-card ss-card-pad" onsubmit="return false">
+      <%= render(Ss::RepeaterComponent.new(add_label: "Adicionar telefone", min: 1, label: "Telefones")) do |r| %>
+        <%= r.row do %><div class="ss-field"><label for="tel-0">Telefone</label><input id="tel-0" class="ss-input" name="c[tel][0][n]" value="(85) 98765-4321" data-controller="ss-mask" data-ss-mask-kind-value="phone" data-action="input->ss-mask#format"></div><% end %>
+        <% r.with_template do %>
+          <%= r.row do %><div class="ss-field"><label for="tel-NEW_RECORD">Telefone</label><input id="tel-NEW_RECORD" class="ss-input" name="c[tel][NEW_RECORD][n]" data-controller="ss-mask" data-ss-mask-kind-value="phone" data-action="input->ss-mask#format"></div><% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ss::StickyActionBarComponent.new(always: true)) do |b| %>
+        <% b.with_summary { safe_join([tag.span("3 itens"), ss_amount(ss_money(120))]) } %>
+        <%= render Ss::ButtonComponent.new(label: "Fechar pedido", size: :sm) %>
+      <% end %>
+    </form>
+  <% end %>
+
+  <%= demo "Ação ao lado da busca", "with_action na paleta (CommandPaletteComponent) e no ComboboxComponent: leitor de código de barras, cadastrar novo. Par: showSsPicker(actions:).",
+           uso: 'render(Ss::ComboboxComponent.new(name:, label:, url:)) { |c| c.with_action { render Ss::IconButtonComponent.new(icon: "qrcode", label: "Ler código") } }' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render(Ss::ComboboxComponent.new(name: "produto_id", label: "Produto", options: [{ id: 1, label: "Arroz 5 kg" }, { id: 2, label: "Feijão 1 kg" }])) do |c| %>
+        <% c.with_action { render Ss::IconButtonComponent.new(icon: "qrcode", label: "Ler código de barras") } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Link, termos e valor editável", "TextLinkComponent (a.ss-link), TermsNoticeComponent (pt/en/es) e EditableValueComponent. Pares: SsLinkText/SsTextLink, SsTermsNotice, SsEditableValue.",
+           uso: 'render Ss::TermsNoticeComponent.new(terms_url: termos_url, privacy_url: privacidade_url)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1rem">
+      <p>Leia o <%= render Ss::TextLinkComponent.new(label: "manual do vendedor", href: "#", external: true) %> antes de começar.</p>
+      <%= render Ss::TermsNoticeComponent.new(terms_url: "#termos", privacy_url: "#privacidade") %>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span>Arroz 5 kg</span><%= render Ss::EditableValueComponent.new(label: "novo", value: ss_money(12.9), href: "#") %></div>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::NodeCanvasComponent", "Palco do editor de nós (pele do Drawflow): grade, nó, portas, saídas sim/não, setas com rótulo, × da seta, estados selecionado/mudou/recusado. A lib e o controller são do produto; aqui, a DOM que o Drawflow gera, parada.",
+           uso: 'render(Ss::NodeCanvasComponent.new(label: "Desenho do fluxo", data: { canvas_target: "stage" })) { barra }' do %>
+    <%= render "vitrine/node_canvas_demo" %>
+  <% end %>
+</div>

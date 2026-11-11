@@ -20,6 +20,7 @@ es:
       sources: De dónde viene esto
       thinking: Analizando tus datos…
     app_shell:
+      external: '(se abre en otra pestaña)'
       badge:
         one: "%{count} nuevo"
         other: "%{count} nuevos"
@@ -132,6 +133,7 @@ es:
       volume_down: Bajar volumen
       volume_up: Subir volumen
     data_table:
+      total: Total
       actions: Acciones
       bulk_actions: Acciones en lote
       choose_columns: Elegir columnas
@@ -618,3 +620,14 @@ es:
       label: Acciones rápidas
     photo_card:
       source: Abrir la página de la foto
+    node_canvas:
+      label: Editor de flujo
+    repeater:
+      add: Agregar
+      remove: Quitar fila
+      added: Fila agregada
+      removed: Fila quitada
+    terms_notice:
+      text: 'Al continuar, aceptas los %{terms} y la %{privacy}.'
+      terms: Términos de uso
+      privacy: Política de privacidad

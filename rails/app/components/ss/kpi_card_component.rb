@@ -11,11 +11,14 @@ module Ss
   # money: true põe os centavos menores (ss_amount). good: true/false pinta a variação (verde/vermelho);
   # nil neutro; trend: :up/:down troca a seta (padrão: pelo sinal do delta). url: faz o card todo
   # ser um link. tone: o do ícone (ver CardHeaderComponent).
+  # v0.20: value_tone: :danger/:success/:warning/:accent pinta o valor (saldo negativo, meta batida); par do
+  # SsKpiCard(valueTone:).
   class KpiCardComponent < BaseComponent
     def initialize(label:, value:, icon: nil, tone: nil, caption: nil, delta: nil, good: nil, trend: nil, hint: nil,
-                   spark: nil, url: nil, money: false, **rest)
+                   spark: nil, url: nil, money: false, value_tone: nil, **rest)
       super(**rest)
       @label, @value, @icon, @tone, @caption = label, value, icon, tone, caption
+      @value_tone = value_tone && ComponentesUi.tone(value_tone).to_s
       @delta, @good, @trend, @hint, @spark, @url, @money = delta, good, trend, hint, spark, url, money
     end
 
@@ -24,7 +27,7 @@ module Ss
         safe_join([
           render(Ss::CardHeaderComponent.new(title: @url ? link_to(@label, @url, class: "ss-kpi-card-link") : @label,
                                              subtitle: @caption, icon: @icon, tone: @tone || :accent)),
-          tag.div(@money ? ss_amount(@value) : tag.span(@value, class: "num"), class: "ss-kpi-card-value"),
+          tag.div(@money ? ss_amount(@value) : tag.span(@value, class: "num"), class: "ss-kpi-card-value", data: { tone: @value_tone }.compact),
           (foot if @delta || @hint),
           (tag.div(ss_sparkline(@spark, height: 36), class: "ss-kpi-card-spark") if @spark.to_a.size > 1)
         ].compact)

@@ -1,0 +1,151 @@
+/* v0.20 · o que o minhas-vendas e o meu-gestor acharam ao migrar para 100% de componentização (pares do
+   Flutter): botão discreto de perigo, linha apagada, subtítulo/valor/sobrelinha em tom, tabela com coluna
+   parada, linha-link, total e sem card, barra fixa com resumo, ação ao lado da busca, palco de editor de
+   nós (pele do Drawflow), contêiner fora do "esconder valores", linhas repetíveis, item externo no menu,
+   link no texto, aviso de termos, valor editável e o botão do Google Identity Services. Só tokens. */
+@layer components {
+  /* ── Botão discreto/contorno de perigo: Ss::ButtonComponent(variant: :ghost|:outline, tone: :danger) ── */
+  .ss-btn-ghost.is-danger, .ss-btn-outline.is-danger { color: var(--danger); }
+  .ss-btn-ghost.is-danger:hover, .ss-btn-outline.is-danger:hover { background: var(--danger-soft); color: var(--danger); }
+  .ss-btn-outline.is-danger { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--danger) 45%, transparent); }
+
+  /* ── Linha apagada (inativo, concluído, arquivado): par do SsListItem(dimmed:) / SsDataRow(dimmed:) ── */
+  :is(.ss-item, .ss-sortable-item, .ss-kanban-card, .ss-row, [data-ss-row]).is-dimmed,
+  .ss-table tr.is-dimmed > :is(td, th) { opacity: .5; }
+
+  /* ── Texto em tom (data-tone): subtítulo e valor do item, valor do KPI, sobrelinha do card ── */
+  .ss-item-sub { font-size: .82rem; color: var(--muted); }
+  :is(.ss-item-main > .ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow)[data-tone] { color: var(--ss-tone-ink, inherit); }
+  :is(.ss-item-main > .ss-item-sub)[data-tone] { font-weight: 600; }
+  [data-tone="danger"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--danger); }
+  [data-tone="success"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--success); }
+  [data-tone="warn"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--warn); }
+  [data-tone="accent"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--accent); }
+  [data-tone="info"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--ss-info); }
+  [data-tone="muted"]:is(.ss-item-sub, .ss-item-value, .ss-kpi-card-value, .ss-card-eyebrow) { --ss-tone-ink: var(--muted); }
+
+  /* ── Sobrelinha do cabeçalho de card (CardHeaderComponent(eyebrow:)) ── */
+  .ss-card-eyebrow { margin: 0 0 .1rem; font-size: calc(.68rem * var(--ss-font-scale)); font-weight: 800; letter-spacing: .05em;
+                     text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Tabela: 1ª coluna parada, linha-link, total e sem card (DataTableComponent v0.20) ── */
+  .ss-dt .ss-table :is(th, td).is-sticky { position: sticky; left: 0; z-index: 1; background: var(--surface); box-shadow: inset -1px 0 0 var(--line); }
+  .ss-dt .ss-table thead th.is-sticky { z-index: 3; background: var(--field); }
+  .ss-dt .ss-table tbody tr:hover > td.is-sticky { background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
+  .ss-dt .ss-table tr.is-selected > td.is-sticky { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+  .ss-table tbody tr.is-link { cursor: pointer; }
+  .ss-table tbody tr.is-link:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .ss-table tfoot td { padding: var(--ss-row-py) calc(var(--ss-pad-x) * .9); border-top: 1px solid var(--line); background: var(--field); font-weight: 800; color: var(--ink); }
+  .ss-table tfoot td.is-sticky { background: var(--field); }
+  .ss-dt-foot > td { font-weight: 600; }
+  .ss-dt.is-flat .ss-dt-scroll { background: none; box-shadow: none; border: 0; border-radius: 0; }
+  .ss-dt.is-flat .ss-dt-scroll > .ss-table thead th { border-radius: 0; }
+  @media (max-width: 639px) {
+    .ss-dt .ss-table tfoot { display: block; margin-top: .6rem; }
+    .ss-dt .ss-table tfoot tr { display: block; border-radius: 16px; background: var(--field); padding: .4rem .25rem; }
+    .ss-dt .ss-table tfoot td { background: none; border: 0; }
+    .ss-dt .ss-table tfoot td:empty { display: none; }
+    .ss-dt .ss-table :is(th, td).is-sticky { position: static; box-shadow: none; background: none; }
+  }
+
+  /* ── Barra fixa com resumo à esquerda (StickyActionBarComponent#with_summary) ── */
+  .ss-sticky-bar-summary { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .75rem; min-width: 0; font-weight: 700; color: var(--ink); }
+  .ss-sticky-bar-summary .ss-amount { font-size: calc(1.05rem * var(--ss-font-scale)); }
+
+  /* ── Ação ao lado da busca: paleta (with_action) e combobox (with_action) ── */
+  .ss-command-bar { display: flex; align-items: center; gap: .25rem; padding-right: .5rem; border-bottom: 1px solid var(--line); }
+  .ss-command-bar > input { flex: 1; min-width: 0; border-bottom: 0 !important; }
+  .ss-command-actions, .ss-combobox-actions { display: flex; align-items: center; gap: .25rem; flex: none; }
+  .ss-combobox-row { display: flex; align-items: center; gap: .4rem; }
+  .ss-combobox-row > .ss-combobox-box { flex: 1; min-width: 0; }
+
+  /* ── Linhas repetíveis (RepeaterComponent + ss-repeater) ── */
+  .ss-repeater { display: grid; gap: calc(var(--ss-gap) * .67); justify-items: start; }
+  .ss-repeater-list { display: grid; gap: calc(var(--ss-gap) * .67); width: 100%; }
+  .ss-repeater-row { display: flex; align-items: flex-start; gap: .4rem; animation: ss-fade .2s ease both; }
+  .ss-repeater-row[hidden] { display: none; }
+  .ss-repeater-fields { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .5rem; }
+  .ss-repeater-remove { margin-top: 1.55rem; }
+  .ss-repeater-remove:hover { background: var(--danger-soft); color: var(--danger); }
+  .ss-repeater-remove[hidden] { display: none; }
+
+  /* ── Item externo no menu da moldura (AppShellComponent item external: true) ── */
+  .ss-shell-ext { display: inline-block; width: .8rem; height: .8rem; margin-left: .3rem; vertical-align: -.05rem; opacity: .6; }
+
+  /* ── Link no meio do texto (TextLinkComponent) e aviso de termos (TermsNoticeComponent) ── */
+  .ss-link { color: var(--accent); font-weight: 700; text-decoration: none; text-underline-offset: 3px; }
+  .ss-link:hover, .ss-link:focus-visible { text-decoration: underline 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .ss-link > svg { display: inline-block; width: .8em; height: .8em; margin-left: .15em; vertical-align: -.05em; }
+  .ss-terms-notice { margin: 0; font-size: calc(.78rem * var(--ss-font-scale)); line-height: 1.5; color: var(--muted); text-align: center; text-wrap: pretty; }
+  .ss-terms-notice.is-start { text-align: start; }
+
+  /* ── Valor editável ao toque (EditableValueComponent) ── */
+  .ss-editable-value { display: inline-grid; justify-items: end; gap: .05rem; min-height: var(--ss-control-h); padding: .2rem .4rem; border: 0; border-radius: var(--r-field);
+                       background: none; color: var(--ink); font: inherit; text-align: end; text-decoration: none; cursor: pointer; }
+  .ss-editable-value.is-start { justify-items: start; text-align: start; }
+  .ss-editable-value:hover { background: var(--field); }
+  .ss-editable-value:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ss-editable-value > small { font-size: .68rem; color: var(--muted); }
+  .ss-editable-value-v { font-size: calc(1rem * var(--ss-font-scale)); font-weight: 800; }
+  .ss-editable-value-v.num { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ss-editable-value > em { font-style: normal; font-size: .75rem; font-weight: 700; color: var(--accent); }
+
+  /* ── Google Identity Services: o iframe do Google centrado, na largura do contêiner ── */
+  .ss-google-gis { display: flex; justify-content: center; width: 100%; min-height: 44px; }
+  .ss-google-gis > .g_id_signin { max-width: 100%; }
+
+  /* ── Palco de editor de nós (NodeCanvasComponent): pele dos elementos do Drawflow ── */
+  .ss-node-canvas-wrap { position: relative; }
+  .ss-node-canvas { position: relative; display: flex; overflow: hidden; touch-action: none; outline: 0; height: var(--ss-node-canvas-h, 70vh); min-height: 18rem;
+                    border-radius: var(--r-card); background-color: var(--field); }
+  .ss-node-canvas:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
+  .ss-node-canvas.is-grid { background-image: radial-gradient(circle, color-mix(in srgb, var(--muted) 38%, transparent) 1px, transparent 1.3px); background-size: 20px 20px; }
+  .ss-node-canvas .drawflow { position: relative; width: 100%; height: 100%; user-select: none; perspective: 0; }
+  .ss-node-canvas .parent-node { position: relative; }
+  .ss-node-canvas .drawflow-node { display: flex; align-items: center; position: absolute; z-index: 2; width: var(--ss-node-w, 13.5rem); min-height: 4.5rem; color: var(--ink); cursor: move; }
+  .ss-node-canvas .drawflow-node :is(.inputs, .outputs) { width: 0; }
+  .ss-node-canvas .drawflow-node .drawflow_content_node { width: 100%; display: block; }
+  .ss-node-canvas .drawflow-node :is(.input, .output) { position: relative; width: 14px; height: 14px; margin-bottom: 8px; border-radius: 50%; z-index: 3; cursor: crosshair;
+                                                         background: var(--surface); border: 2px solid var(--accent); transition: scale .15s var(--ss-bounce); }
+  .ss-node-canvas .drawflow-node :is(.input, .output):hover { scale: 1.3; }
+  .ss-node-canvas .drawflow-node .input { left: -7px; }
+  .ss-node-canvas .drawflow-node .output { right: -7px; }
+  .ss-node-canvas .drawflow-node:is(.is-branch, .is-condition) .output_1 { border-color: var(--success); }
+  .ss-node-canvas .drawflow-node:is(.is-branch, .is-condition) .output_2 { border-color: var(--danger); }
+  .ss-node { padding: .65rem .8rem; border: 1px solid var(--line); border-radius: var(--r-field); background: var(--surface); box-shadow: var(--shadow-card); }
+  .ss-node-canvas svg { z-index: 0; position: absolute; overflow: visible !important; }
+  .ss-node-canvas .connection { position: absolute; pointer-events: none; aspect-ratio: 1 / 1; }
+  .ss-node-canvas .connection .main-path { fill: none; stroke-width: 2.5px; stroke: var(--ss-node-edge, color-mix(in srgb, var(--accent) 70%, var(--muted))); pointer-events: all; cursor: pointer;
+                                            transition: stroke-width .15s ease; }
+  .ss-node-canvas .connection .main-path:is(:hover, .selected) { stroke-width: 4px; stroke: var(--accent); }
+  .ss-node-canvas .connection.is-yes { --ss-node-edge: var(--success); }
+  .ss-node-canvas .connection.is-no { --ss-node-edge: var(--danger); }
+  .ss-node-canvas.is-sketch .connection .main-path { stroke-width: 12px; stroke: transparent; }
+  .ss-node-canvas.is-sketch .connection .main-path:is(:hover, .selected) { stroke: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .ss-node-canvas .connection.is-changed :is(.main-path, [data-rough] path) { filter: drop-shadow(0 0 4px var(--success)); }
+  .ss-node-label { fill: var(--muted); stroke: var(--surface); stroke-width: 4px; paint-order: stroke; font-size: 11px; font-weight: 700; text-anchor: middle; }
+  .ss-node-canvas .drawflow-delete { position: absolute; display: grid; place-items: center; width: 26px; height: 26px; z-index: 4; border-radius: 50%; cursor: pointer;
+                                     background: var(--danger); color: var(--surface); border: 2px solid var(--surface); font-weight: 700; line-height: 1; }
+  .ss-node-canvas .drawflow > .drawflow-delete { margin: 13px 0 0 -13px; }
+  .ss-node-canvas .parent-node .drawflow-delete { top: -13px; right: -13px; }
+  .ss-node-canvas.is-node-delete-off .parent-node .drawflow-delete { display: none; }
+  .ss-node-canvas.is-readonly .drawflow-node { cursor: default; }
+  .ss-node-canvas.is-readonly .drawflow-node :is(.input, .output) { pointer-events: none; cursor: default; }
+  .ss-node-canvas .drawflow-node.selected > .drawflow_content_node > * { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
+  .ss-node-canvas .drawflow-node.is-changed > .drawflow_content_node > * { animation: ss-node-glow 1.6s ease-in-out 3; }
+  .ss-node-canvas .drawflow-node:is(.is-refused, .is-flash) > .drawflow_content_node > * { animation: ss-node-shake .45s ease-in-out 2; filter: drop-shadow(0 0 8px var(--danger)); }
+}
+@keyframes ss-node-glow { 50% { filter: drop-shadow(0 0 10px var(--success)); } }
+@keyframes ss-node-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-node-canvas .drawflow-node > .drawflow_content_node > * { animation: none !important; }
+  .ss-node-canvas .drawflow-node :is(.input, .output), .ss-node-canvas .connection .main-path { transition: none; }
+  .ss-repeater-row { animation: none; }
+}
+
+/* ── Contêiner fora do "esconder valores": data-ss-privacy="off" (par do SsPrivacyScope(hidden: false)) ──
+   Fora das camadas, como as regras de [data-privacy="on"]; vale para tudo que a gem borra. */
+[data-privacy="on"] [data-ss-privacy="off"] :is(.money, [data-controller~="count-up"], .ss-chart, .ss-amount, .ss-spark, .ss-bars b, .ss-count-up,
+  .ss-level-points b, .ss-person-metrics dd, .ss-pricing-price, .ss-area svg, .ss-area-pill, .ss-donut-center, .ss-kpi-value, .ss-tree-value,
+  .ss-prices td.num, .ss-barc svg, .ss-progress-row-foot, .ss-progress-row-pct, .ss-money-result, .ss-chat-action-rows dd, .ss-tc-svg, .ss-tc-tip,
+  .ss-kpi-card-value, .ss-rank-value, .ss-rank-caption, .ss-wallet-card-v) { filter: none !important; user-select: auto !important; }

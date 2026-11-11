@@ -45,6 +45,9 @@ export default class extends Controller {
 
   closed() { clearTimeout(this.timer) }
 
+  // v0.20: botão ao lado da busca (with_action) que só fecha.
+  close() { this.element.close() }
+
   backdrop(event) {
     if (event.target === this.element) this.element.close()
   }

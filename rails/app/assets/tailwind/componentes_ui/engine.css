@@ -39,6 +39,8 @@
 @import "./v19_web.css";
 /* v0.19.2: faixa e contorno no card, botão sólido/empilhado, selo sólido, passos, ponto, monograma, recado, vidro escuro, foto escolhida. */
 @import "./v19_2_web.css";
+/* v0.20: botão discreto de perigo, linha apagada, tons no texto, tabela (coluna parada, linha-link, total, sem card), barra com resumo, ação ao lado da busca, palco de nós, privacidade desligada, linhas repetíveis, link no texto, termos, valor editável, Google GIS. */
+@import "./v20_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

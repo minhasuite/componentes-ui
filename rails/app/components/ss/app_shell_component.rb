@@ -39,6 +39,8 @@ module Ss
   #   (antes ficava uma faixa vazia); no celular ela segue (menu e marca). with_top_mobile { … } é o
   #   que só aparece na barra do celular (ex. o olho de esconder valores, que no computador mora
   #   no rodapé do menu): não conta para a barra do computador.
+  # - v0.20: item externo { label:, href:, external: true } abre em outra aba (target=_blank rel=noopener), com o
+  #   ícone de saída ao lado do nome e "(abre em outra aba)" para o leitor de tela.
   # - Grupo com ícone: { title: "Cadastros", icon: ss_icon("folder", size: nil), items: [...] }; o
   #   ícone vai antes do título (com o menu recolhido o grupo segue sendo só a linha divisória).
   class AppShellComponent < BaseComponent

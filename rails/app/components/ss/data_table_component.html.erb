@@ -1,4 +1,4 @@
-<%= tag.div(**root_attrs(id: id, class: classes("ss-dt"), data: { controller: "ss-table", ss_table_key_value: id, density: @density })) do %>
+<%= tag.div(**root_attrs(id: id, class: classes("ss-dt", ("is-flat" if flat?), ("has-sticky" if columns.any?(&:sticky))), data: { controller: "ss-table", ss_table_key_value: id, density: @density })) do %>
   <% if @tools %>
     <div class="ss-dt-tools">
       <div class="ss-seg ss-dt-density" role="group" aria-label="<%= tt("density", default: "Densidade das linhas") %>">
@@ -18,7 +18,7 @@
       <% end %>
     </div>
   <% end %>
-  <div class="ss-card ss-dt-scroll"<% if @max_height %> style="max-height:<%= @max_height %>"<% end %>>
+  <div class="<%= flat? ? "ss-dt-scroll" : "ss-card ss-dt-scroll" %>"<% if @max_height %> style="max-height:<%= @max_height %>"<% end %>>
     <table class="ss-table">
       <caption class="<%= @show_caption ? "ss-dt-caption" : "ss-sr" %>"><%= caption %></caption>
       <thead>
@@ -26,13 +26,13 @@
           <% if selectable? %><th scope="col" class="ss-dt-check"><input type="checkbox" aria-label="<%= tt("select_all", default: "Selecionar todas as linhas") %>" data-ss-table-target="all" data-action="ss-table#toggleAll"></th><% end %>
           <% if expansion? %><th scope="col" class="ss-dt-x"><span class="ss-sr"><%= tt("details", default: "Detalhes") %></span></th><% end %>
           <% columns.each do |c| %>
-            <%= tag.th(scope: "col", class: (c.align == :right ? "r" : nil), "aria-sort": aria_sort(c), data: { col: c.key }) do %>
+            <%= tag.th(scope: "col", class: [("r" if c.align == :right), ("is-sticky" if c.sticky)].compact.join(" ").presence, "aria-sort": aria_sort(c), data: { col: c.key }) do %>
               <% if c.format == :actions %>
                 <span class="ss-sr"><%= c.label %></span>
               <% elsif c.sortable %>
-                <a class="ss-sort" href="<%= sort_href(c) %>"><%= c.label %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                <a class="ss-sort" href="<%= sort_href(c) %>"><%= header_html(c) %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
               <% else %>
-                <%= c.label %>
+                <%= header_html(c) %>
               <% end %>
             <% end %>
           <% end %>
@@ -56,6 +56,23 @@
           <% end %>
         <% end %>
       </tbody>
+      <% if rows.any? && (totals? || footer?) %>
+        <tfoot>
+          <% if totals? %>
+            <tr class="ss-dt-total">
+              <% if selectable? %><td class="ss-dt-check"></td><% end %>
+              <% if expansion? %><td class="ss-dt-x"></td><% end %>
+              <% columns.each do |c| %>
+                <% v = total_cell(c) %>
+                <%= tag.td(v, class: cell_class(c), data: { col: c.key, label: (c.label unless c.equal?(columns.first)) }) %>
+              <% end %>
+            </tr>
+          <% end %>
+          <% if footer? %>
+            <tr class="ss-dt-foot"><td colspan="<%= span %>"><%= footer_html %></td></tr>
+          <% end %>
+        </tfoot>
+      <% end %>
     </table>
   </div>
   <% if @pagination && @pagination[:pages].to_i > 1 %>

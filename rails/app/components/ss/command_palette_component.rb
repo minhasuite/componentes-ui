@@ -20,8 +20,17 @@ module Ss
   #   class="ss-command-group-title">Clientes</p><a class="ss-command-item">…</a></div>
   #   (h2–h4 no lugar do <p> também vale); os títulos ficam. Item com data-ss-command-fill
   #   também preenche.
+  #
+  # v0.20: with_action { … } (um ou mais) põe botões ao lado da busca (leitor de código de barras, "novo
+  # cliente"); par do showSsPicker(actions:). O botão faz o que o app quiser (data-action do controller dele);
+  # data-action="ss-command#close" fecha a paleta.
+  #   render(Ss::CommandPaletteComponent.new(id: "produto", …)) do |p|
+  #     p.with_action { render Ss::IconButtonComponent.new(icon: "qrcode", label: "Ler código", data: { action: "scanner#open" }) }
+  #   end
   class CommandPaletteComponent < BaseComponent
     attr_reader :id, :groups
+
+    renders_many :actions
 
     def initialize(id:, placeholder: nil, groups: [], shortcut: "k", src: nil, label: nil, empty: nil, **opts)
       super(**opts)
