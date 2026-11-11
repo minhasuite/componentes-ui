@@ -80,7 +80,13 @@ class SsDataTable extends StatelessWidget {
     this.flat = false,
     this.stickyFirstColumn = false,
     this.minColumnWidth = 120,
+    this.stack = true,
   });
+
+  /// v0.20.4: falso mantém a tabela no celular (nunca vira cartões): quando as
+  /// colunas não cabem, rola de lado (com [stickyFirstColumn], a 1ª fica
+  /// parada). Par do `DataTableComponent(stack: false)`.
+  final bool stack;
 
   /// v0.20: linha de total (par do `t.footer`/`t.total` do web).
   final List<Widget>? footer;
@@ -139,7 +145,7 @@ class SsDataTable extends StatelessWidget {
       label: label,
       child: LayoutBuilder(
         builder: (context, box) {
-          final pilha = box.maxWidth < stackBelow;
+          final pilha = stack && box.maxWidth < stackBelow;
           if (loading) return _fantasma(context, pilha);
           if (rows.isEmpty) {
             return SsEmptyState(
@@ -222,9 +228,11 @@ class SsDataTable extends StatelessWidget {
     }
 
     final linha = Row(
-      children: [for (var i = 0; i < columns.length; i++) celula(i, fantasma: larguras != null && i == 0)],
+      children: [
+        for (var i = 0; i < columns.length; i++) celula(i, fantasma: larguras != null && stickyFirstColumn && i == 0),
+      ],
     );
-    if (larguras == null || columns.isEmpty) return linha;
+    if (larguras == null || columns.isEmpty || !stickyFirstColumn) return linha;
     final primeira = _conteudo(
       context,
       columns[0],
@@ -323,7 +331,7 @@ class SsDataTable extends StatelessWidget {
     final c = SsColors.of(context);
     final corpo = LayoutBuilder(
       builder: (context, box) {
-        if (stickyFirstColumn && box.hasBoundedWidth) {
+        if ((stickyFirstColumn || !stack) && box.hasBoundedWidth) {
           final larguras = _larguras(box.maxWidth);
           final total = larguras.fold<double>(0, (a, b) => a + b);
           if (total > box.maxWidth + .5) return _RolagemFixa(tabela: this, larguras: larguras, total: total);

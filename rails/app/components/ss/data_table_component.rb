@@ -42,6 +42,8 @@ module Ss
   #   do campo); a 1ª coluna sem total recebe "Total" (componentes_ui.data_table.total; t.total(:cliente, "Geral")
   #   troca). t.footer { |rows| … }: um <tfoot> livre numa célula só. Par: SsDataTable(footer:).
   # - flat: true: sem a moldura de card (tabela dentro de um card com título). Par: SsDataTable(flat: true).
+  # - v0.20.4: stack: false mantém a tabela no celular (rola de lado, a coluna sticky: funciona) em vez de virar
+  #   um card por linha (escala de 14 dias, grade de horários). Par: SsDataTable(stack: false).
   # - Linha apagada: row_attrs: ->(r) { { class: ("is-dimmed" if r.inativo?) } } (tr.is-dimmed). Par: SsDataRow(dimmed:).
   class DataTableComponent < BaseComponent
     Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, :sticky, :header, keyword_init: true)
@@ -51,7 +53,7 @@ module Ss
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
                    max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, select_name: "ids[]",
-                   bulk_method: :post, row_href: nil, flat: false, **opts)
+                   bulk_method: :post, row_href: nil, flat: false, stack: true, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -76,11 +78,13 @@ module Ss
       @bulk_method = bulk_method.to_s.downcase.presence || "post"
       @row_href = row_href
       @flat = flat
+      @stack = stack
       @totals = {}
       @columns = []
     end
 
     def flat? = @flat
+    def stack? = @stack
 
     def column(key, label, align: nil, sortable: false, format: nil, hideable: true, sticky: false, header: nil, &block)
       align ||= %i[money number].include?(format) ? :right : :left

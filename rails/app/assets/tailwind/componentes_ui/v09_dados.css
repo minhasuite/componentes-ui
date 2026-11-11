@@ -57,20 +57,21 @@
   .ss-dt .ss-selection-bar > span b { margin-right: .15rem; }
   .ss-dt-bulk { display: contents; }
 
+  /* v0.20.4: .ss-dt.is-scroll (DataTableComponent(stack: false)) continua tabela no celular, rolando de lado. */
   @media (max-width: 639px) {
-    .ss-dt-scroll { max-height: none !important; overflow: visible; background: none; box-shadow: none; border: 0; }
-    .ss-dt .ss-table, .ss-dt .ss-table tbody, .ss-dt .ss-table tr, .ss-dt .ss-table td { display: block; width: 100%; }
-    .ss-dt .ss-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .ss-dt .ss-table tbody { display: grid; gap: .6rem; }
-    .ss-dt .ss-table tbody tr:not(.ss-dt-detail) { position: relative; padding: .4rem .25rem; border-radius: 16px; background: var(--surface);
+    .ss-dt:where(:not(.is-scroll)) .ss-dt-scroll { max-height: none !important; overflow: visible; background: none; box-shadow: none; border: 0; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table, .ss-dt:where(:not(.is-scroll)) .ss-table tbody, .ss-dt:where(:not(.is-scroll)) .ss-table tr, .ss-dt:where(:not(.is-scroll)) .ss-table td { display: block; width: 100%; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tbody { display: grid; gap: .6rem; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tbody tr:not(.ss-dt-detail) { position: relative; padding: .4rem .25rem; border-radius: 16px; background: var(--surface);
                                                     box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
-    .ss-dt .ss-table td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 0; padding: .4rem .85rem; text-align: right; }
-    .ss-dt .ss-table td[data-label]::before { content: attr(data-label); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: left; }
-    .ss-dt .ss-table td.ss-dt-check { position: absolute; top: .5rem; right: .35rem; width: auto; z-index: 1; }
-    .ss-dt .ss-table td.ss-dt-x { width: auto; justify-content: flex-start; }
-    .ss-dt .ss-table [data-col].is-hidden { display: none; }
-    .ss-dt .ss-table .ss-dt-detail > td { border-radius: 14px; padding: .8rem 1rem !important; text-align: left; display: block; }
-    .ss-dt .ss-table .ss-dt-detail[hidden] { display: none; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 0; padding: .4rem .85rem; text-align: right; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table td[data-label]::before { content: attr(data-label); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: left; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table td.ss-dt-check { position: absolute; top: .5rem; right: .35rem; width: auto; z-index: 1; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table td.ss-dt-x { width: auto; justify-content: flex-start; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table [data-col].is-hidden { display: none; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table .ss-dt-detail > td { border-radius: 14px; padding: .8rem 1rem !important; text-align: left; display: block; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table .ss-dt-detail[hidden] { display: none; }
     .ss-seg.ss-dt-density { width: 12rem; }
   }
 

@@ -1,4 +1,4 @@
-<%= tag.div(**root_attrs(id: id, class: classes("ss-dt", ("is-flat" if flat?), ("has-sticky" if columns.any?(&:sticky))), data: { controller: "ss-table", ss_table_key_value: id, density: @density })) do %>
+<%= tag.div(**root_attrs(id: id, class: classes("ss-dt", ("is-flat" if flat?), ("is-scroll" unless stack?), ("has-sticky" if columns.any?(&:sticky))), data: { controller: "ss-table", ss_table_key_value: id, density: @density })) do %>
   <% if @tools %>
     <div class="ss-dt-tools">
       <div class="ss-seg ss-dt-density" role="group" aria-label="<%= tt("density", default: "Densidade das linhas") %>">

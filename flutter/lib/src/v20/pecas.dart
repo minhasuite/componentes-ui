@@ -203,6 +203,13 @@ class SsStickyActionBar extends StatelessWidget {
 /// [minItems] esconde o × quando sobrar só esse tanto.
 ///
 /// `SsRepeater(itemCount: itens.length, itemBuilder: (ctx, i) => ItemForm(itens[i]), onAdd: () => setState(() => itens.add(Item())), onRemove: (i) => setState(() => itens.removeAt(i)))`
+///
+/// v0.20.3: [header] põe o cabeçalho uma vez em cima ("PRODUTO", "QTD"…), com
+/// a mesma largura das linhas (o × tem a sua coluna); [flex] divide a largura
+/// das células do cabeçalho (padrão: 1 cada) e [SsRepeater.cells] monta a linha
+/// com os mesmos flex. Com [header] o × fica no meio da linha. Os campos da
+/// linha usam `SsTextField(label: 'Qtd', hideLabel: true)` (o rótulo continua
+/// para o leitor de tela). Par do `RepeaterComponent(header:, columns:)`.
 class SsRepeater extends StatelessWidget {
   const SsRepeater({
     super.key,
@@ -214,7 +221,31 @@ class SsRepeater extends StatelessWidget {
     this.removeLabel,
     this.minItems = 0,
     this.spacing,
+    this.header,
+    this.flex,
   });
+
+  /// v0.20.3: cabeçalho único (texto de cada coluna; vazio = célula vazia).
+  final List<String>? header;
+
+  /// v0.20.3: flex de cada coluna do [header] (o mesmo que a linha usa).
+  final List<int>? flex;
+
+  /// v0.20.3: a linha com as colunas no mesmo [flex] do cabeçalho:
+  /// `itemBuilder: (ctx, i) => SsRepeater.cells([produto, qtd, total], flex: const [4, 1, 2])`.
+  static Widget cells(List<Widget> children, {List<int>? flex, double? spacing}) => Builder(
+    builder: (context) {
+      final gap = spacing ?? SsDensity.of(context).gap - 4;
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: gap,
+        children: [
+          for (var i = 0; i < children.length; i++)
+            Expanded(flex: flex != null && i < flex.length ? flex[i] : 1, child: children[i]),
+        ],
+      );
+    },
+  );
 
   final int itemCount;
   final Widget Function(BuildContext context, int index) itemBuilder;
@@ -236,18 +267,62 @@ class SsRepeater extends StatelessWidget {
     final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     final gap = spacing ?? d.gap;
+    final c = SsColors.of(context);
+    final tira = onRemove != null && itemCount > minItems;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (header != null)
+          ExcludeSemantics(
+            child: Container(
+              margin: EdgeInsets.only(bottom: gap),
+              padding: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: c.line)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SsRepeater.cells([
+                      for (final h in header!)
+                        Text(
+                          h.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.muted,
+                            fontSize: d.font(AppType.label),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: AppType.trackingTight,
+                          ),
+                        ),
+                    ], flex: flex),
+                  ),
+                  // A coluna do × (do mesmo tamanho do botão, invisível).
+                  if (tira)
+                    IgnorePointer(
+                      child: Opacity(
+                        opacity: 0,
+                        child: SsIconButton(
+                          icon: Icons.close_rounded,
+                          tooltip: removeLabel ?? SsStrings.of(context).removeRow,
+                          onPressed: () {},
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         for (var i = 0; i < itemCount; i++)
           Padding(
             padding: EdgeInsets.only(bottom: gap),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: header != null ? CrossAxisAlignment.center : CrossAxisAlignment.start,
               children: [
                 Expanded(child: itemBuilder(context, i)),
-                if (onRemove != null && itemCount > minItems)
+                if (tira)
                   SsIconButton(
                     icon: Icons.close_rounded,
                     tooltip: '${removeLabel ?? s.removeRow} ${i + 1}',

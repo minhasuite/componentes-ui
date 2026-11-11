@@ -41,11 +41,11 @@
   .ss-dt.is-flat .ss-dt-scroll { background: none; box-shadow: none; border: 0; border-radius: 0; }
   .ss-dt.is-flat .ss-dt-scroll > .ss-table thead th { border-radius: 0; }
   @media (max-width: 639px) {
-    .ss-dt .ss-table tfoot { display: block; margin-top: .6rem; }
-    .ss-dt .ss-table tfoot tr { display: block; border-radius: 16px; background: var(--field); padding: .4rem .25rem; }
-    .ss-dt .ss-table tfoot td { background: none; border: 0; }
-    .ss-dt .ss-table tfoot td:empty { display: none; }
-    .ss-dt .ss-table :is(th, td).is-sticky { position: static; box-shadow: none; background: none; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tfoot { display: block; margin-top: .6rem; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tfoot tr { display: block; border-radius: 16px; background: var(--field); padding: .4rem .25rem; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tfoot td { background: none; border: 0; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table tfoot td:empty { display: none; }
+    .ss-dt:where(:not(.is-scroll)) .ss-table :is(th, td).is-sticky { position: static; box-shadow: none; background: none; }
   }
 
   /* ── Barra fixa com resumo à esquerda (StickyActionBarComponent#with_summary) ── */
@@ -68,6 +68,22 @@
   .ss-repeater-remove { margin-top: 1.55rem; }
   .ss-repeater-remove:hover { background: var(--danger-soft); color: var(--danger); }
   .ss-repeater-remove[hidden] { display: none; }
+  /* v0.20.3: colunas próprias (columns: / r.row(columns:)), cabeçalho único (header:) e rótulos só para o leitor
+     de tela (hide_labels:) em tela larga; no celular, a grade automática e os rótulos de volta. */
+  .ss-repeater.has-header .ss-repeater-list, .ss-repeater-head { width: 100%; }
+  .ss-repeater-head { display: none; align-items: end; gap: .4rem; padding-bottom: .1rem; border-bottom: 1px solid var(--line); }
+  .ss-repeater-head-cells { flex: 1; min-width: 0; display: grid; gap: .5rem; grid-template-columns: var(--ss-repeater-cols, repeat(auto-fit, minmax(min(100%, 10rem), 1fr))); }
+  .ss-repeater-head-cell { font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ss-repeater-head-cell.is-end { text-align: end; }
+  .ss-repeater-head-x { flex: none; width: var(--ss-control-h-sm); }
+  @media (min-width: 48rem) {
+    .ss-repeater-fields { grid-template-columns: var(--ss-repeater-cols, repeat(auto-fit, minmax(min(100%, 10rem), 1fr))); }
+    .ss-repeater.has-header .ss-repeater-head { display: flex; }
+    .ss-repeater.is-labels-hidden .ss-repeater-fields :is(.ss-field > label, .ss-field > legend, .ss-label) {
+      position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .ss-repeater.is-labels-hidden .ss-repeater-row { align-items: center; }
+    .ss-repeater.is-labels-hidden .ss-repeater-remove { margin-top: 0; }
+  }
 
   /* ── Item externo no menu da moldura (AppShellComponent item external: true) ── */
   .ss-shell-ext { display: inline-block; width: .8rem; height: .8rem; margin-left: .3rem; vertical-align: -.05rem; opacity: .6; }

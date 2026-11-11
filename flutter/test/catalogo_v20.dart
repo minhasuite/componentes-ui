@@ -99,6 +99,7 @@ final catalogoV20 = <Componente>[
       'A lista é do app: onAdd acrescenta e onRemove(i) tira; o widget só desenha.',
       'minItems esconde o × quando sobram só essas linhas.',
       'O × é lido "Remover linha 2"; o botão de adicionar usa o texto addRow (pt/en/es).',
+      'v0.20.3: header: põe o cabeçalho uma vez (na largura das linhas, com a coluna do ×) e o × fica no meio da linha; flex: e SsRepeater.cells alinham as colunas; os campos usam hideLabel: true.',
     ],
     estados: [
       Estado(
@@ -114,6 +115,28 @@ final catalogoV20 = <Componente>[
           ),
         ),
         tamanho: const Size(360, 260),
+      ),
+      Estado(
+        'cabecalho',
+        'cabeçalho único (v0.20.3)',
+        (_) => _pad(
+          SsRepeater(
+            itemCount: 2,
+            header: const ['Produto', 'Qtd', 'Total'],
+            flex: const [4, 1, 2],
+            itemBuilder: (_, i) => SsRepeater.cells(
+              [
+                SsTextField(label: 'Produto', hideLabel: true, initialValue: i == 0 ? 'Arroz 5 kg' : 'Feijão 1 kg'),
+                SsTextField(label: 'Qtd', hideLabel: true, initialValue: '${i + 1}'),
+                Text(i == 0 ? r'R$ 25,90' : r'R$ 17,80', textAlign: TextAlign.end),
+              ],
+              flex: const [4, 1, 2],
+            ),
+            onAdd: _nada,
+            onRemove: (_) {},
+          ),
+        ),
+        tamanho: const Size(420, 290),
       ),
     ],
   ),
@@ -327,6 +350,7 @@ final Map<String, (List<String>, List<Estado>)> _v20 = {
   'ss-data-table': (
     [
       'v0.20: stickyFirstColumn: rola de lado com a 1ª coluna parada quando as colunas não cabem (mínimo minColumnWidth).',
+      'v0.20.4: stack: false mantém a tabela no celular (rola de lado; com stickyFirstColumn a 1ª fica parada) em vez de virar cartões.',
       'v0.20: footer: linha de total em negrito no fundo do campo (no celular, bloco no fim); flat: sem moldura de card; SsDataRow(dimmed:) apaga a linha; SsDataColumn(header:) troca o texto do cabeçalho por um widget.',
     ],
     [
@@ -366,6 +390,25 @@ final Map<String, (List<String>, List<Estado>)> _v20 = {
           ),
         ),
         tamanho: const Size(360, 220),
+      ),
+      Estado(
+        'sem-cartoes',
+        'stack: false no celular (v0.20.4)',
+        (_) => _pad(
+          SsDataTable(
+            stack: false,
+            stickyFirstColumn: true,
+            minColumnWidth: 56,
+            columns: [
+              for (final n in ['Pessoa', for (var d = 1; d <= 14; d++) '$d']) SsDataColumn(n),
+            ],
+            rows: [
+              for (final p in ['Ana', 'Bia', 'Caio'])
+                SsDataRow.text([p, for (var d = 1; d <= 14; d++) (d + p.length).isEven ? 'M' : 'T']),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 260),
       ),
     ],
   ),

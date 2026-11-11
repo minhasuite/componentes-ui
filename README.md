@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.20.2
+      ref: v0.20.4
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.2"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.4"
 ```
 
 ```css
@@ -609,6 +609,40 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 28% mais claro, fundo do gradiente 35% mais escuro. Use no tema do usuário em vez de `Colors.black/white`.
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
+
+## v0.20.4: linhas repetíveis com cabeçalho único e colunas próprias, tabela que não vira cartão e o número grande separado do card
+
+O que o pedido do minhas-vendas (web) achou no `Ss::RepeaterComponent` da v0.20.0: cada linha repetia os rótulos, o ×
+tinha `margin-top` fixo e as colunas só saíam com uma `<div>` de grade do Tailwind dentro da linha. Tudo aditivo (sem os
+parâmetros novos, igual à v0.20.0). Catálogo: estado `cabecalho` no `ss-repeater` (`flutter/test/catalogo_v20.dart`) e a
+seção `ss-repeater-header` em `rails/catalogo/index.html` (`rails/sample/script/catalogo_v020.rb`); testes em
+`flutter/test/v20_test.dart` e `rails/sample/test/components/v20_web_test.rb`. CSS em `v20_web.css`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Cabeçalho único | `SsRepeater(header: ['Produto', 'Qtd', 'Total'], flex: [4, 1, 2])`: o cabeçalho uma vez em cima (versalete, fio embaixo, a coluna do × reservada) e o × no meio da linha; os campos usam `SsTextField(label:, hideLabel: true)` | `Ss::RepeaterComponent(header: ["Produto", "Qtd", { label: "Total", align: :end }])` → `.ss-repeater.has-header` + `.ss-repeater-head` (só a partir de 48rem; `aria-hidden`, os campos continuam com rótulo) | o rótulo repetido em cada linha |
+| Rótulos só para o leitor de tela | (`hideLabel:` em cada campo) | `hide_labels:` (padrão `true` com `header:`): `.ss-field > label`, `legend` e `.ss-label` da linha ficam visíveis só abaixo de 48rem; o × vai ao meio da linha (`.is-labels-hidden`) | `margin-top` fixo do × |
+| Colunas da linha | `SsRepeater.cells([...], flex: [4, 1, 2])` (a linha com os mesmos flex do cabeçalho) | `columns: [4, 1, "7rem"]` (número = `minmax(0, Nfr)`) ou texto de `grid-template-columns`, no componente (cabeçalho e linhas) ou por linha em `r.row(columns:)`; vale a partir de 48rem, abaixo a grade automática | `<div class="grid grid-cols-2 md:grid-cols-12 …">` dentro da linha |
+| Atributos da linha | — | `r.row(data: {…}, class: "…", id: "…", **attrs)` no `.ss-repeater-row` (`data:` soma ao alvo do `ss-repeater`, `class:` soma) | `data-row` numa `<div>` interna |
+| Tabela que continua tabela no celular | `SsDataTable(stack: false)`: nunca vira cartões; quando as colunas não cabem, rola de lado (com `stickyFirstColumn`, a 1ª fica parada; cada coluna sem `width` tem no mínimo `minColumnWidth`) | `Ss::DataTableComponent(stack: false)` → `.ss-dt.is-scroll` (abaixo de 640px segue tabela, rolando de lado; `t.column(sticky: true)` funciona) | escala de 14 dias virando 14 linhas de cartão |
+| Número grande | `AppType.statNum` (já existia) | `.ss-figure` (novo nome) = o `.ss-stat` solto da v0.5 | `.ss-stat` dentro do herói saindo branco sobre card branco |
+
+Uso no pedido: `render(Ss::RepeaterComponent.new(add_label: "Adicionar item", header: ["Produto", "Descrição", "Qtd", "Unitário", "Desc.", { label: "Total", align: :end }], columns: [4, 2, 1, 2, 1, 2]))`
+e, em cada linha, `r.row(data: { auto_price: 1, promo_discount: 0 }) { campos direto, um por coluna }`.
+
+Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seções `ss-data-table-scroll` e `ss-figure` (web).
+
+**Padrões que mudaram.**
+
+- **`.ss-stat` tinha dois desenhos** no `engine.css`: o número grande da v0.5 (`.ss-hero .ss-stat`, `.ss-card .ss-stat`) e,
+  mais abaixo, o card de indicador (`.ss-stat` com `.ss-stat-body`/`.ss-stat-label`/`.ss-stat-foot` e `.ss-spark`), que dava
+  fundo de superfície a **todo** `.ss-stat`: no herói o número saía branco sobre card branco. Agora o card só vale com
+  `.ss-stat.is-card` ou com o markup dele (`.ss-stat:has(> .ss-stat-body)`, o que mantém o markup antigo); `.ss-stat` solto
+  é só o número, e `.ss-figure` é o mesmo número com nome próprio (prefira em código novo). Conferido em 10/11 nos webs
+  (`*-workspace/*/app/views`): meu-gestor e minhas-vendas usam `.ss-stat` só como número (`<p class="ss-stat">`, mais de
+  60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
+- Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
+  como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
 ## v0.20.2: projeção tracejada no gráfico de barras
 
@@ -1251,6 +1285,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
 - `v0.20.2` (11/11/2026): seção "v0.20.2". Projeção tracejada no gráfico de barras: `SsBarChart(projection:, projectionFrom:)` ↔ `Ss::BarChartComponent(projection:, projection_from:)` (legenda tracejada, dica/balão, tabela e `Semantics` para leitor de tela, claro/escuro). Nada quebra.
 - `v0.20.1` (11/11/2026): `SsButton(expand: false)` fica do tamanho do texto dentro de `Wrap`/`Align` (antes esticava).
 - `v0.20.0` (10/11/2026): seção "v0.20.0" (o que o minhas-vendas e o meu-gestor pediram para chegar a 100%). `f.ss_*(hide_label:)` ↔ `SsTextField(hideLabel:)`, `f.ss_text_field(mask: :document/:phone/:cep)` + `ss-mask` ↔ `SsMask`, `f.ss_radio_buttons(checked:)` ↔ `SsRadioGroup` (novo), `ButtonComponent(variant: :ghost, tone: :danger)` ↔ `SsButton.ghost(tone:)`, `.is-dimmed` ↔ `SsDataRow(dimmed:)`, `Ss::ListItemComponent(subtitle_tone:, value_tone:)` (novo) ↔ `SsListItem(subtitleTone:, valueTone:)`, `KpiCardComponent(value_tone:)` ↔ `SsKpiCard(valueTone:)`, `CardHeaderComponent(eyebrow:)` ↔ `SsCardHeader(eyebrow:)`, `StickyActionBarComponent#with_summary` ↔ `SsStickyActionBar` (novo), `DataTableComponent(row_href:, flat:)` + `t.column(sticky:, header:)` + `t.total`/`t.footer` ↔ `SsDataTable(stickyFirstColumn:, footer:, flat:)` + `SsDataColumn(header:)`, `with_action` na paleta e no combobox ↔ `showSsPicker(actions:)`/`SsPickerAction`, `Ss::RepeaterComponent` + `ss-repeater` ↔ `SsRepeater`, `data-ss-privacy="off"`, item `external:` no `AppShellComponent`, `SsNavItem(badge:)`, `Ss::TextLinkComponent` ↔ `SsLinkText`/`SsTextLink`, `Ss::TermsNoticeComponent` ↔ `SsTermsNotice`, `Ss::EditableValueComponent` ↔ `SsEditableValue`, `Ss::NodeCanvasComponent` + `.ss-node-canvas` (pele do Drawflow, só web) e `GoogleButtonComponent(mode: :gis)`. Correção do `for=` do `f.ss_check_box(id:)`. Nada quebra.

@@ -223,4 +223,42 @@ class V20WebTest < ComponentTest
     assert_includes html, "tr class=\"is-link"
     assert_includes html, "ss-repeater"
   end
+
+  test "RepeaterComponent v0.20.3: cabeçalho único, rótulos escondidos, colunas e atributos da linha" do
+    render_inline(Ss::RepeaterComponent.new(header: ["Produto", "Qtd", { label: "Total", align: :end }], columns: [4, 1, "8rem"])) do |r|
+      r.row(data: { auto_price: 1 }, class: "is-promo", id: "item-1") { "<div class='ss-field'><label>Produto</label><input></div>".html_safe } +
+        r.row(columns: "1fr 1fr") { "<div class='ss-field'><label>Produto</label><input></div>".html_safe }
+    end
+    root = page.find(".ss-repeater")
+    assert_includes root[:class], "is-labels-hidden"
+    assert_includes root[:class], "has-header"
+    assert_includes root[:style], "--ss-repeater-cols: minmax(0, 4fr) minmax(0, 1fr) 8rem"
+    assert_selector ".ss-repeater > .ss-repeater-head[aria-hidden=true] .ss-repeater-head-cells > span.ss-repeater-head-cell", count: 3
+    assert_selector ".ss-repeater-head-cell.is-end", text: "Total"
+    assert_selector ".ss-repeater-head > .ss-repeater-head-x"
+    assert_selector ".ss-repeater-row.is-promo#item-1[data-auto-price='1'][data-ss-repeater-target=row]"
+    assert_selector ".ss-repeater-row .ss-repeater-fields[style='--ss-repeater-cols: 1fr 1fr']"
+    render_inline(Ss::RepeaterComponent.new(header: ["A"], hide_labels: false)) { |r| r.row { "x" } }
+    refute_selector ".ss-repeater.is-labels-hidden"
+    render_inline(Ss::RepeaterComponent.new) { |r| r.row { "x" } }
+    refute_selector ".ss-repeater-head"
+    refute_selector ".ss-repeater.is-labels-hidden"
+    refute_selector ".ss-repeater[style]"
+    css = CSS.join("v20_web.css").read
+    assert_includes css, ".ss-repeater.is-labels-hidden .ss-repeater-remove { margin-top: 0; }"
+  end
+
+  test "v0.20.4: DataTableComponent(stack: false) e .ss-stat/.ss-figure desambiguados" do
+    render_inline(Ss::DataTableComponent.new(rows: [{ id: 1, nome: "Ana" }], id: "esc", caption: "Escala", tools: false, stack: false)) { |t| t.column :nome, "Pessoa", sticky: true }
+    assert_selector ".ss-dt.is-scroll.has-sticky"
+    render_inline(Ss::DataTableComponent.new(rows: [{ id: 1, nome: "Ana" }], id: "esc2", caption: "Escala", tools: false)) { |t| t.column :nome, "Pessoa" }
+    refute_selector ".ss-dt.is-scroll"
+    dados = CSS.join("v09_dados.css").read
+    assert_includes dados, ".ss-dt:where(:not(.is-scroll)) .ss-table thead { position: absolute;"
+    refute_match(/^\s+\.ss-dt \.ss-table thead \{ position: absolute/, dados)
+    engine = CSS.join("engine.css").read
+    assert_includes engine, ":is(.ss-stat, .ss-figure) { font-family: var(--font-sans);"
+    assert_includes engine, ":is(.ss-stat.is-card, .ss-stat:has(> .ss-stat-body)) { display: flex; flex-direction: column; background: var(--surface);"
+    refute_match(/^\s+\.ss-stat \{ display: flex/, engine)
+  end
 end

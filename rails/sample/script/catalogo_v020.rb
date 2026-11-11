@@ -75,6 +75,16 @@ out << section("ss-repeater", "Ss::RepeaterComponent", "Linhas repetíveis de fo
 pal = r(Ss::ComboboxComponent.new(name: "produto_id", label: "Produto", options: [{ id: 1, label: "Arroz 5 kg" }])) do |c|
   c.with_action { r(Ss::IconButtonComponent.new(icon: "qrcode", label: "Ler código de barras")).html_safe }
 end
+rep2 = r(Ss::RepeaterComponent.new(add_label: "Adicionar item", header: ["Produto", "Qtd", { label: "Total", align: :end }], columns: [4, 1, "7rem"])) do |rp|
+  [["Arroz 5 kg", "1", "R$ 25,90"], ["Feijão 1 kg", "2", "R$ 17,80"]].map do |(p, q, tot)|
+    rp.row { %(<div class="ss-field"><label>Produto</label><input class="ss-input" value="#{p}"></div><div class="ss-field"><label>Qtd</label><input class="ss-input num" value="#{q}"></div><p class="num" style="margin:0;text-align:end;font-weight:700">#{tot}</p>).html_safe }
+  end.join.html_safe
+end
+out << section("ss-repeater-header", "Ss::RepeaterComponent(header:, columns:)", "Linhas do pedido com o cabeçalho uma vez (v0.20.3, par do SsRepeater(header:, flex:)).",
+  ["header: cabeçalho único em tela larga; os rótulos dos campos ficam só para o leitor de tela (hide_labels:, padrão com header:) e o × fica no meio da linha.", "columns: [4, 1, \"7rem\"] (número = fr) ou um texto de grid-template-columns, para o cabeçalho e as linhas; r.row(columns:) troca numa linha.",
+   "No celular (abaixo de 48rem): sem cabeçalho, rótulos de volta e a grade automática."],
+  [["pedido", "pedido com cabeçalho", %(<div style="width:620px"><div class="ss-card ss-card-pad">#{rep2}</div></div>)]])
+
 out << section("ss-search-action-v20", "with_action (Combobox, CommandPalette)", "Botão ao lado da busca (v0.20, par do showSsPicker(actions:)): leitor de código de barras, cadastrar novo.",
   ["O botão é do app (Ss::IconButtonComponent com o data-action dele); na paleta, ss-command#close fecha."],
   [["combobox", "leitor de código ao lado", box.(360, %(<div class="ss-card ss-card-pad">#{pal}</div>))]])
@@ -95,4 +105,15 @@ out << section("ss-node-canvas", "Ss::NodeCanvasComponent", "Palco do editor de 
    "Estados: .selected (brilho da marca), .is-changed (brilho verde 3×), .is-refused/.is-flash (sacode e fica vermelho); reduzir movimento desliga.", "× da seta em vermelho; node_delete: false esconde o × do bloco; readonly: tira as portas."],
   [["fluxo", "fase, decisão e recusado", box.(620, canvas)]])
 
+escala = (1..14).map { |d| { id: d, nome: %w[Ana Bia Caio][d % 3], **(1..14).to_h { |k| [:"d#{k}", (k + d).even? ? "M" : "T"] } } }.first(3)
+esc = r(Ss::DataTableComponent.new(rows: escala, id: "cat-escala", caption: "Escala", tools: false, stack: false)) do |t|
+  t.column :nome, "Pessoa", sticky: true
+  (1..14).each { |k| t.column :"d#{k}", k.to_s.rjust(2, "0") }
+end
+out << section("ss-data-table-scroll", "DataTableComponent(stack: false)", "Tabela que continua tabela no celular (v0.20.4, par do SsDataTable(stack: false)): rola de lado com a 1ª coluna parada.",
+  ["Sem stack: false, abaixo de 640px cada linha vira um card.", "Com sticky: na 1ª coluna, o nome fica parado enquanto os dias rolam."],
+  [["celular", "escala de 14 dias em 360px", box.(360, esc)]])
+out << section("ss-figure", ".ss-figure (número grande)", "O número grande da v0.5 com nome próprio (v0.20.4, par do AppType.statNum): no herói, num card ou solto. .ss-stat solto continua igual.",
+  [".ss-stat só vira card com .is-card ou com o markup dele (.ss-stat-body).", "No herói o número herda o branco do gradiente."],
+  [["heroi", "no herói e num card", row.(%(<div class="ss-hero" style="padding:16px 20px;width:220px"><p class="ss-kicker" style="color:inherit;opacity:.8">Vendido hoje</p><p class="ss-figure">R$ 4.280</p></div>), %(<div class="ss-card ss-card-pad" style="width:200px"><p class="ss-kicker">Pedidos</p><p class="ss-stat">128</p></div>))]])
 print out

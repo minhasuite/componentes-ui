@@ -453,4 +453,91 @@ void main() {
     expect(a.width, lessThan(200));
     expect(b.top, a.top); // lado a lado, não um por linha
   });
+
+  group('SsRepeater(header:, flex:) v0.20.3', () {
+    testWidgets('cabeçalho uma vez, colunas alinhadas às da linha, × no meio', (t) async {
+      await t.pumpWidget(
+        _app(
+          SizedBox(
+            width: 360,
+            child: SsRepeater(
+              itemCount: 2,
+              header: const ['Produto', 'Qtd'],
+              flex: const [3, 1],
+              itemBuilder: (_, i) => SsRepeater.cells(
+                [
+                  SsTextField(label: 'Produto', hideLabel: true, initialValue: 'Arroz $i'),
+                  const SsTextField(label: 'Qtd', hideLabel: true, initialValue: '1'),
+                ],
+                flex: const [3, 1],
+              ),
+              onRemove: (_) {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('PRODUTO'), findsOneWidget);
+      expect(find.text('QTD'), findsOneWidget);
+      expect(find.byType(SsFieldLabel), findsNothing);
+      final cab = t.getTopLeft(find.text('QTD')).dx;
+      final campo = t.getTopLeft(find.byType(SsTextField).at(1)).dx;
+      expect(cab, closeTo(campo, 1));
+      final x = t.getCenter(find.byTooltip('Remover linha 1')).dy;
+      final linha = t.getCenter(find.byType(SsTextField).first).dy;
+      expect(x, closeTo(linha, 1));
+    });
+  });
+
+  group('SsDataTable(stack: false) v0.20.4', () {
+    testWidgets('no celular continua tabela e rola de lado com a 1ª coluna parada', (t) async {
+      final cols = [
+        for (final n in ['Pessoa', for (var d = 1; d <= 14; d++) '$d']) SsDataColumn(n),
+      ];
+      List<SsDataRow> linhas() => [
+        SsDataRow.text(['Ana', for (var d = 1; d <= 14; d++) d.isEven ? 'M' : 'T']),
+      ];
+      await t.pumpWidget(
+        _app(
+          SizedBox(
+            width: 340,
+            child: SsDataTable(
+              columns: cols,
+              rows: linhas(),
+              stack: false,
+              stickyFirstColumn: true,
+              minColumnWidth: 60,
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('PESSOA'), findsWidgets);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      final ana = t.getTopLeft(find.text('Ana').last).dx;
+      await t.drag(find.byType(SingleChildScrollView), const Offset(-300, 0));
+      await t.pumpAndSettle();
+      expect(t.getTopLeft(find.text('Ana').last).dx, closeTo(ana, 1));
+      await t.pumpWidget(
+        _app(
+          SizedBox(
+            width: 340,
+            child: SsDataTable(columns: cols, rows: linhas(), stack: false, minColumnWidth: 60),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(find.text('Ana'), findsOneWidget);
+      await t.pumpWidget(
+        _app(
+          SizedBox(
+            width: 340,
+            child: SsDataTable(columns: cols, rows: linhas()),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('PESSOA'), findsNothing);
+    });
+  });
 }
