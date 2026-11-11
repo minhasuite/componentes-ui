@@ -115,8 +115,8 @@ final catalogoV13 = <Componente>[
     comportamentos: [
       'Pílulas brancas translúcidas numa linha que rola de lado se não couber; ícone opcional (SsMosaicFact).',
       'Leitor de tela: título e as pílulas numa frase só.',
-      'v0.19.3: tone: pinta a pílula no tom semântico (SsTone; fundo suave opaco, texto no tom).',
-      'v0.19.3: onTap: na pílula é um botão à parte (ganha do toque do bloco; semanticLabel: para o leitor de tela).',
+      'v0.20.3: tone: pinta a pílula no tom semântico (SsTone; fundo suave opaco, texto no tom).',
+      'v0.20.3: onTap: na pílula é um botão à parte (ganha do toque do bloco; semanticLabel: para o leitor de tela).',
     ],
     estados: [
       Estado(

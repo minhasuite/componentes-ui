@@ -39,7 +39,7 @@ class SsMosaicTile extends StatelessWidget {
   /// Pílulas de resumo no lugar do [caption] (v0.13; o `facts:` do
   /// `Ss::MosaicTileComponent`): "2 ligados", "87 W", com ícone opcional,
   /// numa linha que rola de lado se não couber (no web, quebram linha).
-  /// Desde a v0.19.3 cada pílula pode ter tom ([SsMosaicFact.tone]) e toque
+  /// Desde a v0.20.3 cada pílula pode ter tom ([SsMosaicFact.tone]) e toque
   /// próprio ([SsMosaicFact.onTap]), que ganha do [onTap] do bloco.
   final List<SsMosaicFact>? facts;
 
@@ -178,7 +178,7 @@ class SsMosaicTile extends StatelessWidget {
 
 /// Pílula de resumo do [SsMosaicTile.facts] (v0.13): texto e ícone opcional.
 ///
-/// v0.19.3: [tone] pinta a pílula no tom semântico (fundo suave opaco e texto
+/// v0.20.3: [tone] pinta a pílula no tom semântico (fundo suave opaco e texto
 /// no tom, como o `SsStatusBadge`); sem tom fica a branca translúcida. Com
 /// [onTap] a pílula é um botão à parte dentro do bloco (ganha do toque do
 /// bloco); [semanticLabel] é o que o leitor de tela diz (padrão: [label]).

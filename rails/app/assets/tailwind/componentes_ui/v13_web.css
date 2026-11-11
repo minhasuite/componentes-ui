@@ -75,13 +75,13 @@
   .ss-mosaic-fact { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
                     background: rgb(255 255 255 / .2); }
   .ss-mosaic-fact svg { width: .875rem; height: .875rem; flex: none; }
-  /* v0.19.3: pílula no tom (cores semânticas da suíte, fundo suave opaco: o texto passa AA em
+  /* v0.20.3: pílula no tom (cores semânticas da suíte, fundo suave opaco: o texto passa AA em
      qualquer matiz do bloco). */
   .ss-mosaic-fact.is-ok { background: var(--success-soft); color: var(--success); }
   .ss-mosaic-fact.is-warn { background: var(--warn-soft); color: var(--warn); }
   .ss-mosaic-fact.is-danger { background: var(--danger-soft); color: var(--danger); }
   .ss-mosaic-fact.is-info { background: color-mix(in srgb, var(--ss-info) 16%, var(--surface)); color: color-mix(in srgb, var(--ss-info) 72%, var(--ink)); }
-  /* v0.19.3: pílula com link. Com ela o bloco é <div.ss-mosaic.is-linked> e o link dele é o
+  /* v0.20.3: pílula com link. Com ela o bloco é <div.ss-mosaic.is-linked> e o link dele é o
      <a.ss-mosaic-link> esticado (link dentro de link não vale); a pílula fica por cima. */
   .ss-mosaic-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
   .ss-mosaic-link:focus-visible { outline: none; }

@@ -10,7 +10,7 @@ module Ss
   #
   # image_url: https ou caminho (/...) da foto; outro valor é ignorado. link_data: data- do link.
   #
-  # v0.19.3: cada pílula pode ter tone: (ok, warn, danger, info → .is-ok etc., cores semânticas da
+  # v0.20.3: cada pílula pode ter tone: (ok, warn, danger, info → .is-ok etc., cores semânticas da
   # suíte; success e warning, os nomes do SsTone, também valem), title: (dica e nome acessível) e
   # url: (link próprio, com o link_data: dela). Como link dentro de link não vale, com alguma pílula
   # com url: o bloco com url: vira <div class="ss-mosaic is-linked"> e o link dele passa a ser um
