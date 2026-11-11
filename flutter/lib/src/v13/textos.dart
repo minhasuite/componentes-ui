@@ -59,14 +59,64 @@ class SsProse extends StatelessWidget {
 }
 
 /// Lista com marcador do [SsProse] (o `ul` do web).
+///
+/// v0.19.2: [ordered] numera os itens num círculo suave da marca (passos de
+/// uma receita, instruções do aparelho; o `ol.is-steps` dentro do
+/// `.ss-prose` do web). O leitor de tela lê "1. texto". Fora do [SsProse], o
+/// texto herda o estilo de cima (passe um `DefaultTextStyle` para mudar).
 class SsProseList extends StatelessWidget {
-  const SsProseList(this.items, {super.key});
+  const SsProseList(this.items, {super.key, this.ordered = false, this.start = 1});
 
   final List<String> items;
+  final bool ordered;
+
+  /// Número do primeiro item com [ordered].
+  final int start;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    if (ordered) {
+      final n = d.font(24);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: d.space(8),
+        children: [
+          for (final (k, i) in items.indexed)
+            MergeSemantics(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(
+                    label: '${start + k}.',
+                    excludeSemantics: true,
+                    child: Container(
+                      width: n,
+                      height: n,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: c.accentSoft, shape: BoxShape.circle),
+                      child: Text(
+                        '${start + k}',
+                        style: AppTheme.number(
+                          context,
+                          size: AppType.meta,
+                          weight: FontWeight.w700,
+                          color: c.accentText,
+                        ).copyWith(height: AppType.solid),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: d.space(10)),
+                  Expanded(
+                    child: Padding(padding: const EdgeInsets.only(top: 2), child: Text(i)),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 4,

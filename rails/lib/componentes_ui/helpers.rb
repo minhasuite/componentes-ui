@@ -253,6 +253,20 @@ module ComponentesUi
       %(<span class="ss-avatar" style="--h:#{hue};--s:#{size}px" title="#{ERB::Util.h(name)}" aria-label="#{ERB::Util.h(name)}"#{st}>#{ERB::Util.h(ss_initials(name))}</span>).html_safe
     end
 
+    # v0.19.2 (par do SsMonogram): sigla de loja, site ou companhia num quadrado arredondado (ou círculo,
+    # circle: true) na cor de marca do terceiro, que é dado (#rrggbb validado; inválida = a cor da marca do
+    # produto). label: o nome por extenso para o leitor de tela (padrão: a sigla). size: em px (20).
+    #   <%= ss_monogram("ML", color: "#2D3277", label: "Mercado Livre") %>
+    def ss_monogram(text, color: nil, size: 20, circle: false, label: nil)
+      text = text.to_s
+      vars = ["--s:#{size.to_i.clamp(8, 256)}px"]
+      vars << "--ss-mono:#{color}" if color.to_s.match?(/\A#\h{6}\z/)
+      vars << "--ss-mono-scale:#{text.length > 2 ? '.34' : (text.length == 2 ? '.42' : '.56')}"
+      klass = ["ss-monogram", ("is-circle" if circle)].compact.join(" ")
+      name = label.to_s.strip.empty? ? text : label.to_s
+      %(<span class="#{klass}" style="#{vars.join(';')}" role="img" aria-label="#{ERB::Util.h(name)}">#{ERB::Util.h(text)}</span>).html_safe
+    end
+
     # v0.13: as variáveis CSS da marca a partir de uma ou duas cores (#rrggbb), para pintar um
     # trecho (style=) com outra marca: o par do SsBrand.fromColors do Flutter (mesmas misturas:
     # hover = 14% de preto, suave = 14% sobre a superfície). Cor inválida = nil.

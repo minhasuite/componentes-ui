@@ -92,3 +92,4 @@ export 'src/v16/rating.dart';
 export 'src/v18/speed_dial.dart';
 export 'src/v19/image_viewer.dart';
 export 'src/v191/pecas.dart';
+export 'src/v192/pecas.dart';

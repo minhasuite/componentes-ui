@@ -19,6 +19,10 @@ module Ss
   # (:danger no Remover) e confirm_button: (verbo do OK). Sem href: <button type="button"> ou
   # type: :submit; o resto (name:, value:, form:, formaction:, data:, aria:, title:, id:, disabled:)
   # vai no elemento. submitting: "Salvando…" põe data-turbo-submits-with.
+  # v0.19.2 (par do SsButton.onGradient(solid:, stacked:)): solid: true no :on_grad = branco com o texto na
+  # cor funda da marca (.is-solid); stacked: true = ícone em cima do rótulo (.is-stacked), para os atalhos
+  # lado a lado no herói:
+  #   render Ss::ButtonComponent.new(label: "Voo", icon: "paper-airplane", variant: :on_grad, solid: true, stacked: true, href: "#")
   class ButtonComponent < BaseComponent
     VARIANTS = { primary: "ss-btn ss-btn-primary", outline: "ss-btn ss-btn-outline", ghost: "ss-btn ss-btn-ghost",
                  danger: "ss-btn ss-btn-danger", on_grad: "ss-btn is-on-grad", chip: "ss-chip", item: "ss-item" }.freeze
@@ -26,8 +30,9 @@ module Ss
 
     def initialize(label: nil, icon: nil, trailing_icon: nil, href: nil, method: nil, variant: :primary, size: :md, block: false,
                    type: :button, confirm: nil, confirm_tone: nil, confirm_button: nil, params: nil, form: nil, submitting: nil,
-                   tone: nil, **rest)
+                   tone: nil, solid: false, stacked: false, **rest)
       super(**rest)
+      @solid, @stacked = solid, stacked
       @label, @icon, @trailing_icon, @href = label, icon, trailing_icon, href
       @method = method.to_s.downcase.presence
       @variant = VARIANTS.key?(variant.to_s.to_sym) ? variant.to_s.to_sym : :primary
@@ -52,7 +57,8 @@ module Ss
            when :chip, :item then nil
            else ("ss-btn-sm" if @size == :sm)
            end
-      classes(VARIANTS[@variant], sm, ("is-block" if @block), ("is-danger" if @tone.to_s == "danger"))
+      classes(VARIANTS[@variant], sm, ("is-block" if @block), ("is-danger" if @tone.to_s == "danger"),
+              ("is-solid" if @solid && @variant == :on_grad), ("is-stacked" if @stacked && !%i[chip item].include?(@variant)))
     end
 
     def attrs(extra_data = {})
@@ -84,7 +90,7 @@ module Ss
       return nil if icon.blank?
       return icon if icon.respond_to?(:html_safe?) && icon.html_safe?
 
-      ss_icon(icon.to_s, size: :xs)
+      ss_icon(icon.to_s, size: @stacked ? :sm : :xs)
     end
   end
 end

@@ -10,6 +10,10 @@ import '../motion.dart';
 /// Intensidade do [SsGlass].
 enum SsGlassLevel { leve, medio, forte }
 
+/// v0.19.2: tom do véu do [SsGlass]: claro (padrão) ou escuro, para texto
+/// branco sobre fundo claro e mutável (câmera, foto).
+enum SsGlassTone { light, dark }
+
 /// Superfície de vidro: desfoca o que está atrás, véu claro translúcido e um
 /// filete de luz na borda de cima. **Só em sobreposição ou herói** (sobre foto,
 /// aurora, gradiente): nunca em card de lista ou dado denso, que continuam em
@@ -21,11 +25,17 @@ class SsGlass extends StatelessWidget {
     this.level = SsGlassLevel.medio,
     this.radius = AppRadius.cardActive,
     this.padding,
+    this.tone = SsGlassTone.light,
   });
 
   final Widget child;
   final SsGlassLevel level;
   final double radius;
+
+  /// v0.19.2: [SsGlassTone.dark] troca o véu claro por um escuro (mais
+  /// opaco: 55, 63 e 74% por [level]) e deixa texto e ícone claros: a dica
+  /// sobre a câmera. O web é o `.ss-glass.is-dark`.
+  final SsGlassTone tone;
 
   /// Respiro (padrão: o do card da [SsDensity], 16 no padrão).
   final EdgeInsetsGeometry? padding;
@@ -39,7 +49,9 @@ class SsGlass extends StatelessWidget {
       SsGlassLevel.forte => (26.0, .22, .4),
     };
     final br = BorderRadius.circular(radius);
-    final tintBase = c.isDark ? c.surface : AppColors.onDark;
+    final dark = tone == SsGlassTone.dark;
+    final tintBase = dark ? AppColors.sheetBg : (c.isDark ? c.surface : AppColors.onDark);
+    final veilAlpha = dark ? .45 + veil * 1.3 : veil;
     return ClipRRect(
       borderRadius: br,
       child: BackdropFilter(
@@ -51,15 +63,26 @@ class SsGlass extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                tintBase.withValues(alpha: veil + .06),
-                tintBase.withValues(alpha: veil),
+                tintBase.withValues(alpha: veilAlpha + .06),
+                tintBase.withValues(alpha: veilAlpha),
               ],
             ),
             border: Border.all(color: AppColors.onDark.withValues(alpha: rim * .45)),
           ),
           child: CustomPaint(
             foregroundPainter: _RimPainter(radius: radius, alpha: rim),
-            child: Padding(padding: padding ?? EdgeInsets.all(SsDensity.of(context).cardPad), child: child),
+            child: Padding(
+              padding: padding ?? EdgeInsets.all(SsDensity.of(context).cardPad),
+              child: dark
+                  ? DefaultTextStyle.merge(
+                      style: const TextStyle(color: AppColors.onDark),
+                      child: IconTheme.merge(
+                        data: const IconThemeData(color: AppColors.onDark),
+                        child: child,
+                      ),
+                    )
+                  : child,
+            ),
           ),
         ),
       ),

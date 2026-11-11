@@ -616,3 +616,5 @@ en:
       card: Card
     speed_dial:
       label: Quick actions
+    photo_card:
+      source: Open the photo page

@@ -37,6 +37,8 @@
 @import "./v18_web.css";
 /* v0.19: botão como componente, entrar com o Google, cartão físico, campos de arquivo e de cor. */
 @import "./v19_web.css";
+/* v0.19.2: faixa e contorno no card, botão sólido/empilhado, selo sólido, passos, ponto, monograma, recado, vidro escuro, foto escolhida. */
+@import "./v19_2_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

@@ -26,6 +26,8 @@ class SsBadge extends StatelessWidget {
     this.micro = false,
     this.icon,
     this.dot = false,
+    this.solid = false,
+    this.mono = false,
   });
 
   final String label;
@@ -39,34 +41,31 @@ class SsBadge extends StatelessWidget {
   /// `.ss-badge-dot` do web. Ignorado quando há [icon].
   final bool dot;
 
+  /// v0.19.2: fundo cheio na cor do tom e texto claro (o `.ss-badge.is-solid`
+  /// do web): o marcador forte de um trecho ("DIA 3" do roteiro, "HOJE").
+  /// Em `muted`/`ghost` sai invertido (fundo de tinta, texto da superfície).
+  final bool solid;
+
+  /// v0.19.2: rótulo em DM Mono tabular (número, código, "DIA 3"; o
+  /// `.ss-badge.is-mono` do web).
+  final bool mono;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    late final Color fg;
-    late final Color bg;
-    switch (variant) {
-      case SsBadgeVariant.accent:
-        fg = c.accentText;
-        bg = c.accentSoft;
-      case SsBadgeVariant.success:
-        fg = c.successText;
-        bg = AppColors.successSoft;
-      case SsBadgeVariant.warning:
-        fg = AppColors.warnFg;
-        bg = AppColors.warnBg;
-      case SsBadgeVariant.danger:
-        fg = c.dangerText;
-        bg = AppColors.dangerSoft;
-      case SsBadgeVariant.ghost:
-        fg = c.muted;
-        bg = AppColors.ghostSoft;
-      case SsBadgeVariant.aquec:
-        fg = c.aquecText;
-        bg = c.aquecSoft;
-      case SsBadgeVariant.muted:
-        fg = c.ink2;
-        bg = c.field;
-    }
+    var (fg, bg) = _cores(c);
+    if (solid) (fg, bg) = _solidas(c);
+    final fontSize = micro ? AppType.micro : AppType.label;
+    final base = TextStyle(
+      color: fg,
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      letterSpacing: micro ? 0.5 : 0,
+      height: 1.1,
+    );
+    final style = mono
+        ? AppTheme.number(context, size: fontSize, weight: FontWeight.w500, color: fg).copyWith(height: 1.1)
+        : base;
     return Semantics(
       label: label,
       excludeSemantics: true,
@@ -94,19 +93,54 @@ class SsBadge extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 softWrap: false,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: micro ? AppType.micro : AppType.label,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: micro ? 0.5 : 0,
-                  height: 1.1,
-                ),
+                style: style,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  static const _branco = [AppColors.onDark];
+
+  (Color, Color) _solidas(SsColors c) => switch (variant) {
+    SsBadgeVariant.accent => (AppColors.onDark, c.accentSolid),
+    // Escurece o tom até o branco passar de 4,5:1 (igual nos dois temas).
+    SsBadgeVariant.success => (AppColors.onDark, ssUntilContrast(AppColors.success, AppColors.scrim, _branco, 4.5)),
+    SsBadgeVariant.warning ||
+    SsBadgeVariant.aquec => (AppColors.onDark, ssUntilContrast(AppColors.aquecFg, AppColors.scrim, _branco, 4.5)),
+    SsBadgeVariant.danger => (AppColors.onDark, ssUntilContrast(AppColors.danger, AppColors.scrim, _branco, 4.5)),
+    SsBadgeVariant.ghost || SsBadgeVariant.muted => (c.surface, c.ink),
+  };
+
+  (Color, Color) _cores(SsColors c) {
+    late final Color fg;
+    late final Color bg;
+    switch (variant) {
+      case SsBadgeVariant.accent:
+        fg = c.accentText;
+        bg = c.accentSoft;
+      case SsBadgeVariant.success:
+        fg = c.successText;
+        bg = AppColors.successSoft;
+      case SsBadgeVariant.warning:
+        fg = AppColors.warnFg;
+        bg = AppColors.warnBg;
+      case SsBadgeVariant.danger:
+        fg = c.dangerText;
+        bg = AppColors.dangerSoft;
+      case SsBadgeVariant.ghost:
+        fg = c.muted;
+        bg = AppColors.ghostSoft;
+      case SsBadgeVariant.aquec:
+        fg = c.aquecText;
+        bg = c.aquecSoft;
+      case SsBadgeVariant.muted:
+        fg = c.ink2;
+        bg = c.field;
+    }
+    return (fg, bg);
   }
 }
 

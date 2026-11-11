@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
 import '../density.dart';
+import '../motion.dart';
 import '../ss_card.dart';
+import '../ss_strings.dart';
 
 /// Mosaico em colunas: os [children] na ordem, distribuídos um por coluna
 /// (1 abaixo de 640, 2 até 1024, 3 até 1440 e 4 acima, pela largura que o
@@ -117,6 +119,12 @@ class SsAsideLayout extends StatelessWidget {
 /// véu escuro embaixo. [dimmed] deixa a foto em cinza e mais escura (aparelho
 /// desligado). O app passa a imagem pronta (`SsNetImage`, cache). O web é o
 /// `Ss::PhotoCardComponent`.
+///
+/// v0.19.2 (carrossel de destinos): [subtitle] embaixo do título ("Local ·
+/// Penha, SC"), [credit] no canto de cima ("Foto: Autor · CC BY 4.0"; com
+/// [onCredit], tocável, abre a página da foto), [selected] (contorno da
+/// marca e ✓ no canto) e [expand] (ocupa a altura que recebe, no lugar da
+/// proporção; ex. dentro do `PageView`). Com [subtitle], o título cresce.
 class SsPhotoCard extends StatelessWidget {
   const SsPhotoCard({
     super.key,
@@ -126,6 +134,11 @@ class SsPhotoCard extends StatelessWidget {
     this.aspectRatio = 16 / 9,
     this.dimmed = false,
     this.onTap,
+    this.subtitle,
+    this.credit,
+    this.onCredit,
+    this.selected = false,
+    this.expand = false,
   });
 
   final Widget? image;
@@ -134,6 +147,11 @@ class SsPhotoCard extends StatelessWidget {
   final double aspectRatio;
   final bool dimmed;
   final VoidCallback? onTap;
+  final String? subtitle;
+  final String? credit;
+  final VoidCallback? onCredit;
+  final bool selected;
+  final bool expand;
 
   /// Cinza e escuro da foto apagada (o grayscale(.85) brightness(.6) do web).
   static const dimFilter = ColorFilter.matrix([
@@ -143,77 +161,163 @@ class SsPhotoCard extends StatelessWidget {
     0, 0, 0, 1, 0,
   ]);
 
+  static const _sombra = [Shadow(blurRadius: 6)];
+
   @override
   Widget build(BuildContext context) {
+    final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final pic = image == null ? null : (dimmed ? ColorFiltered(colorFilter: dimFilter, child: image) : image);
-    return Semantics(
-      image: true,
-      label: [?title, ?badge].join(', '),
-      child: SsCard(
-        padding: EdgeInsets.zero,
-        onTap: onTap,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(d.radiusCard),
-          child: AspectRatio(
-            aspectRatio: aspectRatio > 0 ? aspectRatio : 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ?pic,
-                if (title != null || badge != null)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [AppColors.scrim.withValues(alpha: 0), AppColors.scrim.withValues(alpha: .55)],
-                        ),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(d.cardPad * .9, 24, d.cardPad * .9, 10),
-                        child: Row(
+    final legenda = title != null || badge != null || subtitle != null;
+    Widget stack = Stack(
+      fit: StackFit.expand,
+      children: [
+        ?pic,
+        if (legenda)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            // O card inteiro já diz título, subtítulo e selo (rótulo de cima).
+            child: ExcludeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.scrim.withValues(alpha: 0),
+                      AppColors.scrim.withValues(alpha: subtitle == null ? .55 : .7),
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(d.cardPad * .9, subtitle == null ? 24 : 40, d.cardPad * .9, 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: Text(
-                                title ?? '',
+                            Text(
+                              title ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: subtitle == null
+                                  ? const TextStyle(color: AppColors.onDark, fontWeight: FontWeight.w700)
+                                  : TextStyle(
+                                      color: AppColors.onDark,
+                                      fontSize: d.font(AppType.headerTitle),
+                                      fontWeight: FontWeight.w800,
+                                      height: AppType.tight,
+                                      shadows: _sombra,
+                                    ),
+                            ),
+                            if (subtitle != null)
+                              Text(
+                                subtitle!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: AppColors.onDark, fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                            if (badge != null)
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: AppColors.onDark.withValues(alpha: .2),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                  child: Text(
-                                    badge!,
-                                    style: const TextStyle(
-                                      color: AppColors.onDark,
-                                      fontSize: AppType.meta,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
+                                style: TextStyle(color: AppColors.onDarkIcon, fontSize: d.font(AppType.sub)),
                               ),
                           ],
                         ),
                       ),
-                    ),
+                      if (badge != null)
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.onDark.withValues(alpha: .2),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            child: Text(
+                              badge!,
+                              style: const TextStyle(
+                                color: AppColors.onDark,
+                                fontSize: AppType.meta,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                ),
+              ),
             ),
           ),
-        ),
+        if (credit != null)
+          Positioned(
+            top: 0,
+            right: 0,
+            left: 40,
+            child: Align(
+              alignment: Alignment.topRight,
+              child: _Credito(text: credit!, onTap: onCredit),
+            ),
+          ),
+        if (selected)
+          Positioned(
+            top: 10,
+            left: 10,
+            child: ExcludeSemantics(
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: c.accentBright, shape: BoxShape.circle),
+                child: const Icon(Icons.check, size: 18, color: AppColors.onDark),
+              ),
+            ),
+          ),
+      ],
+    );
+    if (!expand) stack = AspectRatio(aspectRatio: aspectRatio > 0 ? aspectRatio : 16 / 9, child: stack);
+    return Semantics(
+      container: true,
+      image: true,
+      selected: selected,
+      label: [?title, ?subtitle, ?badge].join(', '),
+      child: SsCard(
+        padding: EdgeInsets.zero,
+        onTap: onTap,
+        outline: selected ? c.accentBright : null,
+        child: ClipRRect(borderRadius: BorderRadius.circular(selected ? d.radiusCard - 2 : d.radiusCard), child: stack),
       ),
+    );
+  }
+}
+
+/// Crédito da foto no canto (obrigatório por licença): pequeno, claro com
+/// sombra; com [onTap], botão que abre a fonte.
+class _Credito extends StatelessWidget {
+  const _Credito({required this.text, this.onTap});
+
+  final String text;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: AppColors.onDarkIcon, fontSize: AppType.micro, shadows: [Shadow(blurRadius: 4)]),
+      ),
+    );
+    if (onTap == null) return t;
+    return Semantics(
+      container: true,
+      button: true,
+      label: text,
+      hint: SsStrings.of(context).photoSource,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: SsPressable(onTap: onTap, child: t),
     );
   }
 }

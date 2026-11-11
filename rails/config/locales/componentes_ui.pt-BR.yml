@@ -618,3 +618,5 @@ pt-BR:
       card: Cartão
     speed_dial:
       label: Ações rápidas
+    photo_card:
+      source: Abrir a página da foto

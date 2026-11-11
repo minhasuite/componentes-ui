@@ -1,0 +1,67 @@
+/* v0.19.2 · as últimas caixas genéricas que o minhas-compras e o minhas-viagens desenhavam à mão (pares
+   do Flutter): faixa e contorno no card, botão sólido e empilhado sobre o gradiente, selo sólido e em
+   mono, passos numerados no texto, ponto de estado, monograma de loja/site, recado entre aspas, vidro
+   escuro e o card de foto com subtítulo, crédito e escolhido. Cor só por token (a do monograma é dado,
+   inline). */
+@layer components {
+  /* ── Card: faixa na borda esquerda (par do SsCard(stripe:)) e contorno no tom (SsCard(outline:)) ──
+     <div class="ss-card has-stripe" style="--ss-card-stripe: var(--danger)">…</div>
+     <div class="ss-card has-outline" style="--ss-card-outline: var(--success)">…</div> */
+  .ss-card.has-stripe { position: relative; overflow: hidden; padding-left: 5px; }
+  .ss-card.has-stripe.ss-card-pad { padding-left: calc(var(--ss-card-pad) + 5px); }
+  .ss-card.has-stripe::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--ss-card-stripe, var(--accent)); }
+  .ss-card.has-outline { box-shadow: inset 0 0 0 2px var(--ss-card-outline, var(--accent)), var(--shadow-card); }
+
+  /* ── Botão sobre o gradiente: sólido (branco, texto na cor funda da marca) e empilhado (ícone em cima) ── */
+  .ss-btn.is-on-grad.is-solid { background: #fff; color: color-mix(in srgb, var(--accent-solid) 65%, #000); box-shadow: none; }
+  .ss-btn.is-on-grad.is-solid:hover { background: color-mix(in srgb, #fff 88%, var(--accent)); color: color-mix(in srgb, var(--accent-solid) 65%, #000); }
+  .ss-btn.is-stacked { flex-direction: column; gap: .25rem; height: auto; min-height: var(--ss-control-h); padding: .6rem .25rem; border-radius: var(--r-field); font-weight: 800; }
+  .ss-btn.is-stacked > svg { width: 1.35rem; height: 1.35rem; }
+  .ss-btn.is-stacked > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Selo sólido (par do SsBadge(solid:)) e em DM Mono (mono:) ── */
+  .ss-badge.is-solid { background: var(--ink); color: var(--surface); box-shadow: none; }
+  .ss-badge.ss-badge-accent.is-solid { background: var(--accent-solid); color: #fff; }
+  .ss-badge.ss-badge-success.is-solid { background: color-mix(in srgb, var(--success) 60%, #000); color: #fff; }
+  .ss-badge.ss-badge-danger.is-solid { background: color-mix(in srgb, var(--danger) 60%, #000); color: #fff; }
+  .ss-badge.ss-badge-warn.is-solid { background: color-mix(in srgb, var(--warn) 50%, #000); color: #fff; }
+  .ss-badge.is-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; letter-spacing: .02em; }
+
+  /* ── Passos numerados (par do SsProseList(ordered: true)): <ol class="ss-steps"> ou ol.is-steps no .ss-prose ── */
+  :is(.ss-steps, .ss-prose ol.is-steps) { list-style: none; padding-left: 0; counter-reset: ss-step; display: grid; gap: .5rem; }
+  :is(.ss-steps, .ss-prose ol.is-steps) > li { position: relative; counter-increment: ss-step; padding-left: 2.1rem; min-height: 1.5rem; }
+  :is(.ss-steps, .ss-prose ol.is-steps) > li::before { content: counter(ss-step); position: absolute; left: 0; top: .1em; display: grid; place-items: center;
+    width: 1.5rem; height: 1.5rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+    font: 700 .75rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* ── Ponto de estado / não lida (par do SsDot): <span class="ss-dot" style="--ss-dot: var(--success)" role="img" aria-label="Ligado"></span> ── */
+  .ss-dot { display: inline-block; flex: none; width: var(--ss-dot-size, .5rem); height: var(--ss-dot-size, .5rem); border-radius: 999px; background: var(--ss-dot, var(--accent)); vertical-align: middle; }
+  .ss-dot.is-ring { box-shadow: 0 0 0 2px var(--surface); }
+
+  /* ── Monograma de loja/site (par do SsMonogram; ss_monogram): a cor é dado, inline em --ss-mono ── */
+  .ss-monogram { display: inline-grid; place-items: center; flex: none; width: var(--s, 1.25rem); height: var(--s, 1.25rem); border-radius: calc(var(--s, 1.25rem) / 4);
+                 background: var(--ss-mono, var(--accent-solid)); color: #fff; font-weight: 800; line-height: 1; overflow: hidden;
+                 font-size: calc(var(--s, 1.25rem) * var(--ss-mono-scale, .56)); letter-spacing: -.02em; }
+  .ss-monogram.is-circle { border-radius: 999px; }
+
+  /* ── Recado de outra pessoa (par do SsQuote): <blockquote class="ss-quote"><p>…</p><cite>Ana</cite></blockquote> ── */
+  .ss-quote { margin: 0; padding: .5rem .75rem; border-radius: 4px 14px 14px 14px; background: var(--field); color: var(--ink-2); font-size: calc(.82rem * var(--ss-font-scale)); line-height: 1.4; }
+  .ss-quote p { margin: 0; font-style: italic; }
+  .ss-quote p::before { content: "“"; } .ss-quote p::after { content: "”"; }
+  .ss-quote cite { display: block; margin-top: .25rem; font-style: normal; font-weight: 700; font-size: .75rem; color: var(--muted); }
+  .ss-quote cite::before { content: "— "; }
+
+  /* ── Vidro escuro (par do SsGlass(tone: dark)): dica sobre a câmera ou a foto ── */
+  .ss-glass.is-dark, :is(.ss-glass-1, .ss-glass-2, .ss-glass-3).is-dark { background: rgb(18 20 28 / .68); border-color: rgb(255 255 255 / .12); color: #fff; }
+
+  /* ── Card de foto: subtítulo, crédito no canto e escolhido (par do SsPhotoCard(subtitle:, credit:, selected:)) ── */
+  .ss-photo-text { display: grid; min-width: 0; }
+  .ss-photo.has-subtitle .ss-photo-title { font-size: calc(1.25rem * var(--ss-font-scale)); font-weight: 800; line-height: 1.2; text-shadow: 0 1px 6px rgb(0 0 0 / .5); }
+  .ss-photo-subtitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; color: rgb(255 255 255 / .82); }
+  .ss-photo-credit { position: absolute; top: 0; right: 0; max-width: calc(100% - 2.5rem); padding: .35rem .5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                     font-size: .65rem; color: rgb(255 255 255 / .82); text-shadow: 0 1px 4px rgb(0 0 0 / .6); text-decoration: none; }
+  a.ss-photo-credit:hover { color: #fff; text-decoration: underline; }
+  .ss-photo.is-selected { box-shadow: inset 0 0 0 3px var(--accent), var(--shadow-card); }
+  .ss-photo.is-selected::after { content: ""; position: absolute; top: .6rem; left: .6rem; width: 1.75rem; height: 1.75rem; border-radius: 999px;
+                                 background: var(--accent-solid) var(--ss-i-check-w) center / 60% no-repeat; }
+}

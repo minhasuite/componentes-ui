@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.19.1
+      ref: v0.19.2
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.19.2"
 ```
 
 ```css
@@ -610,6 +610,55 @@ suíte: hover 14% mais escuro, suave 12% sobre o branco (22% sobre a superfície
 
 **Textos novos:** Rails `aside_layout.label` (pt-BR, en, es).
 
+## v0.19.2: herói com conteúdo livre, botão sobre o gradiente, faixa e contorno no card, monograma, foto escolhida, selo sólido, passos, ponto, recado, palco e indicador de página
+
+As últimas caixas genéricas que o minhas-compras-app e o minhas-viagens-app ainda desenhavam à mão (o verificador
+já dava 0 nos dois; estas eram peça genérica reinventada, a seção (c) das tabelas de classificação dos dois apps). Tudo
+aditivo (parâmetro novo opcional; a API não quebra). Catálogo: `flutter/test/catalogo_v192.dart` (`ss-monogram`,
+`ss-dot`, `ss-quote`, `ss-illustration-stage`, `ss-page-dots` novos; estados `livre`/`toque` no `ss-hero`,
+`sobre-gradiente` no `ss-button`, `faixa`/`contorno` no `ss-card`, `solido` no `ss-badge`, `destino` no
+`ss-photo-card`, `passos` no `ss-prose`, `ponto` no `ss-section`, `escuro` no `ss-glass`, `estado` no
+`ss-deal-badge`) e `rails/catalogo/index.html` (`ss-card-v192`, `ss-button-v192`, `ss-badge-v192`, `ss-steps-v192`,
+`ss-dot-v192`, `ss-quote-v192`, `ss-glass-v192`, `ss-photo-v192`); testes em `flutter/test/v192_test.dart`,
+`rails/test/helpers_test.rb` e `rails/sample/test/components/v19_2_web_test.rb`. CSS em `v19_2_web.css`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Herói com conteúdo livre | `SsHeroCard.custom(child:, background:, padding:, radius:, shadow: true, onTap:, semanticLabel:)`: gradiente da marca na diagonal (`brandFrom → brandTo → brandDeep`), texto e ícone já claros, `background` atrás do conteúdo (desenho com `Positioned`), recortado pelo raio | `.ss-hero` com qualquer conteúdo (já existia) | viagens `today_screen.dart:227` ("Para onde vamos?"), `auth/auth_hero.dart:17` (login, `radius: AppRadius.sheet`), `wishes/wish_detail_screen.dart:455` (faixa da rota, `shadow: false`); compras `scan/scan_sheet.dart:133` ("Foto do cupom", `onTap:`, `radius: AppRadius.cardActive`) |
+| Botão sobre o gradiente | `SsButton.onGradient(label:, icon:, onPressed:, solid: false, stacked: false, small:, expand:, loading:)`: translúcido com fio claro ou, com `solid`, branco com o texto em `brandDeep`; `stacked` (também no `SsButton` comum) põe o ícone em cima e o rótulo encolhe numa linha | `ButtonComponent(variant: :on_grad, solid: true, stacked: true)` → `.ss-btn.is-on-grad.is-solid.is-stacked` | viagens `today_screen.dart:284` (os três atalhos brancos Voo/Pacote/Hospedagem: `SsButton.onGradient(label: w.title, icon: w.icon, solid: true, stacked: true, ...)` em `Expanded`) |
+| Faixa na borda do card | `SsCard(stripe: Color)`: 5 px (`SsCard.stripeWidth`) por dentro do raio, o `padding` conta a partir dela | `.ss-card.has-stripe` + `--ss-card-stripe` (com `.ss-card-pad`, o respiro conta a partir da faixa) | compras `home/home_screen.dart:458`, `insights/recalls_screen.dart:75`, `wishes/advice_card.dart:58` (`SsCard(padding: zero)` + `ClipRRect` + `Positioned` de 5 px) |
+| Contorno no tom | `SsCard(outline: Color)`: 2 px, sem trocar fundo nem sombra (o `active:` ganha dele) | `.ss-card.has-outline` + `--ss-card-outline` | viagens `wishes/wish_widgets.dart:387` (no alvo: `outline: AppColors.success`), `trips/trip_tabs.dart:455` (conflito: `outline: AppColors.dangerBorder`) |
+| Monograma | `SsMonogram(text, color:, size: 20, circle: false, semanticLabel:)`: sigla clara que encolhe, raio `size/4` ou círculo; `color` é dado (`ssColorFromHex`), sem ela a marca do produto | `ss_monogram(text, color: "#2D3277", size: 20, circle:, label:)` → `.ss-monogram` (hex validado, inline em `--ss-mono`) | viagens `wishes/wish_widgets.dart:149` (`SiteIcon`, quadrado); compras `wishes/store_widgets.dart:57` (`StoreIcon`, `circle: true`); o mapa de cores continua no app |
+| Card de foto escolhido | `SsPhotoCard(subtitle:, credit:, onCredit:, selected:, expand:)`: o título cresce com `subtitle`, crédito no canto (tocável, dica `photoSource`), contorno `accentBright` e ✓, `expand` ocupa a altura recebida (no `PageView`) | `PhotoCardComponent(subtitle:, credit:, credit_url:, selected:)` → `.has-subtitle`, `.ss-photo-credit`, `.is-selected[aria-current=true]` | viagens `wishes/destination_carousel.dart:65–91` (`DestinationCard` + `_Credit`) |
+| Selo sólido e em mono | `SsBadge(solid: true, mono: true)`: fundo cheio no tom e texto claro (`accent` → `accentSolid`; success/warning/danger escurecidos até 4,5:1; `muted`/`ghost` invertidos: fundo `ink`, texto `surface`); `mono` em DM Mono | `.ss-badge.is-solid` (com `ss-badge-accent/-success/-danger/-warn`) e `.is-mono` | viagens `core/domain_ui/mv_itinerary.dart:54` ("DIA 3"/"ANTES": `SsBadge(..., variant: today ? accent : muted, solid: true, mono: true)`) |
+| Passos numerados | `SsProseList(items, ordered: true, start: 1)`: número em DM Mono num círculo `accentSoft`; o leitor lê "1. texto" | `<ol class="ss-steps">` ou `.ss-prose ol.is-steps` | compras `insights/recipes_screen.dart:232`, `more/background_screen.dart:258`; viagens `more/price_network_screen.dart:271` |
+| Ponto | `SsDot(color:, size: 8, ring:, semanticLabel:)` e `SsIconBubble(icon, badge: Color, badgeLabel:)` (ponto no canto com anel na cor da superfície) | `.ss-dot` (`--ss-dot`, `--ss-dot-size`, `.is-ring`; dê `role="img"` + `aria-label`) | compras `more/finance_link_card.dart:90` (`SsIconBubble(..., badge: statusColor, badgeLabel: status)`), `notifications/notifications_screen.dart:131` (`SsDot(size: 10, semanticLabel: 'não lida')`) |
+| Recado de outra pessoa | `SsQuote(text, author:, quoted: true)`: balão no fundo do campo, canto de cima à esquerda reto, itálico entre aspas | `<blockquote class="ss-quote"><p>…</p><cite>…</cite></blockquote>` | compras `more/offers_screen.dart:170` (recado da doação/troca) |
+| Palco da ilustração | `SsIllustrationStage(child:, height: 112, padding:)`: degradê `accentSoft → page`, raio de folha, a arte encolhe na altura | — (só app) | compras `onboarding/onboarding_screen.dart:111` |
+| Indicador de página | `SsPageDots(count:, index:, size: 8, alignment:)` (o do `SsOnboarding`, agora público e usado por ele); lê "Página 2 de 3" | `.ss-dots` com `aria-current` (já existia no `.ss-onboarding`) | compras `onboarding/onboarding_screen.dart:158` (os passos têm formulário e só avançam ao salvar: `SsPageDots(count: 3, index: _page, size: 6, alignment: MainAxisAlignment.start)`) |
+| Vidro escuro | `SsGlass(tone: SsGlassTone.dark)`: véu `sheetBg` a 55/63/74% por `level`, texto e ícone claros | `.ss-glass.is-dark` | compras `scan/scanner_screen.dart:115` (dica sobre a câmera) |
+| Chip de loja com estado | `SsSourceChip(name, favicon:, trailing: Widget, semanticLabel:)`: `trailing` depois do nome (ícone 14 no `muted` se não tiver cor própria) | — (só app; o `.ss-source` do web é outra peça) | compras `wishes/wish_search.dart:151` (`_StoreStateChip`: `SsSourceChip(s.name, favicon: StoreIcon(...), trailing: Icon(look.icon, color: look.color))` dentro do `SsTooltip`) |
+
+**O que não virou peça.**
+
+- **`SsChatBubble(author:)`**: o recado da oferta (compras `offers_screen.dart:170`) não é conversa. O `SsChatBubble` é a
+  conversa com a IA (entra com mola, se alinha pelo remetente, ✦ da IA, largura de 78% da tela) e o assistente do compras
+  já o usa (`assistant_screen.dart:294`). O recado parado dentro de um card virou o `SsQuote`.
+- **`SsCard(unread:)`**: o ponto solto resolve com o `SsDot`; o card da notificação do compras é uma linha do tempo com
+  selo de oferta, que não cabe no `SsNoticeCard` (o viagens já usa o `SsNoticeCard(unread:)`).
+- **`SsOnboarding(showNext: false, controller:)`**: o indicador saiu como `SsPageDots` e o palco como `SsIllustrationStage`;
+  a tela do onboarding com formulário continua do app, montada com eles.
+- **`SsBadge(variant: SsBadgeVariant.solid / inverse)`**: virou `solid: true` sobre a variante (sem valor novo no enum,
+  que quebraria um `switch` exaustivo).
+- **`SsCard(outline: SsTone)`**: `outline` e `stripe` recebem `Color` (o compras pinta a faixa com cores dele, `freshUrgent`,
+  `aquecText`); para um tom, `SsTone.success.colors(context).solid`.
+
+**Textos novos (pt, en, es):** `SsStrings.photoSource` ↔ `componentes_ui.photo_card.source` ("Abrir a página da foto").
+
+**Padrões que mudaram.** Nenhum desenho de peça existente mudou. O `SsOnboarding` passa a desenhar os pontos com o
+`SsPageDots` (mesmos tamanhos e cores). O `SsPhotoCard` passa a ser um nó só para o leitor de tela (título, subtítulo e
+selo no rótulo; antes o título era lido duas vezes).
+
 ## v0.19.1: conteúdo das abas, dica ao segurar, fio em pé, menu com logo, tela cheia, cor de dado e card à mão no verificador
 
 O que o minhas-compras-app e o minhas-viagens-app ainda montavam com peça crua do Material, cor literal ou número solto
@@ -1083,6 +1132,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
+- `v0.19.2` (10/11/2026): seção "v0.19.2" (as últimas caixas genéricas do minhas-compras-app e do minhas-viagens-app). `SsHeroCard.custom`, `SsButton.onGradient(solid:, stacked:)` + `SsButton(stacked:)` ↔ `ButtonComponent(solid:, stacked:)`, `SsCard(stripe:, outline:)` ↔ `.ss-card.has-stripe/.has-outline`, `SsMonogram` ↔ `ss_monogram`, `SsPhotoCard(subtitle:, credit:, onCredit:, selected:, expand:)` ↔ `PhotoCardComponent(subtitle:, credit:, credit_url:, selected:)`, `SsBadge(solid:, mono:)` ↔ `.ss-badge.is-solid/.is-mono`, `SsProseList(ordered:, start:)` ↔ `ol.ss-steps`, `SsDot` ↔ `.ss-dot`, `SsIconBubble(badge:, badgeLabel:)`, `SsQuote` ↔ `.ss-quote`, `SsIllustrationStage`, `SsPageDots`, `SsGlass(tone: SsGlassTone.dark)` ↔ `.ss-glass.is-dark`, `SsSourceChip(trailing:, semanticLabel:)`, texto `photoSource`. Nada quebra.
 - `v0.19.1` (10/11/2026): seção "v0.19.1" (o que destrava o minhas-compras-app e o minhas-viagens-app no `conferirConformidade`). `SsTabsView` (conteúdo das abas), `SsTabsUnderline(stacked:)` + `stackedHeight`, `SsTooltip`, `SsDivider.vertical`/`SsDivider(vertical:)` ↔ `.ss-divider.is-vertical`, `SsMenuAction(leading:)`, `SsOverflowMenu(child:)`, `showSsFullscreen`/`SsFullscreenPage`, `AppColors.transparent`, `AppType.solid`/`tight`/`snug`/`trackingTight`/`trackingTitle`, `ssColorFromHex`/`ssTryColorFromHex`/`ssColorFromRgb` (cor que é dado), `ssIconTextStyle`/`ssPaintIcon`, texto `tapToClose`. Verificador: card à mão (Flutter e Rails) e chamada com tipo (`showDialog<void>(`). Nada quebra.
 - `v0.19.0` (10/11/2026): seção "v0.19.0" (web 100% do meu-financeiro; só Rails). `Ss::ButtonComponent` (link, botão do JS, envio e `button_to` com `confirm:`; variantes `chip`/`item`/`on_grad`), `Ss::GoogleButtonComponent`, `Ss::WalletCardComponent` + `ss-tilt` (par do `SsWalletCard`), `f.ss_file_field`/`f.ss_color_field`, `DataTableComponent(select_name:, bulk_method:)`, `FormActionsComponent(submit: false)`, `IconButtonComponent(type: :submit)`, `ss_theme_color_tag` e `BarChartComponent(width:, label_every:)`; correções do rodapé preso no diálogo e da tabela para leitor de tela que estourava no celular. Nada quebra. Conformidade: `ComponentesUi::Conformidade.verificar` e `conferirConformidade` (teste "100% componentes-ui" dos produtos, sem exceções). Lado Flutter: `showSsImageViewer`/`SsImageViewer`, `SsCollapsible(subtitle:)`, `AppType.leading`/`trackingCaps`/`trackingWide`, textos `image`/`zoomHint`. Nada quebra.
 - `v0.18.0` (10/11/2026): seção "v0.18.0" (fase final do meu-financeiro, web e app). `Ss::SpeedDialComponent` ↔ `SsSpeedDial`, `Ss::DialogComponent(global:, header:, clear_on_close:, refresh_on_close:, follow_missing:)` + `data-ss-dialog-keep-open`/`-refresh`/`-dismiss`, `Ss::RowActionsComponent` e `t.actions` (hover só com mouse, à vista no toque), `DataTableComponent(row_attrs:, empty_art:)`, `Ss::FormErrorsComponent`, `Ss::FormActionsComponent`, `ComboboxComponent` com ícone/imagem por opção e `input:`, `PopoverComponent(trigger_attrs:)`, `ss_status` com `:warn`/`:warning` (e `ComponentesUi.tone`), `Ss::IconButtonComponent`, `Ss::PrivacyToggleComponent`, AppShell sem a barra vazia no computador (`with_top_mobile`, ícone no grupo), utilitários `text-on-accent`/`bg-grad`/`text-info`…; no app `SsMoneyField(controller:, focusNode:, autofocus:, …)` + `SsMoneyField.parse`, `showSsToastGlobal`/`SsToastHost.navigatorKey`, `SsFab(iconTurns:)`. Nada quebra; o diálogo com frame passa a seguir a URL quando a resposta não tem o frame.

@@ -114,4 +114,17 @@ class HelpersTest < Minitest::Test
     assert_equal "2", ss_qty(2.0)
     assert_equal "0,25 kg", ss_qty(0.25, "kg")
   end
+
+  def test_monograma_cor_de_dado_tamanho_e_rotulo
+    m = ss_monogram("ML", color: "#2D3277", size: 24, label: "Mercado <Livre>")
+    assert_includes m, 'class="ss-monogram"'
+    assert_includes m, "--s:24px;--ss-mono:#2D3277;--ss-mono-scale:.42"
+    assert_includes m, 'role="img" aria-label="Mercado &lt;Livre&gt;">ML</span>'
+    # Cor que não é #rrggbb não entra (vira a cor da marca do produto); círculo; rótulo padrão = a sigla.
+    c = ss_monogram("S", color: "red;background:url(x)", circle: true)
+    refute_includes c, "--ss-mono:"
+    assert_includes c, 'class="ss-monogram is-circle"'
+    assert_includes c, 'aria-label="S"'
+    assert_includes ss_monogram("<b>"), "&lt;b&gt;"
+  end
 end

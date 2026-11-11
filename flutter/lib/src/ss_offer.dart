@@ -389,12 +389,18 @@ class SsDealBadge extends StatelessWidget {
 /// iniciais coloridas pelo nome (mesma cor sempre, como o [SsAvatar]) + nome.
 ///
 /// `SsSourceChip('Mercado Livre')` · `SsSourceChip('Booking', icon: Icons.hotel_outlined)`
+///
+/// v0.19.2: [trailing] vai depois do nome (ícone do estado da busca na
+/// loja, contagem) e [semanticLabel] troca o que o leitor de tela lê (o
+/// nome com o estado: "Shopee: 3 ofertas").
 class SsSourceChip extends StatelessWidget {
-  const SsSourceChip(this.name, {super.key, this.icon, this.favicon});
+  const SsSourceChip(this.name, {super.key, this.icon, this.favicon, this.trailing, this.semanticLabel});
 
   final String name;
   final IconData? icon;
   final Widget? favicon;
+  final Widget? trailing;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -403,10 +409,10 @@ class SsSourceChip extends StatelessWidget {
         favicon ??
         (icon != null ? Icon(icon, size: 15, color: c.accentText) : ExcludeSemantics(child: SsAvatar(name, size: 22)));
     return Semantics(
-      label: name,
+      label: semanticLabel ?? name,
       excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(3, 3, 10, 3),
+        padding: EdgeInsets.fromLTRB(3, 3, trailing == null ? 10 : 6, 3),
         decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(AppRadius.pill)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -421,6 +427,13 @@ class SsSourceChip extends StatelessWidget {
                 style: TextStyle(color: c.ink2, fontSize: AppType.meta, fontWeight: FontWeight.w700),
               ),
             ),
+            if (trailing != null) ...[
+              const SizedBox(width: 4),
+              IconTheme.merge(
+                data: IconThemeData(size: 14, color: c.muted),
+                child: trailing!,
+              ),
+            ],
           ],
         ),
       ),

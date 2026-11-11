@@ -19,6 +19,12 @@ enum SsButtonVariant { primary, ghost, success, danger }
 /// v0.16: [trailingIcon] vai depois do rótulo ("Ver todas →"); no
 /// [SsButton.text], `tone:` pinta o texto no tom ([SsTone.warning],
 /// [SsTone.danger]...) e `onDark:` o deixa claro sobre foto, câmera ou gradiente.
+///
+/// v0.19.2: [stacked] põe o ícone em cima do rótulo (botão de atalho numa
+/// fileira, o rótulo encolhe em vez de cortar) e [SsButton.onGradient] é o
+/// botão sobre o gradiente da marca ([SsHeroCard], [SsAuroraCard]):
+/// translúcido com fio claro (o `.ss-btn.is-on-grad` do web) ou, com
+/// `solid: true`, branco com o texto na cor funda da marca (`is-solid`).
 class SsButton extends StatelessWidget {
   const SsButton({
     super.key,
@@ -30,10 +36,35 @@ class SsButton extends StatelessWidget {
     this.loading = false,
     this.expand = true,
     this.trailingIcon,
+    this.stacked = false,
   }) : _text = false,
        _danger = false,
        _tone = null,
-       _onDark = false;
+       _onDark = false,
+       _onGradient = false,
+       _solid = false;
+
+  /// v0.19.2: botão sobre o gradiente da marca. Os três atalhos do herói:
+  /// `SsButton.onGradient(label: 'Voo', icon: Icons.flight, solid: true, stacked: true, onPressed: ...)`.
+  const SsButton.onGradient({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.small = false,
+    this.loading = false,
+    this.expand = true,
+    this.trailingIcon,
+    this.stacked = false,
+    bool solid = false,
+  }) : variant = SsButtonVariant.primary,
+       _text = false,
+       _danger = false,
+       _tone = null,
+       _onDark = false,
+       _onGradient = true,
+       // ignore: prefer_initializing_formals
+       _solid = solid;
 
   /// Botão de texto: sem fundo nem sombra, rótulo na cor da marca (ou do
   /// perigo, com [danger]); altura 40 (32 com [small], na densidade padrão); não ocupa a
@@ -51,6 +82,9 @@ class SsButton extends StatelessWidget {
     SsTone? tone,
     bool onDark = false,
   }) : variant = SsButtonVariant.ghost,
+       stacked = false,
+       _onGradient = false,
+       _solid = false,
        _text = true,
        // ignore: prefer_initializing_formals
        _danger = danger,
@@ -63,6 +97,12 @@ class SsButton extends StatelessWidget {
   final bool _danger;
   final SsTone? _tone;
   final bool _onDark;
+  final bool _onGradient;
+  final bool _solid;
+
+  /// v0.19.2: ícone em cima do rótulo (altura pelo conteúdo, mínimo o do
+  /// botão da densidade); o rótulo encolhe numa linha para caber.
+  final bool stacked;
 
   /// v0.16: ícone depois do rótulo (seta de "ver mais", abrir fora).
   final IconData? trailingIcon;
@@ -100,6 +140,14 @@ class SsButton extends StatelessWidget {
         fg = AppColors.onDark;
     }
 
+    Border? border;
+    if (_onGradient) {
+      bg = _solid ? AppColors.onDark : AppColors.onDark.withValues(alpha: .16);
+      fg = _solid ? c.brandDeep : AppColors.onDark;
+      border = _solid ? null : Border.all(color: AppColors.onDark.withValues(alpha: .24));
+      shadow = null;
+    }
+
     if (_text) {
       bg = Colors.transparent;
       fg = _onDark
@@ -119,6 +167,25 @@ class SsButton extends StatelessWidget {
     Widget content;
     if (loading) {
       content = SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: fg));
+    } else if (stacked) {
+      content = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: small ? d.iconSize - 2 : d.iconSize + 2, color: fg),
+            SizedBox(height: d.gap / 2),
+          ],
+          // Uma linha que encolhe (nunca "…"): três atalhos lado a lado no celular estreito.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(color: fg, fontSize: fontSize, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      );
     } else {
       content = Row(
         mainAxisSize: MainAxisSize.min,
@@ -158,7 +225,7 @@ class SsButton extends StatelessWidget {
 
     return SsTapTarget(
       minSize: Size(0, d.minTarget),
-      child: _box(context, enabled, height, radius, shadow, bg, content, d),
+      child: _box(context, enabled, height, radius, shadow, bg, content, d, border),
     );
   }
 
@@ -171,17 +238,19 @@ class SsButton extends StatelessWidget {
     Color bg,
     Widget content,
     SsDensity d,
+    Border? border,
   ) {
     return SsPressable(
       enabled: enabled,
       child: Opacity(
         opacity: enabled ? 1 : 0.5,
         child: Container(
-          height: height,
+          height: stacked ? null : height,
+          constraints: stacked ? BoxConstraints(minHeight: height) : null,
           width: expand ? double.infinity : null,
-          decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
+          decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow, border: border),
           // Brilho de 1 px no topo dos botões sólidos (volume sem gradiente).
-          foregroundDecoration: variant == SsButtonVariant.ghost || _text
+          foregroundDecoration: variant == SsButtonVariant.ghost || _text || _onGradient
               ? null
               : BoxDecoration(
                   borderRadius: radius,
@@ -199,7 +268,9 @@ class SsButton extends StatelessWidget {
               onTap: enabled ? onPressed : null,
               borderRadius: radius,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: small ? d.padX - 4 : d.padX + 2),
+                padding: stacked
+                    ? EdgeInsets.symmetric(horizontal: 4, vertical: d.gap - 2)
+                    : EdgeInsets.symmetric(horizontal: small ? d.padX - 4 : d.padX + 2),
                 child: Center(child: content),
               ),
             ),

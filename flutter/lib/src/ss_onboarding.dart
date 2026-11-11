@@ -6,6 +6,7 @@ import 'motion.dart';
 import 'ss_button.dart';
 import 'ss_progress.dart';
 import 'ss_strings.dart';
+import 'v192/pecas.dart' show SsPageDots;
 
 /// Uma página do [SsOnboarding]: [illustration] (qualquer widget) ou, sem
 /// ela, a [EmptyIllustration] com [icon]. [action] fica embaixo do texto
@@ -76,7 +77,6 @@ class _SsOnboardingState extends State<SsOnboarding> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final reduce = reduceMotion(context);
     return SafeArea(
       child: Column(
         children: [
@@ -131,28 +131,7 @@ class _SsOnboardingState extends State<SsOnboarding> {
               },
             ),
           ),
-          Semantics(
-            label: SsStrings.of(context).pageOf(_i + 1, widget.pages.length),
-            child: ExcludeSemantics(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < widget.pages.length; i++)
-                    AnimatedContainer(
-                      duration: reduce ? Duration.zero : SsMotion.base,
-                      curve: SsMotion.spring,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: i == _i ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: i == _i ? c.accent : c.muted2,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          SsPageDots(count: widget.pages.length, index: _i),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
             child: SsButton(

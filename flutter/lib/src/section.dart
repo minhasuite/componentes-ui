@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'density.dart';
+import 'v192/pecas.dart' show SsDot;
 
 /// Título de seção ("VENCE LOGO") com ação opcional à direita e, desde a
 /// v0.13, um [icon] antes do texto (o `Ss::SectionComponent` do Rails).
@@ -52,22 +53,40 @@ class SsSection extends StatelessWidget {
 }
 
 /// Ícone redondo suave (lista, cards).
+///
+/// v0.19.2: [badge] põe um [SsDot] dessa cor no canto de baixo à direita,
+/// com anel na cor da superfície (estado da conexão: ligado, erro);
+/// [badgeLabel] é o que o leitor de tela lê.
 class SsIconBubble extends StatelessWidget {
-  const SsIconBubble(this.icon, {super.key, this.color, this.size = 40});
+  const SsIconBubble(this.icon, {super.key, this.color, this.size = 40, this.badge, this.badgeLabel});
 
   final IconData icon;
   final Color? color;
   final double size;
+  final Color? badge;
+  final String? badgeLabel;
 
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final fg = color ?? c.accent;
-    return Container(
+    final bubble = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(color: fg.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(size / 3)),
       child: Icon(icon, color: fg, size: size * 0.5),
+    );
+    if (badge == null) return bubble;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        bubble,
+        Positioned(
+          right: -2,
+          bottom: -2,
+          child: SsDot(color: badge, size: (size * .23).clamp(8.0, 14.0), ring: c.surface, semanticLabel: badgeLabel),
+        ),
+      ],
     );
   }
 }
