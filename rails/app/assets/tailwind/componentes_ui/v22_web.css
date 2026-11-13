@@ -1,0 +1,84 @@
+/* v0.22 · tela de entrada "Folhinha" (Ss::AuthLayoutComponent ↔ SsAuthLayout.folhinha): a folhinha de parede
+   do comércio com a data de hoje, o formulário no bloco e a faixa do patrocinador na cor do produto. Só tokens:
+   folha = --surface, parede = --page, faixa = --accent-solid, domingo = --danger. Título e números na fonte de
+   exibição (--ss-font-display, Big Shoulders Display; ss_display_font_tag carrega). */
+:root { --ss-font-display: "Big Shoulders Display", var(--font-sans, system-ui), sans-serif; }
+
+@layer components {
+  .ss-auth { --ss-auth-shadow: 0 1px 1px color-mix(in srgb, var(--ink) 6%, transparent), 0 18px 40px -18px color-mix(in srgb, var(--ink) 35%, transparent);
+             min-height: 100vh; min-height: 100dvh; background: var(--page); color: var(--ink); }
+  .ss-auth-stage { display: grid; justify-items: center; align-content: start; gap: 18px; padding: 28px 16px 56px; }
+  .ss-auth-stage > * { width: min(460px, 100%); }
+  .ss-auth-brand { font-family: var(--ss-font-display); font-weight: 900; font-size: 1.75rem; line-height: 1; letter-spacing: .01em;
+                   text-align: center; text-decoration: none; color: var(--ink); }
+  .ss-auth-brand b { color: var(--danger); font-weight: 900; }
+
+  /* A folha: furo do prego em cima e duas folhas por baixo. */
+  .ss-auth-sheet { position: relative; background: var(--surface); box-shadow: var(--ss-auth-shadow); margin-top: 26px; }
+  .ss-auth-sheet::before { content: ""; position: absolute; top: -26px; left: 50%; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%;
+                           background: var(--page); box-shadow: inset 0 2px 3px color-mix(in srgb, var(--ink) 25%, transparent); }
+  .ss-auth-sheet::after { content: ""; position: absolute; inset: auto 6px -6px; height: 6px; background: var(--surface);
+                          box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 14%, transparent), 0 6px 0 -1px var(--surface),
+                                      0 7px 2px -1px color-mix(in srgb, var(--ink) 10%, transparent); z-index: -1; }
+  .ss-auth-head { display: flex; justify-content: space-between; align-items: baseline; padding: 34px 28px 0; }
+  .ss-auth-month { font-family: var(--ss-font-display); font-weight: 800; font-size: 2rem; line-height: 1; letter-spacing: .02em; }
+  .ss-auth-year { font-weight: 700; color: var(--muted); }
+  .ss-auth-day { font-family: var(--ss-font-display); font-weight: 900; line-height: .8; font-variant-numeric: tabular-nums; }
+  .ss-auth-day.is-sunday { color: var(--danger); }
+  .ss-auth-dateline { display: flex; align-items: flex-end; gap: 16px; padding: 4px 28px 20px; border-bottom: 2px solid var(--ink); }
+  .ss-auth-dateline .ss-auth-day { font-size: 6.5rem; }
+  .ss-auth-dateline > span:last-child { padding-bottom: 8px; font-weight: 700; color: var(--muted); }
+  .ss-auth-dateline strong { display: block; color: var(--ink); font-size: 1.25rem; }
+  .ss-auth-body { padding: 24px 28px 28px; }
+  .ss-auth-title { font-family: var(--ss-font-display); font-weight: 900; font-size: 2.5rem; line-height: 1; letter-spacing: 0; margin: 0 0 6px; }
+  .ss-auth-sub { color: var(--muted); margin: 0 0 20px; }
+  /* Aviso do produto (erro, link enviado) separado do que vem depois. */
+  .ss-auth-body > .ss-callout { margin-bottom: 1rem; }
+  .ss-auth-band { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 28px;
+                  background: var(--accent-solid); color: var(--on-accent); }
+  .ss-auth-band strong { font-family: var(--ss-font-display); font-weight: 900; font-size: 1.5rem; line-height: 1; letter-spacing: .01em; }
+  .ss-auth-band span { font-size: .875rem; text-align: right; color: color-mix(in srgb, var(--on-accent) 85%, transparent); }
+  .ss-auth-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; font-size: .875rem; color: var(--muted); }
+  .ss-auth-links a { color: inherit; text-underline-offset: 3px; }
+  .ss-auth-links a:hover { color: var(--ink); }
+
+  /* :wall, a parede: folhinha grande à esquerda, formulário numa coluna à direita. */
+  .ss-auth.is-wall { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); }
+  .ss-auth-wall { display: flex; flex-direction: column; padding: 32px clamp(24px, 4vw, 64px); }
+  .ss-auth-wall .ss-auth-brand { text-align: left; }
+  .ss-auth-wall .ss-auth-sheet { width: min(520px, 100%); margin: auto; }
+  .ss-auth-wall .ss-auth-head { padding: 40px 32px 0; }
+  .ss-auth-wall .ss-auth-day { font-size: clamp(11rem, 20vw, 19rem); text-align: center; margin: 8px 0 0; padding-bottom: .1em; }
+  .ss-auth-weekday { text-align: center; font-weight: 700; font-size: 1.25rem; margin: 0; padding-bottom: 28px; }
+  .ss-auth-wall .ss-auth-band { padding: 18px 32px; }
+  .ss-auth-panel { background: var(--surface); display: flex; flex-direction: column; padding: 32px clamp(24px, 4vw, 56px);
+                   box-shadow: -1px 0 0 var(--line); }
+  .ss-auth-part { margin: 0; color: var(--muted); font-size: .9375rem; }
+  .ss-auth-panel .ss-auth-body { width: 100%; max-width: 420px; margin: auto 0; padding: 32px 0; }
+  .ss-auth-panel .ss-auth-links { justify-content: flex-start; }
+
+  /* :pad, o bloco de destacar: faixa colada em cima, folha picotada e a de amanhã por baixo. */
+  .ss-auth-pad { position: relative; }
+  .ss-auth-pad .ss-auth-band { border-radius: var(--r-field) var(--r-field) 0 0; padding: 16px 24px 14px; }
+  .ss-auth-pad .ss-auth-sheet { margin-top: 0; z-index: 2;
+    -webkit-mask: radial-gradient(circle 4px at 8px 0, transparent 98%, #000) 0 0 / 16px 100% repeat-x;
+            mask: radial-gradient(circle 4px at 8px 0, transparent 98%, #000) 0 0 / 16px 100% repeat-x; }
+  .ss-auth-pad .ss-auth-sheet::before, .ss-auth-pad .ss-auth-sheet::after { content: none; }
+  .ss-auth-pad .ss-auth-dateline { justify-content: space-between; align-items: baseline; padding: 20px 28px 0; border-bottom: 0; }
+  .ss-auth-pad .ss-auth-dateline .ss-auth-day { font-size: 3.25rem; }
+  .ss-auth-pad .ss-auth-dateline > span:last-child { padding: 0; }
+  .ss-auth-under { position: relative; z-index: 1; margin: -6px 10px 0; padding: 14px 18px 10px; display: flex; justify-content: space-between;
+                   align-items: baseline; background: var(--surface); box-shadow: var(--ss-auth-shadow); color: var(--muted); font-size: .875rem; font-weight: 700; }
+  .ss-auth-under .ss-auth-day { font-size: 2rem; }
+  .ss-auth-under2 { margin: -4px 20px 0; height: 12px; background: var(--surface); box-shadow: var(--ss-auth-shadow); }
+
+  @media (max-width: 960px) {
+    .ss-auth.is-wall { grid-template-columns: 1fr; }
+    .ss-auth-wall { padding: 16px; }
+    .ss-auth-wall .ss-auth-sheet { width: 100%; }
+    .ss-auth-wall .ss-auth-head { padding-top: 26px; }
+    .ss-auth-wall .ss-auth-day { font-size: 8rem; }
+    .ss-auth-weekday { padding-bottom: 16px; }
+    .ss-auth-panel { box-shadow: 0 -1px 0 var(--line); }
+  }
+}

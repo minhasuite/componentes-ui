@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ss_auth_folhinha.dart';
 import 'ss_strings.dart';
 
 // Tela de entrada padrão da suíte (o modelo é o login do meu-financeiro).
@@ -14,6 +15,39 @@ class SsAuthLayout extends StatelessWidget {
     required this.halo,
     required this.children,
   });
+
+  /// v0.22: a tela de entrada "Folhinha" (par do `Ss::AuthLayoutComponent`): folhinha de parede com a data
+  /// de hoje, o formulário do app no bloco e a faixa do [product] na cor da marca. Três variações
+  /// ([SsAuthVariant.sheet], [SsAuthVariant.wall], [SsAuthVariant.pad]). O construtor padrão (halos e ícone)
+  /// continua igual: o app só muda quando escolher a folhinha.
+  ///
+  ///     SsAuthLayout.folhinha(product: 'Meu Gestor', tagline: 'A loja em dia, sem planilha.',
+  ///       title: 'Entrar', subtitle: 'no Meu Gestor', children: [SsTextField(...), SsButton(...)])
+  static Widget folhinha({
+    Key? key,
+    required String product,
+    required String title,
+    required List<Widget> children,
+    String? subtitle,
+    String? tagline,
+    SsAuthVariant variant = SsAuthVariant.sheet,
+    DateTime? date,
+    String? note,
+    (String, String) brand = const ('Minha', 'Suite'),
+    List<Widget> footer = const [],
+  }) => SsAuthFolhinha(
+    key: key,
+    product: product,
+    title: title,
+    subtitle: subtitle,
+    tagline: tagline,
+    variant: variant,
+    date: date,
+    note: note,
+    brand: brand,
+    footer: footer,
+    children: children,
+  );
 
   final String title;
   final String subtitle;

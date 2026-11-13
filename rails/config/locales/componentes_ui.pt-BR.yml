@@ -615,6 +615,11 @@ pt-BR:
       hint: '%{label} (P)'
     google:
       sign_in: Entrar com o Google
+    auth:
+      part_of: Parte da %{brand}
+      months: [Janeiro, Fevereiro, Março, Abril, Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro]
+      days: [Domingo, Segunda-feira, Terça-feira, Quarta-feira, Quinta-feira, Sexta-feira, Sábado]
+      links_label: Links da página
     wallet_card:
       balance: Saldo total
       card: Cartão

@@ -158,6 +158,22 @@ module ComponentesUi
       %(<script#{attr} data-ss-density-head>#{SS_DENSITY_HEAD_JS}</script>).html_safe
     end
 
+    # v0.22: a fonte de exibição da suíte (Big Shoulders Display, 800 e 900), usada pelo título e pelos números
+    # da tela de entrada (Ss::AuthLayoutComponent) e por --ss-font-display. Ponha no <head>, ao lado da Manrope:
+    #   <%= ss_display_font_tag %>
+    # preconnect: false quando o layout já faz o preconnect do Google Fonts.
+    DISPLAY_FONT_URL = "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&display=swap".freeze
+
+    def ss_display_font_tag(preconnect: true)
+      tags = []
+      if preconnect
+        tags << %(<link rel="preconnect" href="https://fonts.googleapis.com">)
+        tags << %(<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>)
+      end
+      tags << %(<link rel="stylesheet" href="#{DISPLAY_FONT_URL}">)
+      tags.join("\n").html_safe
+    end
+
     # v0.10.2: "Pular para o conteúdo" (.ss-skip), o primeiro Tab da página. Ponha logo no
     # começo do <body>; o alvo precisa de id (o <main> do AppShell é #conteudo, com tabindex=-1).
     #   <%= ss_skip_link %>   <%= ss_skip_link("#principal", "Ir para a lista") %>

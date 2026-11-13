@@ -67,6 +67,8 @@ void main() {
           await tester.pump(); // quadro seguinte: callbacks pós-quadro (ex.: troca de aba)
           await tester.pump(Duration(milliseconds: e.aguarde));
           await tester.runAsync(GoogleFonts.pendingFonts);
+          // v0.22: um quadro depois da fonte carregar; senão a 1ª captura de uma fonte nova sai em blocos.
+          await tester.pump();
           if (saida == null) continue;
           final b = tester.renderObject<RenderRepaintBoundary>(find.byKey(const Key('shot')));
           await tester.runAsync(() async {

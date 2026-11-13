@@ -1,0 +1,48 @@
+<%# titulo: Entrada (v0.22): a folhinha | grupo: Tela | ordem: 45 %>
+<%# v0.22: tela de entrada "Folhinha" (Ss::AuthLayoutComponent ↔ SsAuthLayout.folhinha) nas três variações. %>
+<% links = [["Termos", "#"], ["Privacidade", "#"]] %>
+<% caixa = "border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden" %>
+<% sem_altura = "min-height:0" %>
+
+<%= demo "Ss::AuthLayoutComponent (variant: :sheet)", "A folha pendurada: data de hoje no alto, o formulário do produto no bloco e a faixa do produto em --accent embaixo. Par: SsAuthLayout.folhinha(variant: SsAuthVariant.sheet).",
+         uso: 'render(Ss::AuthLayoutComponent.new(product: "Meu Gestor", tagline: "A loja em dia, sem planilha.", title: "Entrar", subtitle: "no Meu Gestor", links: [["Termos", termos_path]])) { ss_form_with(url: login_path) { |f| … } }' do %>
+  <div style="<%= caixa %>">
+    <%= render(Ss::AuthLayoutComponent.new(product: "Meu Gestor", tagline: "A loja em dia, sem planilha.", title: "Entrar", subtitle: "no Meu Gestor",
+                                           note: "bom dia para organizar", links: links, style: sem_altura)) do %>
+      <%= render Ss::GoogleButtonComponent.new(href: "#", method: :get) %>
+      <div class="ss-divider">ou com e-mail</div>
+      <%= ss_form_with url: "#", method: :get do |f| %>
+        <%= f.ss_email_field :email, label: "E-mail", autocomplete: "email", placeholder: "voce@exemplo.com" %>
+        <%= f.ss_password_field :password, label: "Senha", autocomplete: "current-password" %>
+        <%= f.ss_submit "Entrar", css: "w-full" %>
+      <% end %>
+      <p class="ss-auth-sub" style="margin:18px 0 0;text-align:center">Primeira vez aqui? <%= render Ss::TextLinkComponent.new(label: "Criar conta grátis", href: "#") %></p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::AuthLayoutComponent (variant: :wall), senha errada", "A parede: folhinha grande à esquerda e o formulário numa coluna à direita (no celular, a folhinha encolhe em cima). O aviso é o Ss::CalloutComponent(tone: :danger).",
+         uso: 'render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", title: "Entrar", variant: :wall)) { … }' do %>
+  <div style="<%= caixa %>">
+    <%= render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", title: "Entrar", subtitle: "no Minhas Vendas",
+                                           variant: :wall, links: links, style: sem_altura)) do %>
+      <%= render(Ss::CalloutComponent.new(tone: :danger, title: "E-mail ou senha não conferem.")) { "Confira os dois ou use Esqueci a senha." } %>
+      <%= ss_form_with url: "#", method: :get do |f| %>
+        <%= f.ss_email_field :email, label: "E-mail", value: "ana.souza@exemplo.com", autocomplete: "email" %>
+        <%= f.ss_password_field :password, label: "Senha", autocomplete: "current-password" %>
+        <%= f.ss_submit "Entrar", css: "w-full" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= demo "Ss::AuthLayoutComponent (variant: :pad), link enviado", "O bloco de destacar: faixa do produto colada em cima, a folha de hoje picotada e a de amanhã aparecendo por baixo.",
+         uso: 'render(Ss::AuthLayoutComponent.new(product: "Meu Financeiro", title: "Confira seu e-mail", variant: :pad)) { … }' do %>
+  <div style="<%= caixa %>">
+    <%= render(Ss::AuthLayoutComponent.new(product: "Meu Financeiro", tagline: "Seu dinheiro, sem susto.", title: "Confira seu e-mail",
+                                           subtitle: "O link vale por 2 horas.", variant: :pad, links: links, style: sem_altura)) do %>
+      <%= render(Ss::CalloutComponent.new(tone: :success, title: "Link enviado para ana.souza@exemplo.com.")) { "Não chegou? Veja o spam ou envie de novo." } %>
+      <%= render Ss::ButtonComponent.new(label: "Voltar para entrar", href: "#", variant: :outline, block: true) %>
+    <% end %>
+  </div>
+<% end %>

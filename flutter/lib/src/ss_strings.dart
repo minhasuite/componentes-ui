@@ -218,6 +218,7 @@ class SsStrings {
     required this.taskPending,
     required this.pickDay,
     required this.monthOpenCalendar,
+    required this.authPartOf,
     required this.withEvents,
     required this.nowAt,
     required this.agoNow,
@@ -701,6 +702,9 @@ class SsStrings {
 
   final String pickDay;
   final String Function(String month) monthOpenCalendar;
+
+  /// v0.22: "Parte da MinhaSuite" no painel da tela de entrada ([SsAuthLayout.folhinha] na parede).
+  final String Function(String brand) authPartOf;
   final String withEvents;
   final String Function(String time) nowAt;
 
@@ -1238,6 +1242,7 @@ class SsStrings {
     taskPending: 'Pendente',
     pickDay: 'Escolher dia',
     monthOpenCalendar: (month) => 'Mês: $month. Abrir calendário',
+    authPartOf: (brand) => 'Parte da $brand',
     withEvents: ', com eventos',
     nowAt: (time) => 'Agora, $time',
     agoNow: 'agora',
@@ -1640,6 +1645,7 @@ class SsStrings {
     taskPending: 'Pending',
     pickDay: 'Pick a day',
     monthOpenCalendar: (month) => 'Month: $month. Open calendar',
+    authPartOf: (brand) => 'Part of $brand',
     withEvents: ', with events',
     nowAt: (time) => 'Now, $time',
     agoNow: 'just now',
@@ -2034,6 +2040,7 @@ class SsStrings {
     taskPending: 'Pendiente',
     pickDay: 'Elegir día',
     monthOpenCalendar: (month) => 'Mes: $month. Abrir calendario',
+    authPartOf: (brand) => 'Parte de $brand',
     withEvents: ', con eventos',
     nowAt: (time) => 'Ahora, $time',
     agoNow: 'ahora',
@@ -2415,6 +2422,7 @@ class SsStrings {
     'taskPending': taskPending,
     'pickDay': pickDay,
     'monthOpenCalendar': monthOpenCalendar('X'),
+    'authPartOf': authPartOf('X'),
     'withEvents': withEvents,
     'nowAt': nowAt('X'),
     'agoNow': agoNow,
@@ -2831,6 +2839,7 @@ class SsStrings {
     String? taskPending,
     String? pickDay,
     String Function(String month)? monthOpenCalendar,
+    String Function(String brand)? authPartOf,
     String? withEvents,
     String Function(String time)? nowAt,
     String? agoNow,
@@ -3209,6 +3218,7 @@ class SsStrings {
     taskPending: taskPending ?? this.taskPending,
     pickDay: pickDay ?? this.pickDay,
     monthOpenCalendar: monthOpenCalendar ?? this.monthOpenCalendar,
+    authPartOf: authPartOf ?? this.authPartOf,
     withEvents: withEvents ?? this.withEvents,
     nowAt: nowAt ?? this.nowAt,
     agoNow: agoNow ?? this.agoNow,

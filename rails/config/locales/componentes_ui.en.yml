@@ -613,6 +613,11 @@ en:
       hint: '%{label} (P)'
     google:
       sign_in: Sign in with Google
+    auth:
+      part_of: Part of %{brand}
+      months: [January, February, March, April, May, June, July, August, September, October, November, December]
+      days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+      links_label: Page links
     wallet_card:
       balance: Total balance
       card: Card

@@ -643,6 +643,37 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.22.0: tela de entrada "Folhinha" e a fonte de exibição
+
+A identidade nova das telas de entrada da suíte (proposta "Folhinha", aprovada em 13/11/2026): a folhinha de parede do
+comércio com a data de hoje, o formulário do produto no bloco e a faixa do patrocinador na cor do produto. Tudo aditivo;
+nada quebra. Catálogo: `flutter/test/catalogo_v22.dart` (`ss-auth-folhinha`) e `rails/catalogo/index.html` (seção
+`ss-auth`, de `rails/sample/script/catalogo_v022.rb`); vitrine Rails "Entrada (v0.22)"; testes em `flutter/test/v22_test.dart`
+e `rails/sample/test/components/v22_web_test.rb`. CSS em `v22_web.css`.
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Tela de entrada | `SsAuthLayout.folhinha(product:, title:, subtitle:, tagline:, variant: SsAuthVariant.sheet \| wall \| pad, date:, note:, brand:, footer:, children:)` | `Ss::AuthLayoutComponent(product:, title:, subtitle:, tagline:, variant: :sheet \| :wall \| :pad, date:, note:, brand:, brand_href:, links:)` + bloco | layout de login próprio do produto (card centralizado, halos) |
+| Fonte de exibição | `AppTheme.display(context, size:, weight: w800 \| w900, color:)` (Big Shoulders Display empacotada, OFL) | `--ss-font-display` + `ss_display_font_tag(preconnect:)` no `<head>` | `fontFamily:`/`font-family` solto no produto |
+| "Parte da MinhaSuite" | `SsStrings.authPartOf(brand)` | `componentes_ui.auth.part_of` (+ `months`, `days`, `links_label`) | texto fixo |
+
+- **As três variações:** `sheet` é a folha pendurada (data no alto, o bloco e a faixa do produto embaixo); `wall` é a
+  parede (folhinha grande à esquerda e o formulário numa coluna à direita; abaixo de 840 px, empilha); `pad` é o bloco
+  de destacar (faixa colada em cima, folha picotada e a de amanhã aparecendo por baixo).
+- **O bloco é do produto,** montado com as peças de sempre: `ss_form_with` / `SsTextField`, `Ss::GoogleButtonComponent` /
+  `SsGoogleButton`, `Ss::CalloutComponent` / `SsCallout` (senha errada, link enviado), `Ss::TextLinkComponent` /
+  `SsLinkText`, `Ss::ButtonComponent` / `SsButton`. A tela serve para entrar, criar conta, esqueci a senha e "link enviado".
+- **Só tokens:** folha = `--surface`/`c.surface`, parede = `--page`/`c.page`, faixa = `--accent-solid`/`c.accentSolid`,
+  domingo = `--danger`/`c.danger`. A cor do produto entra pelo `--accent`/`SsBrand` como sempre.
+- **Fonte:** o web carrega a Big Shoulders Display com `ss_display_font_tag` (sem ela, cai para a fonte do texto); o
+  Flutter já traz os pesos 800 e 900 em `assets/google_fonts` (com `OFL-BigShouldersDisplay.txt`). Só para título curto e
+  número grande; texto corrido continua na Manrope.
+- **Acessibilidade:** na `wall`, a folhinha grande fica fora do leitor de tela (`aria-hidden` / `ExcludeSemantics`); o
+  título do bloco é o `h1` / cabeçalho.
+- **O construtor padrão do `SsAuthLayout` (halos e ícone) não muda:** o app só troca quando escolher a folhinha.
+
+**Padrões que mudaram.** Nenhum.
+
 ## v0.21.0: acenos de estado da casa e brilho real da lâmpada
 
 Pedido do minha-automacao ("beleza" dos painéis: ideias 16 e 18). Tudo aditivo; nada quebra. Catálogo:
@@ -1309,6 +1340,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.22.0` (não lançada): seção "v0.22.0". Tela de entrada "Folhinha": `SsAuthLayout.folhinha(variant:)` ↔ `Ss::AuthLayoutComponent(variant: :sheet | :wall | :pad)`, fonte de exibição (`AppTheme.display` ↔ `--ss-font-display` + `ss_display_font_tag`) e `SsStrings.authPartOf` ↔ `componentes_ui.auth.*`. Nada quebra.
 - `v0.21.0` (não lançada, branch `beleza`): seção "v0.21.0". `SsCue` ↔ `.ss-cue` + `ss-cue` + `ss_cue_data` (ligou, abriu, chegou; menos movimento desliga) e `SsDeviceTile(level:)` ↔ `DeviceTileComponent(level:)` (brilho real da lâmpada). Nada quebra.
 - `v0.20.2` (11/11/2026): seção "v0.20.2". Projeção tracejada no gráfico de barras: `SsBarChart(projection:, projectionFrom:)` ↔ `Ss::BarChartComponent(projection:, projection_from:)` (legenda tracejada, dica/balão, tabela e `Semantics` para leitor de tela, claro/escuro). Nada quebra.
 - `v0.20.1` (11/11/2026): `SsButton(expand: false)` fica do tamanho do texto dentro de `Wrap`/`Align` (antes esticava).

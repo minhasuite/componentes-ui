@@ -1,0 +1,68 @@
+<% marca = brand_href ? link_to(brand, brand_href, class: "ss-auth-brand") : tag.span(brand, class: "ss-auth-brand") %>
+<% faixa = capture do %>
+  <div class="ss-auth-band"><strong><%= product %></strong><% if tagline %><span><%= tagline %></span><% end %></div>
+<% end %>
+<% corpo = capture do %>
+  <div class="ss-auth-body">
+    <h1 class="ss-auth-title"><%= title %></h1>
+    <% if subtitle %><p class="ss-auth-sub"><%= subtitle %></p><% end %>
+    <%= content %>
+  </div>
+<% end %>
+<% rodape = capture do %>
+  <% if links.any? %>
+    <nav class="ss-auth-links" aria-label="<%= ss_t("auth.links_label", default: "Links da página") %>">
+      <% links.each do |(rotulo, href)| %><%= link_to rotulo, href %><% end %>
+    </nav>
+  <% end %>
+<% end %>
+<% data = capture do %>
+  <span class="ss-auth-month"><%= month %></span><span class="ss-auth-year"><%= date.year %></span>
+<% end %>
+<%= tag.main(**root_attrs(class: root_classes)) do %>
+  <% case variant %>
+  <% when :wall %>
+    <section class="ss-auth-wall">
+      <%= marca %>
+      <div class="ss-auth-sheet" aria-hidden="true">
+        <div class="ss-auth-head"><%= data %></div>
+        <p class="ss-auth-day<%= " is-sunday" if sunday? %>"><%= date.day %></p>
+        <p class="ss-auth-weekday"><%= weekday %></p>
+        <%= faixa %>
+      </div>
+    </section>
+    <section class="ss-auth-panel">
+      <p class="ss-auth-part"><%= part_of %></p>
+      <%= corpo %>
+      <%= rodape %>
+    </section>
+  <% when :pad %>
+    <div class="ss-auth-stage">
+      <%= marca %>
+      <div class="ss-auth-pad">
+        <%= faixa %>
+        <div class="ss-auth-sheet">
+          <div class="ss-auth-dateline"><span class="ss-auth-day<%= " is-sunday" if sunday? %>"><%= date.day %></span><span><%= weekday %>, <%= month %></span></div>
+          <%= corpo %>
+        </div>
+        <div class="ss-auth-under" aria-hidden="true"><span class="ss-auth-day"><%= tomorrow.day %></span><span><%= tomorrow_weekday %></span></div>
+        <div class="ss-auth-under2" aria-hidden="true"></div>
+      </div>
+      <%= rodape %>
+    </div>
+  <% else %>
+    <div class="ss-auth-stage">
+      <%= marca %>
+      <div class="ss-auth-sheet">
+        <div class="ss-auth-head"><%= data %></div>
+        <div class="ss-auth-dateline">
+          <span class="ss-auth-day<%= " is-sunday" if sunday? %>"><%= date.day %></span>
+          <span><strong><%= weekday %></strong><% if note %><%= note %><% end %></span>
+        </div>
+        <%= corpo %>
+        <%= faixa %>
+      </div>
+      <%= rodape %>
+    </div>
+  <% end %>
+<% end %>

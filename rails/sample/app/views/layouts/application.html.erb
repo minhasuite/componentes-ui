@@ -7,6 +7,7 @@
     <%= csrf_meta_tags %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <%= ss_display_font_tag(preconnect: false) %>
     <%# Só o tailwind.css (o builds/tailwind/componentes_ui.css é fonte do build, não vai ao navegador). %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%# v0.10.1: menu recolhido já no <html> antes da 1ª pintura (sem piscar aberto). %>

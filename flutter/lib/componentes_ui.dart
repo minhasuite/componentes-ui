@@ -15,6 +15,7 @@ export 'src/ss_action_button.dart';
 export 'src/ss_async.dart';
 export 'src/ss_async_sliver.dart';
 export 'src/ss_aurora.dart';
+export 'src/ss_auth_folhinha.dart';
 export 'src/ss_auth_layout.dart';
 export 'src/ss_badge.dart';
 export 'src/ss_button.dart';

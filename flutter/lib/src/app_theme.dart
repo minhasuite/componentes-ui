@@ -829,6 +829,24 @@ class AppTheme {
     );
   }
 
+  /// v0.22: fonte de EXIBIÇÃO (Big Shoulders Display, 800 ou 900, empacotada): título e números grandes da
+  /// tela de entrada ([SsAuthLayout.folhinha]); par do `--ss-font-display` do web. Só para títulos
+  /// curtos e números grandes; texto corrido continua na Manrope.
+  static TextStyle display(
+    BuildContext context, {
+    double size = 40,
+    FontWeight weight = FontWeight.w900,
+    Color? color,
+  }) {
+    return GoogleFonts.bigShouldersDisplay(
+      fontSize: size,
+      fontWeight: weight == FontWeight.w800 ? FontWeight.w800 : FontWeight.w900,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      height: 1.0,
+      color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
+    );
+  }
+
   /// Estilo para NÚMEROS (DM Mono + tabular) — o `.num` do design system.
   static TextStyle number(BuildContext context, {double size = 16, FontWeight weight = FontWeight.w500, Color? color}) {
     return GoogleFonts.dmMono(
