@@ -18,8 +18,9 @@
 @layer components {
   .ss-bell { position: relative; display: inline-flex; }
   .ss-bell-btn { position: relative; }
-  .ss-bell-count { position: absolute; top: .15rem; right: .1rem; min-width: 1.1rem; height: 1.1rem; padding: 0 .3rem; border-radius: 999px;
-                   background: var(--danger); color: #fff; font-size: .64rem; font-weight: 800; line-height: 1.1rem; text-align: center;
+  /* Contador no canto de cima à direita, fora do sino (o desenho do sino fica à vista). */
+  .ss-bell-count { position: absolute; top: -.2rem; right: -.3rem; min-width: 1.05rem; height: 1.05rem; padding: 0 .28rem; border-radius: 999px;
+                   background: var(--danger); color: #fff; font-size: .6rem; font-weight: 800; line-height: 1.05rem; text-align: center;
                    font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--surface); pointer-events: none; }
   .ss-bell-count[hidden] { display: none; }
   .ss-bell-list { display: grid; gap: 2px; margin: 0; padding: .3rem; list-style: none; }
