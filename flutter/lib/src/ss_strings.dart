@@ -131,6 +131,7 @@ class SsStrings {
     required this.yesterday,
     required this.otherDate,
     required this.pickDate,
+    required this.pickTime,
     required this.time,
     required this.clearDate,
     required this.choose,
@@ -572,6 +573,9 @@ class SsStrings {
   final String yesterday;
   final String otherDate;
   final String pickDate;
+
+  /// v0.23: título do relógio do [showSsTimePicker].
+  final String pickTime;
   final String time;
   final String clearDate;
   final String choose;
@@ -1155,6 +1159,7 @@ class SsStrings {
     yesterday: 'Ontem',
     otherDate: 'Outra…',
     pickDate: 'Escolher data',
+    pickTime: 'Escolher hora',
     time: 'Hora',
     clearDate: 'Limpar data',
     choose: 'Escolher',
@@ -1558,6 +1563,7 @@ class SsStrings {
     yesterday: 'Yesterday',
     otherDate: 'Other…',
     pickDate: 'Pick a date',
+    pickTime: 'Pick a time',
     time: 'Time',
     clearDate: 'Clear date',
     choose: 'Choose',
@@ -1953,6 +1959,7 @@ class SsStrings {
     yesterday: 'Ayer',
     otherDate: 'Otra…',
     pickDate: 'Elegir fecha',
+    pickTime: 'Elegir hora',
     time: 'Hora',
     clearDate: 'Borrar fecha',
     choose: 'Elegir',
@@ -2335,6 +2342,7 @@ class SsStrings {
     'yesterday': yesterday,
     'otherDate': otherDate,
     'pickDate': pickDate,
+    'pickTime': pickTime,
     'time': time,
     'clearDate': clearDate,
     'choose': choose,
@@ -2752,6 +2760,7 @@ class SsStrings {
     String? yesterday,
     String? otherDate,
     String? pickDate,
+    String? pickTime,
     String? time,
     String? clearDate,
     String? choose,
@@ -3131,6 +3140,7 @@ class SsStrings {
     yesterday: yesterday ?? this.yesterday,
     otherDate: otherDate ?? this.otherDate,
     pickDate: pickDate ?? this.pickDate,
+    pickTime: pickTime ?? this.pickTime,
     time: time ?? this.time,
     clearDate: clearDate ?? this.clearDate,
     choose: choose ?? this.choose,

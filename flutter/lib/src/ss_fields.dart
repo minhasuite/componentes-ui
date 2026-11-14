@@ -101,6 +101,36 @@ Future<DateTime?> showSsDatePicker(
   );
 }
 
+/// v0.23: o relógio do pacote fora do [SsTimeField] (chip, linha, botão), par
+/// do [showSsDatePicker]: textos do [SsStrings] (título, Cancelar, Confirmar),
+/// 24 horas por padrão e o tema do app. Devolve a hora ou nulo se cancelar. No
+/// lugar do `showTimePicker` cru.
+///
+/// `final t = await showSsTimePicker(context, initialTime: TimeOfDay.now())`
+Future<TimeOfDay?> showSsTimePicker(
+  BuildContext context, {
+  TimeOfDay? initialTime,
+  String? helpText,
+  String? confirmText,
+  String? cancelText,
+  TimePickerEntryMode initialEntryMode = TimePickerEntryMode.dial,
+  bool use24h = true,
+}) {
+  final s = SsStrings.of(context);
+  return showTimePicker(
+    context: context,
+    initialTime: initialTime ?? TimeOfDay.now(),
+    helpText: helpText ?? s.pickTime,
+    confirmText: confirmText ?? s.confirm,
+    cancelText: cancelText ?? s.cancel,
+    initialEntryMode: initialEntryMode,
+    builder: use24h
+        ? (context, child) =>
+              MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!)
+        : null,
+  );
+}
+
 /// Rótulo acima dos campos `Ss*` (o mesmo de [SsTextField]). Público para o
 /// campo próprio do produto ficar igual aos do pacote.
 ///
@@ -996,8 +1026,8 @@ class SsDateField extends StatelessWidget {
   }
 
   Future<void> _horario(BuildContext context) async {
-    final t = await showTimePicker(
-      context: context,
+    final t = await showSsTimePicker(
+      context,
       initialTime: value == null ? const TimeOfDay(hour: 9, minute: 0) : TimeOfDay.fromDateTime(value!),
     );
     if (t == null) return;
@@ -1625,12 +1655,7 @@ class SsTimeField extends StatelessWidget {
   static String format(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
   Future<void> _abrir(BuildContext context) async {
-    final r = await showTimePicker(
-      context: context,
-      initialTime: value ?? const TimeOfDay(hour: 7, minute: 0),
-      builder: (context, child) =>
-          MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
-    );
+    final r = await showSsTimePicker(context, initialTime: value ?? const TimeOfDay(hour: 7, minute: 0));
     if (r != null) onChanged(r);
   }
 
