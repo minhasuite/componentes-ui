@@ -19,6 +19,8 @@ module Ss
   # (:danger no Remover) e confirm_button: (verbo do OK). Sem href: <button type="button"> ou
   # type: :submit; o resto (name:, value:, form:, formaction:, data:, aria:, title:, id:, disabled:)
   # vai no elemento. submitting: "Salvando…" põe data-turbo-submits-with.
+  # v0.23.1: form: "id" (texto) num <button> sem href vira o atributo form= (botão fora do form que ele envia);
+  # o form: {} (hash) continua indo no <form> do button_to.
   # v0.19.2 (par do SsButton.onGradient(solid:, stacked:)): solid: true no :on_grad = branco com o texto na
   # cor funda da marca (.is-solid); stacked: true = ícone em cima do rótulo (.is-stacked), para os atalhos
   # lado a lado no herói:
@@ -51,7 +53,7 @@ module Ss
       return button_to_form if @href && METHODS.include?(@method)
       return link_to(@href, **attrs(confirm_data)) { body } if @href
 
-      tag.button(type: @type, **attrs(confirm_data.merge(submitting_data))) { body }
+      tag.button(type: @type, form: (@form.to_s if @form.is_a?(String) || @form.is_a?(Symbol)), **attrs(confirm_data.merge(submitting_data))) { body }
     end
 
     private
@@ -79,7 +81,7 @@ module Ss
 
     # button_to: o confirm vai no <form> (o Turbo lê dele), o resto no <button>.
     def button_to_form
-      form = @form.to_h.dup
+      form = (@form.is_a?(Hash) ? @form : {}).dup
       form[:data] = form[:data].to_h.merge(confirm_data)
       opts = attrs(submitting_data).merge(method: @method.to_sym, form:)
       opts[:params] = @params if @params

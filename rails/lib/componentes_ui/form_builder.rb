@@ -59,6 +59,7 @@ module ComponentesUi
     end
 
     # Grupo de opções (radio) num fieldset: f.ss_radio_buttons :tipo, [["Pessoa física", "pf"], ["Empresa", "pj"]], label:
+    # v0.23.1: um 3º item na opção vai no input dela (ex. ["Bluetooth", "ble", { disabled: true }]).
     # checked: (v0.20) o valor marcado quando não há model (ou para sobrepor o dele); hide_label: a legenda só
     # para o leitor de tela.
     NO_CHECKED = Object.new.freeze
@@ -66,9 +67,9 @@ module ComponentesUi
     def ss_radio_buttons(method, choices, label: nil, help: nil, inline: true, wrapper_class: nil, checked: NO_CHECKED, hide_label: false, **opts)
       ss_no_wrap do
         errs = ss_errors(method)
-        items = choices.map do |text, value|
+        items = choices.map do |text, value, extra|
           value = text if value.nil?
-          ropts = opts.merge(ss_aria(method, errs, help))
+          ropts = opts.merge(ss_aria(method, errs, help)).merge(extra.to_h)
           ropts[:checked] = checked.to_s == value.to_s unless checked.equal?(NO_CHECKED)
           radio = radio_button(method, value, ropts)
           @template.tag.label(class: "ss-check", for: field_id(method, value)) { @template.safe_join([radio, " ", text]) }
@@ -106,6 +107,28 @@ module ComponentesUi
         @template.tag.fieldset(class: ["ss-fieldset", "ss-chip-group", wrapper_class]) do
           @template.safe_join([legend, @template.tag.div(@template.safe_join(items), class: "ss-chips")].compact)
         end
+      end
+    end
+
+    # v0.23.1: tema numa amostra (galeria de temas, .ss-swatch da v0.14): o rádio some e a escolhida ganha o anel.
+    #   <%= f.ss_swatch_radio :theme, th.key, label: th.label, style: "--p1: …; --p2: …", size: :lg, block: true, checked: th.key == atual %>
+    # dots: quantas bolinhas (4; 0 tira), bar: false tira a barra, size: :lg = .ss-swatch-lg, block: true = largura toda.
+    # Com bloco, o conteúdo do bloco entra no lugar das bolinhas/barra/nome (ex. a opção "Herdar" com um ícone).
+    def ss_swatch_radio(method, value, label: nil, style: nil, size: nil, block: false, dots: 4, bar: true, checked: NO_CHECKED, **opts, &content)
+      ss_no_wrap do
+        ropts = opts.dup
+        ropts[:checked] = checked ? true : false unless checked.equal?(NO_CHECKED)
+        radio = radio_button(method, value, ropts)
+        body = if content
+                 @template.capture(&content)
+               else
+                 dot_tags = Array.new(dots.to_i) { @template.tag.i }
+                 @template.safe_join([(@template.tag.span(@template.safe_join(dot_tags), class: "ss-swatch-dots", "aria-hidden": "true") if dots.to_i.positive?),
+                                      (@template.tag.span(class: "ss-swatch-bar", "aria-hidden": "true") if bar),
+                                      (@template.tag.span(label, class: "ss-swatch-name") if label)].compact)
+               end
+        css = ["ss-swatch", ("ss-swatch-lg" if size.to_s == "lg"), ("is-block" if block)].compact.join(" ")
+        @template.tag.label(class: css, style:, title: (label if content)) { @template.safe_join([radio, body]) }
       end
     end
 

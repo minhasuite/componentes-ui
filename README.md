@@ -643,6 +643,19 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.23.1: amostra de tema no formulário, opção de rádio desligada e o `form=` do botão
+
+Achado na migração do minha-automacao web. Nada quebra. Catálogo: `ss-swatch-radio` (de `rails/sample/script/catalogo_v0231.rb`);
+testes em `rails/sample/test/components/v23_1_web_test.rb`.
+
+- **`f.ss_swatch_radio(method, value, label:, style:, size: :lg, block:, dots: 4, bar: true, checked:)`**: o `.ss-swatch` (galeria de
+  temas da v0.14) com o rádio montado pela gem; com bloco, o conteúdo entra no lugar das bolinhas (a opção "Herdar").
+- **`f.ss_radio_buttons`**: um 3º item na opção vai no input dela (`["Bluetooth", "ble", { disabled: true }]`).
+- **`Ss::ButtonComponent(form: "id")`** num `<button>` sem `href` vira o atributo `form=` (antes sumia); o `form: {}` (hash)
+  segue indo no `<form>` do `button_to`.
+
+**Padrões que mudaram.** Nenhum.
+
 ## v0.23.0: relógio do pacote, seletor segmentado, chips de marcar, botão sem desenho, movimento, grade por tela e papel de parede
 
 O que o minha-automacao (web e app) pedia para ficar 100% na gem, sem CSS próprio e sem `<button>`/`<input>` à mão.
@@ -1383,6 +1396,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.23.1` (14/11/2026): seção "v0.23.1". `f.ss_swatch_radio`, opção de rádio desligada e `ButtonComponent(form: "id")`. Nada quebra.
 - `v0.23.0` (14/11/2026): seção "v0.23.0". `showSsTimePicker`, `Ss::SegmentedComponent`, `ButtonComponent(variant: :bare)`, `f.ss_chip_check_box`/`ss_chip_radio_buttons`, `.ss-anim-*`, `.ss-span-grid` e `.ss-wall`. Nada quebra.
 - `v0.22.1` (14/11/2026): seção "v0.22.1". `StickyActionBarComponent(always: true)` não some ao voltar o campo ao original, em Cancelar nem ao enviar (`ss-dirty` com `always`). Nada quebra.
 - `v0.22.0` (não lançada): seção "v0.22.0". Tela de entrada "Folhinha": `SsAuthLayout.folhinha(variant:)` ↔ `Ss::AuthLayoutComponent(variant: :sheet | :wall | :pad)`, fonte de exibição (`AppTheme.display` ↔ `--ss-font-display` + `ss_display_font_tag`) e `SsStrings.authPartOf` ↔ `componentes_ui.auth.*`. Nada quebra.
