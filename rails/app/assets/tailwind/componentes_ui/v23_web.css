@@ -129,3 +129,6 @@
   .ss-chip-group { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: .4rem; }
   .ss-chip-group > .ss-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
 }
+
+/* v0.23.4 · ss-reveal: o item escondido some mesmo com display próprio (grid, flex). */
+[data-ss-reveal-for][hidden] { display: none !important; }
