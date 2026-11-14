@@ -643,6 +643,15 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## (próxima) área segura do celular (`viewport-fit=cover`)
+
+Com `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (PWA instalada no
+iPhone/Android, tela cheia), a página vai até as bordas e o `env(safe-area-inset-*)` passa a valer. A moldura
+(`.ss-shell-top`, `.ss-shell-content`, a gaveta `.ss-shell-side`), os toasts, a barra de seleção, a barra fixa e as
+gavetas (`.ss-drawer`, `dialog.ss-drawer-panel`) agora respeitam o entalhe, a ilha e a barra de gestos
+(`safe_area_web.css`). Sem `viewport-fit=cover` ou fora do celular o `env()` é 0 e nada muda. O `.ss-fab`,
+o `.ss-speed-dial` e a `.ss-sheet` já respeitavam. No Flutter é o `SafeArea` de sempre (nada novo).
+
 ## v0.23.4: campos que aparecem conforme a escolha (`ss-reveal`)
 
 Achado na migração do minha-automacao web (formulário do card do painel: os campos de cada tipo e de cada ação de

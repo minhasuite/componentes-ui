@@ -1,0 +1,28 @@
+/* Área segura do celular (PWA no iPhone/Android, pedido do minha-automacao em 14/11/2026).
+   Com <meta name="viewport" content="..., viewport-fit=cover"> a página vai até as bordas da tela
+   (entalhe/ilha no topo e nas laterais deitado, barra de gestos embaixo) e o env(safe-area-inset-*)
+   passa a valer. Aqui a moldura e o que fica preso na tela respeitam essa área; fora do celular (ou sem
+   viewport-fit=cover) o env() é 0 e o max()/calc() devolve o espaçamento de sempre. O botão flutuante
+   (.ss-fab, .ss-speed-dial) e a folha de baixo (.ss-sheet) já respeitavam. */
+@layer components {
+  .ss-shell-top { padding-top: calc(var(--ss-pad-y) * 1.2 + env(safe-area-inset-top, 0px));
+                  padding-left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
+                  padding-right: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-right, 0px)); }
+  .ss-shell-content { padding-left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
+                      padding-right: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-right, 0px));
+                      padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+  .ss-shell-side { padding-top: calc(.9rem + env(safe-area-inset-top, 0px)); padding-bottom: calc(.9rem + env(safe-area-inset-bottom, 0px));
+                   padding-left: max(.7rem, env(safe-area-inset-left, 0px)); }
+  .ss-toasts { right: max(1.25rem, env(safe-area-inset-right, 0px)); bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)); }
+  .ss-toasts[data-position^="top"] { top: max(1.25rem, env(safe-area-inset-top, 0px)); }
+  .ss-toasts[data-position$="left"] { left: max(1.25rem, env(safe-area-inset-left, 0px)); }
+  .ss-selection-bar { bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)); }
+  .ss-sticky-bar { bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
+  .ss-drawer { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+}
+/* A gaveta do menu no celular (regra fora das camadas em v09_layout) e o painel lateral em <dialog>. */
+@media (max-width: 1023px) {
+  .ss-shell-side { padding-top: calc(.9rem + env(safe-area-inset-top, 0px)); padding-bottom: calc(.9rem + env(safe-area-inset-bottom, 0px));
+                   padding-left: max(.7rem, env(safe-area-inset-left, 0px)); }
+}
+dialog.ss-drawer-panel { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
