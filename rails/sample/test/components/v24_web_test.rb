@@ -71,6 +71,6 @@ class V24WebTest < ComponentTest
   test "CSS v0.24 no engine" do
     assert_includes CSS.join("engine.css").read, %(@import "./v24_web.css";)
     css = CSS.join("v24_web.css").read
-    %w[.ss-bell-panel .ss-bell-count .ss-bell-item .ss-bell-foot a.ss-badge].each { |sel| assert_includes css, sel }
+    %w[.ss-bell-panel .ss-bell-count .ss-bell-item .ss-bell-foot a.ss-badge] + [".ss-badge > svg { width: .875rem"].each { |sel| assert_includes css, sel }
   end
 end

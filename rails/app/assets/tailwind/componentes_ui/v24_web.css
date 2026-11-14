@@ -35,6 +35,8 @@
   .ss-bell-dot { flex: none; width: .5rem; height: .5rem; margin-top: .45rem; border-radius: 50%; background: var(--accent); }
   .ss-bell-empty { margin: 0; padding: 1.5rem 1rem; text-align: center; font-size: .88rem; color: var(--muted); }
 
+  /* Ícone do selo no tamanho do texto, mesmo o SVG do app sem medida (ex. ícone mdi sem width/height). */
+  .ss-badge > svg { width: .875rem; height: .875rem; }
   /* Selo com link (Ss::BadgeComponent href:): sem sublinhado, contorno da marca ao passar. */
   a.ss-badge { text-decoration: none; cursor: pointer; }
   a.ss-badge:hover { box-shadow: inset 0 0 0 1px var(--accent); }
