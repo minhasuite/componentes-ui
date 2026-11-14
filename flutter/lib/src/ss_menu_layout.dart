@@ -120,11 +120,13 @@ class SsMenuView extends StatefulWidget implements SsSelfScrolling {
 
 class _SsMenuViewState extends State<SsMenuView> {
   final _search = TextEditingController();
+  final _searchFocus = FocusNode(debugLabel: 'SsMenuView.search');
   var _query = '';
 
   @override
   void dispose() {
     _search.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -140,6 +142,10 @@ class _SsMenuViewState extends State<SsMenuView> {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: _search,
+        focusNode: _searchFocus,
+        // v0.24 (auditoria de UX, B18): tocar fora (uma linha, a barra de abas) solta o foco da busca. Sem
+        // isso a rota guardava o foco no campo e, ao voltar de um item, o teclado abria sozinho sobre as abas.
+        onTapOutside: (_) => _searchFocus.unfocus(),
         textInputAction: TextInputAction.search,
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
@@ -518,7 +524,13 @@ class SsMenuCard extends StatelessWidget {
           borderRadius: radius,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: onTap,
+            // v0.24: abrir um item solta o foco antes (a volta não devolve o teclado à busca do menu).
+            onTap: onTap == null
+                ? null
+                : () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    onTap!();
+                  },
             onLongPress: onLongPress,
             child: Padding(padding: padding ?? EdgeInsets.all(d.cardPad), child: child),
           ),

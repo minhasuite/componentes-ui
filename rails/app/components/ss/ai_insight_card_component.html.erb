@@ -9,7 +9,9 @@
       <div class="ss-ai-thinking" role="status">
         <span class="ss-thinking" aria-hidden="true"><i></i><i></i><i></i></span>
         <span><%= thinking_text %></span>
+        <% if cancel %><%= action(cancel, "ss-btn ss-btn-ghost ss-btn-sm ss-ai-cancel", ss_t("common.cancel", default: "Cancelar")) %><% end %>
       </div>
+      <% if thinking_hint.present? %><p class="ss-ai-hint"><%= thinking_hint %></p><% end %>
       <div class="ss-skel is-line" aria-hidden="true"><i style="width:88%"></i><i style="width:64%"></i></div>
     <% else %>
       <% if title %><h3 class="ss-ai-title"><%= title %></h3><% end %>

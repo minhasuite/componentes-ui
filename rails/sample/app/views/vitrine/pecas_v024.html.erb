@@ -1,0 +1,91 @@
+<%# titulo: Auditoria de UX (v0.24) | grupo: Casa e automação | ordem: 24 %>
+<% pedidos = [["#2904", "Sabor Caseiro Restaurante e Lanchonete", "14/11/2026", "Vera do Caixa", ["Aguarda aprovação", :warning], 2380.0],
+              ["#2903", "Consumidor final", "14/11/2026", "Vera do Caixa", ["Entregue", :success], 22.87],
+              ["#2902", "Dani Festas", "13/11/2026", "Sara Vendedora", ["Entregue", :success], 15.97],
+              ["#2901", "Mercado Bom", "13/11/2026", "Vera do Caixa", ["Cancelado", :danger], 44.88]]
+     linhas = pedidos.each_with_index.map { |(n, c, e, v, s, t), i| { id: i + 1, numero: n, cliente: c, emissao: e, vendedor: v, status: s, total: t } } %>
+<div class="grid gap-6" id="v24">
+  <%= demo "Ss::DataTableComponent(mobile: :compact)", "Abaixo de 640 px, cada pedido vira uma linha de lista em duas linhas (título e valor em cima, meta e selo embaixo) no lugar do cartão RÓTULO valor.",
+        uso: 't.column :cliente, "Cliente", mobile: :title · :value · :meta · :badge · :hide' do %>
+    <%= render(Ss::DataTableComponent.new(rows: linhas, id: "v24-pedidos", caption: "Pedidos", mobile: :compact, selectable: true, row_href: ->(r) { "#pedido-#{r[:id]}" })) do |t| %>
+      <% t.column :numero, "Nº", mobile: :meta %>
+      <% t.column :cliente, "Cliente", mobile: :title %>
+      <% t.column :emissao, "Emissão", mobile: :meta %>
+      <% t.column :vendedor, "Vendedor", mobile: :meta %>
+      <% t.column :status, "Situação", mobile: :badge do |r| %><%= ss_status(r[:status][1].to_s, { r[:status][1].to_s => [r[:status][0], r[:status][1]] }) %><% end %>
+      <% t.column :total, "Total", format: :money, mobile: :value %>
+      <% t.total :total, ss_amount(ss_money(2463.72)) %>
+    <% end %>
+    <h4 class="mt-4 text-sm font-bold">Cartões (padrão)</h4>
+    <%= render(Ss::DataTableComponent.new(rows: linhas.first(1), id: "v24-cartoes", caption: "Pedidos", tools: false)) do |t| %>
+      <% t.column :numero, "Nº" %><% t.column :cliente, "Cliente" %><% t.column :total, "Total", format: :money %>
+    <% end %>
+  <% end %>
+
+  <%= demo ".ss-actions", "Faixa opaca de largura inteira presa ao fim do formulário; o campo em foco para acima dela." do %>
+    <%= ss_form_with url: "#", id: "v24-form", class: "grid gap-3 md:grid-cols-3" do |f| %>
+      <% 12.times do |i| %>
+        <%= f.ss_text_field :"campo_#{i}", label: "Campo #{i + 1}", required: i.zero? %>
+      <% end %>
+      <%= f.ss_check_box :lote, label: "Não vender lote vencido" %>
+      <div class="ss-actions"><%= f.ss_submit "Salvar empresa" %></div>
+    <% end %>
+  <% end %>
+
+  <%= demo "Ss::SettingsLayoutComponent(form:)", "Cada área com o próprio formulário e Salvar (a barra aparece só na área que mudou)." do %>
+    <%= render(Ss::SettingsLayoutComponent.new(title: "Configurações", id: "v24-config")) do |s| %>
+      <% s.with_section(id: "v24-empresa", title: "Empresa", form: { url: "#", scope: :empresa }, save_label: "Salvar empresa") do |sec| %>
+        <%= sec.form.ss_text_field :nome, label: "Nome", required: true %>
+        <%= sec.form.ss_text_field :cnpj, label: "CNPJ", mask: :document %>
+      <% end %>
+      <% s.with_section(id: "v24-precos", title: "Preços", form: { url: "#", scope: :precos }) do |sec| %>
+        <%= sec.form.ss_number_field :margem, label: "Margem alvo (%)" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= demo "Ss::CommandPaletteComponent + Ss::ShortcutsComponent", "Um Esc fecha a paleta (com ou sem texto); depois, o ? da página volta a abrir os atalhos." do %>
+    <%= render Ss::ButtonComponent.new(label: "Abrir a paleta", variant: :outline, data: { ss_command_open: "v24-cmd" }, id: "v24-cmd-open") %>
+    <%= render Ss::CommandPaletteComponent.new(id: "v24-cmd", shortcut: "j", groups: [{ title: "Páginas", items: [{ label: "Pedidos", url: "#pedidos" }, { label: "Clientes", url: "#clientes" }] }]) %>
+    <%= render Ss::ShortcutsComponent.new(groups: [{ title: "Nesta tela", items: [{ keys: "?", label: "Atalhos" }] }], id: "v24-atalhos") %>
+  <% end %>
+
+  <%= demo "Ss::ChatComponent num painel de 28 rem", "O vazio com perguntas longas e a tabela da resposta não passam da largura do painel." do %>
+    <div id="v24-chat-box" style="width:min(28rem,100%);height:34rem" class="ss-card ss-card-pad">
+      <%= render(Ss::ChatComponent.new(id: "v24-chat", url: "#", label: "Pergunte à IA", css: "h-full")) do |chat| %>
+        <% chat.with_message(from: :me, text: "Quem não fez o checklist esta semana?") %>
+        <% chat.with_message(from: :ai) do %>
+          <p>Duas pessoas sem checklist feito na semana.</p>
+          <%= render(Ss::DataTableComponent.new(rows: [{ id: 1, p: "Juliana Costa", c: "Compradora", n: 0 }, { id: 2, p: "Marcos Oliveira", c: "Gerente da loja", n: 0 }], id: "v24-resp", caption: "Resultado", density: :compact, tools: false, empty_art: false)) do |t| %>
+            <% t.column :p, "Pessoa" %><% t.column :c, "Cargo" %><% t.column :n, "Checklists da semana", format: :number %><% t.column :x, "Observação longa da coluna" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+    <div id="v24-chat-vazio" style="width:min(28rem,100%);height:30rem" class="ss-card ss-card-pad mt-4">
+      <%= render(Ss::ChatComponent.new(id: "v24-chat2", url: "#", label: "Pergunte à IA", css: "h-full")) do |chat| %>
+        <% chat.with_empty do %>
+          <p class="text-xl font-extrabold">Olá, Juliana! <span class="ss-grad-text">O que você quer saber hoje sobre a sua empresa?</span></p>
+          <div class="mt-4 grid gap-2">
+            <% ["Como foram as vendas este mês comparado ao anterior?", "Quais produtos vencem nos próximos 15 dias?"].each do |q| %>
+              <%= render Ss::ButtonComponent.new(label: q, icon: "chart-bar", href: "#", variant: :outline, block: true, css: "justify-start text-left") %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "Alvo de toque (pointer: coarse)", "No celular, botão pequeno, abas e botões de ícone chegam a 44 px de alvo; no computador nada muda." do %>
+    <div class="flex flex-wrap items-center gap-2" id="v24-alvos">
+      <%= render Ss::ButtonComponent.new(label: "Aprovar", size: :sm, id: "v24-btn-sm") %>
+      <%= render Ss::IconButtonComponent.new(icon: "trash", label: "Excluir", size: :sm, id: "v24-icon-sm") %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::AiInsightCardComponent(thinking: true, cancel:)", "A espera da IA dentro do cartão, com Cancelar; a tela segue livre." do %>
+    <%= render Ss::AiInsightCardComponent.new(thinking: true, thinking_text: "A IA está lendo a sugestão.", cancel: { data: { action: "click->ss-notice#noop" } }) %>
+  <% end %>
+
+  <%= render Ss::FabComponent.new(icon: ss_icon("sparkles", size: nil), label: "Pergunte à IA", extended: :wide, id: "v24-fab") %>
+</div>

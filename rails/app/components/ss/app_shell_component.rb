@@ -43,6 +43,10 @@ module Ss
   #   ícone de saída ao lado do nome e "(abre em outra aba)" para o leitor de tela.
   # - Grupo com ícone: { title: "Cadastros", icon: ss_icon("folder", size: nil), items: [...] }; o
   #   ícone vai antes do título (com o menu recolhido o grupo segue sendo só a linha divisória).
+  #
+  # v0.24 (auditoria de UX, C02/U14): a troca de empresa só vira menu com 2 ou mais empresas. Com uma só, o nome fica
+  # parado (sem seta nem menu; single_tenant: false nem mostra). O nome longo ganha reticências (num <span>, que o
+  # grid do rótulo cortava seco) e o nome inteiro no title=.
   class AppShellComponent < BaseComponent
     COOKIE = "ss_shell_collapsed".freeze
 
@@ -57,7 +61,7 @@ module Ss
 
     def initialize(brand: nil, nav: [], tenants: [], tenant_label: nil, search: true,
                    search_label: nil, side_label: nil, search_action: nil, collapsed: false, brand_url: nil,
-                   mobile_brand: true, main_class: nil, main_max: nil, **opts)
+                   mobile_brand: true, main_class: nil, main_max: nil, single_tenant: true, **opts)
       super(**opts)
       @collapsed = collapsed
       @brand_url = brand_url
@@ -68,6 +72,7 @@ module Ss
       @nav = nav
       @tenants = tenants
       @tenant_label = tenant_label
+      @single_tenant = single_tenant
       @search = search || search_action.present?
       @search_label = search_label
       @side_label = side_label
@@ -115,7 +120,8 @@ module Ss
         tag.span(mark? ? mark : nil, class: ["ss-shell-logo", ("has-mark" if mark?)].compact.join(" "), "aria-hidden": "true"),
         (tag.span(logo? ? logo : @brand, class: "ss-shell-label ss-shell-brand-name") if name)
       ].compact)
-      @brand_url ? link_to(@brand_url, class: [css.presence, "ss-shell-brand-link"].compact.join(" ")) { inner } : (css.present? ? tag.span(inner, class: css) : inner)
+      # v0.24: o link da marca tem nome mesmo quando o texto some (barra do celular, menu recolhido).
+      @brand_url ? link_to(@brand_url, class: [css.presence, "ss-shell-brand-link"].compact.join(" "), "aria-label": @brand.presence) { inner } : (css.present? ? tag.span(inner, class: css) : inner)
     end
 
     def shell_data
@@ -126,6 +132,10 @@ module Ss
     end
 
     def current_tenant = @tenants.find { _1[:current] } || @tenants.first
+
+    # v0.24: menu de troca só com 2+ empresas; com uma, o nome parado (ou nada com single_tenant: false).
+    def tenant_menu? = @tenants.size > 1
+    def tenant_single? = @tenants.size == 1 && @single_tenant
 
     def icon(svg)
       svg if svg.respond_to?(:html_safe?) && svg.html_safe?

@@ -132,6 +132,13 @@ class SsStrings {
     required this.otherDate,
     required this.pickDate,
     required this.pickTime,
+    required this.aiBadge,
+    required this.aiThinking,
+    required this.aiThinkingHint,
+    required this.aiApply,
+    required this.aiDismiss,
+    required this.aiSources,
+    required this.aiConfidence,
     required this.time,
     required this.clearDate,
     required this.choose,
@@ -576,6 +583,15 @@ class SsStrings {
 
   /// v0.23: título do relógio do [showSsTimePicker].
   final String pickTime;
+
+  /// v0.24: textos do [SsAiInsightCard] (par do Ss::AiInsightCardComponent).
+  final String aiBadge;
+  final String aiThinking;
+  final String aiThinkingHint;
+  final String aiApply;
+  final String aiDismiss;
+  final String aiSources;
+  final String aiConfidence;
   final String time;
   final String clearDate;
   final String choose;
@@ -1160,6 +1176,13 @@ class SsStrings {
     otherDate: 'Outra…',
     pickDate: 'Escolher data',
     pickTime: 'Escolher hora',
+    aiBadge: 'IA',
+    aiThinking: 'Analisando seus dados…',
+    aiThinkingHint: 'Pode continuar usando a tela.',
+    aiApply: 'Aplicar',
+    aiDismiss: 'Ignorar',
+    aiSources: 'De onde vem isso',
+    aiConfidence: 'Confiança',
     time: 'Hora',
     clearDate: 'Limpar data',
     choose: 'Escolher',
@@ -1564,6 +1587,13 @@ class SsStrings {
     otherDate: 'Other…',
     pickDate: 'Pick a date',
     pickTime: 'Pick a time',
+    aiBadge: 'AI',
+    aiThinking: 'Analyzing your data…',
+    aiThinkingHint: 'You can keep using the screen.',
+    aiApply: 'Apply',
+    aiDismiss: 'Ignore',
+    aiSources: 'Where this comes from',
+    aiConfidence: 'Confidence',
     time: 'Time',
     clearDate: 'Clear date',
     choose: 'Choose',
@@ -1960,6 +1990,13 @@ class SsStrings {
     otherDate: 'Otra…',
     pickDate: 'Elegir fecha',
     pickTime: 'Elegir hora',
+    aiBadge: 'IA',
+    aiThinking: 'Analizando tus datos…',
+    aiThinkingHint: 'Puedes seguir usando la pantalla.',
+    aiApply: 'Aplicar',
+    aiDismiss: 'Ignorar',
+    aiSources: 'De dónde viene esto',
+    aiConfidence: 'Confianza',
     time: 'Hora',
     clearDate: 'Borrar fecha',
     choose: 'Elegir',
@@ -2343,6 +2380,13 @@ class SsStrings {
     'otherDate': otherDate,
     'pickDate': pickDate,
     'pickTime': pickTime,
+    'aiBadge': aiBadge,
+    'aiThinking': aiThinking,
+    'aiThinkingHint': aiThinkingHint,
+    'aiApply': aiApply,
+    'aiDismiss': aiDismiss,
+    'aiSources': aiSources,
+    'aiConfidence': aiConfidence,
     'time': time,
     'clearDate': clearDate,
     'choose': choose,
@@ -2761,6 +2805,13 @@ class SsStrings {
     String? otherDate,
     String? pickDate,
     String? pickTime,
+    String? aiBadge,
+    String? aiThinking,
+    String? aiThinkingHint,
+    String? aiApply,
+    String? aiDismiss,
+    String? aiSources,
+    String? aiConfidence,
     String? time,
     String? clearDate,
     String? choose,
@@ -3141,6 +3192,13 @@ class SsStrings {
     otherDate: otherDate ?? this.otherDate,
     pickDate: pickDate ?? this.pickDate,
     pickTime: pickTime ?? this.pickTime,
+    aiBadge: aiBadge ?? this.aiBadge,
+    aiThinking: aiThinking ?? this.aiThinking,
+    aiThinkingHint: aiThinkingHint ?? this.aiThinkingHint,
+    aiApply: aiApply ?? this.aiApply,
+    aiDismiss: aiDismiss ?? this.aiDismiss,
+    aiSources: aiSources ?? this.aiSources,
+    aiConfidence: aiConfidence ?? this.aiConfidence,
     time: time ?? this.time,
     clearDate: clearDate ?? this.clearDate,
     choose: choose ?? this.choose,

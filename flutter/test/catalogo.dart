@@ -38,6 +38,7 @@ import 'catalogo_v19.dart';
 import 'catalogo_v191.dart';
 import 'catalogo_v192.dart';
 import 'catalogo_v20.dart';
+import 'catalogo_v24.dart';
 import 'catalogo_v21.dart';
 import 'catalogo_v22.dart';
 import 'catalogo_v23.dart';
@@ -113,7 +114,7 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))));
+final catalogo = comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))));
 
 final _catalogo = comV08(<Componente>[
   Componente(
@@ -952,6 +953,7 @@ final _catalogo = comV08(<Componente>[
   ...catalogoV21,
   ...catalogoV22,
   ...catalogoV23,
+  ...catalogoV24,
 ]);
 
 const _verde = SsBrand(

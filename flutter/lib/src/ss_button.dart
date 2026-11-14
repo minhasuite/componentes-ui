@@ -253,9 +253,18 @@ class SsButton extends StatelessWidget {
       child: KeyedSubtree(key: ValueKey(loading), child: content),
     );
 
+    // v0.24 (auditoria de UX, B16): o botão é um nó próprio de acessibilidade (botão + o rótulo), mesmo dentro de
+    // um cartão ou linha que junta a semântica dos filhos; antes o leitor de tela (e o gravador) via o rótulo
+    // misturado ao texto do cartão e não achava o botão para tocar.
+    // (Dentro do SsTapTarget: ele estende o toque além do desenho, e um pai do tamanho do desenho cortaria isso.)
     return SsTapTarget(
       minSize: Size(0, d.minTarget),
-      child: _box(context, enabled, height, radius, shadow, bg, content, d, border),
+      child: Semantics(
+        container: true,
+        button: true,
+        enabled: enabled,
+        child: _box(context, enabled, height, radius, shadow, bg, content, d, border),
+      ),
     );
   }
 

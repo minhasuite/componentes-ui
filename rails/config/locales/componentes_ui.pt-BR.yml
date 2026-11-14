@@ -21,6 +21,7 @@ pt-BR:
       dismiss: Ignorar
       sources: De onde vem isso
       thinking: Analisando seus dados…
+      thinking_hint: Pode continuar usando a tela.
     app_shell:
       external: '(abre em outra aba)'
       badge:

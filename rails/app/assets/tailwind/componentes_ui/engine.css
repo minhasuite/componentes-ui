@@ -49,6 +49,9 @@
 @import "./v23_web.css";
 /* Área segura do celular (viewport-fit=cover): moldura, toasts, barras e gavetas longe do entalhe e da barra de gestos. */
 @import "./safe_area_web.css";
+/* v0.24: auditoria de UX (minhas-vendas e meu-gestor): linha compacta da tabela no celular, troca de empresa, barras de salvar
+   que não cobrem campos, chat que não transborda, alvo de toque de 44 px e a folga do botão flutuante. */
+@import "./v24_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -428,10 +431,15 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-subnav a { border-radius: 12px; border-color: transparent; background: transparent; }
   .ss-subnav a:hover { background: var(--surface); border-color: var(--line); }
 }
-/* Barra de salvar que acompanha a rolagem nos formulários longos. */
-.ss-actions { position: sticky; bottom: 1rem; z-index: 20; display: flex; gap: .5rem; width: fit-content; padding: .5rem; border-radius: 16px;
-              background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(10px);
-              border: 1px solid var(--line); box-shadow: var(--shadow-card); }
+/* Barra de salvar que acompanha a rolagem nos formulários longos.
+   v0.24 (auditoria de UX, C04/E02b/V02): faixa opaca de largura inteira, presa embaixo só enquanto o próprio
+   formulário está na tela (antes uma pílula translúcida que flutuava sobre o rótulo do campo). Os campos do
+   formulário ganham scroll-margin com a altura dela (v24_web.css): o foco nunca para embaixo da barra. */
+.ss-actions { position: sticky; bottom: max(.75rem, env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+              grid-column: 1 / -1; align-self: stretch; justify-self: stretch; width: auto; margin-top: var(--ss-gap);
+              padding: .6rem calc(var(--ss-pad-x) * .75); border-radius: calc(var(--r-field) + 4px);
+              background: var(--surface); border: 1px solid var(--line);
+              box-shadow: var(--shadow-card); }
 @media (max-width: 639px) {
   .ss-filters { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ss-filters > div:first-of-type { grid-column: span 2; }

@@ -5,6 +5,9 @@ import { Controller } from "@hotwired/stimulus"
 // src: busca no servidor (GET src?q=) que devolve HTML com a.ss-command-item, soltos ou em
 // .ss-command-group com título (.ss-command-group-title ou h2–h4), que fica (v0.10.1).
 // Item com data-ss-command-fill (sugestão) põe o texto na busca em vez de navegar.
+// v0.24 (auditoria de UX, B10): um Esc fecha, com ou sem texto (o padrão das paletas: VS Code, GitHub, Linear).
+// Antes o 1º Esc só limpava o input type="search" e a caixa ficava aberta. Ao fechar, o foco volta a quem
+// abriu (ou sai do campo), e os atalhos de uma tecla da página ("?", "g p") voltam a responder.
 const norm = (s) => (s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase()
 
 export default class extends Controller {
@@ -37,13 +40,21 @@ export default class extends Controller {
 
   open() {
     if (this.element.open) { this.inputTarget.select(); return }
+    const from = document.activeElement
+    this.opener = from && from !== document.body && !this.element.contains(from) ? from : null
     this.inputTarget.value = ""
     this.filter()
     this.element.showModal()
     this.inputTarget.focus()
   }
 
-  closed() { clearTimeout(this.timer) }
+  closed() {
+    clearTimeout(this.timer)
+    // O foco não fica no campo da paleta fechada (os atalhos ignoram tecla vinda de campo de texto).
+    if (this.element.contains(document.activeElement)) document.activeElement.blur()
+    if (this.opener?.isConnected) this.opener.focus({ preventScroll: true })
+    this.opener = null
+  }
 
   // v0.20: botão ao lado da busca (with_action) que só fecha.
   close() { this.element.close() }
@@ -161,6 +172,13 @@ export default class extends Controller {
   }
 
   nav(event) {
+    if (event.key === "Escape" && !event.isComposing) {
+      // Um Esc só: sem isso o input type="search" consome o 1º (limpa o texto) e a paleta fica aberta.
+      event.preventDefault()
+      event.stopPropagation()
+      this.element.close()
+      return
+    }
     const vis = this.visible
     const i = vis.findIndex((o) => o.getAttribute("aria-selected") === "true")
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {

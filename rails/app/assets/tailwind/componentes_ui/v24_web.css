@@ -1,0 +1,106 @@
+/* v0.24 · auditoria de UX de novembro (minhas-vendas e meu-gestor), o que era da gem:
+   1. linha compacta da tabela no celular (DataTableComponent(mobile: :compact), C01);
+   2. troca de empresa da moldura: nome com reticências (C02/U14);
+   3. barras de salvar e botão flutuante sem cobrir o campo em foco (C04/B07/U08);
+   4. chat que não transborda e tabela da resposta que rola dentro da bolha (B05/B06);
+   5. alvo de toque de 44 px no celular (pointer: coarse) sem engordar o computador (U07);
+   6. espera da IA no cartão com "Cancelar" (B16).
+   Só tokens; nada de cor fixa. */
+
+@layer components {
+  /* ── 1. Linha compacta (abaixo de 640 px). Sobrepõe o cartão "RÓTULO valor" do modo empilhado (v09_dados),
+     que continua valendo para o resto (cabeçalho escondido, tabela em bloco). Duas linhas por registro:
+     [seleção/seta] título ……… valor
+     meta · meta · meta ……… selo [ações] */
+  @media (max-width: 639px) {
+    .ss-dt.is-compact { grid-template-columns: minmax(0, 1fr); }
+    .ss-dt.is-compact .ss-dt-scroll { min-width: 0; max-height: none !important; overflow: visible; }
+    .ss-dt.is-compact:not(.is-flat) .ss-dt-scroll { background: var(--surface); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+                                                    border-radius: var(--r-card); box-shadow: var(--shadow-card); overflow: hidden; }
+    .ss-dt.is-compact .ss-table tbody { display: block; }
+    .ss-dt.is-compact .ss-table tfoot { display: block; margin-top: 0; }
+    .ss-dt.is-compact .ss-table :is(tbody, tfoot) tr:not(.ss-dt-detail, .ss-dt-empty, .ss-dt-foot) {
+      position: relative; display: flex; flex-wrap: wrap; align-items: center; column-gap: .5rem; row-gap: .2rem;
+      padding: calc(var(--ss-row-py) * .9) var(--ss-pad-x); border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; }
+    .ss-dt.is-compact .ss-table tbody tr:first-child { border-top: 0; }
+    .ss-dt.is-compact .ss-table tr.is-selected { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+    .ss-dt.is-compact .ss-table tfoot tr.ss-dt-total { background: var(--field); }
+    /* Quebra de linha entre a 1ª (ordem ≤ 2) e a 2ª (ordem ≥ 4); o ::before é a mola que empurra selo e ações. */
+    .ss-dt.is-compact .ss-table :is(tbody, tfoot) tr:not(.ss-dt-detail, .ss-dt-empty, .ss-dt-foot)::after { content: ""; order: 3; flex-basis: 100%; height: 0; }
+    .ss-dt.is-compact .ss-table :is(tbody, tfoot) tr:not(.ss-dt-detail, .ss-dt-empty, .ss-dt-foot)::before { content: ""; order: 5; flex: 1 1 0; }
+    .ss-dt.is-compact .ss-table :is(tbody, tfoot) td { display: block; width: auto; min-width: 0; padding: 0; border: 0; text-align: left; background: none; }
+    .ss-dt.is-compact .ss-table td[data-label]::before { content: none; }
+    .ss-dt.is-compact .ss-table td[data-mobile="title"] { order: 1; flex: 1 1 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                                                        font-size: calc(.92rem * var(--ss-font-scale)); font-weight: 700; color: var(--ink); }
+    .ss-dt.is-compact .ss-table td[data-mobile="value"] { order: 2; flex: none; text-align: right; white-space: nowrap; font-weight: 700; color: var(--ink); }
+    .ss-dt.is-compact .ss-table td[data-mobile="meta"] { order: 4; flex: 0 1 auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                                                       font-size: calc(.78rem * var(--ss-font-scale)); color: var(--muted); }
+    .ss-dt.is-compact .ss-table td[data-mobile="meta"] ~ td[data-mobile="meta"]::before { content: "·"; display: inline; margin-inline-end: .5rem;
+                                                       font: inherit; text-transform: none; letter-spacing: 0; color: var(--muted); }
+    .ss-dt.is-compact .ss-table td[data-mobile="badge"] { order: 6; flex: none; margin-left: auto; }
+    .ss-dt.is-compact .ss-table td[data-mobile="actions"] { order: 7; flex: none; }
+    .ss-dt.is-compact .ss-table td[data-mobile="hide"] { display: none; }
+    .ss-dt.is-compact .ss-table tfoot td:empty { display: none; }
+    .ss-dt.is-compact .ss-table :is(td.ss-dt-check, td.ss-dt-x) { order: 0; position: static; flex: none; width: auto; }
+    .ss-dt.is-compact .ss-table .ss-dt-detail > td { border-radius: 0; border-top: 1px solid var(--line); }
+    .ss-dt.is-compact .ss-table [data-col].is-hidden { display: none; }
+  }
+
+  /* ── 2. Troca de empresa: o nome num <span> próprio corta com reticências (o title= tem o nome inteiro).
+     Com uma empresa só o bloco é parado (.is-single): sem seta, sem menu, sem cursor de clique. */
+  .ss-shell-tenant-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-shell-tenant-item { min-width: 0; }
+  .ss-shell-tenant-item > .ss-shell-tenant-name { flex: 1; }
+  .ss-shell-tenant.is-single { display: flex; align-items: center; gap: .6rem; padding: var(--ss-pad-y) .55rem; min-width: 0; }
+  .ss-shell-tenant.is-single .ss-shell-label { display: grid; flex: 1; min-width: 0; }
+  .ss-shell-tenant.is-single small { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: color-mix(in srgb, var(--side-ink) 50%, transparent); }
+  :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-tenant.is-single { justify-content: center; padding-inline: 0; }
+
+  /* ── 3. Barras de salvar e botão flutuante: o campo em foco (Tab, foco ao enviar, âncora) para acima delas.
+     --ss-bar-room = a altura da barra + o respiro dela. O Chrome só respeita a folga no foco pelo
+     scroll-padding do rolador (a página); o scroll-margin dos campos vale para scrollIntoView e roladores internos. */
+  :root { --ss-bar-room: calc(var(--ss-control-h) + 2.5rem); }
+  html:has(.ss-actions, .ss-sticky-bar[data-visible]) { scroll-padding-bottom: var(--ss-bar-room); }
+  html:has(.ss-fab:not(.is-static), .ss-speed-dial:not(.is-static)) { scroll-padding-bottom: calc(var(--ss-bar-room) + var(--ss-fab-lift, 0px)); }
+  .ss-dialog-panel-body:has(.ss-form-actions.is-sticky) { scroll-padding-bottom: var(--ss-bar-room); }
+  form:has(.ss-actions, .ss-sticky-bar[data-visible], .ss-form-actions.is-sticky) :is(input, select, textarea, button, [tabindex], label, .ss-field) {
+    scroll-margin-bottom: var(--ss-bar-room); }
+  body:has(.ss-fab:not(.is-static), .ss-speed-dial:not(.is-static)) :is(input, select, textarea, button, a, [tabindex]) {
+    scroll-margin-bottom: calc(var(--ss-bar-room) + var(--ss-fab-lift, 0px)); }
+  /* Seção de configuração que é um formulário (SettingsLayoutComponent, form:): a barra de salvar dela fica
+     no fim da própria área, encostada no cartão. */
+  .ss-settings-form { display: grid; gap: var(--ss-gap); }
+  .ss-settings-form > .ss-sticky-bar { margin-top: .25rem; }
+  /* Sem a moldura (AppShell), a página com botão flutuante ganha a folga no fim do <body> (na moldura ela já
+     vem no .ss-shell-main, v0.17). */
+  body:has(.ss-fab:not(.is-static), .ss-speed-dial:not(.is-static)):not(:has(.ss-shell)) { padding-bottom: calc(var(--ss-bar-room) + var(--ss-fab-lift, 0px)); }
+
+  /* ── 4. Chat: o vazio (saudação + perguntas de exemplo) e a bolha não passam da largura do painel; tabela da
+     resposta rola dentro da bolha. */
+  .ss-chat-panel, .ss-chat-panel > .ss-chat { min-width: 0; }
+  .ss-chat-empty { align-self: stretch; margin-inline: 0; max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+  .ss-chat-empty :is(.ss-btn, .ss-chip, a, button) { max-width: 100%; white-space: normal; text-align: start; overflow-wrap: anywhere; }
+  .ss-chat-empty .ss-btn { height: auto; padding-block: .55rem; line-height: 1.3; }
+  .ss-bubble { min-width: 0; overflow-wrap: anywhere; }
+  .ss-bubble :is(table, .ss-dt) { white-space: normal; overflow-wrap: normal; }
+  .ss-bubble:not(.is-me):has(table) { align-self: stretch; max-width: 100%; }
+  .ss-bubble .ss-dt { grid-template-columns: minmax(0, 1fr); min-width: 0; max-width: 100%; }
+  .ss-bubble .ss-dt-scroll { overflow-x: auto; }
+  .ss-bubble table:not(.ss-dt-scroll > table) { display: block; max-width: 100%; overflow-x: auto; }
+
+  /* ── 6. Espera da IA no cartão: Cancelar à direita e a linha "pode continuar usando a tela". */
+  .ss-ai-thinking .ss-ai-cancel { margin-left: auto; }
+  .ss-ai-hint { margin-top: .25rem; font-size: calc(.78rem * var(--ss-font-scale)); color: var(--muted); }
+}
+
+/* ── 5. Alvo de toque no celular (U07). Só com ponteiro grosso (dedo): o computador fica como estava.
+   --ss-target = 44 px (48 no confortável; o compacto já volta a 44 no toque, v0.11). Botão pequeno, abas e
+   itens de menu crescem até o alvo; o botão de ícone ganha uma área de toque invisível em volta, sem mudar o
+   desenho. Fora das camadas porque .ss-subnav/.ss-actions do engine.css também estão. */
+@media (pointer: coarse) {
+  .ss-btn-sm { min-height: max(var(--ss-control-h-sm), var(--ss-target)); }
+  .ss-tab, .ss-subnav a, .ss-settings-nav a, .ss-dt-pager > :is(a, span), .ss-shell-tenant-item { min-height: var(--ss-target); }
+  :is(.ss-icon-btn, .ss-dt-toggle, .ss-shell-collapse) { position: relative; }
+  :is(.ss-icon-btn, .ss-dt-toggle, .ss-shell-collapse)::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--ss-target)); height: max(100%, var(--ss-target)); translate: -50% -50%; }
+}

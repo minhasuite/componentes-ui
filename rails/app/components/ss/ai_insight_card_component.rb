@@ -7,12 +7,17 @@ module Ss
   #     apply: { label: "Criar meta de R$ 900", url: metas_path, method: :post }, dismiss: { url: ignorar_path, method: :post }) do
   #     Texto do insight (pode ter <b>, links…)
   #   end
+  #
+  # v0.24 (auditoria de UX, B16; par do SsAiInsightCard do Flutter): cancel: { label:, url:, method: } (ou
+  # { label:, data: { action: "…" } }, um botão do JS do app) põe "Cancelar" na espera (thinking: true), e
+  # thinking_hint: (padrão "Pode continuar usando a tela."; "" tira) diz que nada está travado.
   class AiInsightCardComponent < BaseComponent
     SPARK = %(<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2 5.5 5.5 2-5.5 2-2 5.5-2-5.5L4.5 10 10 8zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z" fill="currentColor"/></svg>).freeze
 
     attr_reader :title, :sources, :apply, :dismiss, :confidence, :when_text
 
-    def initialize(title: nil, text: nil, sources: [], apply: nil, dismiss: nil, thinking: false, confidence: nil, when_text: nil, thinking_text: nil, **opts)
+    def initialize(title: nil, text: nil, sources: [], apply: nil, dismiss: nil, thinking: false, confidence: nil, when_text: nil, thinking_text: nil,
+                   cancel: nil, thinking_hint: nil, **opts)
       super(**opts)
       @title = title
       @text = text
@@ -23,7 +28,13 @@ module Ss
       @confidence = confidence
       @when_text = when_text
       @thinking_text = thinking_text || ss_t("ai_insight.thinking", default: "Analisando seus dados…")
+      @cancel = cancel
+      @thinking_hint = thinking_hint
     end
+
+    attr_reader :cancel
+
+    def thinking_hint = @thinking_hint.nil? ? ss_t("ai_insight.thinking_hint", default: "Pode continuar usando a tela.") : @thinking_hint
 
     def thinking? = @thinking
     def body = content.presence || @text
@@ -32,6 +43,8 @@ module Ss
 
     def action(a, css, default_label)
       label = a[:label] || default_label
+      return tag.button(label, type: "button", class: css, data: a[:data]) unless a[:url]
+
       if a[:method] && a[:method].to_s != "get"
         button_to(label, a[:url], method: a[:method], class: css, form: { class: "ss-ai-form" })
       else

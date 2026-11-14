@@ -19,6 +19,7 @@ es:
       dismiss: Ignorar
       sources: De dónde viene esto
       thinking: Analizando tus datos…
+      thinking_hint: Puedes seguir usando la pantalla.
     app_shell:
       external: '(se abre en otra pestaña)'
       badge:

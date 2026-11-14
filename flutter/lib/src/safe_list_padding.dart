@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'v10/tela.dart' show SsFab;
+
 /// Padding de lista que respeita a barra de navegação do sistema.
 ///
 /// Existe porque `EdgeInsets.all(16)` numa lista rolável esconde o último item
@@ -12,7 +14,18 @@ import 'package:flutter/material.dart';
 ///
 /// Usa `viewPadding` e não `padding`: `padding` zera quando o teclado abre, e
 /// aí a lista encolheria o respiro justamente enquanto alguém digita.
-EdgeInsets safeListPadding(BuildContext context, {double horizontal = 16, double top = 16, double bottom = 16}) {
+///
+/// v0.24 (auditoria de UX, U08/U12): `fab: true` soma o espaço do botão
+/// flutuante ([SsFab.clearance]): o fim da lista sobe acima dele, e o último
+/// item (o botão "Registrar chegada", a legenda) não fica por baixo.
+EdgeInsets safeListPadding(
+  BuildContext context, {
+  double horizontal = 16,
+  double top = 16,
+  double bottom = 16,
+  bool fab = false,
+}) {
   final sistema = MediaQuery.viewPaddingOf(context).bottom;
-  return EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom + sistema);
+  final botao = fab ? SsFab.clearance(context) : 0.0;
+  return EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom + sistema + botao);
 }

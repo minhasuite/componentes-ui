@@ -342,6 +342,12 @@ class SsFab extends StatelessWidget {
   /// v0.18: giro do ícone, em voltas (o [SsSpeedDial] gira o "+" até virar "×").
   final double iconTurns;
 
+  /// v0.24 (auditoria de UX, U08): o espaço que a tela com o botão flutuante
+  /// reserva no fim da lista (altura do botão + a margem do Scaffold + um
+  /// respiro), para o último item não ficar por baixo. Use no padding da
+  /// lista (`safeListPadding(context, fab: true)`) ou num `SizedBox` no fim.
+  static double clearance(BuildContext context) => SsDensity.of(context).controlHeight + 8 + 32;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);

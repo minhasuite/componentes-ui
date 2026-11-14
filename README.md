@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.22.1
+      ref: v0.24.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.22.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.24.0"
 ```
 
 ```css
@@ -643,7 +643,65 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
-## (próxima) área segura do celular (`viewport-fit=cover`)
+## v0.24.0: o que a auditoria de UX de novembro achou nas peças genéricas (minhas-vendas e meu-gestor)
+
+Os achados marcados como componentes-ui nos relatórios `minhas-vendas-workspace/docs/auditoria-ux-2026-11/RELATORIO.md`
+(C01–C04) e `meu-gestor-workspace/docs/auditoria-ux-2026-11/RELATORIO.md` (B05, B06, B07, B10, B13, B16, B18, U07, U08, U14).
+Quase tudo é aditivo; o que muda desenho padrão está em "Padrões que mudaram". Testes que reproduzem cada achado (falham na
+v0.23.6): `rails/sample/test/components/v24_web_test.rb` e `flutter/test/v24_test.dart`. Vitrine Rails "Auditoria de UX (v0.24)"
+(`?empresas=1|2` mostra a troca de empresa). Catálogo: `flutter/test/catalogo_v24.dart` (`ss-ai-insight-card` novo e estados/
+comportamentos em `ss-data-table`, `ss-button`, `ss-fab`, `ss-choice-field`, `ss-menu`) e as seções `ss-data-table-compact`,
+`ss-actions-v24`, `ss-settings-v24`, `ss-shell-tenant` e `ss-ai-card-v24` em `rails/catalogo/index.html`
+(`rails/sample/script/catalogo_v024.rb`). CSS em `v24_web.css`; conferido no Chromium (390 com toque, 1440 e 1536).
+
+| Achado | Rails / CSS | Flutter |
+|---|---|---|
+| C01 lista no celular vira cartões enormes | `DataTableComponent(mobile: :compact)` + `t.column(..., mobile: :title \| :value \| :meta \| :badge \| :hide)`: abaixo de 640 px, uma linha de lista em duas linhas (título e valor em cima; metas com `·` e o selo embaixo). Sem papel: 1ª coluna = título, 1ª de dinheiro = valor, resto = meta; ações no fim, seleção/expansão antes do título; o total vira "Total ……… valor". `stack: false` vence | `SsDataTable(mobile: SsDataTableMobile.compact)` + `SsDataColumn(mobile: SsDataSlot.title \| value \| meta \| badge \| hide)` (sem papel: 1ª = título, 1ª `numeric` = valor) |
+| C02/U14 seletor de empresa com uma empresa só; nome cortado seco | `AppShellComponent`: menu de troca só com 2+ empresas; com uma, o nome parado (`.ss-shell-tenant.is-single`, sem seta nem menu); `single_tenant: false` esconde. Nome em `.ss-shell-tenant-name` com reticências e o nome inteiro no `title=` | — (o app não tem a moldura do web) |
+| C04/E02/B07 Configurações numa página com vários Salvar | `SettingsLayoutComponent`: `s.with_section(..., form: { model:, url:, method: }, save_label:, save_always:)` faz da área um formulário (com `ss-validate`) com o próprio Salvar numa `StickyActionBarComponent` que só aparece quando aquela área muda (campos pelo `sec.form`); `href:` + `current:` fazem do menu a navegação entre áreas em páginas (sem scrollspy, só a atual aparece) | — (no app, Configurações é o `SsMenuView`) |
+| C04/E02b/V02 `.ss-actions` flutua sobre o campo | `.ss-actions` vira faixa opaca de largura inteira (`grid-column: 1 / -1`), presa embaixo só dentro do próprio form; a página com barra fixa ganha `scroll-padding-bottom` e os campos `scroll-margin-bottom` (`--ss-bar-room`): o foco por Tab, o 1º campo com erro e a âncora param acima da barra | `SsStickyActionBar` já vai no `bottomNavigationBar:` (reserva o espaço); nada a mudar |
+| B10 a busca rápida precisa de dois Esc | `ss-command`: **um Esc fecha**, com ou sem texto (o padrão de VS Code, GitHub, Linear e das paletas cmdk; antes o 1º Esc do `input type="search"` só limpava). Ao fechar, o foco volta a quem abriu (ou sai do campo) e os atalhos de uma tecla (`?`, `g p`) respondem de novo | — |
+| B05/B06 Pergunte à IA transborda; tabela da resposta cortada | `.ss-chat-empty` não passa da largura do painel (perguntas de exemplo quebram linha); `.ss-bubble` com tabela ocupa a largura e a tabela (`DataTableComponent` ou `<table>` solta) rola de lado dentro dela, sem partir palavra | — |
+| U07 toques de 32 px no celular | Só com `@media (pointer: coarse)`: `.ss-btn-sm`, `.ss-tab`, `.ss-subnav a`, `.ss-settings-nav a`, paginação e itens da troca de empresa com `min-height: var(--ss-target)` (44; 48 no confortável); `.ss-icon-btn`, `.ss-dt-toggle` e `.ss-shell-collapse` ganham área de toque invisível de 44 sem mudar o desenho. Busca da barra de cima com `aria-label`; link da marca com o nome | já era 48 (`SsTapTarget`) |
+| B13 balão "Preencha este campo" ao passar o mouse | Causa: o Chrome mostra a mensagem de validação como dica do campo inválido enquanto o form valida sozinho. `ss_form_with(validate: :ss)` (padrão) liga o Stimulus `ss-validate`: põe `novalidate` no form (pelo JS: sem JS fica a validação do navegador), confere ao sair do campo e ao enviar, mostra a mensagem em `.ss-field-error` (cria se o campo não tinha), foca o 1º errado e para o envio; `formnovalidate` envia sem conferir. `validate: :native` deixa como era | — |
+| U08/U12 botão flutuante cobre o conteúdo | Página com `.ss-fab`/`.ss-speed-dial` ganha `scroll-padding-bottom` (o foco não para embaixo dele) e, fora da moldura, folga no fim do `<body>` (na moldura ela já vinha no `.ss-shell-main`) | `SsFab.clearance(context)` e `safeListPadding(context, fab: true)`: a folga do botão no fim da lista |
+| B16 IA trava a tela | `AiInsightCardComponent(thinking: true, cancel: { label:, url:, method: } \| { label:, data: })` e `thinking_hint:` ("Pode continuar usando a tela."; `""` tira) | **novo** `SsAiInsightCard` (par do componente web): selo IA, `confidence`, `whenText`, `title`, `text`/`child`, `sources`, `onApply`/`onDismiss` e `thinking` com a espera dentro do cartão, segundos depois de `showElapsedAfter` (5 s) e `onCancel`. Textos `SsStrings.aiBadge`, `aiThinking`, `aiThinkingHint`, `aiApply`, `aiDismiss`, `aiSources`, `aiConfidence` |
+| B16 "Explicar com IA" sem nó próprio | — | `SsButton` é nó próprio de acessibilidade (`Semantics(container:, button:, enabled:)`) |
+| B18 teclado reabre sozinho | — | `SsMenuView`: tocar fora da busca solta o foco dela, e abrir um item (`SsMenuCard`/`SsMenuRow`) solta o foco antes; `SsChoiceField`, `SsDateField`/`SsDateTimeField` e `SsTimeField` soltam o foco antes de abrir a folha (fechar não reabre o teclado) |
+
+**Como cada produto adota** (subir a tag; o resto é opcional e por tela):
+
+- **minhas-vendas (web):** listas de Pedidos, Produtos, Caixas, Contas… com `mobile: :compact` e o papel de cada coluna (C01/U01);
+  Configurações em áreas com `SettingsLayoutComponent(form:)` ou `href:` (E02, C04); `.ss-actions` e o seletor de empresa
+  passam a valer sozinhos ao subir a tag (E02b, V02, C02). Conferir as telas com `.ss-actions` (Configurações, Novo pedido,
+  Novo produto) em 390 e 1440.
+- **meu-gestor (web):** Configurações (Regras, Precificação) com uma área por formulário (`form:`) ou em páginas (B07);
+  o Pergunte à IA, a busca rápida e a troca de empresa melhoram só com a tag (B05, B06, B10, U14); alvos de 44 no celular
+  e a validação sem balão também (U07, B13). Quem usava `form_with` cru continua com o balão: troque por `ss_form_with`.
+- **meu-gestor-app:** trocar o `AiThinking` local da Sugestão de compra e da Revisão de preços pelo `SsAiInsightCard(thinking:,
+  onCancel:)` e o `explainWithAiButton` (Semantics à mão) por `SsButton`; tirar os `leave(...)`/`unfocus()` do `more_screen.dart`
+  e os `Listener(onPointerDown: unfocus)` do `dynamic_form.dart`/`new_card_screen.dart` (o pacote faz); listas com FAB com
+  `safeListPadding(context, fab: true)` (U12).
+- **Outros produtos:** recebem o `.ss-actions` novo, o seletor de empresa, o alvo de toque, o Esc da paleta, o chat e a
+  validação do `ss_form_with` ao subir a tag; `mobile: :compact` e `SsAiInsightCard` quando quiserem.
+
+**Padrões que mudaram.**
+
+- **`.ss-actions`**: de pílula translúcida do tamanho dos botões (`width: fit-content`, `backdrop-filter`) para faixa opaca
+  (`--surface`) de largura inteira, `grid-column: 1 / -1`, presa a `0,75 rem` do fim. Quem punha `md:col-span-*` na barra
+  continua igual (a faixa já ocupa a linha).
+- **`ss_form_with`** liga o `ss-validate` (o form fica `novalidate` pelo JS): sem o balão nativo no envio nem a dica ao passar o
+  mouse; a mensagem aparece embaixo do campo. `validate: :native` volta ao de antes.
+- **`AppShellComponent`** com uma empresa: o nome parado no lugar do `<details>` com um item só.
+- **`AiInsightCardComponent(thinking: true)`** ganha a linha "Pode continuar usando a tela." (`thinking_hint: ""` tira).
+- **No celular (`pointer: coarse`)**, `.ss-btn-sm`, abas (`.ss-tab`, `.ss-subnav a`, `.ss-settings-nav a`) e a paginação da
+  tabela ficam com 44 px de altura (eram 32–36). No computador, nada.
+- **Paleta de comandos**: o 1º Esc fecha (antes limpava o texto).
+- **Flutter**: `SsButton` vira nó próprio no leitor de tela (teste de produto que procurava o rótulo do botão junto com o texto
+  do cartão precisa olhar o botão sozinho); `SsChoiceField`/`SsDateField`/`SsTimeField` e o `SsMenuView` soltam o foco do
+  campo de texto ao abrir a folha ou o item.
+
+## v0.23.5: área segura do celular (`viewport-fit=cover`)
 
 Com `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (PWA instalada no
 iPhone/Android, tela cheia), a página vai até as bordas e o `env(safe-area-inset-*)` passa a valer. A moldura
@@ -1431,6 +1489,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.24.0` (14/11/2026): seção "v0.24.0" (auditoria de UX de novembro). `DataTableComponent(mobile: :compact)` + `t.column(mobile:)` ↔ `SsDataTable(mobile: SsDataTableMobile.compact)` + `SsDataColumn(mobile: SsDataSlot.*)`; `AppShellComponent` com troca de empresa só com 2+ empresas e nome com reticências (`single_tenant:`); `SettingsLayoutComponent` com `form:`/`save_label:`/`save_always:` e `href:`/`current:` por seção; `.ss-actions` em faixa de largura inteira e folga de foco das barras fixas e do botão flutuante; paleta de comandos fecha com um Esc; chat que não transborda; alvo de toque de 44 px no celular; `ss_form_with(validate:)` + Stimulus `ss-validate`; `AiInsightCardComponent(cancel:, thinking_hint:)` ↔ `SsAiInsightCard` (novo); `SsFab.clearance`/`safeListPadding(fab:)`; `SsButton` como nó próprio de acessibilidade; `SsMenuView`, `SsChoiceField`, `SsDateField` e `SsTimeField` não devolvem o foco ao campo de texto. A API não quebra; ver "Padrões que mudaram".
 - `v0.23.6` (14/11/2026): tela de entrada na parede (`Ss::AuthLayoutComponent(variant: :wall)`) no celular: a folha volta a ter a margem de cima (o `margin: auto` virava 0) e o furo do prego não sobe na marca. Só CSS; nada quebra.
 - `v0.23.5` (14/11/2026): área segura do celular (`viewport-fit=cover`) na moldura, toasts, barras e gavetas. Nada quebra.
 - `v0.23.4` (14/11/2026): seção "v0.23.4". Stimulus `ss-reveal` (campos conforme a escolha de um select). Nada quebra.

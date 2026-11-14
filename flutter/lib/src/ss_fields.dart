@@ -1016,6 +1016,7 @@ class SsDateField extends StatelessWidget {
   DateTime _comHora(DateTime d) => _hora ? DateTime(d.year, d.month, d.day, value?.hour ?? 9, value?.minute ?? 0) : d;
 
   Future<void> _outra(BuildContext context) async {
+    FocusManager.instance.primaryFocus?.unfocus();
     final d = await showSsDatePicker(
       context,
       initialDate: value ?? initialDate,
@@ -1026,6 +1027,7 @@ class SsDateField extends StatelessWidget {
   }
 
   Future<void> _horario(BuildContext context) async {
+    FocusManager.instance.primaryFocus?.unfocus();
     final t = await showSsTimePicker(
       context,
       initialTime: value == null ? const TimeOfDay(hour: 9, minute: 0) : TimeOfDay.fromDateTime(value!),
@@ -1153,6 +1155,9 @@ class SsChoiceField<T> extends StatelessWidget {
   final String? helperText;
 
   Future<void> _abrir(BuildContext context, FormFieldState<T> field) async {
+    // v0.24 (auditoria de UX, B18): solta o foco do campo de texto anterior antes de abrir a folha; senão,
+    // ao fechar, a rota devolve o foco a ele e o teclado reabre sobre o formulário.
+    FocusManager.instance.primaryFocus?.unfocus();
     final r = await showSsSheet<(T,)>(
       context,
       title: label ?? hint ?? SsStrings.of(context).choose,
@@ -1655,6 +1660,7 @@ class SsTimeField extends StatelessWidget {
   static String format(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
   Future<void> _abrir(BuildContext context) async {
+    FocusManager.instance.primaryFocus?.unfocus();
     final r = await showSsTimePicker(context, initialTime: value ?? const TimeOfDay(hour: 7, minute: 0));
     if (r != null) onChanged(r);
   }

@@ -19,6 +19,7 @@ en:
       dismiss: Dismiss
       sources: Where this comes from
       thinking: Analyzing your data…
+      thinking_hint: You can keep using the screen.
     app_shell:
       external: '(opens in a new tab)'
       badge:

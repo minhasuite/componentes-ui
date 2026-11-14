@@ -17,8 +17,50 @@ import '../ss_strings.dart';
 ///
 /// v0.20: [header] troca o texto do cabeçalho por um widget (ícone, selo,
 /// duas linhas); o [label] continua no leitor de tela e nos cartões.
+/// v0.24: papel da coluna na linha compacta do celular
+/// ([SsDataTable.mobile] = [SsDataTableMobile.compact]); par do
+/// `t.column(..., mobile: :title | :value | :meta | :badge | :hide)` do web.
+enum SsDataSlot {
+  /// Em cima à esquerda, em negrito, com reticências.
+  title,
+
+  /// Em cima à direita (o total, o saldo).
+  value,
+
+  /// Embaixo, pequenas e separadas por "·" (nº, data, vendedor).
+  meta,
+
+  /// Embaixo à direita (o selo de situação).
+  badge,
+
+  /// Some no celular.
+  hide,
+}
+
+/// v0.24: como o [SsDataTable] fica abaixo de [SsDataTable.stackBelow].
+enum SsDataTableMobile {
+  /// Um cartão por linha com "RÓTULO valor" (o padrão de sempre).
+  cards,
+
+  /// Lista de linhas compactas em duas linhas: título e valor em cima, meta e
+  /// selo embaixo (par do `DataTableComponent(mobile: :compact)`).
+  compact,
+}
+
 class SsDataColumn {
-  const SsDataColumn(this.label, {this.numeric = false, this.onSort, this.flex = 1, this.width, this.header});
+  const SsDataColumn(
+    this.label, {
+    this.numeric = false,
+    this.onSort,
+    this.flex = 1,
+    this.width,
+    this.header,
+    this.mobile,
+  });
+
+  /// v0.24: o papel na linha compacta. Nulo: a 1ª coluna é o título, a 1ª
+  /// numérica (fora a 1ª) é o valor e o resto vira meta.
+  final SsDataSlot? mobile;
 
   final String label;
 
@@ -81,7 +123,14 @@ class SsDataTable extends StatelessWidget {
     this.stickyFirstColumn = false,
     this.minColumnWidth = 120,
     this.stack = true,
+    this.mobile = SsDataTableMobile.cards,
   });
+
+  /// v0.24 (auditoria de UX, C01): [SsDataTableMobile.compact] troca o cartão
+  /// "RÓTULO valor" do celular por uma linha compacta (título + valor em
+  /// cima, meta + selo embaixo), pelo [SsDataColumn.mobile] de cada coluna.
+  /// [stack] falso vence (a tabela rola de lado).
+  final SsDataTableMobile mobile;
 
   /// v0.20.4: falso mantém a tabela no celular (nunca vira cartões): quando as
   /// colunas não cabem, rola de lado (com [stickyFirstColumn], a 1ª fica
@@ -155,7 +204,8 @@ class SsDataTable extends StatelessWidget {
               subtitle: emptySubtitle,
             );
           }
-          return pilha ? _cartoes(context) : _tabela(context);
+          if (!pilha) return _tabela(context);
+          return mobile == SsDataTableMobile.compact ? _compacta(context) : _cartoes(context);
         },
       ),
     );
@@ -385,65 +435,72 @@ class SsDataTable extends StatelessWidget {
     );
   }
 
-  Widget _cartoes(BuildContext context) {
+  /// Fichas de ordenação do celular (cartões e linha compacta); nulo sem coluna ordenável.
+  Widget? _fichas(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final ordenaveis = [
       for (var i = 0; i < columns.length; i++)
         if (columns[i].onSort != null) i,
     ];
+    if (ordenaveis.isEmpty) return null;
+    return Padding(
+      padding: EdgeInsets.only(bottom: d.space(10)),
+      child: Wrap(
+        spacing: d.space(6),
+        runSpacing: d.space(6),
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            sortByLabel ?? SsStrings.of(context).sortBy,
+            style: TextStyle(fontSize: d.font(AppType.meta), color: c.muted, fontWeight: FontWeight.w600),
+          ),
+          for (final i in ordenaveis)
+            Semantics(
+              button: true,
+              selected: sortColumn == i,
+              label: '${sortByLabel ?? SsStrings.of(context).sortBy} ${columns[i].label}${_sentido(context, i)}',
+              excludeSemantics: true,
+              child: SsPressable(
+                onTap: () => _ordena(i),
+                child: AnimatedContainer(
+                  duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
+                  padding: EdgeInsets.fromLTRB(d.space(10), d.space(5), d.space(8), d.space(5)),
+                  decoration: BoxDecoration(
+                    color: sortColumn == i ? c.accentSoft : c.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    border: Border.all(color: sortColumn == i ? Colors.transparent : c.line),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        columns[i].label,
+                        style: TextStyle(
+                          fontSize: d.font(AppType.meta),
+                          fontWeight: FontWeight.w700,
+                          color: sortColumn == i ? c.accentText : c.ink2,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      _Seta(ativa: sortColumn == i, asc: sortAscending),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cartoes(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (ordenaveis.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(bottom: d.space(10)),
-            child: Wrap(
-              spacing: d.space(6),
-              runSpacing: d.space(6),
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  sortByLabel ?? SsStrings.of(context).sortBy,
-                  style: TextStyle(fontSize: d.font(AppType.meta), color: c.muted, fontWeight: FontWeight.w600),
-                ),
-                for (final i in ordenaveis)
-                  Semantics(
-                    button: true,
-                    selected: sortColumn == i,
-                    label: '${sortByLabel ?? SsStrings.of(context).sortBy} ${columns[i].label}${_sentido(context, i)}',
-                    excludeSemantics: true,
-                    child: SsPressable(
-                      onTap: () => _ordena(i),
-                      child: AnimatedContainer(
-                        duration: reduceMotion(context) ? Duration.zero : SsMotion.fast,
-                        padding: EdgeInsets.fromLTRB(d.space(10), d.space(5), d.space(8), d.space(5)),
-                        decoration: BoxDecoration(
-                          color: sortColumn == i ? c.accentSoft : c.surface,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                          border: Border.all(color: sortColumn == i ? Colors.transparent : c.line),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              columns[i].label,
-                              style: TextStyle(
-                                fontSize: d.font(AppType.meta),
-                                fontWeight: FontWeight.w700,
-                                color: sortColumn == i ? c.accentText : c.ink2,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            _Seta(ativa: sortColumn == i, asc: sortAscending),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+        ?_fichas(context),
         for (var r = 0; r < rows.length; r++)
           SsInViewReveal(
             index: r,
@@ -519,6 +576,152 @@ class SsDataTable extends StatelessWidget {
             ),
           ),
         if (footer != null) _totalCartao(context),
+      ],
+    );
+  }
+
+  /// Papel de cada coluna na linha compacta: o dado ou o padrão (1ª coluna =
+  /// título, 1ª numérica fora a 1ª = valor, o resto = meta), como no web.
+  List<SsDataSlot> get _slots {
+    final dados = [for (final col in columns) col.mobile];
+    final temTitulo = dados.contains(SsDataSlot.title);
+    final temValor = dados.contains(SsDataSlot.value);
+    var valorPadrao = -1;
+    if (!temValor) {
+      for (var i = 1; i < columns.length; i++) {
+        if (columns[i].numeric && columns[i].mobile == null) {
+          valorPadrao = i;
+          break;
+        }
+      }
+    }
+    return [
+      for (var i = 0; i < columns.length; i++)
+        columns[i].mobile ??
+            (i == 0 && !temTitulo
+                ? SsDataSlot.title
+                : i == valorPadrao
+                ? SsDataSlot.value
+                : SsDataSlot.meta),
+    ];
+  }
+
+  /// Uma linha compacta (dado ou total): título e valor em cima, meta e selo embaixo.
+  Widget _linhaCompacta(BuildContext context, List<Widget> cells, List<SsDataSlot> slots, {bool foot = false}) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    Widget? cel(int i) => i < cells.length ? Semantics(label: '${columns[i].label}: ', child: cells[i]) : null;
+    final idx = [for (var i = 0; i < columns.length; i++) i];
+    final titulo = idx.where((i) => slots[i] == SsDataSlot.title).map(cel).nonNulls.toList();
+    final valor = idx.where((i) => slots[i] == SsDataSlot.value).map(cel).nonNulls.toList();
+    final metas = idx.where((i) => slots[i] == SsDataSlot.meta).map(cel).nonNulls.toList();
+    final selos = idx.where((i) => slots[i] == SsDataSlot.badge).map(cel).nonNulls.toList();
+    final peso = foot ? FontWeight.w800 : FontWeight.w700;
+    final pequeno = TextStyle(fontSize: d.font(AppType.meta), color: c.muted);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: d.padX - 2, vertical: d.rowPadV),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: DefaultTextStyle.merge(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: d.font(AppType.body), fontWeight: peso, color: c.ink),
+                  child: Wrap(spacing: d.space(6), children: titulo),
+                ),
+              ),
+              if (valor.isNotEmpty) ...[
+                SizedBox(width: d.gap),
+                DefaultTextStyle.merge(
+                  style: AppTheme.number(context, size: d.font(AppType.set), color: c.ink).copyWith(fontWeight: peso),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: valor),
+                ),
+              ],
+            ],
+          ),
+          if (metas.isNotEmpty || selos.isNotEmpty) ...[
+            SizedBox(height: d.space(4)),
+            Row(
+              children: [
+                Expanded(
+                  child: DefaultTextStyle.merge(
+                    style: pequeno,
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        for (var k = 0; k < metas.length; k++) ...[
+                          if (k > 0) ExcludeSemantics(child: Text('  ·  ', style: pequeno)),
+                          metas[k],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                for (final b in selos) ...[SizedBox(width: d.space(6)), b],
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// v0.24: a lista compacta do celular (par do `mobile: :compact` do web).
+  Widget _compacta(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    final slots = _slots;
+    final linhas = <Widget>[
+      for (var r = 0; r < rows.length; r++)
+        SsInViewReveal(
+          index: r,
+          offset: 8,
+          child: _apaga(
+            rows[r].dimmed,
+            Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: rows[r].onTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: r == 0 ? null : Border(top: BorderSide(color: c.line)),
+                  ),
+                  child: _linhaCompacta(context, rows[r].cells, slots),
+                ),
+              ),
+            ),
+          ),
+        ),
+      if (footer != null)
+        Container(
+          decoration: BoxDecoration(
+            color: c.field,
+            border: Border(top: BorderSide(color: c.line)),
+          ),
+          child: _linhaCompacta(context, footer!, slots, foot: true),
+        ),
+    ];
+    final lista = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: linhas);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ?_fichas(context),
+        if (flat)
+          lista
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(d.radiusCard),
+              boxShadow: c.isDark ? null : AppShadows.card,
+              border: c.isDark ? Border.all(color: c.line) : null,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: lista,
+          ),
       ],
     );
   }

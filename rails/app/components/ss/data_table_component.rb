@@ -45,15 +45,31 @@ module Ss
   # - v0.20.4: stack: false mantém a tabela no celular (rola de lado, a coluna sticky: funciona) em vez de virar
   #   um card por linha (escala de 14 dias, grade de horários). Par: SsDataTable(stack: false).
   # - Linha apagada: row_attrs: ->(r) { { class: ("is-dimmed" if r.inativo?) } } (tr.is-dimmed). Par: SsDataRow(dimmed:).
+  #
+  # v0.24 (auditoria de UX, C01): mobile: :compact troca, abaixo de 640 px, o cartão "RÓTULO valor" (uma linha por
+  # coluna) por uma linha compacta de lista, em duas linhas: título e valor em cima, meta (· entre elas) e selo
+  # embaixo. Cada coluna diz o papel com t.column(..., mobile: :title | :value | :meta | :badge | :hide). Sem papel:
+  # a 1ª coluna é o título, a 1ª de dinheiro é o valor e o resto vira meta. Ações da linha ficam no fim da 2ª linha;
+  # seleção e expansão, antes do título. No computador nada muda. stack: false vence (a tabela rola de lado).
+  # Par: SsDataTable(mobile: SsDataTableMobile.compact) + SsDataColumn(mobile: SsDataSlot.title…).
+  #   render(Ss::DataTableComponent.new(rows: @pedidos, id: "pedidos", caption: "Pedidos", mobile: :compact, row_href: ->(p) { pedido_path(p) })) do |t|
+  #     t.column :numero, "Nº", mobile: :meta
+  #     t.column :cliente, "Cliente", mobile: :title
+  #     t.column :emissao, "Emissão", format: :date, mobile: :meta
+  #     t.column :status, "Situação", mobile: :badge do |p| … end
+  #     t.column :total, "Total", format: :money, mobile: :value
+  #   end
   class DataTableComponent < BaseComponent
-    Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, :sticky, :header, keyword_init: true)
+    Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, :sticky, :header, :mobile, keyword_init: true)
+    MOBILE = %i[cards compact].freeze
+    SLOTS = %i[title value meta badge hide].freeze
 
     attr_reader :columns, :id, :caption
 
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
                    max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, select_name: "ids[]",
-                   bulk_method: :post, row_href: nil, flat: false, stack: true, **opts)
+                   bulk_method: :post, row_href: nil, flat: false, stack: true, mobile: :cards, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -79,19 +95,44 @@ module Ss
       @row_href = row_href
       @flat = flat
       @stack = stack
+      @mobile = mobile.to_s.to_sym
+      raise ArgumentError, "mobile: #{mobile.inspect} (use :cards ou :compact)" unless MOBILE.include?(@mobile)
+
       @totals = {}
       @columns = []
     end
 
     def flat? = @flat
     def stack? = @stack
+    # Linha compacta no celular (v0.24): só com a tabela empilhando (stack: false vence).
+    def compact? = @stack && @mobile == :compact
 
-    def column(key, label, align: nil, sortable: false, format: nil, hideable: true, sticky: false, header: nil, &block)
+    def column(key, label, align: nil, sortable: false, format: nil, hideable: true, sticky: false, header: nil, mobile: nil, &block)
       align ||= %i[money number].include?(format) ? :right : :left
+      mobile = mobile&.to_sym
+      raise ArgumentError, "t.column(mobile: #{mobile.inspect}) (use #{SLOTS.map(&:inspect).join(", ")})" if mobile && !SLOTS.include?(mobile)
+
       @columns << Column.new(key: key.to_s, label:, align: align.to_sym, sortable:, format:, hideable:, block:,
-                             sticky: sticky && @columns.empty?, header:)
+                             sticky: sticky && @columns.empty?, header:, mobile:)
       nil
     end
+
+    # Papel da coluna na linha compacta (v0.24): o dado, ou o padrão (1ª coluna = título, 1ª de dinheiro = valor,
+    # ações = :actions, o resto = meta).
+    def slot(col)
+      return :actions if col.format == :actions
+      return col.mobile if col.mobile
+
+      data = @columns.reject { _1.format == :actions }
+      explicit = data.filter_map(&:mobile)
+      if col.equal?(data.first) && !explicit.include?(:title) then :title
+      elsif !explicit.include?(:value) && col.equal?(data.find { _1.format == :money && _1.mobile.nil? && !_1.equal?(data.first) }) then :value
+      else :meta
+      end
+    end
+
+    # data-mobile da célula (só no modo compacto). No total, o "Total" da 1ª coluna vai no lugar do título.
+    def slot_attr(col, total: false) = (compact? ? (total && col.equal?(@columns.first) ? :title : slot(col)) : nil)
 
     # Linha de total (v0.20): t.total(:valor, "R$ 10") ou t.total(:valor) { |rows| … }.
     def total(key, value = nil, &block)
