@@ -643,6 +643,17 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.23.3: abas no seletor segmentado e o botão sem desenho que não atropela
+
+Achado na migração do minha-automacao web. Testes em `rails/sample/test/components/v23_3_web_test.rb`.
+
+- **`Ss::SegmentedComponent(role:)`** troca o `role="group"` (ex. `"tablist"`) e o `role:` do item vai nele (`"tab"`, com
+  `aria: { selected: }`): abas leves com a semântica certa (andares de uma planta).
+- **`.ss-btn-bare`** passa a valer só por `:where(...)` (especificidade zero): quando o botão também tem outra classe
+  (`.ss-checklist-x`, uma classe do produto), ela vence. Antes o bare passava por cima (largura toda, `display: block`).
+
+**Padrões que mudaram.** Botão `variant: :bare` com outra classe agora fica com o desenho dessa classe.
+
 ## v0.23.2: o verificador do Flutter pega chamada com tipo record
 - `conferirConformidade` passa a reprovar `showDialog<({String kind, String body})>(` e `showModalBottomSheet<(int, String)?>(`
   (o tipo record escapava da regra da v0.19.1). App que tinha esse caso escondido passa a acusar. Nada mais muda.
@@ -1399,6 +1410,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.23.3` (14/11/2026): seção "v0.23.3". `SegmentedComponent(role:)` e item com `role:`; `.ss-btn-bare` em `:where`. Nada quebra.
 - `v0.23.2` (14/11/2026): seção "v0.23.2". Verificador do Flutter pega chamada com tipo record. Nada quebra na API.
 - `v0.23.1` (14/11/2026): seção "v0.23.1". `f.ss_swatch_radio`, opção de rádio desligada e `ButtonComponent(form: "id")`. Nada quebra.
 - `v0.23.0` (14/11/2026): seção "v0.23.0". `showSsTimePicker`, `Ss::SegmentedComponent`, `ButtonComponent(variant: :bare)`, `f.ss_chip_check_box`/`ss_chip_radio_buttons`, `.ss-anim-*`, `.ss-span-grid` e `.ss-wall`. Nada quebra.

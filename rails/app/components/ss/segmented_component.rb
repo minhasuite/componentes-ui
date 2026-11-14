@@ -12,6 +12,7 @@ module Ss
   # disabled: vão no item. label: do grupo é o aria-label (role="group"). scroll: true = itens do tamanho do texto
   # numa faixa que rola (abas leves, ex. andares de uma planta); sem scroll, até 4 itens de largura igual.
   # O JS do produto troca só o aria-pressed/aria-selected/aria-current: a pílula segue pelo CSS.
+  # v0.23.3: role: no componente troca o role="group" (ex. "tablist") e role: no item vai nele (ex. "tab", com aria: { selected: }).
   class SegmentedComponent < BaseComponent
     def initialize(items:, label: nil, scroll: false, **rest)
       super(**rest)
@@ -19,7 +20,7 @@ module Ss
     end
 
     def call
-      tag.div(**root_attrs(class: classes("ss-seg", ("is-scroll" if @scroll)), role: "group", "aria-label": @label)) do
+      tag.div(**{ role: "group" }.merge(root_attrs(class: classes("ss-seg", ("is-scroll" if @scroll)), "aria-label": @label))) do
         safe_join(@items.map { |i| item(i.to_h) })
       end
     end
@@ -28,7 +29,7 @@ module Ss
 
     def item(i)
       body = safe_join([(icon_svg(i[:icon]) if i[:icon]), (i[:html] || tag.span(i[:label]))].compact)
-      common = { data: i[:data], title: i[:title], id: i[:id] }.compact
+      common = { data: i[:data], title: i[:title], id: i[:id], role: i[:role] }.compact
       if i[:href]
         aria = i[:aria].to_h.merge(current: (i[:current] || i[:pressed]) ? "true" : nil).compact
         link_to(i[:href], **common, aria:) { body }
