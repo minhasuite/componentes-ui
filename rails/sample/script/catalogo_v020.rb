@@ -60,7 +60,7 @@ bar = r(Ss::StickyActionBarComponent.new(always: true, style: "position:static")
   r(Ss::ButtonComponent.new(label: "Fechar pedido", size: :sm)).html_safe
 end
 out << section("ss-sticky-bar-v20", "StickyActionBarComponent#with_summary", "Barra fixa com resumo livre à esquerda (v0.20, par do SsStickyActionBar(summary:)).",
-  ["with_summary: conteúdo livre no lugar da mensagem (sem o ponto amarelo), região viva para o leitor de tela.", "As ações vêm no bloco; always: true mostra sem esperar alteração."],
+  ["with_summary: conteúdo livre no lugar da mensagem (sem o ponto amarelo), região viva para o leitor de tela.", "As ações vêm no bloco; always: true mostra sem esperar alteração e continua visível ao voltar o campo ao original, em Cancelar e ao enviar (v0.22.1)."],
   [["resumo", "resumo do pedido", box.(420, bar)]])
 
 rep = r(Ss::RepeaterComponent.new(add_label: "Adicionar telefone", min: 1, label: "Telefones")) do |rp|

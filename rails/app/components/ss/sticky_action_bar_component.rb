@@ -3,7 +3,8 @@ module Ss
   # avisa ao sair com alterações (controller ss-dirty). Vai DENTRO do <form>.
   #   <%= form_with model: @cliente do |f| %> … <%= render Ss::StickyActionBarComponent.new %> <% end %>
   #   render Ss::StickyActionBarComponent.new(message: "Pedido alterado") { botões próprios }
-  # always: true mostra sempre (sem esperar alteração).
+  # always: true mostra sempre (sem esperar alteração), também depois de voltar ao valor original,
+  # Cancelar ou enviar (v0.22.1: data-ss-dirty-always-value; o "sujo" só cuida do aviso ao sair).
   # v0.20: with_summary { … } põe conteúdo livre à esquerda no lugar da mensagem (o resumo do pedido:
   # "3 itens · R$ 120,00"), sem o ponto amarelo; par do SsStickyActionBar(summary:).
   #   render(Ss::StickyActionBarComponent.new(always: true)) do |b|

@@ -4,13 +4,20 @@ import { Controller } from "@hotwired/stimulus"
 // Compara o form com o estado inicial; com alteração, marca form[data-dirty]
 // (a barra aparece) e avisa antes de sair da página (navegador e Turbo).
 // Cancelar (data-action="ss-dirty#reset") volta ao inicial; enviar libera a saída.
+// always (StickyActionBarComponent(always: true)): a barra fica sempre visível; o
+// "sujo" só controla o aviso ao sair. Antes da v0.22.1, voltar ao valor original
+// (ou Cancelar/enviar) tirava o data-visible e a barra sumia até recarregar.
 export default class extends Controller {
-  static values = { message: { type: String, default: "Há alterações não salvas. Sair mesmo assim?" } }
+  static values = {
+    message: { type: String, default: "Há alterações não salvas. Sair mesmo assim?" },
+    always: { type: Boolean, default: false }
+  }
 
   connect() {
     this.form = this.element.closest("form")
     if (!this.form) return
     this.initial = this.snapshot()
+    this.dirty = false
     this.check = () => this.update()
     this.leaving = (e) => { if (this.dirty) { e.preventDefault(); e.returnValue = "" } }
     this.visiting = (e) => { if (this.dirty && !confirm(this.messageValue)) e.preventDefault() }
@@ -41,7 +48,7 @@ export default class extends Controller {
   get dirty() { return this.form.hasAttribute("data-dirty") }
   set dirty(on) {
     this.form.toggleAttribute("data-dirty", on)
-    this.element.toggleAttribute("data-visible", on)
+    this.element.toggleAttribute("data-visible", on || this.alwaysValue)
   }
 
   reset(event) {

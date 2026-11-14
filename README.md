@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.20.4
+      ref: v0.22.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.20.4"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.22.1"
 ```
 
 ```css
@@ -643,6 +643,23 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.22.1: a barra fixa com `always: true` não some mais
+
+Correção achada no meu-gestor web (Revisão de preços, "Enviar os marcados"): com `Ss::StickyActionBarComponent(always: true)`,
+mudar um campo e voltar ao valor original escondia a barra, e não havia como enviar sem recarregar. A causa era o
+Stimulus `ss-dirty`: o setter do "sujo" fazia `toggleAttribute("data-visible", on)` sem saber do `always`, então
+qualquer volta ao estado inicial (e também Cancelar e o `submit`) tirava o `data-visible` que o `always` tinha posto.
+Agora o componente passa `data-ss-dirty-always-value="true"` e o controller mostra a barra com `sujo || always`; o
+"sujo" (`form[data-dirty]`) continua cuidando só do aviso ao sair. Sem `always`, nada muda: a barra aparece enquanto o
+form difere do inicial (o form inteiro é comparado, então voltar um campo com outro ainda alterado mantém a barra) e
+some quando volta tudo. Teste em `rails/sample/test/components/v22_1_web_test.rb`; catálogo: comportamento do
+`ss-sticky-bar-v20`.
+
+Flutter: nada a corrigir. O `SsStickyActionBar(visible:)` não guarda estado; quem decide é o app (padrão `true`).
+
+**Padrões que mudaram.** `StickyActionBarComponent(always: true)` passa a ficar visível também depois de voltar ao
+original, de Cancelar e de enviar (antes sumia). Quem contornou isso no produto (re-pondo `data-visible` por JS) pode tirar.
+
 ## v0.22.0: tela de entrada "Folhinha" e a fonte de exibição
 
 A identidade nova das telas de entrada da suíte (proposta "Folhinha", aprovada em 13/11/2026): a folhinha de parede do
@@ -1340,6 +1357,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.22.1` (14/11/2026): seção "v0.22.1". `StickyActionBarComponent(always: true)` não some ao voltar o campo ao original, em Cancelar nem ao enviar (`ss-dirty` com `always`). Nada quebra.
 - `v0.22.0` (não lançada): seção "v0.22.0". Tela de entrada "Folhinha": `SsAuthLayout.folhinha(variant:)` ↔ `Ss::AuthLayoutComponent(variant: :sheet | :wall | :pad)`, fonte de exibição (`AppTheme.display` ↔ `--ss-font-display` + `ss_display_font_tag`) e `SsStrings.authPartOf` ↔ `componentes_ui.auth.*`. Nada quebra.
 - `v0.21.0` (não lançada, branch `beleza`): seção "v0.21.0". `SsCue` ↔ `.ss-cue` + `ss-cue` + `ss_cue_data` (ligou, abriu, chegou; menos movimento desliga) e `SsDeviceTile(level:)` ↔ `DeviceTileComponent(level:)` (brilho real da lâmpada). Nada quebra.
 - `v0.20.2` (11/11/2026): seção "v0.20.2". Projeção tracejada no gráfico de barras: `SsBarChart(projection:, projectionFrom:)` ↔ `Ss::BarChartComponent(projection:, projection_from:)` (legenda tracejada, dica/balão, tabela e `Semantics` para leitor de tela, claro/escuro). Nada quebra.
