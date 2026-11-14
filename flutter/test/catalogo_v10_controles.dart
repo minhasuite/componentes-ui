@@ -107,6 +107,7 @@ final List<Componente> catalogoV10Controles = [
       'Modo ação (onPress): tocar executa o comando (portão, cena, botão), com confirmação opcional (confirm/confirmTitle → showSsConfirm); dica "Acionar".',
       'color aceita a cor real da luz: em cor clara (amarelo-claro, branco quente) o ícone vira tinta escura para continuar legível.',
       'v0.10.3: onLongPress (menu, detalhes no modo ação; vibração média; ação "Mais opções" no leitor de tela, longPressLabel troca) e onDoubleTap (atalho; o toque simples espera o tempo do duplo). Valem até indisponível.',
+      'v0.23.7: bem estreito (conteúdo abaixo de 130 dp, ex. 3 por linha numa coluna de 1/3) empilha: ícone em cima, nome (2 linhas) e estado embaixo, em vez de cortar o nome.',
     ],
     estados: [
       Estado(
@@ -187,6 +188,27 @@ final List<Componente> catalogoV10Controles = [
           ),
         ]),
         tamanho: const Size(360, 380),
+      ),
+      Estado(
+        'estreito',
+        'estreito (3 por linha): empilha',
+        (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            spacing: 10,
+            children: [
+              for (final (i, n) in [
+                (Icons.shield_outlined, 'Vigia'),
+                (Icons.nightlight_outlined, 'Guardião'),
+                (Icons.videocam_outlined, 'Câmera'),
+              ])
+                Expanded(
+                  child: SsDeviceTile(icon: i, name: n, state: 'Rodou há 4 h', onPress: () {}),
+                ),
+            ],
+          ),
+        ),
+        tamanho: const Size(360, 160),
       ),
     ],
   ),

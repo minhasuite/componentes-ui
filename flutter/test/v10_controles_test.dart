@@ -548,4 +548,36 @@ void main() {
       expect(SsWeekdayPicker.order(1), [1, 2, 3, 4, 5, 6, 7]);
     });
   });
+
+  testWidgets('SsDeviceTile estreito (3 por linha) empilha: nome embaixo do ícone, sem estouro', (t) async {
+    await t.pumpWidget(
+      _app(
+        Row(
+          children: [
+            for (final n in ['Vigia', 'Guardião', 'Câmera'])
+              SizedBox(
+                width: 112,
+                child: SsDeviceTile(icon: Icons.shield_outlined, name: n, state: 'Rodou há 4 h', onPress: () {}),
+              ),
+          ],
+        ),
+      ),
+    );
+    expect(t.takeException(), isNull);
+    final icone = t.getRect(find.byIcon(Icons.shield_outlined).first);
+    final nome = t.getRect(find.text('Guardião'));
+    expect(nome.top, greaterThan(icone.bottom - 1));
+    // Largo, continua numa linha só (nome ao lado do ícone).
+    await t.pumpWidget(
+      _app(
+        SizedBox(
+          width: 320,
+          child: SsDeviceTile(icon: Icons.shield_outlined, name: 'Vigia', onPress: () {}),
+        ),
+      ),
+    );
+    final i2 = t.getRect(find.byIcon(Icons.shield_outlined));
+    final n2 = t.getRect(find.text('Vigia'));
+    expect(n2.left, greaterThan(i2.right));
+  });
 }

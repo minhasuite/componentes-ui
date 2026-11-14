@@ -47,6 +47,9 @@ enum SsDeviceStatus {
 /// qualquer situação, até indisponível (para editar ou remover). [onDoubleTap]
 /// é um atalho (ex. alternar): o toque simples passa a esperar o tempo do duplo.
 class SsDeviceTile extends StatelessWidget {
+  /// Abaixo desta largura (do conteúdo) o tile empilha ícone e texto (v0.23.7).
+  static const stackBelow = 130.0;
+
   const SsDeviceTile({
     super.key,
     required this.icon,
@@ -285,6 +288,17 @@ class SsDeviceTile extends StatelessWidget {
         if (fim != null) ...[SizedBox(width: d.space(8)), fim],
       ],
     );
+    // v0.23.7: bem estreito (3 por linha numa coluna de 1/3), a linha não cabe e o nome
+    // virava "Vi…": empilha, ícone (e o fim) em cima, nome e estado embaixo na largura toda.
+    final pilha = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(children: [bolha, const Spacer(), ?fim]),
+        SizedBox(height: d.space(8)),
+        textos,
+      ],
+    );
 
     final semantica = '$name: $texto';
     // Modo ação: o toque executa; senão, abre os detalhes.
@@ -321,7 +335,7 @@ class SsDeviceTile extends StatelessWidget {
             onLongPress: onLongPress,
             onLongPressHint: onLongPress == null ? null : longPressLabel ?? s.moreOptions,
             container: true,
-            child: linha,
+            child: cons.maxWidth < SsDeviceTile.stackBelow ? pilha : linha,
           );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
