@@ -31,6 +31,7 @@
 ///
 /// v0.19.1: a chamada com tipo (`showDialog<void>(`, `PopupMenuButton<String>(`)
 /// também conta (antes passava).
+/// v0.23.2: tipo record também (`showDialog<({String kind, String body})>(`).
 ///
 /// Fica de fora o que o pacote não substitui: `Scaffold`, `InkWell`, `Material`,
 /// layout (`Row`, `Column`, `Padding`…), `RawAutocomplete` etc.
@@ -94,7 +95,7 @@ List<Violacao> conferirConformidade(Directory raiz) {
   final arquivos = lib.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart')).toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
-  final material = RegExp('(?<![A-Za-z_0-9])(${proibidosMaterial.join('|')})(\\.\\w+)?(<[\\w<>?, ]*>)?\\(');
+  final material = RegExp('(?<![A-Za-z_0-9])(${proibidosMaterial.join('|')})(\\.\\w+)?(<[\\w<>?, (){}]*>)?\\(');
   final regras = <String, RegExp>{
     'cupertino': RegExp(r'(?<![A-Za-z_0-9])(Cupertino\w+|showCupertino\w+)\(|package:flutter/cupertino\.dart'),
     'scaffold-messenger': RegExp(r'(?<![A-Za-z_0-9])ScaffoldMessenger\b'),

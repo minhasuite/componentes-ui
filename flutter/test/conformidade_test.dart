@@ -88,6 +88,20 @@ final menu = PopupMenuButton<Map<String, int>>(itemBuilder: (_) => []);
     expect(regras, containsAll(<String>['material:showDialog', 'material:PopupMenuButton']));
   });
 
+  test('v0.23.2: chamada com tipo record também reprova', () {
+    final raiz = _app(
+      pubspec: _pubOk,
+      arquivos: {
+        'tela.dart': '''
+Future<void> abre(c) => showDialog<({String kind, String body})>(context: c, builder: (_) => Text('x'));
+Future<void> folha(c) => showModalBottomSheet<(int, String)?>(context: c, builder: (_) => Text('x'));
+''',
+      },
+    );
+    final regras = conferirConformidade(raiz).map((v) => v.regra).toList();
+    expect(regras, containsAll(<String>['material:showDialog', 'material:showModalBottomSheet']));
+  });
+
   test('v0.19.1: peças novas passam (tooltip, abas, fio em pé, cor de dado, glifo, transparente)', () {
     final raiz = _app(
       pubspec: _pubOk,
