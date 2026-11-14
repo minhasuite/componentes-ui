@@ -52,6 +52,8 @@
 /* v0.24: auditoria de UX (minhas-vendas e meu-gestor): linha compacta da tabela no celular, troca de empresa, barras de salvar
    que não cobrem campos, chat que não transborda, alvo de toque de 44 px e a folga do botão flutuante. */
 @import "./v24_web.css";
+/* v0.25: sino de avisos no topo e o selo com link; tile de aparelho que empilha quando bem estreito. */
+@import "./v25_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

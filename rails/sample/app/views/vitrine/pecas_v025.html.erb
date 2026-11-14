@@ -1,0 +1,23 @@
+<%# titulo: Sino de avisos e selo (v0.25) | grupo: Retorno | ordem: 25 %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Sino de avisos (no slot bell do AppShell)") %>
+    <div class="flex items-center gap-4">
+      <%= render Ss::NotificationBellComponent.new(id: "vitrine-sino", count: 2, all_href: "#", read_all_href: "#", settings_href: "#", items: [
+            { title: "Portão principal aberto", text: "Aberto há 10 minutos", time: "há 2 min", href: "#", unread: true, icon: "exclamation-circle", tone: :danger },
+            { title: "Resumo do dia", text: "3 automações rodaram, 1 aviso de bateria", time: "há 1 h", href: "#", unread: true, icon: "calendar", tone: :accent },
+            { title: "Movimento na varanda", time: "ontem", href: "#", icon: "bell", tone: :accent }]) %>
+      <%= render Ss::NotificationBellComponent.new(id: "vitrine-sino-vazio", count: 0, items: [], all_href: "#") %>
+    </div>
+  </section>
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Selos (BadgeComponent)") %>
+    <div class="flex flex-wrap gap-2">
+      <%= render Ss::BadgeComponent.new(label: "1 luz acesa", icon: "light-bulb") %>
+      <%= render Ss::BadgeComponent.new(label: "1 abertura", icon: "lock-open", href: "#") %>
+      <%= render Ss::BadgeComponent.new(label: "2 sem sinal", icon: "status-offline", tone: :warn) %>
+      <%= render Ss::BadgeComponent.new(label: "Online", tone: :success, dot: true) %>
+      <%= render Ss::BadgeComponent.new(label: "HOJE", tone: :accent, solid: true) %>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,45 @@
+/* v0.25 · sino de avisos no topo (Ss::NotificationBellComponent + Ss::NotificationListComponent, par do
+   SsNotificationBell) e o selo como componente (Ss::BadgeComponent, par do SsBadge): link no .ss-badge.
+   Só tokens; o vermelho do contador é o --danger da suíte. */
+
+/* O painel estende o .ss-popover (fora das camadas, como ele). */
+.ss-popover.ss-bell-panel { width: min(24rem, calc(100vw - 1.5rem)); max-width: none; padding: 0; overflow: hidden; }
+.ss-bell-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .6rem .6rem .5rem 1rem; border-bottom: 1px solid var(--line); }
+.ss-bell-head .ss-popover-title { margin: 0; }
+.ss-bell-tools { display: flex; align-items: center; gap: .25rem; }
+.ss-bell-body { max-height: min(26rem, 60vh); overflow: auto; overscroll-behavior: contain; }
+.ss-bell-body > turbo-frame { display: block; }
+.ss-bell-skel { padding: 1rem; }
+.ss-bell-foot { display: block; padding: .65rem 1rem; border-top: 1px solid var(--line); text-align: center; font-weight: 700; font-size: .85rem;
+                color: var(--accent); text-decoration: none; }
+.ss-bell-foot:hover { background: var(--field); }
+.ss-bell-foot:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+@layer components {
+  .ss-bell { position: relative; display: inline-flex; }
+  .ss-bell-btn { position: relative; }
+  /* Contador no canto de cima à direita, fora do sino (o desenho do sino fica à vista). */
+  .ss-bell-count { position: absolute; top: -.2rem; right: -.3rem; min-width: 1.05rem; height: 1.05rem; padding: 0 .28rem; border-radius: 999px;
+                   background: var(--danger); color: #fff; font-size: .6rem; font-weight: 800; line-height: 1.05rem; text-align: center;
+                   font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--surface); pointer-events: none; }
+  .ss-bell-count[hidden] { display: none; }
+  .ss-bell-list { display: grid; gap: 2px; margin: 0; padding: .3rem; list-style: none; }
+  .ss-bell-item { display: flex; align-items: flex-start; gap: .65rem; width: 100%; padding: .6rem .65rem; border-radius: var(--r-field);
+                  color: var(--ink); text-align: left; text-decoration: none; }
+  .ss-bell-item:hover { background: var(--field); }
+  .ss-bell-item .ss-icon-tile { flex: none; }
+  .ss-bell-text { display: grid; gap: .1rem; flex: 1; min-width: 0; }
+  .ss-bell-title { font-weight: 600; overflow-wrap: anywhere; }
+  .ss-bell-item.is-unread .ss-bell-title { font-weight: 800; }
+  .ss-bell-note { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .8rem; color: var(--muted); }
+  .ss-bell-time { font-size: .72rem; color: var(--muted); }
+  .ss-bell-dot { flex: none; width: .5rem; height: .5rem; margin-top: .45rem; border-radius: 50%; background: var(--accent); }
+  .ss-bell-empty { margin: 0; padding: 1.5rem 1rem; text-align: center; font-size: .88rem; color: var(--muted); }
+
+  /* Ícone do selo no tamanho do texto, mesmo o SVG do app sem medida (ex. ícone mdi sem width/height). */
+  .ss-badge > svg { width: .875rem; height: .875rem; }
+  /* Selo com link (Ss::BadgeComponent href:): sem sublinhado, contorno da marca ao passar. */
+  a.ss-badge { text-decoration: none; cursor: pointer; }
+  a.ss-badge:hover { box-shadow: inset 0 0 0 1px var(--accent); }
+  a.ss-badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
