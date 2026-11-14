@@ -1,0 +1,107 @@
+/* v0.23 · o que o minha-automacao pediu para ficar sem CSS próprio (só web; o Flutter tem SsMotion e a grade do app):
+   1. movimento para ilustração e arte viva (.ss-anim-*), regulado por variáveis, parado com "menos movimento";
+   2. grade de 12 colunas com largura por tela (.ss-span-grid / .ss-span), para painéis montados pelo usuário;
+   3. papel de parede da tela no <body> (.ss-wall) e o vidro dos cards por cima dele (.ss-wall-glass).
+   Só tokens; nada de cor fixa. */
+
+/* ---- 1. Movimento ---------------------------------------------------------------------------------------
+   <svg class="ss-anim-float"> · <span class="ss-anim-spin" style="--ss-anim-dur: 2s">
+   Variáveis (todas opcionais): --ss-anim-dur, --ss-anim-delay, --ss-anim-ease, --ss-anim-iter (infinite),
+   --ss-anim-dir (normal; alternate no vai e volta), --ss-anim-fill (none; both/forwards para entrar e ficar).
+   Parâmetros de cada uma: --ss-anim-float (deslocamento), --ss-anim-dash (fim do tracejado),
+   --ss-anim-ping (cor do anel), --ss-anim-from/-from-opacity (de onde vem), --ss-anim-to/-to-opacity (para onde vai,
+   também no .ss-anim-shuttle) e o offset-path do elemento no .ss-anim-path (percorre o caminho). */
+@layer components {
+  .ss-anim-spin, .ss-anim-breathe, .ss-anim-float, .ss-anim-twinkle, .ss-anim-blink, .ss-anim-dash, .ss-anim-draw,
+  .ss-anim-ping, .ss-anim-shimmer, .ss-anim-from, .ss-anim-to, .ss-anim-shuttle, .ss-anim-path, .ss-anim-tick, .ss-anim-blip {
+    animation-duration: var(--ss-anim-dur, var(--ss-anim-dur0, 2s));
+    animation-timing-function: var(--ss-anim-ease, var(--ss-anim-ease0, ease-in-out));
+    animation-delay: var(--ss-anim-delay, 0s);
+    animation-iteration-count: var(--ss-anim-iter, var(--ss-anim-iter0, infinite));
+    animation-direction: var(--ss-anim-dir, normal);
+    animation-fill-mode: var(--ss-anim-fill, var(--ss-anim-fill0, none));
+  }
+  .ss-anim-spin { animation-name: ss-a-spin; --ss-anim-dur0: 1.2s; --ss-anim-ease0: linear; }
+  .ss-anim-breathe { animation-name: ss-a-breathe; --ss-anim-dur0: 2.4s; }
+  .ss-anim-float { animation-name: ss-a-float; --ss-anim-dur0: 6s; }
+  .ss-anim-twinkle { animation-name: ss-a-twinkle; --ss-anim-dur0: 2.4s; transform-box: fill-box; transform-origin: center; }
+  .ss-anim-blink { animation-name: ss-a-blink; --ss-anim-dur0: 3s; }
+  .ss-anim-dash { animation-name: ss-a-dash; --ss-anim-dur0: 2.4s; --ss-anim-ease0: linear; }
+  .ss-anim-draw { animation-name: ss-a-draw; --ss-anim-iter0: 1; --ss-anim-fill0: forwards; --ss-anim-ease0: ease; }
+  .ss-anim-ping { animation-name: ss-a-ping; --ss-anim-dur0: 1.6s; --ss-anim-ease0: ease-out; }
+  .ss-anim-shimmer { animation-name: ss-a-shimmer; --ss-anim-dur0: 1.4s; --ss-anim-ease0: linear; background-size: 300% 100%; }
+  .ss-anim-from { animation-name: ss-a-from; --ss-anim-dur0: .9s; --ss-anim-iter0: 1; --ss-anim-fill0: both; --ss-anim-ease0: cubic-bezier(.2, .8, .2, 1); }
+  .ss-anim-to { animation-name: ss-a-to; --ss-anim-dur0: .9s; --ss-anim-iter0: 1; --ss-anim-fill0: forwards; --ss-anim-ease0: cubic-bezier(.2, .8, .2, 1); }
+  .ss-anim-shuttle { animation-name: ss-a-shuttle; --ss-anim-dur0: 4s; }
+  .ss-anim-path { animation-name: ss-a-path; --ss-anim-dur0: 9s; --ss-anim-ease0: linear; offset-rotate: 0deg; }
+  .ss-anim-tick { animation-name: ss-a-tick; --ss-anim-dur0: 5.4s; }
+  .ss-anim-blip { animation-name: ss-a-blip; --ss-anim-dur0: 3.4s; --ss-anim-fill0: both; transform-box: fill-box; transform-origin: center; }
+}
+@keyframes ss-a-spin { to { transform: rotate(360deg); } }
+@keyframes ss-a-breathe { 50% { opacity: .78; transform: scale(.94); } }
+@keyframes ss-a-float { 50% { transform: translateY(var(--ss-anim-float, -6px)); } }
+@keyframes ss-a-twinkle { 50% { opacity: .35; transform: scale(.8); } }
+@keyframes ss-a-blink { 50% { opacity: .45; } }
+@keyframes ss-a-dash { to { stroke-dashoffset: var(--ss-anim-dash, -26); } }
+@keyframes ss-a-draw { to { stroke-dashoffset: 0; } }
+@keyframes ss-a-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ss-anim-ping, var(--danger)) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--ss-anim-ping, var(--danger)) 0%, transparent); }
+}
+@keyframes ss-a-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes ss-a-from { from { transform: var(--ss-anim-from, none); opacity: var(--ss-anim-from-opacity, 1); } }
+@keyframes ss-a-to { to { transform: var(--ss-anim-to, none); opacity: var(--ss-anim-to-opacity, 1); } }
+@keyframes ss-a-shuttle { 0%, 15%, 100% { transform: none; } 55%, 75% { transform: var(--ss-anim-to, none); } }
+@keyframes ss-a-path { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes ss-a-tick { 0%, 100% { opacity: 0; transform: translateY(6px); } 4%, 14% { opacity: 1; transform: none; } 18% { opacity: 0; transform: translateY(-6px); } }
+@keyframes ss-a-blip { 0%, 100% { opacity: 0; transform: scale(.4); } 15%, 80% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-anim-spin, .ss-anim-breathe, .ss-anim-float, .ss-anim-twinkle, .ss-anim-blink, .ss-anim-dash, .ss-anim-ping,
+  .ss-anim-shimmer, .ss-anim-from, .ss-anim-to, .ss-anim-shuttle, .ss-anim-path, .ss-anim-tick, .ss-anim-blip { animation: none !important; }
+  /* O traço desenhado aparece pronto; o que entra fica onde chegaria. */
+  .ss-anim-draw { animation: none !important; stroke-dashoffset: 0; }
+}
+
+/* ---- 2. Grade de 12 colunas com largura por tela ---------------------------------------------------------
+   <div class="ss-span-grid"><div class="ss-span" style="--ss-span-m: 12; --ss-span-t: 6; --ss-span-d: 4">…</div></div>
+   Celular < 640 px usa --ss-span-m (padrão 12), tablet --ss-span-t (6) e computador ≥ 1024 px --ss-span-d (4).
+   data-ss-screen="mobile|tablet|desktop" num ancestral força a largura daquela tela (prévia de um editor).
+   .ss-span.is-full ocupa a linha toda (pilha, coluna lateral); .ss-hide-mobile/-tablet/-desktop escondem por tela;
+   data-tone="danger|warn|ok|info" põe o contorno do tom; .ss-span-flags é o canto dos selos (.ss-badge) por cima. */
+@layer components {
+  .ss-span-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--ss-span-gap, .75rem); align-items: start; }
+  .ss-span { grid-column: span var(--ss-span-m, 12) / span var(--ss-span-m, 12); min-width: 0; container-type: inline-size; }
+  .ss-span[hidden] { display: none; }
+  .ss-span[data-tone] { position: relative; border-radius: var(--ss-card-radius, 1rem); }
+  .ss-span[data-tone="danger"] { box-shadow: 0 0 0 2px var(--danger); }
+  .ss-span[data-tone="warn"] { box-shadow: 0 0 0 2px var(--warn); }
+  .ss-span[data-tone="ok"] { box-shadow: 0 0 0 2px var(--success); }
+  .ss-span[data-tone="info"] { box-shadow: 0 0 0 2px var(--accent); }
+  .ss-span:has(> .ss-span-flags) { position: relative; }
+  .ss-span-flags { position: absolute; z-index: 2; top: -.5rem; right: .5rem; max-width: calc(100% - 1rem); display: flex; flex-wrap: wrap;
+                   justify-content: flex-end; gap: .25rem; pointer-events: none; }
+}
+@media (min-width: 640px) { .ss-span { grid-column: span var(--ss-span-t, 6) / span var(--ss-span-t, 6); } }
+@media (min-width: 1024px) { .ss-span { grid-column: span var(--ss-span-d, 4) / span var(--ss-span-d, 4); } }
+[data-ss-screen="mobile"] .ss-span { grid-column: span var(--ss-span-m, 12) / span var(--ss-span-m, 12); }
+[data-ss-screen="tablet"] .ss-span { grid-column: span var(--ss-span-t, 6) / span var(--ss-span-t, 6); }
+[data-ss-screen="desktop"] .ss-span { grid-column: span var(--ss-span-d, 4) / span var(--ss-span-d, 4); }
+.ss-span-grid > .ss-span.is-full, .ss-span-grid .ss-span-grid > .ss-span.is-full { grid-column: 1 / -1; }
+@media (max-width: 639.98px) { .ss-hide-mobile { display: none !important; } }
+@media (min-width: 640px) and (max-width: 1023.98px) { .ss-hide-tablet { display: none !important; } }
+@media (min-width: 1024px) { .ss-hide-desktop { display: none !important; } }
+
+/* ---- 3. Papel de parede da tela e vidro dos cards ---------------------------------------------------------
+   <body class="ss-wall [is-dim] [ss-wall-glass]" style="--ss-wall-img: url(…); --ss-wall: linear-gradient(…); --ss-wall-blur: 8px; --ss-wall-dim: 40%">
+   A imagem (--ss-wall-img) e/ou o fundo (--ss-wall) ficam fixos atrás de tudo, com desfoque (--ss-wall-blur); com
+   imagem entra um véu na cor da página para o texto continuar legível. .is-dim escurece por cima (--ss-wall-dim,
+   0 a 80%, ex. à noite). .ss-wall-glass (no <body> ou num trecho) troca só os tokens do card (--ss-card-bg/-border/
+   -filter): os cards da gem viram vidro sobre o papel de parede. */
+.ss-wall::before { content: ""; position: fixed; inset: calc(var(--ss-wall-blur, 0px) * -2); z-index: -1; pointer-events: none;
+                   background: var(--ss-wall-img, none) center / cover no-repeat, var(--ss-wall, none); filter: blur(var(--ss-wall-blur, 0px)); }
+.ss-wall::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--page) 45%, transparent); }
+.ss-wall:not([style*="--ss-wall-img"])::after { display: none; }
+.ss-wall.is-dim::after { display: block; background: linear-gradient(color-mix(in srgb, black var(--ss-wall-dim, 0%), transparent), color-mix(in srgb, black var(--ss-wall-dim, 0%), transparent)),
+                                                     color-mix(in srgb, var(--page) 30%, transparent); }
+.ss-wall-glass { --ss-card-bg: color-mix(in srgb, var(--surface) 64%, transparent); --ss-card-filter: blur(16px) saturate(1.2);
+                 --ss-card-border: color-mix(in srgb, var(--surface) 55%, transparent); }

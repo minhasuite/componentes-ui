@@ -45,6 +45,8 @@
 @import "./v21_web.css";
 /* v0.22: tela de entrada "Folhinha" (folha pendurada, parede e bloco de destacar) e a fonte de exibição. */
 @import "./v22_web.css";
+/* v0.23: movimento para ilustração, grade de 12 colunas por tela e papel de parede (o que o minha-automacao pedia em CSS próprio). */
+@import "./v23_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
