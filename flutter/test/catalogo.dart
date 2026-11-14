@@ -41,6 +41,7 @@ import 'catalogo_v20.dart';
 import 'catalogo_v21.dart';
 import 'catalogo_v22.dart';
 import 'catalogo_v23.dart';
+import 'catalogo_v24.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -952,6 +953,7 @@ final _catalogo = comV08(<Componente>[
   ...catalogoV21,
   ...catalogoV22,
   ...catalogoV23,
+  ...catalogoV24,
 ]);
 
 const _verde = SsBrand(

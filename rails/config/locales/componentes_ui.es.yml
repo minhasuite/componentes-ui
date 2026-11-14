@@ -34,6 +34,15 @@ es:
       empty: vacío
       label: Historial de cambios
       to: a
+    bell:
+      all: Ver todos los avisos
+      empty: No hay avisos aquí.
+      loading: Cargando…
+      read_all: Marcar todos como leídos
+      settings: Preferencias de avisos
+      title: Avisos
+      unread: "%{count} sin leer"
+      unread_one: sin leer
     block_list:
       delete: Eliminar
       duplicate: Duplicar

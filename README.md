@@ -643,6 +643,25 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## (próxima, branch `shell-sino`) sino de avisos no topo e o selo como componente
+
+Pedido do minha-automacao (notificações no padrão de mercado e selos iguais em toda tela).
+
+- **Web** `Ss::NotificationBellComponent` (par do `SsNotificationBell`): o sino com o contador de não lidos (0 some,
+  acima de 99 vira "99+") e o popover com os últimos avisos, "marcar todas como lidas" (`read_all_href:`, PATCH),
+  engrenagem das preferências (`settings_href:`) e "ver todos" (`all_href:`). Lista por `items:` ou por `src:`
+  (`<turbo-frame>` lazy, recarregado ao reabrir; a URL devolve o `Ss::NotificationListComponent.new(frame_id:, items:)`).
+  Contador vivo por `count_url:` (JSON `{ count }`) a cada `every:` ms, com a aba visível, ao voltar e ao abrir;
+  controller `ss-bell` dispara `ss-bell:change` (`{ count }`). Item com `method:` vira `button_to` (abrir marca como lido).
+- `Ss::AppShellComponent#with_bell { … }`: o sino no canto direito da barra de cima (computador e celular), entre o
+  `top` e o `user`; a barra do computador não some com só o sino.
+- `Ss::BadgeComponent` (par do `SsBadge`): o `.ss-badge` como componente (tone:, icon:, dot:, solid:, mono:, href:
+  com `link_data:`); `a.ss-badge` ganhou o contorno da marca ao passar.
+- **Flutter** `SsNotificationBell(count:, onPressed:)`: o `SsIconButton` com o número no selo e o nome lido com a
+  contagem (`label:`, `unreadLabel:`).
+- Vitrine "Sino de avisos e selo (v0.24)"; testes em `rails/sample/test/components/v24_web_test.rb` e
+  `flutter/test/v24_test.dart`; CSS em `v24_web.css`; catálogo `ss-bell`, `ss-badge-c` e `ss-notification-bell`.
+
 ## (próxima) área segura do celular (`viewport-fit=cover`)
 
 Com `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (PWA instalada no

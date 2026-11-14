@@ -43,6 +43,8 @@ module Ss
   #   ícone de saída ao lado do nome e "(abre em outra aba)" para o leitor de tela.
   # - Grupo com ícone: { title: "Cadastros", icon: ss_icon("folder", size: nil), items: [...] }; o
   #   ícone vai antes do título (com o menu recolhido o grupo segue sendo só a linha divisória).
+  # - v0.24: with_bell { render Ss::NotificationBellComponent.new(...) } = o sino de avisos no canto direito da barra
+  #   de cima (computador e celular), entre o top e o user; tira "Avisos" do menu lateral.
   class AppShellComponent < BaseComponent
     COOKIE = "ss_shell_collapsed".freeze
 
@@ -52,6 +54,7 @@ module Ss
     renders_one :top
     renders_one :top_mobile
     renders_one :side_footer
+    renders_one :bell
 
     attr_reader :nav, :tenants
 
@@ -103,7 +106,7 @@ module Ss
     end
 
     # Nada para a barra de cima do computador: ela some (CSS, a partir de 1024 px).
-    def top_bare? = !@search && !top? && !user?
+    def top_bare? = !@search && !top? && !user? && !bell?
 
     def top_class = ["ss-shell-top", ("is-bare" if top_bare?)].compact.join(" ")
 
