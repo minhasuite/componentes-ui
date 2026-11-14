@@ -1,0 +1,25 @@
+<%# titulo: Painel e ilustração (v0.23) | grupo: Casa e automação | ordem: 23 %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Seletor segmentado") %>
+    <%= render Ss::SegmentedComponent.new(label: "Período", items: [{ label: "Dia", href: "#", current: true }, { label: "Semana", href: "#" }, { label: "Mês", href: "#" }]) %>
+    <%= render Ss::SegmentedComponent.new(label: "Andar", scroll: true, items: [{ label: "Térreo", pressed: true }, { label: "1º andar" }, { label: "Garagem" }, { label: "Quintal" }]) %>
+  </section>
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Chips de marcar e botão sem desenho") %>
+    <%= ss_form_with url: "#", method: :get do |f| %>
+      <div class="ss-chips"><%= f.ss_chip_check_box "rooms[]", label: "Sala", checked_value: "sala", unchecked_value: nil, checked: true %><%= f.ss_chip_check_box "rooms[]", label: "Cozinha", checked_value: "cozinha", unchecked_value: nil %></div>
+      <%= f.ss_chip_radio_buttons :mode, [["Limpar", "clean"], ["Aspirar", "vacuum"]], label: "Modo", checked: "vacuum" %>
+      <%= render(Ss::ButtonComponent.new(variant: :bare, type: :button)) { tag.div("Card inteiro clicável", class: "ss-card ss-card-pad") } %>
+    <% end %>
+  </section>
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Movimento e grade por tela") %>
+    <div class="flex gap-4"><span class="ss-anim-spin inline-block"><%= ss_icon("arrow-path") %></span><span class="ss-anim-float inline-block"><%= ss_icon("home") %></span><span class="ss-anim-breathe inline-block"><%= ss_icon("light-bulb") %></span></div>
+    <div class="ss-span-grid">
+      <% [[12, 6, 6], [12, 6, 3], [12, 12, 3]].each_with_index do |(m, t, d), i| %>
+        <div class="ss-span" style="--ss-span-m: <%= m %>; --ss-span-t: <%= t %>; --ss-span-d: <%= d %>"><div class="ss-card ss-card-pad">Card <%= i + 1 %></div></div>
+      <% end %>
+    </div>
+  </section>
+</div>

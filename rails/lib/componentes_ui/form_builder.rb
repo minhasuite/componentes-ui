@@ -87,7 +87,7 @@ module ComponentesUi
     # icon: antes do texto; o resto (id:, data:, checked:, disabled:) vai no input.
     def ss_chip_check_box(method, label: nil, checked_value: "1", unchecked_value: "0", icon: nil, **opts)
       ss_no_wrap do
-        box = check_box(method, opts.merge(multiple: opts.fetch(:multiple, method.to_s.end_with?("[]"))), checked_value, unchecked_value)
+        box = check_box(method, opts, checked_value, unchecked_value)
         @template.tag.label(class: "ss-chip") { @template.safe_join([box, ss_chip_icon(icon), label || ss_human(method)].compact) }
       end
     end

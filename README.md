@@ -643,6 +643,32 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.23.0: relógio do pacote, seletor segmentado, chips de marcar, botão sem desenho, movimento, grade por tela e papel de parede
+
+O que o minha-automacao (web e app) pedia para ficar 100% na gem, sem CSS próprio e sem `<button>`/`<input>` à mão.
+Tudo aditivo; nada quebra. Catálogo: `flutter/test/catalogo_v23.dart` (`ss-time-picker`) e `rails/catalogo/index.html`
+(`ss-segmented`, `ss-btn-bare`, `ss-chip-check`, `ss-anim`, `ss-span-grid`, `ss-wall`, de `rails/sample/script/catalogo_v023.rb`);
+vitrine Rails "Painel e ilustração (v0.23)"; testes em `flutter/test/v23_test.dart` e `rails/sample/test/components/v23_web_test.rb`.
+CSS em `v23_web.css`.
+
+- **Flutter:** `showSsTimePicker(context, initialTime:, helpText:, confirmText:, cancelText:, initialEntryMode:, use24h: true)`,
+  par do `showSsDatePicker` e no lugar do `showTimePicker` cru (o verificador já o reprovava). Texto novo `SsStrings.pickTime`
+  ("Escolher hora" / "Pick a time" / "Elegir hora"). O `SsTimeField` e o chip de hora do `SsDateTimeField` passam a usá-lo.
+- **`Ss::SegmentedComponent(items:, label:, scroll:)`** ↔ `SsSegmented`: o `.ss-seg` montado pela gem. Item com `href:` vira `<a>`
+  (`aria-current`), sem ele `<button>` (`aria-pressed`; `type: :submit` com `name:`/`value:`). `aria-selected` também marca.
+  `scroll: true` (`.ss-seg.is-scroll`): itens do tamanho do texto numa faixa que rola, o escolhido em `--surface` (abas leves).
+- **`Ss::ButtonComponent(variant: :bare)`** ↔ `SsPressable`: `.ss-btn-bare`, botão sem desenho para conteúdo livre (card, amostra).
+- **`f.ss_chip_check_box` / `f.ss_chip_radio_buttons`** ↔ `SsFilterChip`: o `.ss-chip` com o input dentro (desenho da v0.10.3).
+- **Movimento (só web):** `.ss-anim-spin|breathe|float|twinkle|blink|dash|draw|ping|shimmer|from|to|shuttle|path|tick|blip`, reguladas
+  por `--ss-anim-dur/-delay/-ease/-iter/-dir/-fill` e pelas próprias (`--ss-anim-float`, `-dash`, `-ping`, `-from`, `-to`); paradas
+  com "menos movimento". Para ilustração e arte viva do produto sem `@keyframes` próprio.
+- **Grade por tela (só web):** `.ss-span-grid` + `.ss-span` (`--ss-span-m/-t/-d`, celular/tablet/computador), `data-ss-screen` num
+  ancestral força a tela, `.is-full`, `.ss-hide-mobile|tablet|desktop`, `data-tone` e `.ss-span-flags`.
+- **Papel de parede (só web):** `.ss-wall` no `<body>` (`--ss-wall-img`, `--ss-wall`, `--ss-wall-blur`, `.is-dim` + `--ss-wall-dim`) e
+  `.ss-wall-glass` (cards de vidro pelos tokens `--ss-card-*`).
+
+**Padrões que mudaram.** O relógio do `SsTimeField`/`SsDateTimeField` ganha os textos do `SsStrings` e fica sempre em 24 h.
+
 ## v0.22.1: a barra fixa com `always: true` não some mais
 
 Correção achada no meu-gestor web (Revisão de preços, "Enviar os marcados"): com `Ss::StickyActionBarComponent(always: true)`,
@@ -1357,6 +1383,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.23.0` (14/11/2026): seção "v0.23.0". `showSsTimePicker`, `Ss::SegmentedComponent`, `ButtonComponent(variant: :bare)`, `f.ss_chip_check_box`/`ss_chip_radio_buttons`, `.ss-anim-*`, `.ss-span-grid` e `.ss-wall`. Nada quebra.
 - `v0.22.1` (14/11/2026): seção "v0.22.1". `StickyActionBarComponent(always: true)` não some ao voltar o campo ao original, em Cancelar nem ao enviar (`ss-dirty` com `always`). Nada quebra.
 - `v0.22.0` (não lançada): seção "v0.22.0". Tela de entrada "Folhinha": `SsAuthLayout.folhinha(variant:)` ↔ `Ss::AuthLayoutComponent(variant: :sheet | :wall | :pad)`, fonte de exibição (`AppTheme.display` ↔ `--ss-font-display` + `ss_display_font_tag`) e `SsStrings.authPartOf` ↔ `componentes_ui.auth.*`. Nada quebra.
 - `v0.21.0` (não lançada, branch `beleza`): seção "v0.21.0". `SsCue` ↔ `.ss-cue` + `ss-cue` + `ss_cue_data` (ligou, abriu, chegou; menos movimento desliga) e `SsDeviceTile(level:)` ↔ `DeviceTileComponent(level:)` (brilho real da lâmpada). Nada quebra.
