@@ -81,6 +81,34 @@ module ComponentesUi
       end
     end
 
+    # v0.23 (par do SsFilterChip): caixa de marcar em forma de chip (.ss-chip com o input dentro; marcada fica no
+    # degradê), para filtros e escolhas curtas lado a lado. Sem o .ss-field em volta: ponha num .ss-chips/flex.
+    #   <%= f.ss_chip_check_box "rooms[]", label: "Sala", checked_value: "sala", unchecked_value: nil, checked: true %>
+    # icon: antes do texto; o resto (id:, data:, checked:, disabled:) vai no input.
+    def ss_chip_check_box(method, label: nil, checked_value: "1", unchecked_value: "0", icon: nil, **opts)
+      ss_no_wrap do
+        box = check_box(method, opts.merge(multiple: opts.fetch(:multiple, method.to_s.end_with?("[]"))), checked_value, unchecked_value)
+        @template.tag.label(class: "ss-chip") { @template.safe_join([box, ss_chip_icon(icon), label || ss_human(method)].compact) }
+      end
+    end
+
+    # Grupo de chips de uma escolha só (radio): f.ss_chip_radio_buttons :modo, [["Limpar", "clean"], ["Aspirar", "vacuum"]],
+    # label: (legenda, pode ficar só para o leitor com hide_label: true), checked: sem model.
+    def ss_chip_radio_buttons(method, choices, label: nil, hide_label: false, checked: NO_CHECKED, wrapper_class: nil, **opts)
+      ss_no_wrap do
+        items = choices.map do |text, value|
+          value = text if value.nil?
+          ropts = opts.dup
+          ropts[:checked] = checked.to_s == value.to_s unless checked.equal?(NO_CHECKED)
+          @template.tag.label(class: "ss-chip") { @template.safe_join([radio_button(method, value, ropts), text]) }
+        end
+        legend = (@template.tag.legend(label, class: ["ss-label", ("ss-sr" if hide_label)]) if label)
+        @template.tag.fieldset(class: ["ss-fieldset", "ss-chip-group", wrapper_class]) do
+          @template.safe_join([legend, @template.tag.div(@template.safe_join(items), class: "ss-chips")].compact)
+        end
+      end
+    end
+
     # f.ss_collection_radio_buttons :plano_id, Plano.all, :id, :nome, label:
     def ss_collection_radio_buttons(method, collection, value_method, text_method, **opts)
       ss_radio_buttons(method, collection.map { |o| [o.public_send(text_method), o.public_send(value_method)] }, **opts)
@@ -108,6 +136,13 @@ module ComponentesUi
     end
 
     private
+
+    def ss_chip_icon(icon)
+      return nil if icon.blank?
+      return icon if icon.respond_to?(:html_safe?) && icon.html_safe?
+
+      @template.ss_icon(icon.to_s, size: :xs)
+    end
 
     # Monta o .ss-field: rótulo, (prefixo) input (sufixo), ajuda, contador e erro.
     def ss_field(method, opts)

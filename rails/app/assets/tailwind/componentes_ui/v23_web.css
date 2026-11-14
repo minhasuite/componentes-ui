@@ -105,3 +105,26 @@
                                                      color-mix(in srgb, var(--page) 30%, transparent); }
 .ss-wall-glass { --ss-card-bg: color-mix(in srgb, var(--surface) 64%, transparent); --ss-card-filter: blur(16px) saturate(1.2);
                  --ss-card-border: color-mix(in srgb, var(--surface) 55%, transparent); }
+
+/* ---- 4. Peças sem <button>/<input> à mão (v0.23) -----------------------------------------------------------
+   Ss::ButtonComponent(variant: :bare) ↔ SsPressable: botão sem desenho para conteúdo que já é a peça.
+   Ss::SegmentedComponent ↔ SsSegmented: o .ss-seg; aria-selected também marca (abas do JS) e .is-scroll deixa os itens
+   do tamanho do texto numa faixa que rola, com o escolhido em --surface (abas leves).
+   f.ss_chip_check_box / f.ss_chip_radio_buttons ↔ SsFilterChip: o .ss-chip com o input dentro (desenho da v0.10.3). */
+@layer components {
+  .ss-btn-bare { display: block; width: 100%; padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit;
+                 cursor: pointer; border-radius: var(--ss-card-radius, 1rem); transition: scale var(--ss-dur-indicator, .2s) var(--ss-bounce, ease); }
+  .ss-btn-bare:active { scale: .98; }
+  .ss-btn-bare:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-btn-bare:disabled { cursor: default; opacity: .55; }
+  .ss-seg:has(> :nth-child(2)[aria-selected="true"]) { --i: 1; }
+  .ss-seg:has(> :nth-child(3)[aria-selected="true"]) { --i: 2; }
+  .ss-seg:has(> :nth-child(4)[aria-selected="true"]) { --i: 3; }
+  .ss-seg > [aria-selected="true"] { color: var(--accent); font-weight: 800; }
+  .ss-seg.is-scroll { display: flex; gap: .25rem; width: max-content; max-width: 100%; height: auto; overflow-x: auto; scrollbar-width: none; }
+  .ss-seg.is-scroll::before { content: none; }
+  .ss-seg.is-scroll > * { flex: none; padding: .3rem .75rem; border-radius: 999px; white-space: nowrap; font-size: .8rem; font-weight: 700; color: var(--muted); }
+  .ss-seg.is-scroll > :is([aria-pressed="true"], [aria-current="true"], [aria-selected="true"]) { color: var(--ink); background: var(--surface); box-shadow: var(--shadow-card); }
+  .ss-chip-group { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: .4rem; }
+  .ss-chip-group > .ss-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+}

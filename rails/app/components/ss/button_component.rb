@@ -23,9 +23,13 @@ module Ss
   # cor funda da marca (.is-solid); stacked: true = ícone em cima do rótulo (.is-stacked), para os atalhos
   # lado a lado no herói:
   #   render Ss::ButtonComponent.new(label: "Voo", icon: "paper-airplane", variant: :on_grad, solid: true, stacked: true, href: "#")
+  # v0.23 (par do SsPressable): variant: :bare = botão sem desenho (.ss-btn-bare) para conteúdo livre que já é a
+  # peça (um card, uma amostra, uma linha): só o foco, o cursor e o toque que encolhe.
+  #   render(Ss::ButtonComponent.new(variant: :bare, type: :submit, name: "style", value: "glass")) { render Ss::... }
   class ButtonComponent < BaseComponent
     VARIANTS = { primary: "ss-btn ss-btn-primary", outline: "ss-btn ss-btn-outline", ghost: "ss-btn ss-btn-ghost",
-                 danger: "ss-btn ss-btn-danger", on_grad: "ss-btn is-on-grad", chip: "ss-chip", item: "ss-item" }.freeze
+                 danger: "ss-btn ss-btn-danger", on_grad: "ss-btn is-on-grad", chip: "ss-chip", item: "ss-item",
+                 bare: "ss-btn-bare" }.freeze
     METHODS = %w[post patch put delete].freeze
 
     def initialize(label: nil, icon: nil, trailing_icon: nil, href: nil, method: nil, variant: :primary, size: :md, block: false,
@@ -54,11 +58,11 @@ module Ss
 
     def css
       sm = case @variant
-           when :chip, :item then nil
+           when :chip, :item, :bare then nil
            else ("ss-btn-sm" if @size == :sm)
            end
       classes(VARIANTS[@variant], sm, ("is-block" if @block), ("is-danger" if @tone.to_s == "danger"),
-              ("is-solid" if @solid && @variant == :on_grad), ("is-stacked" if @stacked && !%i[chip item].include?(@variant)))
+              ("is-solid" if @solid && @variant == :on_grad), ("is-stacked" if @stacked && !%i[chip item bare].include?(@variant)))
     end
 
     def attrs(extra_data = {})
