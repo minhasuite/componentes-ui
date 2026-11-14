@@ -75,6 +75,8 @@
   @media (max-width: 960px) {
     .ss-auth.is-wall { grid-template-columns: 1fr; }
     .ss-auth-wall { padding: 16px; }
+    /* v0.23.6: no celular a folha perdia a margem de cima (margin: auto vira 0) e o furo do prego subia na marca. */
+    .ss-auth-wall .ss-auth-sheet { margin: 34px 0 0; }
     .ss-auth-wall .ss-auth-sheet { width: 100%; }
     .ss-auth-wall .ss-auth-head { padding-top: 26px; }
     .ss-auth-wall .ss-auth-day { font-size: 8rem; }
