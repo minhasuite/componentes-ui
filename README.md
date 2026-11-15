@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.25.0
+      ref: v0.25.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.1"
 ```
 
 ```css
@@ -643,6 +643,20 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.25.1: o rótulo da barra de abas volta para a Manrope
+
+Regressão da v0.25.0: o rótulo das abas da `SsNavBar` ficava num `AnimatedDefaultTextStyle` com um `TextStyle` novo, sem
+família; ele troca o estilo herdado inteiro, então o rótulo saía na fonte do sistema no celular (e em caixinhas nas capturas
+de teste, que não têm fonte do sistema). Agora o estilo do rótulo leva a família do tema
+(`Theme.of(context).textTheme.bodyMedium?.fontFamily`, o mesmo padrão do `SsTabBar`). Teste que reproduz (falha na v0.25.0):
+"rótulo da aba usa a fonte do tema" em `flutter/test/ss_nav_bar_test.dart`. Conferido no Flutter 3.44 e 3.47.9. Só Flutter;
+o web não muda.
+
+**Como cada produto adota:** subir a tag; nada de código. Apps com `SsNavBar` na v0.25.0 (minhas-vendas-app, meu-gestor-app)
+devem subir; conferir uma captura da barra com o rótulo na Manrope.
+
+**Padrões que mudaram.** Nenhum (volta ao desenho pretendido na v0.25.0).
+
 ## v0.25.0: rodada 5 da auditoria de UX (grupo recolhível no celular e a barra de abas do app)
 
 Três achados de peça genérica: o grupo recolhível que alargava a página no celular (minhas-vendas, onda 2: Configurações ›
@@ -1522,6 +1536,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.25.1` (14/11/2026): seção "v0.25.1". O rótulo das abas da `SsNavBar` volta a usar a Manrope do tema (na v0.25.0 caía na fonte do sistema). Nada quebra.
 - `v0.25.0` (14/11/2026): seção "v0.25.0" (rodada 5 da auditoria de UX). `CollapsibleComponent`/`SsCollapsible` com título em até 2 linhas que não alarga a página; `SsNavBar` com o rótulo da aba ativa, anel `SsNavBar.ringColor`/`ringWidth` (3:1 em claro, escuro e OLED), miolo `field` no escuro, ação de tocar no nó de cada aba e o ícone com contagem centrado. Nada quebra na API.
 - `v0.24.0` (14/11/2026): seção "v0.24.0" (auditoria de UX de novembro). `DataTableComponent(mobile: :compact)` + `t.column(mobile:)` ↔ `SsDataTable(mobile: SsDataTableMobile.compact)` + `SsDataColumn(mobile: SsDataSlot.*)`; `AppShellComponent` com troca de empresa só com 2+ empresas e nome com reticências (`single_tenant:`); `SettingsLayoutComponent` com `form:`/`save_label:`/`save_always:` e `href:`/`current:` por seção; `.ss-actions` em faixa de largura inteira e folga de foco das barras fixas e do botão flutuante; paleta de comandos fecha com um Esc; chat que não transborda; alvo de toque de 44 px no celular; `ss_form_with(validate:)` + Stimulus `ss-validate`; `AiInsightCardComponent(cancel:, thinking_hint:)` ↔ `SsAiInsightCard` (novo); `SsFab.clearance`/`safeListPadding(fab:)`; `SsButton` como nó próprio de acessibilidade; `SsMenuView`, `SsChoiceField`, `SsDateField` e `SsTimeField` não devolvem o foco ao campo de texto. A API não quebra; ver "Padrões que mudaram".
 - `v0.23.6` (14/11/2026): tela de entrada na parede (`Ss::AuthLayoutComponent(variant: :wall)`) no celular: a folha volta a ter a margem de cima (o `margin: auto` virava 0) e o furo do prego não sobe na marca. Só CSS; nada quebra.

@@ -1,5 +1,6 @@
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _abas = [
@@ -58,5 +59,17 @@ void main() {
     await t.pumpWidget(_app(1, (_) {}));
     expect(find.bySemanticsLabel('Pedidos, aba 2 de 3'), findsOneWidget);
     h.dispose();
+  });
+
+  testWidgets('rótulo da aba usa a fonte do tema (Manrope), não a do sistema', (t) async {
+    await t.pumpWidget(_app(0, (_) {}));
+    await t.pumpAndSettle();
+    final ctx = t.element(find.byType(SsNavBar));
+    final familia = Theme.of(ctx).textTheme.bodyMedium?.fontFamily;
+    expect(familia, contains('Manrope'));
+    for (final rotulo in ['Início', 'Pedidos', 'Mais']) {
+      final p = t.renderObject<RenderParagraph>(find.text(rotulo));
+      expect(p.text.style?.fontFamily, familia, reason: rotulo);
+    }
   });
 }

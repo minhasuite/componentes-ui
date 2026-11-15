@@ -346,9 +346,13 @@ class _Tab extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             // v0.25: o rótulo fica sempre, e o da aba atual na tinta da marca, embaixo do círculo.
+            // v0.25.1: o AnimatedDefaultTextStyle troca o estilo herdado inteiro; sem a família do
+            // tema o rótulo caía na fonte do sistema (e em caixinhas nas capturas de teste).
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: TextStyle(
+                fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                fontFamilyFallback: Theme.of(context).textTheme.bodyMedium?.fontFamilyFallback,
                 color: selected ? c.accentText : c.muted,
                 fontSize: AppType.label,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
