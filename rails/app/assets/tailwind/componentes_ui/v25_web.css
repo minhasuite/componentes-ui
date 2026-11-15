@@ -1,0 +1,10 @@
+/* v0.25 · auditoria de UX de novembro, rodada 5 (minhas-vendas, onda 2):
+   Ss::CollapsibleComponent no celular. O título era uma linha só (nowrap): a largura mínima do grupo virava a do título
+   inteiro e, dentro de grid/flex (Configurações › Vendas e preços), empurrava a página para 735 px num celular de 390.
+   Agora o título quebra (até 2 linhas, depois reticências; o texto inteiro fica no title=) e o grupo cabe no pai. */
+@layer components {
+  .ss-collapse { min-width: 0; max-width: 100%; }
+  .ss-collapse-title { flex: 0 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; overflow: hidden; text-overflow: ellipsis;
+                       display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+  .ss-collapse-head > :is(.ss-collapse-chev, .ss-collapse-ico, .ss-collapse-count, .ss-collapse-label) { flex: none; white-space: nowrap; }
+}

@@ -6,6 +6,9 @@ module Ss
   #     …
   #   end
   #
+  # v0.25: o título quebra linha (até 2, depois reticências, com o texto inteiro no title=) e o grupo
+  # não alarga a página no celular (v25_web.css).
+  #
   # tone do selo: :accent | :info | :warn | :success | :danger. icon: svg antes do título.
   class CollapsibleComponent < BaseComponent
     TONES = %i[accent info warn success danger neutral].freeze
@@ -25,7 +28,7 @@ module Ss
             safe_join([
               tag.span(Ss::CasaIcons.svg(:chevron), class: "ss-collapse-chev", "aria-hidden": true),
               (tag.span(@icon.to_s.html_safe, class: "ss-collapse-ico", "aria-hidden": true) if @icon),
-              tag.span(title, class: "ss-collapse-title"),
+              tag.span(title, class: "ss-collapse-title", title: title),
               (tag.span(count, class: "ss-collapse-count num") unless count.nil?),
               (tag.span(label, class: "ss-collapse-label", data: { tone: @tone }) if label)
             ].compact)

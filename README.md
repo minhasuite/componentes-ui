@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.24.0
+      ref: v0.25.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.24.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.0"
 ```
 
 ```css
@@ -643,6 +643,39 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.25.0: rodada 5 da auditoria de UX (grupo recolhível no celular e a barra de abas do app)
+
+Três achados de peça genérica: o grupo recolhível que alargava a página no celular (minhas-vendas, onda 2: Configurações ›
+Vendas e preços em 390 px) e a barra de abas do app (meu-gestor-app: a aba ativa sem rótulo; o círculo dela sumindo no
+escuro). Testes que reproduzem cada achado (falham na v0.24.0): `rails/sample/test/components/v25_web_test.rb` e
+`flutter/test/v25_test.dart`. Catálogo: `flutter/test/catalogo_v25.dart` (estados e comportamentos novos em `ss-nav-bar` e
+`ss-collapsible`) e a seção `ss-collapsible-v25` em `rails/catalogo/index.html` (`rails/sample/script/catalogo_v025.rb`).
+CSS em `v25_web.css`; conferido no Chromium em 390 e 1440 (claro e escuro) e no Flutter 3.44 e 3.47.9.
+
+| Achado | Rails / CSS | Flutter |
+|---|---|---|
+| Título do grupo recolhível não quebra e alarga a página (735 px num celular de 390) | `CollapsibleComponent`: o `.ss-collapse-title` quebra linha (até 2, depois reticências; `overflow-wrap: anywhere`) com o texto inteiro no `title=`; `.ss-collapse` com `min-width: 0; max-width: 100%` (cabe no pai mesmo como item de grid/flex); seta, contagem e selo não encolhem | `SsCollapsible`: título em até 2 linhas (era 1), o mesmo do web |
+| A aba ativa da barra vira só ícone (sem "Hoje") | — (o web não tem barra de abas embaixo) | `SsNavBar`: **todas as abas mostram o rótulo**; o da aba atual fica no lugar dela, embaixo do círculo, na tinta da marca (`accentText`, negrito); só o ícone dela sai da barra (está no círculo). Leitor de tela: "Hoje, aba 1 de 4", selecionada, agora **com a ação de tocar** no nó da aba (o `excludeSemantics` tirava a do `InkResponse`) |
+| O círculo da aba ativa (surface sobre surface) quase some no escuro | — | `SsNavBar`: anel de 2 px (`SsNavBar.ringWidth`) na `SsNavBar.ringColor(c)` = `c.inkFor(c.accent)` (≥ 4,5:1 sobre a barra e a página em todas as 30 paletas, claro, escuro e OLED; 7:1 no alto contraste; o mínimo de borda é 3:1) e, no escuro/OLED, miolo em `field` (um degrau acima da barra). De quebra: com contagem (`badge:`) na aba atual, o ícone do círculo ficava preso no canto de cima; agora fica no centro |
+
+**Como cada produto adota** (subir a tag; nada de código obrigatório):
+
+- **minhas-vendas (web):** Configurações › Vendas e preços ("Avançado: kit, margem e vencimento") deixa de alargar a página
+  em 390 px só com a tag. Conferir em 390 e 1440 as telas com `CollapsibleComponent`.
+- **meu-gestor-app:** a barra de abas mostra "Hoje" na aba ativa e o círculo aparece no escuro/OLED só com a tag. Teste de
+  widget do produto que procurava o rótulo da aba atual com `findsNothing` (ou que contava `find.text('Hoje')`) passa a achá-lo.
+- **Outros apps com `SsNavBar`** (meu-financeiro, meu-personal, meu-cultivo, minhas-compras, minhas-viagens, minhas-vendas-app):
+  recebem o rótulo da aba ativa, o anel e o ícone centrado ao subir a tag; conferir a barra em claro, escuro e OLED.
+- **Outros webs com `CollapsibleComponent`:** o título passa a quebrar em vez de cortar numa linha.
+
+**Padrões que mudaram.**
+
+- **`SsNavBar`**: a aba atual mostra o rótulo (antes o lugar dela na barra ficava vazio) e o círculo ganha anel na cor da
+  marca em todo tema (no claro também: o anel substitui a separação que só a sombra fazia); no escuro o miolo do círculo é
+  `field` em vez de `surface`. Cada aba no leitor de tela agora tem a ação de tocar.
+- **`SsCollapsible` / `CollapsibleComponent`**: título em até 2 linhas (antes 1 linha com reticências; no web o nowrap
+  podia alargar a página).
+
 ## v0.24.0: o que a auditoria de UX de novembro achou nas peças genéricas (minhas-vendas e meu-gestor)
 
 Os achados marcados como componentes-ui nos relatórios `minhas-vendas-workspace/docs/auditoria-ux-2026-11/RELATORIO.md`
@@ -1489,6 +1522,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.25.0` (14/11/2026): seção "v0.25.0" (rodada 5 da auditoria de UX). `CollapsibleComponent`/`SsCollapsible` com título em até 2 linhas que não alarga a página; `SsNavBar` com o rótulo da aba ativa, anel `SsNavBar.ringColor`/`ringWidth` (3:1 em claro, escuro e OLED), miolo `field` no escuro, ação de tocar no nó de cada aba e o ícone com contagem centrado. Nada quebra na API.
 - `v0.24.0` (14/11/2026): seção "v0.24.0" (auditoria de UX de novembro). `DataTableComponent(mobile: :compact)` + `t.column(mobile:)` ↔ `SsDataTable(mobile: SsDataTableMobile.compact)` + `SsDataColumn(mobile: SsDataSlot.*)`; `AppShellComponent` com troca de empresa só com 2+ empresas e nome com reticências (`single_tenant:`); `SettingsLayoutComponent` com `form:`/`save_label:`/`save_always:` e `href:`/`current:` por seção; `.ss-actions` em faixa de largura inteira e folga de foco das barras fixas e do botão flutuante; paleta de comandos fecha com um Esc; chat que não transborda; alvo de toque de 44 px no celular; `ss_form_with(validate:)` + Stimulus `ss-validate`; `AiInsightCardComponent(cancel:, thinking_hint:)` ↔ `SsAiInsightCard` (novo); `SsFab.clearance`/`safeListPadding(fab:)`; `SsButton` como nó próprio de acessibilidade; `SsMenuView`, `SsChoiceField`, `SsDateField` e `SsTimeField` não devolvem o foco ao campo de texto. A API não quebra; ver "Padrões que mudaram".
 - `v0.23.6` (14/11/2026): tela de entrada na parede (`Ss::AuthLayoutComponent(variant: :wall)`) no celular: a folha volta a ter a margem de cima (o `margin: auto` virava 0) e o furo do prego não sobe na marca. Só CSS; nada quebra.
 - `v0.23.5` (14/11/2026): área segura do celular (`viewport-fit=cover`) na moldura, toasts, barras e gavetas. Nada quebra.

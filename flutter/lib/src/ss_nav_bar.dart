@@ -50,6 +50,9 @@ class SsNavCenter {
 }
 
 /// Barra de abas com o item atual num círculo encaixado num recorte da barra.
+/// Todas as abas mostram o rótulo: o da aba atual fica no lugar dela, embaixo
+/// do círculo, na tinta da marca (v0.25; antes a aba atual era só o ícone).
+/// O círculo tem um anel de [ringWidth] na [ringColor] (3:1 em todo tema).
 /// Ao trocar de aba, o círculo pula em arco até o item novo: achata antes de
 /// sair, estica no ar e achata de novo ao pousar; o recorte fica raso enquanto
 /// ele está no ar e afunda quando ele pousa.
@@ -77,6 +80,14 @@ class SsNavBar extends StatefulWidget {
 
   /// Quanto o círculo passa da borda de cima da barra.
   static const rise = 22.0;
+
+  /// v0.25: cor do anel do círculo da aba atual: a marca na variante de tinta
+  /// ([SsColors.inkFor]: 4,5:1 sobre surface, página e field; 7:1 no alto
+  /// contraste), então passa os 3:1 de borda (WCAG 1.4.11) em claro, escuro e OLED.
+  static Color ringColor(SsColors c) => c.inkFor(c.accent);
+
+  /// Espessura do anel do círculo da aba atual.
+  static const ringWidth = 2.0;
 
   static const _circle = 52.0;
   static const _gap = 6.0;
@@ -223,18 +234,25 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
                         child: Container(
                           width: SsNavBar._circle,
                           height: SsNavBar._circle,
+                          // v0.25: anel na tinta da marca (3:1 sobre a barra e a página em
+                          // todo tema e paleta) e, no escuro, o miolo um degrau acima (field):
+                          // surface sobre surface sumia no escuro e no OLED.
                           decoration: BoxDecoration(
-                            color: c.surface,
+                            color: c.isDark ? c.field : c.surface,
                             shape: BoxShape.circle,
+                            border: Border.all(color: SsNavBar.ringColor(c), width: SsNavBar.ringWidth),
                             boxShadow: c.primaryShadow,
                           ),
                           child: Opacity(
                             opacity: iconIn.clamp(0.0, 1.0),
                             child: Transform.scale(
                               scale: .5 + .5 * iconIn,
-                              child: SsNavItem.withBadge(
-                                Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
-                                current.badge,
+                              // v0.25: Center (com contagem, o Badge ia para o canto de cima).
+                              child: Center(
+                                child: SsNavItem.withBadge(
+                                  Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
+                                  current.badge,
+                                ),
                               ),
                             ),
                           ),
@@ -311,27 +329,33 @@ class _Tab extends StatelessWidget {
         index + 1,
         count,
       ),
+      // v0.25: o toque vai no nó da aba (o excludeSemantics tirava o do InkResponse).
+      onTap: onTap,
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,
         radius: 32,
-        child: AnimatedOpacity(
-          // O item atual está no círculo: o lugar dele na barra fica vazio.
-          opacity: selected ? 0 : 1,
-          duration: const Duration(milliseconds: 200),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SsNavItem.withBadge(Icon(item.icon, color: c.muted, size: 24), item.badge),
-              const SizedBox(height: 3),
-              Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w600),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // O ícone do item atual está no círculo: o lugar dele na barra fica vazio.
+            AnimatedOpacity(
+              opacity: selected ? 0 : 1,
+              duration: const Duration(milliseconds: 200),
+              child: SsNavItem.withBadge(Icon(item.icon, color: c.muted, size: 24), item.badge),
+            ),
+            const SizedBox(height: 3),
+            // v0.25: o rótulo fica sempre, e o da aba atual na tinta da marca, embaixo do círculo.
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: selected ? c.accentText : c.muted,
+                fontSize: AppType.label,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
-            ],
-          ),
+              child: Text(item.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
+          ],
         ),
       ),
     );

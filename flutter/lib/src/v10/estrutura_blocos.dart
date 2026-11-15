@@ -519,9 +519,10 @@ class _SsCollapsibleState extends State<SsCollapsible> {
     widget.onChanged?.call(_open);
   }
 
+  // v0.25: até 2 linhas (o mesmo do .ss-collapse-title do web), depois reticências.
   Widget _titulo(SsColors c, SsDensity d) => Text(
     widget.title,
-    maxLines: 1,
+    maxLines: 2,
     overflow: TextOverflow.ellipsis,
     style: TextStyle(color: c.ink, fontWeight: FontWeight.w800, fontSize: d.font(AppType.md)),
   );

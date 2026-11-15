@@ -39,6 +39,7 @@ import 'catalogo_v191.dart';
 import 'catalogo_v192.dart';
 import 'catalogo_v20.dart';
 import 'catalogo_v24.dart';
+import 'catalogo_v25.dart';
 import 'catalogo_v21.dart';
 import 'catalogo_v22.dart';
 import 'catalogo_v23.dart';
@@ -114,7 +115,7 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))));
+final catalogo = comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))))));
 
 final _catalogo = comV08(<Componente>[
   Componente(
@@ -125,12 +126,12 @@ final _catalogo = comV08(<Componente>[
       'Ao trocar de aba, o círculo pula em arco até o item novo (640 ms): achata antes de sair, estica na subida e na descida e achata de novo ao pousar.',
       'Quanto mais longe a aba, mais alto o pulo (20 a 40 px).',
       'O recorte fica raso enquanto o círculo está no ar, acompanha o voo e afunda um pouco no pouso.',
-      'O ícone novo aparece crescendo (com leve passada) a partir do meio do voo; o lugar do item atual na barra fica vazio.',
+      'O ícone novo aparece crescendo (com leve passada) a partir do meio do voo; o ícone do item atual sai da barra e o rótulo fica (v0.25).',
       'Troca no meio do pulo continua de onde o círculo está, sem teleportar.',
       'Toque com haptic leve (selectionClick); tocar na aba atual chama onTap de novo (voltar ao topo).',
       'Sem animação quando o sistema pede menos movimento.',
       'Leitor de tela: "Pedidos, aba 2 de 4", com o estado selecionado.',
-      'Escuro: borda de 1 px no lugar da sombra.',
+      'Escuro: borda de 1 px no lugar da sombra; círculo com anel na tinta da marca e miolo em field (v0.25).',
     ],
     estados: [
       Estado('primeira', 'aba 1', (_) => const _NavDemo(0), tamanho: const Size(360, 200)),
