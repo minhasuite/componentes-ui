@@ -133,7 +133,7 @@ final catalogoOnda4 = <Componente>[
       'O resumo (ex.: total do mês) fica sempre na barra; o bottom (chips, segmentado) fica preso embaixo.',
       'Linha fina embaixo aparece só quando encolhido.',
       'Respeita a área segura de cima. Título marcado como cabeçalho no leitor de tela.',
-      'SsHeaderAction: botão redondo de 40 px (alvo de 48) com tooltip e selo opcional.',
+      'SsHeaderAction: botão redondo de 40 px (alvo de 48) com tooltip e selo opcional; o tooltip é o nome no leitor de tela (o número do selo é só visual).',
       'Tela aberta por cima de outra ganha o voltar sozinha (como a AppBar); leading troca o botão.',
       'onRefresh liga o puxar para atualizar por fora da rolagem.',
       'titleLeading: ícone, avatar ou herói pequeno (até 40 px) antes do título grande; titleWidget troca o título grande por um widget (a barra compacta e o leitor de tela usam title).',

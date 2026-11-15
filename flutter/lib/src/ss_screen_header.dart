@@ -345,18 +345,26 @@ class SsHeaderAction extends StatelessWidget {
         child: i,
       );
     }
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onPressed,
-      icon: i,
-      style: IconButton.styleFrom(
-        backgroundColor: c.field,
-        foregroundColor: c.ink2,
-        fixedSize: Size.square(d.iconButton),
-        minimumSize: Size.square(d.iconButton),
-        // O alvo de toque segue 48 mesmo com o desenho menor (compacto).
-        tapTargetSize: MaterialTapTargetSize.padded,
-        shape: const CircleBorder(),
+    // O nome do botão para o leitor de tela é o tooltip, uma vez só: o número do selo é só visual (com ele o
+    // leitor lia "7" e o botão ficava sem nome). O balão do toque longo continua.
+    return Tooltip(
+      message: tooltip,
+      excludeFromSemantics: true,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Semantics(
+          label: tooltip,
+          child: ExcludeSemantics(child: i),
+        ),
+        style: IconButton.styleFrom(
+          backgroundColor: c.field,
+          foregroundColor: c.ink2,
+          fixedSize: Size.square(d.iconButton),
+          minimumSize: Size.square(d.iconButton),
+          // O alvo de toque segue 48 mesmo com o desenho menor (compacto).
+          tapTargetSize: MaterialTapTargetSize.padded,
+          shape: const CircleBorder(),
+        ),
       ),
     );
   }

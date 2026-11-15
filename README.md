@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.25.1
+      ref: v0.25.2
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.2"
 ```
 
 ```css
@@ -643,6 +643,20 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.25.2: o botão do cabeçalho com selo tem nome no leitor de tela
+
+Achado das videoaulas do meu-gestor (15/11/2026): no `SsHeaderAction` com `badge`, o leitor de tela lia só o número do
+selo ("7") e o botão ficava sem nome (conferido pelo `uiautomator` no emulador), embora o produto passasse
+`tooltip: 'Notificações, 7 novas'`. Agora o nome do botão é o `tooltip`, uma vez só (o `Tooltip` fica fora da semântica e o
+ícone com o selo vira só visual); o balão do toque longo continua. Teste que reproduz (falha na v0.25.1):
+`flutter/test/ss_header_action_test.dart`. Só Flutter; o web não muda.
+
+**Como cada produto adota:** subir a tag; nada de código. Quem usa selo no `SsHeaderAction` deve pôr no `tooltip` o que o
+número quer dizer ("Notificações, 7 novas"), porque o número sozinho não é mais lido.
+
+**Padrões que mudaram.** O `tooltip` do `SsHeaderAction` é o rótulo do botão no leitor de tela (antes ia como dica, e o
+selo virava o rótulo).
+
 ## v0.25.1: o rótulo da barra de abas volta para a Manrope
 
 Regressão da v0.25.0: o rótulo das abas da `SsNavBar` ficava num `AnimatedDefaultTextStyle` com um `TextStyle` novo, sem
@@ -1536,6 +1550,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.25.2` (15/11/2026): seção "v0.25.2". O `SsHeaderAction` com selo tem o `tooltip` como nome no leitor de tela (antes lia só o número). Nada quebra.
 - `v0.25.1` (14/11/2026): seção "v0.25.1". O rótulo das abas da `SsNavBar` volta a usar a Manrope do tema (na v0.25.0 caía na fonte do sistema). Nada quebra.
 - `v0.25.0` (14/11/2026): seção "v0.25.0" (rodada 5 da auditoria de UX). `CollapsibleComponent`/`SsCollapsible` com título em até 2 linhas que não alarga a página; `SsNavBar` com o rótulo da aba ativa, anel `SsNavBar.ringColor`/`ringWidth` (3:1 em claro, escuro e OLED), miolo `field` no escuro, ação de tocar no nó de cada aba e o ícone com contagem centrado. Nada quebra na API.
 - `v0.24.0` (14/11/2026): seção "v0.24.0" (auditoria de UX de novembro). `DataTableComponent(mobile: :compact)` + `t.column(mobile:)` ↔ `SsDataTable(mobile: SsDataTableMobile.compact)` + `SsDataColumn(mobile: SsDataSlot.*)`; `AppShellComponent` com troca de empresa só com 2+ empresas e nome com reticências (`single_tenant:`); `SettingsLayoutComponent` com `form:`/`save_label:`/`save_always:` e `href:`/`current:` por seção; `.ss-actions` em faixa de largura inteira e folga de foco das barras fixas e do botão flutuante; paleta de comandos fecha com um Esc; chat que não transborda; alvo de toque de 44 px no celular; `ss_form_with(validate:)` + Stimulus `ss-validate`; `AiInsightCardComponent(cancel:, thinking_hint:)` ↔ `SsAiInsightCard` (novo); `SsFab.clearance`/`safeListPadding(fab:)`; `SsButton` como nó próprio de acessibilidade; `SsMenuView`, `SsChoiceField`, `SsDateField` e `SsTimeField` não devolvem o foco ao campo de texto. A API não quebra; ver "Padrões que mudaram".
