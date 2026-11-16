@@ -254,6 +254,16 @@ void main() {
     expect(find.text('Opção 1'), findsNothing);
   });
 
+  testWidgets('busca focada não herda a borda do tema (v0.27.1)', (tester) async {
+    await tester.pumpWidget(_app(const SsSearchField(hint: 'Lugar')));
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    final deco = tester.widget<InputDecorator>(find.byType(InputDecorator)).decoration;
+    // O `collapsed` deixava o focusedBorder nulo e o tema (contorno de 1,5 em accent) entrava.
+    expect(deco.focusedBorder, InputBorder.none);
+    expect(deco.enabledBorder, InputBorder.none);
+  });
+
   testWidgets('linha de switch: tocar no título alterna', (tester) async {
     var v = false;
     await tester.pumpWidget(

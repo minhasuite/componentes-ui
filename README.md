@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.28.1
+      ref: v0.28.2
 ```
 
 ```dart
@@ -1761,6 +1761,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.28.2` (16/11/2026): `SsSearchField` (e a busca do `showSsPicker`) e o número do `SsStepper` sem borda nenhuma: o `InputDecoration.collapsed` herdava o `focusedBorder` do tema e desenhava um contorno dentro da caixa ao focar. Nada quebra.
 - `v0.28.1` (16/11/2026): seção "v0.28.1". Etiqueta do `CollapsibleComponent` com o fundo suave opaco do tom (AA independente do fundo atrás). Nada quebra.
 - `v0.28.0` (16/11/2026): seção "v0.28.0" (a segunda rodada do meulog). `--muted` claro do web a `#615e78` (AA sobre superfície tingida; conferido no `gerar.py`); `Ss::DayStripComponent` ↔ `SsDayStrip` (novo); `Ss::FilterInputComponent` (novo); `max:` no BarChart/LineChart ↔ `SsBarChart`/`SsLineChart(max:)`; `QrCardComponent(qr_label:)` ↔ `SsQrCard(qrLabel:)`; `CardHeaderComponent(wrap:)`; `ListItemComponent(subtitle_wrap:)` ↔ `SsListItem(subtitleMaxLines:)`; ordenar com rótulo de ação; `SubnavComponent(count_label:)` e sem item atual; `ss_display_font_tag(self_hosted:)` + `ss_page_head`; `ss_select(include_hidden:)`; correções do Masonry, AsideLayout, `.ss-value-row` e `f.ss_fieldset` no SettingsLayout. Novos textos obrigatórios no `SsStrings`.
 - `v0.27.0` (16/11/2026), parte do meulog: seção "v0.27.0 (meulog)". `Ss::LineChartComponent` (novo) ↔ `SsLineChart(curved:, markers:, empty:)` + `SsSeries(dashed:, colors:)`; `BarChartComponent(horizontal:, markers:, empty:)` + `tones:`/`colors:` por valor ↔ `SsBarChart(horizontal:, markers:, empty:)`; `SsChartMarker`/`SsChartEmpty`; 16 ícones (Lucide) e apelidos do Phosphor; `ss_font_tags(self_hosted:, display:)` com Manrope e DM Mono servidas pela gem. Nada quebra.

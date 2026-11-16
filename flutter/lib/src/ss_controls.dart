@@ -557,7 +557,17 @@ class _SsSearchFieldState extends State<SsSearchField> {
               },
               textInputAction: TextInputAction.search,
               style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
-              decoration: InputDecoration.collapsed(
+              // Sem borda nenhuma: o `collapsed` herdava o focusedBorder do tema e
+              // desenhava um contorno dentro da caixa (a caixa já tem o seu).
+              decoration: InputDecoration(
+                isCollapsed: true,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
                 hintText: widget.hint ?? SsStrings.of(context).search,
                 hintStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500),
               ),

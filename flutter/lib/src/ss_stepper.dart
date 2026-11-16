@@ -194,7 +194,15 @@ class _SsStepperState extends State<SsStepper> {
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(widget.decimals > 0 ? r'[0-9.,]' : r'[0-9]'))],
         onSubmitted: (_) => _focus.unfocus(),
         style: numStyle,
-        decoration: const InputDecoration.collapsed(hintText: ''),
+        decoration: const InputDecoration(
+          isCollapsed: true,
+          filled: false,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+        ),
       );
     } else {
       final key = ValueKey(text);
