@@ -2,7 +2,7 @@
 // minhas-compras-app e o minhas-viagens-app desenhavam à mão): peça nova em
 // [catalogoV192] e os extras das que já existiam (por slug) em [comV192].
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

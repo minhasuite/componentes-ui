@@ -1,6 +1,6 @@
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:componentes_ui/src/v15/bar_chart.dart' show ssBarRange;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.28 · a segunda rodada do meulog (par do Ss::DayStripComponent, dos max: dos gráficos, do

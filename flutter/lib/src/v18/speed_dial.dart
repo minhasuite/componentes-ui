@@ -1,7 +1,7 @@
 // v0.18: botão flutuante com várias ações (par do Ss::SpeedDialComponent).
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

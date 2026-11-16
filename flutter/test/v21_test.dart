@@ -1,6 +1,6 @@
 // v0.21: micro-animações da casa (SsCue) e brilho real no tile (SsDeviceTile.level).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _app(Widget child, {bool reduce = false}) => MaterialApp(

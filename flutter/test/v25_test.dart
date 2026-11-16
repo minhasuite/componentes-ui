@@ -1,5 +1,5 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.25 · auditoria de UX de novembro, rodada 5 (meu-gestor-app: barra de abas).

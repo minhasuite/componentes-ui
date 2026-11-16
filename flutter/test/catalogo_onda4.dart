@@ -1,5 +1,5 @@
 // Entradas do catálogo da onda4.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

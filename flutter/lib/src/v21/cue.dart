@@ -1,7 +1,7 @@
 // v0.21: micro-animações padronizadas da casa (par do `ss-cue` do web).
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

@@ -1,5 +1,5 @@
 // v0.10.2: o que faltava para o minha-automacao (app) ficar 100% no pacote.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';

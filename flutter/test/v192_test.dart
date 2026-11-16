@@ -3,7 +3,7 @@
 // faixa e contorno no card, monograma, foto escolhida, selo sólido, passos
 // numerados, ponto, recado, palco, indicador de página, vidro escuro e chip
 // de loja com estado).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

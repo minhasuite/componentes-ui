@@ -1,7 +1,7 @@
 // v0.19.2: as últimas caixas genéricas que o minhas-compras-app e o
 // minhas-viagens-app ainda desenhavam à mão: ponto de estado, monograma de
 // loja/site, recado entre aspas, palco da ilustração e indicador de página.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

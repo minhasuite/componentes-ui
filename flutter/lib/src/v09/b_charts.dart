@@ -1,7 +1,7 @@
 // v0.9 (lote b): dados — área, rosca, anel grande e barras num card.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

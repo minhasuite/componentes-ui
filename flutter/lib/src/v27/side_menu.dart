@@ -2,7 +2,7 @@
 // "espia" ao abrir o app, e a casca única das abas ([SsNavScaffold]).
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
@@ -268,9 +268,8 @@ class _SideRow extends StatelessWidget {
                         decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(99)),
                         child: Text(
                           n > 99 ? '99+' : '$n',
-                          style: AppTheme.number(
-                            context,
-                          ).copyWith(color: AppColors.onDark, fontSize: AppType.label, fontWeight: FontWeight.w800),
+                          style: AppTheme.number(context)
+                              .copyWith(color: AppColors.onDark, fontSize: AppType.label, fontWeight: FontWeight.w800),
                         ),
                       ),
                   ],

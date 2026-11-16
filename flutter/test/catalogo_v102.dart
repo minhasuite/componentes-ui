@@ -2,7 +2,7 @@
 // botão flutuante, carregando, abertura, linhas em card, lista de arrastar,
 // zona de perigo, aviso em linha, bloco de código, grupo de comandos, passo
 // numerado, divisor e a coluna da hora da agenda.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

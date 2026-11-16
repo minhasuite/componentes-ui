@@ -1,6 +1,6 @@
 // v0.13: texto longo, parágrafo de abertura e grupo de campos com ajuda (pares
 // do Ss::ProseComponent/.ss-prose, Ss::IntroComponent/.ss-intro e ss_fieldset).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

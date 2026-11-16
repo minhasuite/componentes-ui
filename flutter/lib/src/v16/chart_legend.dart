@@ -1,5 +1,5 @@
 // v0.16: legenda de gráfico (par do Ss::ChartLegendComponent / .ss-legend da gem).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

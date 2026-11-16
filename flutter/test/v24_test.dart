@@ -1,6 +1,5 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.24 · auditoria de UX de novembro (minhas-vendas C01; meu-gestor-app B16, B18, U08/U12).
@@ -10,12 +9,7 @@ void main() {
     theme: AppTheme.light,
     locale: locale,
     supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
-    localizationsDelegates: const [
-      SsStrings.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
+    localizationsDelegates: const [SsStrings.delegate, ...GlobalMaterialLocalizations.delegates],
     home: home,
   );
 
@@ -114,9 +108,8 @@ void main() {
                   SsMenuItem(
                     Icons.people_outline,
                     'Pessoas',
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('tela de pessoas')))),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('tela de pessoas')))),
                   ),
                 ]),
               ],

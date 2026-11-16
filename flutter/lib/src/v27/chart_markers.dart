@@ -2,7 +2,7 @@
 // [SsLineChart]), par do `markers:` do Ss::BarChartComponent/LineChartComponent.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../ss_badge.dart' show SsTone;

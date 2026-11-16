@@ -1,6 +1,6 @@
 // v0.13: mosaico em colunas, conteúdo + coluna lateral e card de foto (pares
 // do Ss::MasonryComponent, Ss::AsideLayoutComponent e Ss::PhotoCardComponent).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

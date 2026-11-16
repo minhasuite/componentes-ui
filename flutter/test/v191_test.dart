@@ -1,7 +1,7 @@
 // v0.19.1: conteúdo das abas, aba com ícone em cima, dica ao segurar, fio em
 // pé, item de menu com widget, tela cheia, cor que vem de dado, glifo de ícone
 // no canvas e os tokens novos (o que o minhas-compras e o minhas-viagens pediam).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

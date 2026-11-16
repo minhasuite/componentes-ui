@@ -1,7 +1,7 @@
 // v0.10 (dados): tabela de dados. No celular as linhas viram cartões
 // empilhados (rótulo à esquerda, valor à direita), como o modo empilhado do
 // Ss::DataTableComponent do Rails.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

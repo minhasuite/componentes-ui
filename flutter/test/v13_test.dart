@@ -1,6 +1,6 @@
 // v0.13: seção com ícone, cabeçalho de bloco, mosaico em colunas, coluna
 // lateral, pílulas do mosaico, card de foto e marca a partir de duas cores.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:componentes_ui/componentes_ui.dart';

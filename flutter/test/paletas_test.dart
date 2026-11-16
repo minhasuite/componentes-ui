@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
@@ -16,25 +16,21 @@ Color _cor(String h) => Color(int.parse('FF${h.substring(1)}', radix: 16));
 void main() {
   final json = File('../paletas/paletas.json');
 
-  test(
-    'mesmas paletas do paletas.json (slug, nome, família e cores)',
-    () {
-      final dados = jsonDecode(json.readAsStringSync()) as Map<String, dynamic>;
-      final lista = (dados['paletas'] as List).cast<Map<String, dynamic>>();
-      expect(SsPaleta.todas.length, lista.length);
-      expect(SsPaleta.familias, dados['familias']);
-      for (final (i, p) in lista.indexed) {
-        final f = SsPaleta.todas[i];
-        expect(f.slug, p['slug']);
-        expect(f.nome, p['nome']);
-        expect(f.familia, p['familia']);
-        expect(f.brand.accentLight, _cor(p['accentLight'] as String), reason: f.slug);
-        expect(f.brand.accentDark, _cor(p['accentDark'] as String), reason: f.slug);
-        expect(f.brand.gradientColors, [for (final s in p['stops'] as List) _cor(s as String)], reason: f.slug);
-      }
-    },
-    skip: json.existsSync() ? false : 'paletas/paletas.json fora do container (só flutter/ montado)',
-  );
+  test('mesmas paletas do paletas.json (slug, nome, família e cores)', () {
+    final dados = jsonDecode(json.readAsStringSync()) as Map<String, dynamic>;
+    final lista = (dados['paletas'] as List).cast<Map<String, dynamic>>();
+    expect(SsPaleta.todas.length, lista.length);
+    expect(SsPaleta.familias, dados['familias']);
+    for (final (i, p) in lista.indexed) {
+      final f = SsPaleta.todas[i];
+      expect(f.slug, p['slug']);
+      expect(f.nome, p['nome']);
+      expect(f.familia, p['familia']);
+      expect(f.brand.accentLight, _cor(p['accentLight'] as String), reason: f.slug);
+      expect(f.brand.accentDark, _cor(p['accentDark'] as String), reason: f.slug);
+      expect(f.brand.gradientColors, [for (final s in p['stops'] as List) _cor(s as String)], reason: f.slug);
+    }
+  }, skip: json.existsSync() ? false : 'paletas/paletas.json fora do container (só flutter/ montado)');
 
   test('accent sólido: texto branco ≥ 4,5:1 no claro e no escuro (checkbox, switch, botão sólido)', () {
     double lum(Color c) => c.computeLuminance();

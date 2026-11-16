@@ -1,5 +1,5 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.26 · conversa entre pessoas (minhas-vendas: atendimento do WhatsApp, cliente e atendente).

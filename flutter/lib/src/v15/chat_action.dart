@@ -1,5 +1,5 @@
 // v0.15: cartão de ação a confirmar no chat (par do Ss::ChatActionComponent da gem).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

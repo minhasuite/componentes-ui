@@ -1,6 +1,6 @@
 // Entradas do catálogo da v0.11: densidade (compacta, padrão, confortável) e o
 // seletor. As mesmas peças nas três densidades, para comparar.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

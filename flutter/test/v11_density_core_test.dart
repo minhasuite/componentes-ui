@@ -1,7 +1,7 @@
 // v0.11: as peças base leem a densidade (SsDensity). No padrão, as medidas são
 // as de antes; no compacto encolhem sem o toque cair abaixo de 48.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _app(SsDensity d, Widget child) => MaterialApp(

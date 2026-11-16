@@ -2,7 +2,7 @@
 // com peça crua do Material (conteúdo das abas, dica ao segurar, diálogo em
 // tela cheia) ou com cor/fonte literal (cor que vem de dado, glifo de ícone
 // pintado no canvas).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

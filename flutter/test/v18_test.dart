@@ -1,6 +1,6 @@
 // v0.18: botão com várias ações, dinheiro com controller de fora, barra de topo
 // no lugar do AppBar e aviso sem BuildContext (o meu-financeiro-app no pacote).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

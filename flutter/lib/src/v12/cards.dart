@@ -1,6 +1,6 @@
 // v0.12: cabeçalho de card, card de indicador e lista ranqueada (pares do
 // Ss::CardHeaderComponent, Ss::KpiCardComponent e Ss::RankListComponent).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

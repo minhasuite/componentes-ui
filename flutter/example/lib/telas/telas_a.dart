@@ -1,6 +1,6 @@
 // Telas montadas da v0.9 (lote a): as peças novas junto com as que já existiam.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../catalogo/catalogo_v09_a.dart' show FakeQr;
 import 'tela_demo.dart';

@@ -2,7 +2,7 @@
 // acharam ao migrar para 100% de componentização): peça nova em [catalogoV20]
 // e os extras das que já existiam (por slug) em [comV20].
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

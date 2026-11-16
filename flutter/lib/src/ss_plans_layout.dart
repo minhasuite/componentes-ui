@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'ss_strings.dart';
 
 // Tela de planos padrão da suíte. Arquivo idêntico em todos os apps: só usa o

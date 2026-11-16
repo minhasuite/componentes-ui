@@ -2,7 +2,7 @@
 // partir de uma tabela: ao criar texto novo, acrescente o campo nos três
 // idiomas, no construtor e no copyWith.
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'format.dart' show two;
 

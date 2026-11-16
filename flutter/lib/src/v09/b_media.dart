@@ -1,7 +1,7 @@
 // v0.9 (lote b): mídia — anexos, carrossel e trilho de miniaturas.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

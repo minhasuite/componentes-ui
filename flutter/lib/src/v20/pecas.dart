@@ -2,7 +2,7 @@
 // componentização: máscara brasileira no campo, barra fixa com resumo e linhas
 // repetíveis de formulário (pares do ss-mask, do StickyActionBarComponent com
 // summary e do RepeaterComponent do web).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 

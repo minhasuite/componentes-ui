@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -310,9 +310,8 @@ class _Brilho extends CustomPainter {
         centro,
         r,
         Paint()
-          ..shader = RadialGradient(
-            colors: [cor, cor.withValues(alpha: 0)],
-          ).createShader(Rect.fromCircle(center: centro, radius: r)),
+          ..shader = RadialGradient(colors: [cor, cor.withValues(alpha: 0)])
+              .createShader(Rect.fromCircle(center: centro, radius: r)),
       );
     }
   }

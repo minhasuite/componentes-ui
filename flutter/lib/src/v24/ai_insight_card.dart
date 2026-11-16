@@ -4,7 +4,7 @@
 // fontes recolhíveis, Aplicar/Ignorar e o estado "pensando").
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

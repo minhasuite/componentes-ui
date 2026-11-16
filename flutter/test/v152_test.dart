@@ -3,7 +3,7 @@
 // maiúscula e moeda por código ISO, ssRunBlocking de espera longa, paletas
 // Azul e Petróleo).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 

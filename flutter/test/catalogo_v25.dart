@@ -1,6 +1,6 @@
 // v0.25: rodada 5 da auditoria de UX (meu-gestor-app e minhas-vendas). O que mudou nas peças existentes ([comV25]).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

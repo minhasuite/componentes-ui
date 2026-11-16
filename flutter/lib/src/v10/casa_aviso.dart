@@ -3,7 +3,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';
@@ -670,9 +670,8 @@ class _SsLockScreenState extends State<SsLockScreen> {
                                   disabledBackgroundColor: AppColors.onDark.withValues(alpha: .7),
                                   minimumSize: const Size.fromHeight(52),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
-                                  textStyle: Theme.of(
-                                    context,
-                                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: AppType.body),
+                                  textStyle: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(fontWeight: FontWeight.w800, fontSize: AppType.body),
                                 ),
                                 icon: widget.busy
                                     ? SizedBox(

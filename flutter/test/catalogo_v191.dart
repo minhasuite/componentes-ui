@@ -2,7 +2,7 @@
 // minhas-viagens-app ainda tinham de Material cru): peça nova em
 // [catalogoV191] e os extras das que já existiam (por slug) em [comV191].
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

@@ -22,6 +22,8 @@
 /// 4. tipografia literal (`fontSize:`/`letterSpacing:` com número, `fontFamily:` com
 ///    texto, `height:`/`wordSpacing:` com número dentro de `TextStyle(...)`/`copyWith(...)`);
 /// 5. gráfico fora do pacote (`fl_chart` no pubspec ou importado);
+/// 5a. (v1.0) import do Material antigo do SDK (`package:flutter/material.dart`): use
+///    `package:material_ui/material_ui.dart` (Flutter 3.50);
 /// 6. (v0.19.1) card à mão: `BoxDecoration` com a cor `surface` e a sombra de card
 ///    (`AppShadows.card`, ou `boxShadow:` com o raio `AppRadius.card`/`cardActive`),
 ///    que é o `SsCard` (ou `SsCard(soft:)`). Para não pegar desenho de domínio, fica
@@ -105,6 +107,8 @@ List<Violacao> conferirConformidade(Directory raiz) {
     ),
     'tipografia': RegExp(r'''fontSize:\s*[\d.]+|letterSpacing:\s*-?[\d.]+|fontFamily:\s*['"]'''),
     'gráfico': RegExp(r'package:fl_chart/'),
+    // v1.0 (Flutter 3.50): o Material do SDK foi descontinuado; o app importa o material_ui.
+    'material-sdk': RegExp(r'package:flutter/material\.dart'),
   };
 
   for (final f in arquivos) {

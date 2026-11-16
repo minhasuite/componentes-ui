@@ -1,6 +1,5 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.27 · menu lateral com a dica de arrastar e a casca SsNavScaffold (faixa acima da barra transparente).

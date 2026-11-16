@@ -1,6 +1,6 @@
 // v0.14: nota e tarefa com comando (pares do Ss::NoteComponent/.ss-note e do
 // .ss-checklist com [role=checkbox] + .ss-checklist-x).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';

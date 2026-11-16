@@ -1,5 +1,5 @@
 // v0.28 (meulog): faixa de status por dia, par do Ss::DayStripComponent do web.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../ss_badge.dart' show SsTone;

@@ -1,7 +1,6 @@
 // Idioma dos componentes (SsStrings): textos completos em pt/en/es, escolha
 // do idioma com e sem o delegate, override por escopo e widgets em inglês.
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,12 +12,7 @@ const _locales = [Locale('pt', 'BR'), Locale('en'), Locale('es')];
 Widget _app(Widget child, {Locale locale = const Locale('en'), bool delegate = true}) => MaterialApp(
   locale: locale,
   supportedLocales: _locales,
-  localizationsDelegates: [
-    if (delegate) SsStrings.delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-  ],
+  localizationsDelegates: [if (delegate) SsStrings.delegate, ...GlobalMaterialLocalizations.delegates],
   theme: AppTheme.light,
   home: Scaffold(body: child),
 );
@@ -137,9 +131,7 @@ void main() {
           supportedLocales: _locales,
           localizationsDelegates: [
             SsStringsDelegate(apply: (s) => s.copyWith(retry: '¡Otra vez!')),
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
           ],
           home: w,
         ),

@@ -1,11 +1,11 @@
 name: componentes_ui
 description: Design system "Lista Clara" da MinhaSuite (tema, tokens e componentes Ss*).
 publish_to: "none"
-version: 0.28.2
+version: 1.0.0
 
 environment:
-  sdk: ^3.12.0
-  flutter: ">=3.38.0"
+  sdk: ^3.14.0
+  flutter: ">=3.50.0"
 
 dependencies:
   flutter:
@@ -14,6 +14,7 @@ dependencies:
   google_fonts: ^6.2.1
   # AsyncValue do SsAsyncBody (todos os apps da suíte usam Riverpod 2).
   flutter_riverpod: ^2.5.1
+  material_ui: ^1.11.1
 
 dev_dependencies:
   flutter_test:

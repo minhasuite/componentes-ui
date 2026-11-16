@@ -1,7 +1,7 @@
 // v0.9 (lote b): agenda — faixa de dias, blocos do dia e lista de vários dias.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../density.dart';
@@ -784,9 +784,8 @@ class SsAgendaList extends StatelessWidget {
     final s = SsStrings.of(context);
     final escala = MediaQuery.textScalerOf(context);
     final mono = AppTheme.number(context, size: AppType.sub, weight: FontWeight.w600);
-    final rotulo = DefaultTextStyle.of(
-      context,
-    ).style.merge(const TextStyle(fontSize: AppType.meta, fontWeight: FontWeight.w700));
+    final rotulo = DefaultTextStyle.of(context).style
+        .merge(const TextStyle(fontSize: AppType.meta, fontWeight: FontWeight.w700));
     var maior = 0.0;
     for (final d in days) {
       for (final e in d.events) {

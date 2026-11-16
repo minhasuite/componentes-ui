@@ -1,6 +1,6 @@
 // v0.10.1: seletor de cor por fichas, com a cor livre opcional (o
 // `Ss::SwatchPickerComponent(free: true)` do Rails).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';

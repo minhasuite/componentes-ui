@@ -1,7 +1,7 @@
 // v0.11 (densidade) nas peças da v0.10: tamanhos por SsDensity, alvo de toque
 // de 48 no compacto e nada estourando em caixa estreita nas três densidades.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 

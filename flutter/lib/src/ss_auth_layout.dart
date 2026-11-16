@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
 import 'ss_auth_folhinha.dart';
 import 'ss_strings.dart';
 

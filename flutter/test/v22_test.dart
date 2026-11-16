@@ -1,7 +1,6 @@
 // v0.22: tela de entrada "Folhinha" (SsAuthLayout.folhinha), fonte de exibição e authPartOf.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -11,12 +10,7 @@ Widget _app(Widget child, {Size size = const Size(420, 1000), Locale? locale}) =
     theme: AppTheme.light,
     locale: locale ?? const Locale('pt'),
     supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
-    localizationsDelegates: const [
-      SsStrings.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
+    localizationsDelegates: const [SsStrings.delegate, ...GlobalMaterialLocalizations.delegates],
     home: Scaffold(body: child),
   ),
 );

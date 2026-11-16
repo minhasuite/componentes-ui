@@ -1,6 +1,6 @@
 // v0.22: tela de entrada "Folhinha" ([catalogoV22]: ss-auth-folhinha), par do Ss::AuthLayoutComponent.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

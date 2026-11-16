@@ -1,7 +1,7 @@
 // v0.28 (meulog, segunda rodada) ([comV28]): o max: dos gráficos, o subtítulo inteiro do SsListItem,
 // o nome do QR no SsQrCard e a peça nova SsDayStrip (faixa de status por dia).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

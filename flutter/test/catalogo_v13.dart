@@ -1,7 +1,7 @@
 // Entradas do catálogo da v0.13: o que os painéis do minha-automacao pediram
 // (seção com ícone, cabeçalho de bloco, mosaico em colunas, coluna lateral,
 // bloco de área com pílulas, card de foto e marca a partir de duas cores).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

@@ -2,7 +2,7 @@
 // base: rolagem, campos, menu, aviso, imagem, gráfico e idioma).
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

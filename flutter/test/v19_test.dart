@@ -2,7 +2,7 @@
 // tokens de espaçamento de texto (o que sobrava de genérico no meu-financeiro-app).
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

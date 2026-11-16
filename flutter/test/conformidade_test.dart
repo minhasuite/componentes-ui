@@ -29,6 +29,7 @@ void main() {
       pubspec: _pubOk,
       arquivos: {
         'tela.dart': '''
+import 'package:material_ui/material_ui.dart';
 // Comentário pode citar AppBar( e Colors.red sem reprovar.
 Widget build(c) => Scaffold(appBar: SsTopBar(title: 'x'), body: SsButton(label: 'ok', onPressed: () {}));
 final estilo = TextStyle(color: SsColors.of(c).ink, fontSize: AppType.meta, height: AppType.leading);
@@ -50,6 +51,7 @@ dependencies:
       arquivos: {
         'tela.dart': '''
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 Widget build(c) => Scaffold(appBar: AppBar(title: Text('x')), body: TextButton(onPressed: null, child: Text('y')));
 final cor = Colors.red;
 final outra = Color(0xFF000000);
@@ -64,6 +66,7 @@ void avisa(c) => ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text('z'
       containsAll(<String>[
         'pubspec',
         'gráfico',
+        'material-sdk',
         'material:AppBar',
         'material:TextButton',
         'material:SnackBar',
@@ -124,9 +127,10 @@ void abre(c) => showSsFullscreen<void>(c, title: 'Frase', child: Text('x'));
   });
 
   group('v0.19.1: card à mão', () {
-    List<Violacao> confere(String codigo) => conferirConformidade(
-      _app(pubspec: _pubOk, arquivos: {'tela.dart': codigo}),
-    ).where((v) => v.regra == 'card-à-mão:SsCard').toList();
+    List<Violacao> confere(String codigo) =>
+        conferirConformidade(_app(pubspec: _pubOk, arquivos: {'tela.dart': codigo}))
+            .where((v) => v.regra == 'card-à-mão:SsCard')
+            .toList();
 
     test('surface + AppShadows.card reprova, com a linha do BoxDecoration', () {
       final v = confere('''

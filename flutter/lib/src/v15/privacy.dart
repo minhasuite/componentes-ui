@@ -1,7 +1,7 @@
 // v0.15: esconder valores no app (par do [data-privacy="on"] / ss-privacy do web).
 import 'dart:ui' show ImageFilter;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../ss_strings.dart';

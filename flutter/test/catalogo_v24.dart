@@ -1,7 +1,7 @@
 // v0.24: auditoria de UX de novembro (minhas-vendas e meu-gestor). Peça nova
 // ([catalogoV24]: ss-ai-insight-card) e o que mudou nas existentes ([comV24]).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

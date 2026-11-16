@@ -3,8 +3,7 @@
 // capa, escolha com texto livre, calendário público, barras divergentes, validadores de texto,
 // foto com cor, linha do tempo com fim e alerta, estrelas, comparação e os ajustes pedidos.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -331,12 +330,7 @@ void main() {
           theme: AppTheme.light,
           locale: const Locale('pt', 'BR'),
           supportedLocales: const [Locale('pt', 'BR'), Locale('en')],
-          localizationsDelegates: const [
-            SsStrings.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: const [SsStrings.delegate, ...GlobalMaterialLocalizations.delegates],
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(

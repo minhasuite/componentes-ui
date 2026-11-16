@@ -4,7 +4,7 @@
 // cabeçalho montado, total, sem card, linha apagada), ação ao lado da busca do
 // seletor, barra fixa com resumo, linhas repetíveis, contagem na aba, link no
 // texto, termos e valor editável.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';

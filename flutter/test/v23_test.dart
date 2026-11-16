@@ -1,6 +1,5 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.23 · showSsTimePicker: o relógio do pacote com os textos do SsStrings.
@@ -9,12 +8,7 @@ void main() {
     theme: AppTheme.light,
     locale: locale,
     supportedLocales: const [Locale('pt'), Locale('en'), Locale('es')],
-    localizationsDelegates: const [
-      SsStrings.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
+    localizationsDelegates: const [SsStrings.delegate, ...GlobalMaterialLocalizations.delegates],
     home: Scaffold(body: child),
   );
 

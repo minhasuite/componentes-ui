@@ -1,6 +1,6 @@
 // Entradas do catálogo da v0.7 pedidas pela migração do meu-cultivo.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

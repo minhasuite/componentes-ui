@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.28.2
+      ref: v1.0.0
 ```
 
 ```dart
@@ -643,6 +643,44 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.0.0: Flutter 3.50 e o Material fora do SDK (`material_ui`)
+
+O Flutter 3.50 (11/11/2026) descontinuou `package:flutter/material.dart` e `cupertino.dart`: o Material
+virou o pacote `material_ui`, e o `flutter analyze` reprova cada import antigo (`deprecated_member_use`).
+Os apps da suíte estavam presos na 3.47.9 por isso. **Quebra a API** (por isso a 1.0): o `ThemeData`,
+`TextTheme`, `ColorScheme`… do `material_ui` são **outros tipos** que os do SDK, então o pacote e o app
+precisam estar do mesmo lado. Só Flutter; a gem não muda (a versão sobe junto porque a tag é uma só).
+
+| O quê | Como fica |
+|---|---|
+| Import | `package:material_ui/material_ui.dart` (reexporta `package:flutter/widgets.dart`) no lugar de `package:flutter/material.dart`. Migração: `dart fix --apply --code=migrate_design_widgets` |
+| SDK | `environment: sdk ^3.14.0, flutter >=3.50.0` (no pacote); a CI do app vai para `flutter-version: 3.50.0` |
+| Localização | `localizationsDelegates: [SsStrings.delegate, ...GlobalMaterialLocalizations.delegates]` (o `GlobalMaterialLocalizations` do `material_ui`); o import do `flutter_localizations` sai (dá `ambiguous_import`) |
+| Tema | `AppTheme` monta a Manrope estilo a estilo (`GoogleFonts.manrope(textStyle:)`): o `GoogleFonts.manropeTextTheme` devolve o `TextTheme` do SDK. Pacote de terceiros que devolve tipo do Material do SDK tem o mesmo problema |
+| Testes | `ssPreloadFonts()` (novo): no Flutter 3.50 a fonte que termina de carregar no meio do teste agenda o aviso "fontes do sistema mudaram" e o `testWidgets` reprova com "An animation is still running even after the widget tree was disposed". Todo app põe em `test/flutter_test_config.dart`: |
+| Conformidade | regra nova `material-sdk`: `conferirConformidade` reprova `package:flutter/material.dart` em `lib/` |
+
+```dart
+// test/flutter_test_config.dart
+import 'dart:async';
+import 'package:componentes_ui/componentes_ui.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  await ssPreloadFonts();
+  await testMain();
+}
+```
+
+Roteiro por app: `pubspec` com `ref: v1.0.0` e `material_ui: ^1.11.1` → `dart fix --apply --code=migrate_design_widgets`
+→ delegates de localização → `test/flutter_test_config.dart` → `flutter-version: 3.50.0` no `ci.yml` e no
+`deploy-play.yml` → `flutter analyze` e `flutter test` na 3.50.
+
+A imagem `ghcr.io/cirruslabs/flutter` parou na 3.44.0: para rodar local, monte uma com o SDK oficial por cima dela
+(`FROM ghcr.io/cirruslabs/flutter:stable` + `rm -rf /sdks/flutter` + o `flutter_linux_3.50.0-stable.tar.xz` de
+`storage.googleapis.com/flutter_infra_release` em `/sdks`) e use `localhost/flutter:3.50.0` nos comandos abaixo.
 
 ## v0.28.1: etiqueta do grupo recolhível com fundo opaco (AA)
 
@@ -1736,7 +1774,7 @@ migração). Tudo aditivo; nada quebra da v0.13. Vitrine Rails: grupo "Painéis 
 
 ```bash
 # Flutter (na raiz do repo)
-podman run --rm -v "$PWD":/r -w /r/flutter -v flutter_pub:/root/.pub-cache ghcr.io/cirruslabs/flutter:stable \
+podman run --rm --security-opt label=disable -v "$PWD":/r -w /r/flutter -v flutter_pub350:/root/.pub-cache localhost/flutter:3.50.0 \
   bash -c 'git config --global --add safe.directory "*"; flutter pub get; dart format --set-exit-if-changed lib test example; flutter analyze; flutter test'
 # Capturas da densidade (compacta, padrão, confortável; claro e escuro): DENSIDADE_SAIDA=<pasta> flutter test test/densidade_test.dart
 # Rails

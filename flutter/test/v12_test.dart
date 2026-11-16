@@ -1,6 +1,6 @@
 // v0.12: tile de aparelho com o ícone como chave, faixa do dia inteiro do
 // SsDayAgenda, cabeçalho de card, card de indicador e lista ranqueada.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';

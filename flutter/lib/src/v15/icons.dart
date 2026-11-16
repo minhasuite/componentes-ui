@@ -1,7 +1,7 @@
 // v0.15: ícone por nome, com os mesmos nomes do ss_icon / Ss::IconComponent da gem
 // (Heroicons v1, e os da v2 por apelido). Nome guardado na API (categoria, conta)
 // desenha o mesmo ícone no web e no app.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 part 'icon_names.g.dart';
 

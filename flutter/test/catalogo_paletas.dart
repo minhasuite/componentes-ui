@@ -1,6 +1,6 @@
 // Entradas do catálogo das paletas: o seletor (SsPalettePicker). As paletas em
 // si (SsBrand.paletas e o gradiente de 4 paradas) estão em catalogo_v09_a.dart.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

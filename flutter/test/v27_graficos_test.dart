@@ -1,6 +1,6 @@
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:componentes_ui/src/v27/chart_markers.dart' show ssResolveMarkers, ssMarkerRows, ssMarkerColor;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // v0.27 · gráficos que o meulog pediu (par do Ss::LineChartComponent e do BarChartComponent).

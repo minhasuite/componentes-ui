@@ -1,5 +1,5 @@
 // v0.17: botão flutuante só com o ícone e rótulo (o FAB de toda tela) e a linha de cima no SsTopBar.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 

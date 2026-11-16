@@ -1,5 +1,5 @@
 // v0.19: imagem em tela cheia com zoom (comprovante, foto do cupom, anexo).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
 import '../motion.dart';

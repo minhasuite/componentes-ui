@@ -1,7 +1,7 @@
 // Entradas do catálogo da v0.15: a fase 0 do meu-financeiro (ícones por nome,
 // barras com negativos e linha, dinheiro com conta e sinal, privacidade dos
 // valores, linha de progresso e o cartão de ação do chat).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

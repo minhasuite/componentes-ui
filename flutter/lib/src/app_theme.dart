@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'density.dart';
@@ -671,7 +671,7 @@ class AppTheme {
     );
 
     final base = ThemeData(brightness: brightness, useMaterial3: true);
-    final manrope = GoogleFonts.manropeTextTheme(base.textTheme);
+    final manrope = _manropeTextTheme(base.textTheme);
     final text = _textTheme(manrope, ink, muted);
 
     return base.copyWith(
@@ -857,4 +857,28 @@ class AppTheme {
       color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
     );
   }
+}
+
+/// v1.0: a Manrope em cada estilo do [TextTheme] do `material_ui`. O
+/// `GoogleFonts.manropeTextTheme` devolve o `TextTheme` do Material antigo do SDK
+/// (outro tipo desde o Flutter 3.50); `TextStyle` é do `painting`, comum aos dois.
+TextTheme _manropeTextTheme(TextTheme t) {
+  TextStyle? m(TextStyle? s) => s == null ? null : GoogleFonts.manrope(textStyle: s);
+  return t.copyWith(
+    displayLarge: m(t.displayLarge),
+    displayMedium: m(t.displayMedium),
+    displaySmall: m(t.displaySmall),
+    headlineLarge: m(t.headlineLarge),
+    headlineMedium: m(t.headlineMedium),
+    headlineSmall: m(t.headlineSmall),
+    titleLarge: m(t.titleLarge),
+    titleMedium: m(t.titleMedium),
+    titleSmall: m(t.titleSmall),
+    bodyLarge: m(t.bodyLarge),
+    bodyMedium: m(t.bodyMedium),
+    bodySmall: m(t.bodySmall),
+    labelLarge: m(t.labelLarge),
+    labelMedium: m(t.labelMedium),
+    labelSmall: m(t.labelSmall),
+  );
 }

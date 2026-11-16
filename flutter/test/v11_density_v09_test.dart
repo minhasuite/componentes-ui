@@ -1,6 +1,6 @@
 // v0.11: as peças da v0.9 com controle leem a altura da SsDensity e, no
 // compacto, o toque continua com 48 (SsTapTarget, sem mudar o layout).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:componentes_ui/componentes_ui.dart';

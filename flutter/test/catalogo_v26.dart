@@ -1,6 +1,6 @@
 // v0.26: conversa entre pessoas (cliente e atendente). O que mudou no SsChatBubble ([comV26]) e o SsChatDivider novo.
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

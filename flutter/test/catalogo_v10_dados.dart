@@ -2,7 +2,7 @@
 // no tempo e faixas de estado), logbook por dia e tabela de dados.
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

@@ -4,7 +4,7 @@
 // Ss::SortableListComponent (.ss-sortable), .ss-danger-zone, .ss-callout
 // (Ss::CalloutComponent), .ss-code (Ss::CodeBlockComponent), .ss-btn-group,
 // .ss-steps/.ss-steps-head e .ss-divider.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../app_theme.dart';

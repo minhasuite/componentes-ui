@@ -1,7 +1,7 @@
 // Catálogo dos componentes: o que a skill `componentes` exporta em SVG.
 // Componente novo no pacote = entrada nova aqui (nome, para que serve, o que
 // faz e um estado por variação que importa). Os textos vão para o SVG.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo_onda1.dart';

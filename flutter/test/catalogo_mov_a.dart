@@ -4,7 +4,7 @@
 // logo depois do 1º quadro, para a captura pegar o movimento no meio.
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

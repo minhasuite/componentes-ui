@@ -2,7 +2,7 @@
 // números que rolam, camadas por cima com mola e listas/cards. Todas são demos
 // vivas: "Repetir" remonta a peça (a entrada toca de novo), "+/−" mudam o
 // número e os botões abrem folha, aviso, diálogo e menu.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:componentes_ui/componentes_ui.dart';
 
 import 'catalogo.dart';

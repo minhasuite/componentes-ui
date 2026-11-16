@@ -1,7 +1,7 @@
 // v0.21 (pedido do minha-automacao, "beleza" dos painéis): micro-animações
 // padronizadas ([catalogoV21]: ss-cue) e o brilho real no tile ([comV21]).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 

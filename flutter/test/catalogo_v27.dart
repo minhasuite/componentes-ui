@@ -1,7 +1,7 @@
 // v0.27: menu lateral com a dica de arrastar (SsSideMenu/SsSideMenuHost) e a casca SsNavScaffold
 // (faixa acima da SsNavBar transparente).
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'catalogo.dart';
 
