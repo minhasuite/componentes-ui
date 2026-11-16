@@ -45,7 +45,7 @@
   .ss-shell-tenant > summary::-webkit-details-marker { display: none; }
   .ss-shell-tenant > summary:hover { background: rgba(255, 255, 255, .09); }
   .ss-shell-tenant > summary .ss-shell-label { display: grid; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ss-shell-tenant > summary small { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: color-mix(in srgb, var(--side-ink) 50%, transparent); }
+  .ss-shell-tenant > summary small { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: color-mix(in srgb, var(--side-ink) 62%, transparent); }
   .ss-shell-tenant > summary svg { width: 1rem; height: 1rem; flex: none; opacity: .6; }
   .ss-shell-tenant-mark { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; flex: none; border-radius: 9px; font-weight: 800; font-size: .8rem;
                           background: color-mix(in srgb, var(--accent) 30%, var(--side)); color: #fff; }

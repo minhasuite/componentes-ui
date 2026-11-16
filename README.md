@@ -733,6 +733,11 @@ tree-structure, `layers` → stack, `braces`/`code-json` → brackets-curly, `fi
 **Padrões que mudaram:** nenhum. `SsSeries` ganhou `dashed:` e `colors:` opcionais; `SsLineChart` continua curvo por
 padrão (`curved: false` é o que o web faz).
 
+**Contraste do menu (web).** A auditoria de acessibilidade do meulog mediu os títulos de grupo do
+`AppShellComponent` (`.ss-nav summary`, 45% da tinta do menu) em 3,4–3,9:1 e o rótulo "Empresa/Conta"
+da troca de empresa (50%) em 4,0–4,3:1, abaixo de 4,5. Os dois passam a 62% (≥ 5,6:1 no claro e no
+escuro); o hover do título de grupo vai a 85%. Mudança só de cor, sem API.
+
 ## v0.26.0: conversa entre pessoas (cliente e atendente)
 
 Pedido do minhas-vendas (atendimento do WhatsApp: a atendente da loja conversa com o cliente). O chat da suíte só sabia

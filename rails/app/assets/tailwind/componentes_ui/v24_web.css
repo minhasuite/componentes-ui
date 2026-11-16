@@ -53,7 +53,7 @@
   .ss-shell-tenant-item > .ss-shell-tenant-name { flex: 1; }
   .ss-shell-tenant.is-single { display: flex; align-items: center; gap: .6rem; padding: var(--ss-pad-y) .55rem; min-width: 0; }
   .ss-shell-tenant.is-single .ss-shell-label { display: grid; flex: 1; min-width: 0; }
-  .ss-shell-tenant.is-single small { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: color-mix(in srgb, var(--side-ink) 50%, transparent); }
+  .ss-shell-tenant.is-single small { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: color-mix(in srgb, var(--side-ink) 62%, transparent); }
   :is(.ss-shell[data-collapsed], html[data-ss-shell-collapsed] .ss-shell) .ss-shell-tenant.is-single { justify-content: center; padding-inline: 0; }
 
   /* ── 3. Barras de salvar e botão flutuante: o campo em foco (Tab, foco ao enviar, âncora) para acima delas.

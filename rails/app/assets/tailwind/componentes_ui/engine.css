@@ -287,10 +287,10 @@
             width: 4px; height: 1.25rem; border-radius: 0 999px 999px 0; background: #8f80ff; }
   .ss-nav summary { display: flex; align-items: center; gap: .55rem; padding: .45rem .75rem; margin-top: .6rem; cursor: pointer;
                     font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em;
-                    color: color-mix(in srgb, var(--side-ink) 45%, transparent); border-radius: .5rem; }
+                    color: color-mix(in srgb, var(--side-ink) 62%, transparent); border-radius: .5rem; }
   .ss-nav summary::-webkit-details-marker { display: none; }
   .ss-nav summary { list-style: none; }
-  .ss-nav summary:hover { color: color-mix(in srgb, var(--side-ink) 70%, transparent); }
+  .ss-nav summary:hover { color: color-mix(in srgb, var(--side-ink) 85%, transparent); }
   .ss-nav summary svg { width: .9rem; height: .9rem; }
   .ss-nav summary .ss-chev { margin-left: auto; transition: transform .2s ease; }
   .ss-nav details[open] > summary .ss-chev { transform: rotate(90deg); }
