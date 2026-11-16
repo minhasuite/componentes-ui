@@ -643,6 +643,67 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.27.0 (meulog): gráficos sem Chart.js, ícones de monitor de erros e fontes sem CDN
+
+O que a migração do meulog (monitor de erros self-hosted, Bootstrap → componentes-ui) pediu. Tudo aditivo: sem os
+parâmetros novos, nada muda. Vitrine Rails: "Monitor de erros (v0.27)" (`pecas_v027`); catálogo: `ss-linec`,
+`ss-barc-horizontal`, `ss-chart-mark`, `ss-icon-v27` (`rails/sample/script/catalogo_v027.rb`) e, no Flutter, os estados
+novos em `ss-line-chart`/`ss-bar-chart` (`flutter/test/catalogo_v27_graficos.dart`). Testes:
+`rails/sample/test/components/v27_web_test.rb`, `flutter/test/v27_graficos_test.dart`.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| Linhas por categoria (retas, várias séries, anterior tracejada, áreas empilhadas, vazio) | `SsLineChart(curved: false, markers:, empty:)` + `SsSeries(dashed: true)` (empilhado só no web) | `Ss::LineChartComponent(labels:, series:, title:, stacked:, format:, height:, width:, label_every:, legend:, show_title:, active:, dots:, markers:, empty:)` · `.ss-linec` |
+| Barras deitadas (rótulo longo à esquerda com reticências, valor no fim) | `SsBarChart(horizontal: true)` | `BarChartComponent(horizontal: true)` · `.ss-barc.is-horizontal` |
+| Cor por valor numa série (a categoria "Outros" apagada) | `SsSeries(colors: [null, …, c.muted])` | série `{ tones: [nil, …, :muted] }` ou `{ colors: [nil, "var(--…)"] }` |
+| Marcas verticais (deploy, incidente, nota) | `markers: [SsChartMarker(at:, label:, kind: SsChartMarkerKind.deploy)]` em `SsBarChart` e `SsLineChart` | `markers: [{ at:, label:, kind: :deploy/:incident/:note }]` em `BarChartComponent` e `LineChartComponent` · `.ss-chart-mark` |
+| Vazio do gráfico | `empty:` → `SsChartEmpty` | `empty:` → `.ss-chart-empty` |
+| Ícones do monitor de erros | `SsIcons.named('bug')` … | `ss_icon("bug")` … |
+| Fontes servidas pelo app (rede fechada) | — (o pacote já empacota) | `ss_font_tags(self_hosted: true)` |
+
+```erb
+<%= render Ss::LineChartComponent.new(title: "Ocorrências por dia", labels: dias, width: 1100,
+      series: [{ name: "Agora", values: agora }, { name: "Semana anterior", values: antes, tone: :muted, dashed: true }],
+      markers: deploys.map { { at: _1.dia, label: _1.versao, kind: :deploy } }, empty: "Sem dados no período") %>
+<%= render Ss::BarChartComponent.new(title: "Erros por classe", horizontal: true, labels: classes,
+      series: [{ name: "Ocorrências", values: totais, tones: [*Array.new(classes.size - 1), :muted] }]) %>
+```
+
+**Marcas.** Traço tracejado de cima a baixo no rótulo `at:` e o nome no alto (DM Mono 11); deploy em `--ss-info`,
+incidente em `--danger`, nota em `--muted` (kind desconhecido = nota). Duas no mesmo rótulo empilham o texto e a área de
+cima cresce 13 px por linha. Entram na dica do rótulo, numa coluna "Marcas" da tabela do leitor de tela (pt/en/es:
+`componentes_ui.chart.markers` e `chart.marker.*`) e, no Flutter, no rótulo de semântica. Não valem no deitado.
+
+**Fontes sem CDN.** `ss_font_tags` junta o que cada layout escrevia à mão:
+
+```erb
+<%= ss_font_tags %>                                    <%# Google Fonts, como antes (padrão) %>
+<%= ss_font_tags(self_hosted: true) %>                 <%# Manrope 400–800 e DM Mono 400/500 da própria gem %>
+<%= ss_font_tags(self_hosted: true, display: true) %>  <%# e a Big Shoulders Display (tela de entrada) %>
+```
+
+Os woff2 ficam em `rails/app/assets/fonts/componentes_ui/` (OFL 1.1, com as licenças ao lado) e os `@font-face` em
+`rails/app/assets/stylesheets/componentes_ui/fonts.css` / `fonts_display.css`, servidos pelo **Propshaft** (fora do
+Tailwind): ele troca cada `url()` pelo caminho com digest. O helper ainda faz `preload` da Manrope 400 e 700. Nenhuma
+requisição sai do app (a vitrine passou a carregar assim; CSP `font-src 'self'` basta).
+
+**Ícones.** 16 novos no `ss_icon`/`SsIcons` (desenho do Lucide, ISC, `rails/icones/LICENSE-lucide`, redesenhado no traço
+24/2 do conjunto): `activity`, `bug`, `git-branch`, `git-merge`, `robot`, `broadcast`, `webhook`, `tree-structure`,
+`signpost`, `stack`, `brackets-curly`, `file-code`, `file-csv`, `hard-drives`, `gauge`, `compass`. Apelidos novos
+(nomes do Lucide e do Phosphor): `heartbeat`/`pulse` → activity, `bot` → robot, `network`/`tree-view`/`flow` →
+tree-structure, `layers` → stack, `braces`/`code-json` → brackets-curly, `file-spreadsheet` → file-csv,
+`hard-drive`/`server-stack` → hard-drives, `kanban`/`columns` → view-boards, `palette` → color-swatch, `prohibit` → ban,
+`funnel` → filter, `arrows-merge`/`git-pull-request` → git-merge, `live`/`radio` → broadcast e, do Phosphor, `gear`,
+`gear-six`, `list`, `list-bullets`, `house`, `info`, `warning`, `warning-circle`, `warning-octagon`, `copy`,
+`pencil-simple`, `note-pencil`, `notebook`, `book`, `arrows-clockwise`, `envelope`, `globe-hemisphere-west`, `moon-stars`,
+`buildings`, `currency-circle-dollar`, `chart-line-up`, `shield-warning`, `puzzle-piece`, `package`, `paperclip`,
+`upload-simple`, `tray-arrow-down`, `lightbulb`, `question`, `bookmark-simple`, `door-open`, `caret-*`,
+`sliders-horizontal`, `hand-pointing`, `map-trifold`, `list-checks`, `squares-four`, `arrows-left-right`, `file-text`,
+`clipboard-text`, `user-circle-gear`, `trash-simple`, `magnifying-glass-plus`.
+
+**Padrões que mudaram:** nenhum. `SsSeries` ganhou `dashed:` e `colors:` opcionais; `SsLineChart` continua curvo por
+padrão (`curved: false` é o que o web faz).
+
 ## v0.26.0: conversa entre pessoas (cliente e atendente)
 
 Pedido do minhas-vendas (atendimento do WhatsApp: a atendente da loja conversa com o cliente). O chat da suíte só sabia
@@ -1612,6 +1673,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.27.0` (16/11/2026), parte do meulog: seção "v0.27.0 (meulog)". `Ss::LineChartComponent` (novo) ↔ `SsLineChart(curved:, markers:, empty:)` + `SsSeries(dashed:, colors:)`; `BarChartComponent(horizontal:, markers:, empty:)` + `tones:`/`colors:` por valor ↔ `SsBarChart(horizontal:, markers:, empty:)`; `SsChartMarker`/`SsChartEmpty`; 16 ícones (Lucide) e apelidos do Phosphor; `ss_font_tags(self_hosted:, display:)` com Manrope e DM Mono servidas pela gem. Nada quebra.
 - `v0.26.0` (15/11/2026): seção "v0.26.0" (conversa entre pessoas). `Ss::ChatComponent::Message(from: :them, author:, status:)` ↔ `SsChatBubble(aiMark: false, author:)` e `SsChatStatus.delivered`/`read`; `Ss::ChatDividerComponent` ↔ `SsChatDivider`; `.ss-bubble-media`/`.ss-bubble-file`; o bloco do `ChatComponent` entra dentro do log. Nada quebra.
 - `v0.25.2` (15/11/2026): seção "v0.25.2". O `SsHeaderAction` com selo tem o `tooltip` como nome no leitor de tela (antes lia só o número). Nada quebra.
 - `v0.25.1` (14/11/2026): seção "v0.25.1". O rótulo das abas da `SsNavBar` volta a usar a Manrope do tema (na v0.25.0 caía na fonte do sistema). Nada quebra.

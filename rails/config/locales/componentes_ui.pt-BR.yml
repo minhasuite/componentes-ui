@@ -61,6 +61,11 @@ pt-BR:
       offline: Câmera offline
       retry: Tentar de novo
     chart:
+      marker:
+        deploy: implantação
+        incident: incidente
+        note: nota
+      markers: Marcas
       keys_hint: "%{title}. Use as setas para ver cada ponto."
       period: Período
       role: gráfico

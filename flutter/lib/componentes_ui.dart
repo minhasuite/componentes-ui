@@ -97,3 +97,4 @@ export 'src/v192/pecas.dart';
 export 'src/v20/pecas.dart';
 export 'src/v21/cue.dart';
 export 'src/v24/ai_insight_card.dart';
+export 'src/v27/chart_markers.dart' show SsChartMarker, SsChartMarkerKind;

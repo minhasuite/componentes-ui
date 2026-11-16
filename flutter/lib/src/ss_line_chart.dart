@@ -7,15 +7,22 @@ import 'app_theme.dart';
 import 'format.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
+import 'v27/chart_markers.dart';
 
 /// Uma série do [SsLineChart]: os valores (um por rótulo), o nome que vai no
 /// balão e a cor (sem cor: a paleta da suíte, começando na marca).
+///
+/// v0.27: [dashed] desenha a série tracejada e fina no [SsLineChart] (a
+/// referência, ex. o período anterior); [colors] dá uma cor por valor no
+/// [SsBarChart] (nulo = a da série; ex. a categoria "Outros" apagada).
 class SsSeries {
-  const SsSeries(this.values, {this.name, this.color});
+  const SsSeries(this.values, {this.name, this.color, this.dashed = false, this.colors});
 
   final List<double> values;
   final String? name;
   final Color? color;
+  final bool dashed;
+  final List<Color?>? colors;
 }
 
 /// Gráfico de linhas (até 3 séries) com eixo discreto: 3 linhas guia com o
@@ -25,6 +32,12 @@ class SsSeries {
 /// com [targetLabel]. Desenha-se da esquerda para a direita quando entra na tela.
 ///
 /// `SsLineChart(series: [SsSeries(precos, name: 'Preço')], labels: datas, format: (v) => money(v.round()))`
+///
+/// v0.27 (par do Ss::LineChartComponent): [curved] falso liga os pontos em
+/// linha reta (série diária: a curva inventa valor entre dois dias); série com
+/// `dashed: true` sai tracejada e fina; [markers] desenha marcas verticais
+/// (deploy, incidente, nota) por rótulo; [empty] mostra o texto no lugar do
+/// gráfico quando não há ponto (sem [empty], como antes).
 class SsLineChart extends StatefulWidget {
   const SsLineChart({
     super.key,
@@ -34,9 +47,21 @@ class SsLineChart extends StatefulWidget {
     this.targetLabel,
     this.format,
     this.height = 180,
+    this.curved = true,
+    this.markers = const [],
+    this.empty,
   });
 
   final List<SsSeries> series;
+
+  /// Linha suave (padrão) ou reta de ponto a ponto (v0.27).
+  final bool curved;
+
+  /// Marcas verticais por rótulo (v0.27).
+  final List<SsChartMarker> markers;
+
+  /// Texto do vazio (v0.27): sem rótulo ou sem valor.
+  final String? empty;
 
   /// Um por ponto (datas: "01/10"). Só alguns aparecem no eixo; todos no balão.
   final List<String> labels;
@@ -80,9 +105,14 @@ class _SsLineChartState extends State<SsLineChart> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    final vazio = widget.labels.isEmpty || widget.series.every((x) => x.values.isEmpty);
+    if (vazio && widget.empty != null) return SsChartEmpty(widget.empty!, height: widget.height);
+    final marcas = ssResolveMarkers(widget.markers, widget.labels);
+    final topo = ssMarkerRows(marcas) * ssMarkerLine;
     final paleta = c.series;
     final series = [
-      for (var i = 0; i < widget.series.length; i++) (widget.series[i].values, widget.series[i].color ?? paleta[i]),
+      for (var i = 0; i < widget.series.length; i++)
+        (widget.series[i].values, widget.series[i].color ?? paleta[i % paleta.length], widget.series[i].dashed),
     ];
     final todos = [for (final s in widget.series) ...s.values, ?widget.target];
     var lo = todos.isEmpty ? 0.0 : todos.reduce(math.min);
@@ -91,15 +121,17 @@ class _SsLineChartState extends State<SsLineChart> {
       hi += 1;
       lo -= 1;
     }
-    final primeira = widget.series.first.values;
+    final primeira = widget.series.isEmpty ? const <double>[] : widget.series.first.values;
     final s = SsStrings.of(context);
     _formats = SsFormats.of(context);
     final resumo = primeira.isEmpty
         ? s.noData
         : s.chartSummary(_fmt(primeira.reduce(math.min)), _fmt(primeira.reduce(math.max)), _fmt(primeira.last));
 
+    final notas = [for (final (i, _, m) in marcas) '${widget.labels[i]}: ${m.label}'].join('; ');
     return Semantics(
-      label: '${s.chartOf(widget.series.first.name)}: $resumo',
+      label:
+          '${s.chartOf(widget.series.isEmpty ? null : widget.series.first.name)}: $resumo${notas.isEmpty ? '' : '. $notas'}',
       excludeSemantics: true,
       child: SizedBox(
         height: widget.height,
@@ -133,6 +165,10 @@ class _SsLineChartState extends State<SsLineChart> {
                           t: t,
                           sel: sel,
                           format: _fmt,
+                          curved: widget.curved,
+                          markers: marcas,
+                          markerTop: topo,
+                          markerColors: {for (final k in SsChartMarkerKind.values) k: ssMarkerColor(context, k)},
                           guide: c.line,
                           ink: c.ink,
                           surface: c.surface,
@@ -143,7 +179,7 @@ class _SsLineChartState extends State<SsLineChart> {
                   ),
                   if (sel != null)
                     Positioned(
-                      top: 0,
+                      top: topo,
                       left: (xSel - 64).clamp(0.0, math.max(0.0, w - 128)),
                       width: 128,
                       child: IgnorePointer(child: _Balao(widget.labels[sel], widget.series, series, sel, _fmt)),
@@ -163,7 +199,7 @@ class _Balao extends StatelessWidget {
 
   final String label;
   final List<SsSeries> series;
-  final List<(List<double>, Color)> cores;
+  final List<(List<double>, Color, bool)> cores;
   final int i;
   final String Function(double) fmt;
 
@@ -221,6 +257,67 @@ class _Balao extends StatelessWidget {
   }
 }
 
+/// Reta de ponto a ponto (v0.27).
+Path _reta(List<Offset> pts) {
+  final p = Path()..moveTo(pts.first.dx, pts.first.dy);
+  for (final o in pts.skip(1)) {
+    p.lineTo(o.dx, o.dy);
+  }
+  return p;
+}
+
+/// O vazio dos gráficos (v0.27): o texto numa caixa tracejada da altura do
+/// gráfico (par do `.ss-chart-empty`).
+class SsChartEmpty extends StatelessWidget {
+  const SsChartEmpty(this.text, {super.key, this.height = 180});
+
+  final String text;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    return SizedBox(
+      height: height,
+      child: CustomPaint(
+        painter: _Tracejado(c.line),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: AppType.meta, color: c.muted),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Tracejado extends CustomPainter {
+  _Tracejado(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(AppRadius.thumb)));
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final m in path.computeMetrics()) {
+      for (var d = 0.0; d < m.length; d += 8) {
+        canvas.drawPath(m.extractPath(d, math.min(d + 4, m.length)), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Tracejado old) => old.color != color;
+}
+
 /// Curva suave por Catmull-Rom em cúbicas (a mesma do SsSparkline).
 Path _curva(List<Offset> pts) {
   final p = Path()..moveTo(pts.first.dx, pts.first.dy);
@@ -247,13 +344,21 @@ class _LinePainter extends CustomPainter {
     required this.t,
     required this.sel,
     required this.format,
+    this.curved = true,
+    this.markers = const [],
+    this.markerTop = 0,
+    this.markerColors = const {},
     required this.guide,
     required this.ink,
     required this.surface,
     required this.axis,
   });
 
-  final List<(List<double>, Color)> series;
+  final List<(List<double>, Color, bool)> series;
+  final bool curved;
+  final List<(int, int, SsChartMarker)> markers;
+  final double markerTop;
+  final Map<SsChartMarkerKind, Color> markerColors;
   final List<String> labels;
   final double lo, hi;
   final double? target;
@@ -284,8 +389,9 @@ class _LinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final n = labels.length;
     final w = size.width - _side * 2;
-    final h = size.height - _top - _bottom;
-    double y(double v) => _top + h * (1 - (v - lo) / (hi - lo));
+    final top = _top + markerTop;
+    final h = size.height - top - _bottom;
+    double y(double v) => top + h * (1 - (v - lo) / (hi - lo));
     double x(int i) => _side + w * i / math.max(n - 1, 1);
 
     // Eixo Y discreto: 3 linhas guia finas, valor em cima de cada uma.
@@ -316,11 +422,11 @@ class _LinePainter extends CustomPainter {
     // Linhas, reveladas da esquerda para a direita.
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width * t, size.height));
-    for (final (values, color) in series) {
+    for (final (values, color, dashed) in series) {
       if (values.length < 2) continue;
       final pts = [for (var i = 0; i < values.length; i++) Offset(x(i), y(values[i]))];
-      final line = _curva(pts);
-      if (series.length == 1) {
+      final line = curved ? _curva(pts) : _reta(pts);
+      if (series.length == 1 && !dashed) {
         final area = Path.from(line)
           ..lineTo(pts.last.dx, _top + h)
           ..lineTo(pts.first.dx, _top + h)
@@ -332,20 +438,29 @@ class _LinePainter extends CustomPainter {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [color.withValues(alpha: .2), color.withValues(alpha: 0)],
-            ).createShader(Rect.fromLTWH(0, _top, size.width, h)),
+            ).createShader(Rect.fromLTWH(0, top, size.width, h)),
         );
       }
-      canvas.drawPath(
-        line,
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round,
-      );
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = dashed ? 1.25 : 2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      if (dashed) {
+        for (final m in line.computeMetrics()) {
+          for (var d = 0.0; d < m.length; d += 7) {
+            canvas.drawPath(m.extractPath(d, math.min(d + 4, m.length)), paint);
+          }
+        }
+      } else {
+        canvas.drawPath(line, paint);
+      }
     }
     canvas.restore();
+    if (markers.isNotEmpty) {
+      ssPaintMarkers(canvas, size, markers, x, markerColors, top: top - 6, bottom: top + h, style: axis);
+    }
     // Rótulos por cima das linhas (valor de cada guia e o alvo).
     for (final v in [lo, (lo + hi) / 2, hi]) {
       _text(canvas, format(v), Offset(_side, y(v) - 13), chip: true);
@@ -364,13 +479,13 @@ class _LinePainter extends CustomPainter {
     final s = sel;
     if (s != null) {
       canvas.drawLine(
-        Offset(x(s), _top - 4),
-        Offset(x(s), _top + h),
+        Offset(x(s), top - 4),
+        Offset(x(s), top + h),
         Paint()
           ..color = ink.withValues(alpha: .35)
           ..strokeWidth = 1,
       );
-      for (final (values, color) in series) {
+      for (final (values, color, _) in series) {
         if (s >= values.length) continue;
         final p = Offset(x(s), y(values[s]));
         canvas.drawCircle(p, 5.5, Paint()..color = surface);
@@ -381,5 +496,11 @@ class _LinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LinePainter old) =>
-      old.t != t || old.sel != sel || old.series != series || old.target != target || old.guide != guide;
+      old.t != t ||
+      old.sel != sel ||
+      old.series != series ||
+      old.target != target ||
+      old.guide != guide ||
+      old.curved != curved ||
+      old.markers != markers;
 }

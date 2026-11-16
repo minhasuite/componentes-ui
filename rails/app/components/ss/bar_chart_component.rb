@@ -28,18 +28,36 @@ module Ss
   #
   #   render Ss::BarChartComponent.new(..., line: { name: "Saldo", values: real_ate_hoje },
   #     projection: { name: "Projeção", values: projetado }, projection_from: Date.current.day - 1)
+  #
+  # v0.27 (meulog):
+  # - horizontal: true deita as barras (uma linha por rótulo, rótulo à esquerda): para categoria de nome
+  #   longo (classe de exceção, rota). O rótulo que não cabe termina em "…" e o nome inteiro fica na dica
+  #   (<title>). A altura sai do número de linhas (height: é ignorado); line:, projection: e markers: não
+  #   valem no deitado.
+  # - Cor por valor numa série: tones: [nil, …, :muted] (ou colors: ["var(--…)", …]); nil = a cor da série.
+  #   Ex.: a última categoria "Outros" apagada, para não parecer o maior item.
+  # - empty: "Sem dados no período" desenha o vazio (texto no lugar do gráfico) quando não há rótulo ou
+  #   nenhum valor; sem empty:, nada aparece (como antes).
+  # - markers: marcas verticais (deploy, incidente, nota) por rótulo; ver Ss::ChartMarkers.
+  #
+  #   render Ss::BarChartComponent.new(title: "Erros por classe", horizontal: true,
+  #     labels: ["ActiveRecord::RecordNotFound", "Net::ReadTimeout", "Outros"],
+  #     series: [{ name: "Ocorrências", values: [120, 48, 30], tones: [nil, nil, :muted] }], empty: "Sem dados")
   class BarChartComponent < BaseComponent
+    include ChartMarkers
+
     W = 560
     PT = 26.0
     PB = 28.0
     PX = 14.0
+    ROW = 30.0
     TONES = { accent: "var(--accent)", success: "var(--success)", danger: "var(--danger)", warn: "var(--warn)", muted: "var(--muted)" }.freeze
 
     attr_reader :title, :labels, :series, :line, :projection
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
                    show_title: false, legend: true, width: W, label_every: nil, projection: nil, projection_from: nil,
-                   **rest)
+                   horizontal: false, empty: nil, markers: [], **rest)
       super(**rest)
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
@@ -57,9 +75,25 @@ module Ss
       @active = active
       @show_title = show_title
       @legend = legend
+      @horizontal = horizontal
+      @empty = empty
+      if horizontal
+        @line = @projection = nil
+        @h = (PT + PB + ROW * labels.size).round
+      end
+      init_markers(horizontal ? [] : markers)
+      @h += marker_pad.round if markers?
     end
 
-    def render? = labels.any? && series.any?
+    def render? = data? || @empty.present?
+
+    # Há o que desenhar: rótulo e ao menos um valor.
+    def data? = labels.any? && series.any? { |s| s[:values].any? { !_1.nil? } }
+    def empty_text = @empty
+    def horizontal? = @horizontal
+
+    # Topo da área de desenho (as marcas empurram para baixo).
+    def pt = PT + marker_pad
 
     def h = @h
     def w = @w
@@ -102,8 +136,71 @@ module Ss
 
     def y(v)
       lo, hi = range
-      (PT + (h - PT - PB) * (hi - v) / (hi - lo)).round(2)
+      (pt + (h - pt - PB) * (hi - v) / (hi - lo)).round(2)
     end
+
+    # ── Deitado (v0.27) ──────────────────────────────────────────────
+    # Coluna dos rótulos à esquerda (~34% da largura), barras no resto, valor no fim da barra.
+    def label_w = (w * 0.34).round(2)
+    def label_chars = [(label_w / 7.2).floor, 4].max
+    def short_label(l) = l.size > label_chars ? "#{l[0, label_chars - 1].rstrip}…" : l
+    def value_w = 56.0
+    def hx(v)
+      lo, hi = range
+      left = PX + label_w
+      (left + (w - left - PX - value_w) * (v - lo) / (hi - lo)).round(2)
+    end
+    def zero_x = hx(0)
+    def row_y(i) = (PT + ROW * i).round(2)
+
+    # Barras de uma linha deitada: [x, y, w, h, série, valor, cor].
+    def hbars(i)
+      gh = ROW * 0.62
+      top = PT + ROW * i + (ROW - gh) / 2
+      list = if stacked?
+               up = down = 0.0
+               series.filter_map do |s|
+                 v = s[:values][i]
+                 next if v.nil? || v.zero?
+
+                 base = v.positive? ? up : down
+                 v.positive? ? (up = base + v) : (down = base + v)
+                 [top, gh, base, base + v, s, v]
+               end
+             else
+               bh = (gh - 2 * (series.size - 1)) / series.size
+               series.each_with_index.filter_map do |s, k|
+                 v = s[:values][i]
+                 next if v.nil? || v.zero?
+
+                 [top + k * (bh + 2), bh, 0, v, s, v]
+               end
+             end
+      list.map do |(ty, th, from, to, s, v)|
+        l, r = [hx(from), hx(to)].minmax
+        [l, ty.round(2), [r - l, 1].max.round(2), th.round(2), s, v, color_at(s, i)]
+      end
+    end
+
+    # Onde escrever o valor da linha (fim da maior barra) e o total (soma no empilhado).
+    def hvalue(i)
+      vals = series.map { _1[:values][i] }.compact
+      return nil if vals.empty?
+
+      stacked? ? vals.sum : vals.max_by(&:abs)
+    end
+    def hvalue_x(i) = [hx([hvalue(i).to_f, 0].max), zero_x].max + 6
+
+    def hguides
+      lo, hi = range
+      [lo, (lo + hi) / 2, hi].uniq.map { |v| [hx(v), nice(v)] }
+    end
+
+    # Cor do valor i da série (tones:/colors: por valor, ou a da série).
+    def color_at(s, i) = s[:colors][i] || s[:color]
+
+    # ── Marcas (v0.27) ────────────────────────────────────────────────
+    def marker_x(m) = cx(m[:index])
 
     def zero_y = y(0)
     def slot = (w - 2 * PX) / labels.size.to_f
@@ -122,7 +219,7 @@ module Ss
           base = v.positive? ? up : down
           top = base + v
           v.positive? ? (up = top) : (down = top)
-          rect(left, gw, base, top, s, v)
+          rect(left, gw, base, top, s, v, i)
         end
       else
         bw = (gw - 2 * (series.size - 1)) / series.size
@@ -130,7 +227,7 @@ module Ss
           v = s[:values][i]
           next if v.nil? || v.zero?
 
-          rect(left + k * (bw + 2), bw, 0, v, s, v)
+          rect(left + k * (bw + 2), bw, 0, v, s, v, i)
         end
       end
     end
@@ -152,8 +249,11 @@ module Ss
       rows = series.map { |s| "#{s[:name]}: #{s[:values][i].nil? ? "—" : fmt(s[:values][i])}" }
       rows << "#{line[:name]}: #{fmt(line[:values][i])}" if line && line[:values][i]
       rows << "#{projection[:name]}: #{fmt(projection[:values][i])}" if projection && projection[:values][i]
+      rows.concat(markers.select { _1[:index] == i }.map { "#{_1[:label]} (#{marker_kind_label(_1[:kind])})" })
       [labels[i], *rows].join("\n")
     end
+
+    def table_markers? = markers?
 
     def nice(v)
       return v.round if v.abs < 100
@@ -171,12 +271,13 @@ module Ss
     def normalize(s, fallback)
       s = s.to_h.transform_keys(&:to_sym)
       color = s[:color] || TONES[s[:tone]&.to_sym] || fallback
-      { name: s[:name].to_s, values: Array(s[:values]).map { _1&.to_f }, color: }
+      colors = Array(s[:colors]).presence || Array(s[:tones]).map { |t| t && TONES[t.to_sym] }
+      { name: s[:name].to_s, values: Array(s[:values]).map { _1&.to_f }, color:, colors: }
     end
 
-    def rect(x, w, from, to, s, v)
+    def rect(x, w, from, to, s, v, i)
       top, bottom = [y(from), y(to)].minmax
-      [x.round(2), top, w.round(2), [bottom - top, 1].max.round(2), s, v]
+      [x.round(2), top, w.round(2), [bottom - top, 1].max.round(2), s, v, color_at(s, i)]
     end
   end
 end

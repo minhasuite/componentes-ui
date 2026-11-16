@@ -8,7 +8,8 @@ import 'package:flutter/services.dart';
 import '../app_theme.dart';
 import '../format.dart';
 import '../motion_view.dart';
-import '../ss_line_chart.dart' show SsSeries;
+import '../ss_line_chart.dart' show SsSeries, SsChartEmpty;
+import '../v27/chart_markers.dart';
 import '../ss_strings.dart';
 
 /// Barras por rótulo (mês, cartão): uma barra por série lado a lado, ou
@@ -29,6 +30,12 @@ import '../ss_strings.dart';
 /// projeção começa, passe em [line] só os valores até lá (lista mais curta).
 ///
 /// `SsBarChart(labels: meses, series: [SsSeries(receitas, name: 'Receitas', color: c.success), SsSeries(despesas, name: 'Despesas', color: c.danger)], line: SsSeries(saldo, name: 'Saldo'), stacked: true, format: (v) => money((v * 100).round()))`
+///
+/// v0.27 (par do `Ss::BarChartComponent`, pedido do meulog): [horizontal] deita
+/// as barras (uma linha por rótulo, rótulo à esquerda com reticências: classe
+/// de exceção, rota); `SsSeries(colors:)` dá cor por valor (a categoria
+/// "Outros" apagada); [markers] desenha marcas verticais (deploy, incidente,
+/// nota; não valem no deitado); [empty] mostra o texto quando não há valor.
 class SsBarChart extends StatefulWidget {
   const SsBarChart({
     super.key,
@@ -42,7 +49,19 @@ class SsBarChart extends StatefulWidget {
     this.active,
     this.projection,
     this.projectionFrom = 0,
+    this.horizontal = false,
+    this.markers = const [],
+    this.empty,
   });
+
+  /// Barras deitadas, uma linha por rótulo (v0.27). Ignora [line], [projection] e [markers].
+  final bool horizontal;
+
+  /// Marcas verticais por rótulo (v0.27).
+  final List<SsChartMarker> markers;
+
+  /// Texto do vazio (v0.27).
+  final String? empty;
 
   final List<String> labels;
   final List<SsSeries> series;
@@ -141,6 +160,11 @@ class _SsBarChartState extends State<SsBarChart> {
     _formats = SsFormats.of(context);
     final paleta = c.series;
     final cores = [for (var i = 0; i < widget.series.length; i++) widget.series[i].color ?? paleta[i % paleta.length]];
+    final vazio = _n == 0 || widget.series.every((x) => x.values.isEmpty);
+    if (vazio && widget.empty != null) return SsChartEmpty(widget.empty!, height: widget.height);
+    if (widget.horizontal) return _deitado(context, cores);
+    final marcas = ssResolveMarkers(widget.markers, widget.labels);
+    final topo = ssMarkerRows(marcas) * ssMarkerLine;
     final corLinha = widget.line?.color ?? c.ink;
     final corProj = widget.projection?.color ?? widget.line?.color ?? c.muted;
     final (lo, hi) = ssBarRange(
@@ -186,6 +210,10 @@ class _SsBarChartState extends State<SsBarChart> {
                       builder: (_, t, _) => CustomPaint(
                         painter: _BarPainter(
                           series: [for (var i = 0; i < widget.series.length; i++) (widget.series[i].values, cores[i])],
+                          valueColors: [for (final x in widget.series) x.colors],
+                          markers: marcas,
+                          markerTop: topo,
+                          markerColors: {for (final k in SsChartMarkerKind.values) k: ssMarkerColor(context, k)},
                           line: widget.line == null ? null : (widget.line!.values, corLinha),
                           projection: widget.projection == null
                               ? null
@@ -216,7 +244,7 @@ class _SsBarChartState extends State<SsBarChart> {
                   ),
                   if (sel != null)
                     Positioned(
-                      top: 0,
+                      top: topo,
                       left: (xSel - 70).clamp(0.0, math.max(0.0, w - 140)),
                       width: 140,
                       child: IgnorePointer(
@@ -240,8 +268,10 @@ class _SsBarChartState extends State<SsBarChart> {
       ),
     );
 
+    final notas = [for (final (i, _, m) in marcas) '${widget.labels[i]}: ${m.label}'].join('; ');
     return Semantics(
-      label: '${s.chartOf(nome.isEmpty ? null : nome)}: ${_n == 0 ? s.noData : resumo}',
+      label:
+          '${s.chartOf(nome.isEmpty ? null : nome)}: ${_n == 0 ? s.noData : resumo}${notas.isEmpty ? '' : '. $notas'}',
       excludeSemantics: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -262,6 +292,131 @@ class _SsBarChartState extends State<SsBarChart> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+extension on _SsBarChartState {
+  /// Barras deitadas (v0.27): uma linha por rótulo, rótulo à esquerda (34%),
+  /// barra que cresce da esquerda e o valor no fim; o rótulo inteiro na dica.
+  Widget _deitado(BuildContext context, List<Color> cores) {
+    final c = SsColors.of(context);
+    final s = SsStrings.of(context);
+    final (lo, hi) = ssBarRange(widget.series, _n, stacked: widget.stacked);
+    final nome = widget.series.map((x) => x.name).whereType<String>().join(', ');
+    final resumo = [
+      for (var i = 0; i < _n; i++)
+        '${widget.labels[i]}: ${[for (final x in widget.series) _fmt(_v(x.values, i))].join(' / ')}',
+    ].join('; ');
+    final rotulo = TextStyle(fontSize: AppType.meta, fontWeight: FontWeight.w600, color: c.ink2);
+    final valor = AppTheme.number(context, size: AppType.micro, color: c.muted);
+    final temLegenda = widget.legend && widget.series.length > 1;
+    return Semantics(
+      label: '${s.chartOf(nome.isEmpty ? null : nome)}: $resumo',
+      excludeSemantics: true,
+      child: SsTweenInView(
+        end: 1,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutBack,
+        builder: (_, t, _) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < _n; i++)
+              SizedBox(
+                height: 30,
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 34,
+                      child: Tooltip(
+                        message: widget.labels[i],
+                        child: Text(
+                          widget.labels[i],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: rotulo,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 66,
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          final largura = math.max(0.0, box.maxWidth - 48);
+                          double px(double v) => largura * (v - lo) / (hi - lo);
+                          final x0 = px(0);
+                          final barras = <Widget>[];
+                          var up = 0.0, down = 0.0, maior = 0.0;
+                          final k = widget.series.length;
+                          final bh = widget.stacked ? 18.0 : (18.0 - 2 * (k - 1)) / math.max(k, 1);
+                          for (var j = 0; j < k; j++) {
+                            final x = widget.series[j];
+                            final v = _v(x.values, i) * t;
+                            if (v == 0) continue;
+                            final cor = (x.colors != null && i < x.colors!.length ? x.colors![i] : null) ?? cores[j];
+                            final de = widget.stacked ? (v > 0 ? up : down) : 0.0;
+                            final ate = de + v;
+                            if (widget.stacked) v > 0 ? up = ate : down = ate;
+                            final l = math.min(px(de), px(ate));
+                            final r = math.max(px(de), px(ate));
+                            maior = math.max(maior, r);
+                            barras.add(
+                              Positioned(
+                                left: l,
+                                width: math.max(r - l, 1),
+                                top: widget.stacked ? 6 : 6 + j * (bh + 2),
+                                height: bh,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(color: cor, borderRadius: BorderRadius.circular(4)),
+                                ),
+                              ),
+                            );
+                          }
+                          final vs = [for (final x in widget.series) _v(x.values, i)];
+                          final total = widget.stacked
+                              ? vs.fold(0.0, (a, b) => a + b)
+                              : vs.reduce((a, b) => a.abs() >= b.abs() ? a : b);
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                left: x0,
+                                top: 2,
+                                bottom: 2,
+                                width: 1,
+                                child: ColoredBox(color: c.ink.withValues(alpha: .3)),
+                              ),
+                              ...barras,
+                              Positioned(
+                                left: math.max(maior, x0) + 6,
+                                top: 8,
+                                child: Text(_fmt(total), style: valor),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (temLegenda) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 14,
+                runSpacing: 4,
+                children: [
+                  for (var j = 0; j < widget.series.length; j++)
+                    if (widget.series[j].name != null) _Legenda(widget.series[j].name!, cores[j]),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -375,6 +530,10 @@ class _Balao extends StatelessWidget {
 class _BarPainter extends CustomPainter {
   _BarPainter({
     required this.series,
+    this.valueColors = const [],
+    this.markers = const [],
+    this.markerTop = 0,
+    this.markerColors = const {},
     required this.line,
     this.projection,
     required this.n,
@@ -395,6 +554,10 @@ class _BarPainter extends CustomPainter {
   });
 
   final List<(List<double>, Color)> series;
+  final List<List<Color?>?> valueColors;
+  final List<(int, int, SsChartMarker)> markers;
+  final double markerTop;
+  final Map<SsChartMarkerKind, Color> markerColors;
   final (List<double>, Color)? line;
   final (List<double>, Color, int)? projection;
   final int n;
@@ -427,8 +590,14 @@ class _BarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (n == 0) return;
-    final h = size.height - _top - _bottom;
-    double y(double v) => _top + h * (hi - v) / (hi - lo);
+    final top = _top + markerTop;
+    final h = size.height - top - _bottom;
+    double y(double v) => top + h * (hi - v) / (hi - lo);
+    Color cor(int j, int i) {
+      final vc = j < valueColors.length ? valueColors[j] : null;
+      return (vc != null && i < vc.length ? vc[i] : null) ?? series[j].$2;
+    }
+
     final slot = (size.width - _side * 2) / n;
     final y0 = y(0);
 
@@ -450,7 +619,7 @@ class _BarPainter extends CustomPainter {
 
     if (sel != null) {
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(_side + slot * sel!, _top - 8, slot, h + 8), const Radius.circular(8)),
+        RRect.fromRectAndRadius(Rect.fromLTWH(_side + slot * sel!, top - 8, slot, h + 8), const Radius.circular(8)),
         Paint()..color = hover,
       );
     }
@@ -461,8 +630,8 @@ class _BarPainter extends CustomPainter {
       final left = _side + slot * i + (slot - gw) / 2;
       if (stacked) {
         var up = 0.0, down = 0.0;
-        for (final (vs, cor) in series) {
-          final v = _v(vs, i) * t;
+        for (var j = 0; j < series.length; j++) {
+          final v = _v(series[j].$1, i) * t;
           if (v == 0) continue;
           final base = v > 0 ? up : down;
           final topo = base + v;
@@ -470,7 +639,7 @@ class _BarPainter extends CustomPainter {
           _bar(
             canvas,
             Rect.fromLTRB(left, math.min(y(base), y(topo)), left + gw, math.max(y(base), y(topo))),
-            cor,
+            cor(j, i),
             v < 0,
           );
         }
@@ -480,7 +649,7 @@ class _BarPainter extends CustomPainter {
         for (var j = 0; j < k; j++) {
           final v = _v(series[j].$1, i) * t;
           final x = left + j * (bw + 2);
-          _bar(canvas, Rect.fromLTRB(x, math.min(y0, y(v)), x + bw, math.max(y0, y(v))), series[j].$2, v < 0);
+          _bar(canvas, Rect.fromLTRB(x, math.min(y0, y(v)), x + bw, math.max(y0, y(v))), cor(j, i), v < 0);
         }
       }
       if (i % passo == 0 || i == active) {
@@ -493,6 +662,19 @@ class _BarPainter extends CustomPainter {
           maxWidth: math.max(slot * passo, 24),
         );
       }
+    }
+
+    if (markers.isNotEmpty) {
+      ssPaintMarkers(
+        canvas,
+        size,
+        markers,
+        (i) => _side + slot * (i + .5),
+        markerColors,
+        top: top - 6,
+        bottom: top + h,
+        style: axis,
+      );
     }
 
     // Valor das guias por cima das barras, numa pílula da cor da superfície.
@@ -594,6 +776,7 @@ class _BarPainter extends CustomPainter {
       o.series != series ||
       o.line != line ||
       o.projection != projection ||
+      o.markers != markers ||
       o.lo != lo ||
       o.hi != hi ||
       o.guide != guide;

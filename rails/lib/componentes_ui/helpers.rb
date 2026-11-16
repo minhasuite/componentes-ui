@@ -174,6 +174,38 @@ module ComponentesUi
       tags.join("\n").html_safe
     end
 
+    # v0.27: as fontes da suíte (Manrope 400–800 e DM Mono 400/500) num helper só, para o <head>:
+    #   <%= ss_font_tags %>                                  Google Fonts (o que os produtos já faziam à mão)
+    #   <%= ss_font_tags(self_hosted: true) %>               servidas pelo próprio app, sem requisição externa
+    #   <%= ss_font_tags(self_hosted: true, display: true) %> e a Big Shoulders Display (tela de entrada)
+    # self_hosted: os woff2 vêm da gem (app/assets/fonts/componentes_ui, OFL 1.1) pelo Propshaft, com digest:
+    # o stylesheet componentes_ui/fonts.css tem os @font-face e o Propshaft troca cada url() pelo caminho
+    # com digest. A Manrope 400 e a 700 (texto e título) entram com <link rel="preload">, para o texto não
+    # piscar na fonte do sistema. Funciona em intranet fechada e com CSP font-src 'self'.
+    GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap".freeze
+    FONT_PRELOAD = %w[Manrope-Regular Manrope-Bold].freeze
+
+    def ss_font_tags(self_hosted: false, display: false, preconnect: true, preload: true)
+      tags = []
+      if self_hosted
+        if preload
+          FONT_PRELOAD.each do |f|
+            tags << %(<link rel="preload" href="#{ERB::Util.h(asset_path("componentes_ui/#{f}.woff2"))}" as="font" type="font/woff2" crossorigin>)
+          end
+        end
+        tags << stylesheet_link_tag("componentes_ui/fonts", "data-turbo-track": "reload").to_s
+        tags << stylesheet_link_tag("componentes_ui/fonts_display", "data-turbo-track": "reload").to_s if display
+      else
+        if preconnect
+          tags << %(<link rel="preconnect" href="https://fonts.googleapis.com">)
+          tags << %(<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>)
+        end
+        tags << %(<link rel="stylesheet" href="#{GOOGLE_FONTS_URL}">)
+        tags << ss_display_font_tag(preconnect: false).to_s if display
+      end
+      tags.join("\n").html_safe
+    end
+
     # v0.10.2: "Pular para o conteúdo" (.ss-skip), o primeiro Tab da página. Ponha logo no
     # começo do <body>; o alvo precisa de id (o <main> do AppShell é #conteudo, com tabindex=-1).
     #   <%= ss_skip_link %>   <%= ss_skip_link("#principal", "Ir para a lista") %>

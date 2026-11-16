@@ -1,0 +1,45 @@
+<%= tag.figure(**root_attrs(class: classes("ss-linec", ("is-stacked" if stacked?), ("is-empty" unless data?)), id: uid)) do %>
+  <figcaption class="<%= show_title? ? "ss-barc-title" : "ss-sr" %>"><%= title %></figcaption>
+  <% if !data? %>
+    <p class="ss-chart-empty"><%= empty_text %></p>
+  <% else %>
+    <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
+      <% guides.each do |(gy, _v, zero)| %>
+        <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= w - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
+      <% end %>
+      <% if stacked? %>
+        <% series.each_index do |k| %>
+          <path class="ss-linec-area" d="<%= area_d(k) %>" style="fill:<%= series[k][:color] %>"/>
+        <% end %>
+      <% end %>
+      <% series.each_with_index do |s, k| %>
+        <path class="ss-linec-line<%= " is-dashed" if s[:dashed] %>" d="<%= line_d(k) %>" style="stroke:<%= s[:color] %>"/>
+        <% if dots? %>
+          <% points(k).each do |(px, py, _v)| %><circle class="ss-linec-dot<%= " is-dashed" if s[:dashed] %>" cx="<%= px %>" cy="<%= py %>" r="<%= s[:dashed] ? 2.5 : 3.5 %>" style="stroke:<%= s[:color] %>"/><% end %>
+        <% end %>
+      <% end %>
+      <%= markers_svg(top: pt - 10, bottom: h - PB) if markers? %>
+      <% labels.each_with_index do |label, i| %>
+        <g class="ss-linec-g<%= " is-active" if active?(i) %>">
+          <title><%= tip(i) %></title>
+          <rect class="ss-linec-hit" x="<%= [x(i) - slot / 2, 0].max.round(2) %>" y="<%= pt - 10 %>" width="<%= slot.round(2) %>" height="<%= h - pt - PB + 10 %>"/>
+          <line class="ss-linec-cursor" x1="<%= x(i) %>" x2="<%= x(i) %>" y1="<%= pt - 4 %>" y2="<%= h - PB %>"/>
+          <% if show_label?(i) %><text class="ss-barc-xtext" x="<%= x(i) %>" y="<%= h - 8 %>" text-anchor="<%= i.zero? && labels.size > 1 ? "start" : (i == labels.size - 1 && labels.size > 1 ? "end" : "middle") %>"><%= label %></text><% end %>
+        </g>
+      <% end %>
+      <% guides.each do |(gy, v, zero)| %><% next if zero %>
+        <text class="ss-barc-ytext" x="<%= PX %>" y="<%= gy - 5 %>"><%= fmt(v) %></text>
+      <% end %>
+    </svg>
+    <% if legend? %>
+      <ul class="ss-barc-legend" aria-hidden="true">
+        <% series.each do |s| %><li class="<%= s[:dashed] ? "is-dashed" : "is-line" %>"><i style="<%= s[:dashed] ? "color" : "background" %>:<%= s[:color] %>"></i><%= s[:name] %></li><% end %>
+      </ul>
+    <% end %>
+    <div class="ss-sr-wrap"><table class="ss-sr">
+      <caption><%= title %></caption>
+      <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if markers? %><th scope="col"><%= ss_t("chart.markers", default: "Marcas") %></th><% end %></tr></thead>
+      <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if markers? %><td><%= markers_at(i) %></td><% end %></tr><% end %></tbody>
+    </table></div>
+  <% end %>
+<% end %>

@@ -59,6 +59,11 @@ es:
       offline: Cámara sin conexión
       retry: Reintentar
     chart:
+      marker:
+        deploy: despliegue
+        incident: incidente
+        note: nota
+      markers: Marcas
       keys_hint: "%{title}. Usa las flechas para ver cada punto."
       period: Período
       role: gráfico

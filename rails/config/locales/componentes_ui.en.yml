@@ -59,6 +59,11 @@ en:
       offline: Camera offline
       retry: Try again
     chart:
+      marker:
+        deploy: deploy
+        incident: incident
+        note: note
+      markers: Markers
       keys_hint: "%{title}. Use the arrow keys to see each point."
       period: Period
       role: chart

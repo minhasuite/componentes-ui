@@ -1,0 +1,4 @@
+/* componentes-ui v0.27: a fonte de exibição (Big Shoulders Display 800 e 900) servida pelo app.
+   Liga com ss_font_tags(self_hosted: true, display: true). OFL 1.1. */
+@font-face { font-family: "Big Shoulders Display"; font-style: normal; font-weight: 800; font-display: swap; src: url("/componentes_ui/BigShouldersDisplay-ExtraBold.woff2") format("woff2"); }
+@font-face { font-family: "Big Shoulders Display"; font-style: normal; font-weight: 900; font-display: swap; src: url("/componentes_ui/BigShouldersDisplay-Black.woff2") format("woff2"); }

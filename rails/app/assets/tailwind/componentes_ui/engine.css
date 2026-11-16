@@ -56,6 +56,8 @@
 @import "./v25_web.css";
 /* v0.26: conversa entre pessoas (bolha da outra pessoa, autor, situação entregue/lida, separador de dia e mídia na bolha). */
 @import "./v26_web.css";
+/* v0.27: o que o meulog pediu (linhas por categoria, barras deitadas, cor por valor, marcas de deploy/incidente e o vazio dos gráficos). */
+@import "./v27_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

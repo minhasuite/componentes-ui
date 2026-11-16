@@ -1,0 +1,57 @@
+<%# titulo: Monitor de erros (v0.27): linhas, barras deitadas, marcas e fontes locais | grupo: Dados | ordem: 27 %>
+<%# v0.27: o que o meulog pediu ao migrar (gráficos sem Chart.js, ícones de monitor de erros e fontes sem CDN). %>
+<% dias = (1..14).map { |d| format("%02d/11", d) }
+   agora = [12, 19, 8, 24, 17, 22, 30, 28, 14, 9, 11, 26, 31, 18]
+   antes = [10, 11, 9, 14, 12, 15, 18, 16, 12, 10, 9, 14, 17, 15]
+   marcas = [{ at: "05/11", label: "v2.3.1", kind: :deploy }, { at: "07/11", label: "API fora do ar", kind: :incident },
+             { at: "07/11", label: "v2.3.2", kind: :deploy }, { at: "12/11", label: "migração do banco", kind: :note }] %>
+<div class="grid gap-6" id="v27">
+  <%= demo "Ss::LineChartComponent", "Linhas retas por dia (sem inventar valor entre dois dias), o período anterior tracejado e fino, marcas de deploy, incidente e nota.",
+        uso: 'series: [{ name:, values:, dashed: true }], markers: [{ at:, label:, kind: :deploy }]' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::LineChartComponent.new(title: "Ocorrências por dia", show_title: true, labels: dias, width: 900, markers: marcas,
+            series: [{ name: "Agora", values: agora }, { name: "14 dias antes", values: antes, tone: :muted, dashed: true }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::LineChartComponent(stacked: true)", "Áreas empilhadas: a de cima soma as de baixo; a dica e a tabela mostram o valor de cada série." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::LineChartComponent.new(title: "Erros por versão", show_title: true, labels: dias.first(7), stacked: true,
+            series: [{ name: "2.3.0", values: [8, 6, 4, 2, 1, 0, 0] }, { name: "2.3.1", values: [0, 3, 6, 9, 7, 5, 3] }, { name: "2.3.2", values: [0, 0, 0, 2, 5, 9, 12] }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::BarChartComponent(horizontal: true, tones:)", "Barras deitadas para rótulo longo (classe de exceção): reticências e o nome inteiro na dica; a categoria Outros apagada." do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::BarChartComponent.new(title: "Erros por classe", show_title: true, horizontal: true,
+            labels: ["ActiveRecord::RecordNotFound", "Net::ReadTimeout em PagamentosController#create", "NoMethodError", "Outros"],
+            series: [{ name: "Ocorrências", values: [120, 64, 48, 30], tones: [nil, nil, nil, :muted] }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::BarChartComponent(markers:, empty:)", "Colunas com o período anterior e as marcas; e o vazio com texto." do %>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="ss-card ss-card-pad">
+        <%= render Ss::BarChartComponent.new(title: "Por dia", labels: dias.first(7), markers: marcas,
+              series: [{ name: "Agora", values: agora.first(7) }, { name: "Anterior", values: antes.first(7), tone: :muted }]) %>
+      </div>
+      <div class="ss-card ss-card-pad">
+        <%= render Ss::BarChartComponent.new(title: "Por dia", labels: [], series: [], empty: "Sem dados no período") %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= demo "Ícones do monitor de erros", "Novos no ss_icon (traço do conjunto, desenho do Lucide): o nome do Phosphor também vale por apelido." do %>
+    <div class="flex flex-wrap gap-4">
+      <% %w[activity bug git-branch git-merge robot broadcast webhook tree-structure signpost stack brackets-curly file-code file-csv hard-drives gauge compass].each do |n| %>
+        <span class="inline-flex flex-col items-center gap-1 text-xs" style="width:5.5rem"><%= ss_icon(n, size: :lg) %><code><%= n %></code></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "ss_font_tags(self_hosted: true)", "Manrope e DM Mono servidas pela própria gem (rede fechada, CSP font-src 'self'); esta vitrine já carrega assim.",
+        uso: 'ss_font_tags(self_hosted: true) no head do layout' do %>
+    <p style="font-weight:400">Manrope 400 · <span style="font-weight:500">500</span> · <span style="font-weight:600">600</span> · <b style="font-weight:700">700</b> · <b style="font-weight:800">800</b></p>
+    <p class="num">DM Mono 1.234,56 · <span style="font-weight:500">500</span></p>
+  <% end %>
+</div>

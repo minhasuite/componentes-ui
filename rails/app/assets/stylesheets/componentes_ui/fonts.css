@@ -1,0 +1,11 @@
+/* componentes-ui v0.27: Manrope e DM Mono servidas pelo próprio app (sem Google Fonts), para produto
+   em rede fechada. Não passa pelo Tailwind: o Propshaft serve este arquivo e troca cada url() pelo
+   caminho com digest de app/assets/fonts/componentes_ui. Liga com ss_font_tags(self_hosted: true).
+   Fontes: SIL Open Font License 1.1 (OFL-*.txt ao lado dos arquivos). */
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 400; font-display: swap; src: url("/componentes_ui/Manrope-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 500; font-display: swap; src: url("/componentes_ui/Manrope-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 600; font-display: swap; src: url("/componentes_ui/Manrope-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 700; font-display: swap; src: url("/componentes_ui/Manrope-Bold.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 800; font-display: swap; src: url("/componentes_ui/Manrope-ExtraBold.woff2") format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/componentes_ui/DMMono-Regular.woff2") format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/componentes_ui/DMMono-Medium.woff2") format("woff2"); }

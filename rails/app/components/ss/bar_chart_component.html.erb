@@ -1,43 +1,71 @@
-<%= tag.figure(**root_attrs(class: classes("ss-barc", ("is-stacked" if stacked?)), id: uid)) do %>
+<%= tag.figure(**root_attrs(class: classes("ss-barc", ("is-stacked" if stacked?), ("is-horizontal" if horizontal?), ("is-empty" unless data?)), id: uid)) do %>
   <figcaption class="<%= show_title? ? "ss-barc-title" : "ss-sr" %>"><%= title %></figcaption>
-  <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
-    <% guides.each do |(gy, _v, zero)| %>
-      <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= w - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
-    <% end %>
-    <% labels.each_with_index do |label, i| %>
-      <g class="ss-barc-g<%= " is-active" if active?(i) %>" style="--i:<%= i %>">
-        <title><%= tip(i) %></title>
-        <rect class="ss-barc-hit" x="<%= (PX + slot * i).round(2) %>" y="<%= PT - 10 %>" width="<%= slot.round(2) %>" height="<%= h - PT - PB + 10 %>"/>
-        <% bars(i).each do |(bx, by, bw, bh, s, v)| %>
-          <rect class="ss-barc-bar<%= " is-neg" if v.negative? %>" x="<%= bx %>" y="<%= by %>" width="<%= bw %>" height="<%= bh %>" rx="<%= [bw / 6, 4].min.round(2) %>" style="fill:<%= s[:color] %>"/>
-        <% end %>
-        <% if show_label?(i) %><text class="ss-barc-xtext" x="<%= cx(i) %>" y="<%= h - 8 %>" text-anchor="middle"><%= label %></text><% end %>
-      </g>
-    <% end %>
-    <% if line && line_points.size > 1 %>
-      <path class="ss-barc-line" d="<%= line_d %>" pathLength="1" style="stroke:<%= line[:color] %>"/>
-    <% end %>
-    <% line_points.each do |(px, py)| %>
-      <circle class="ss-barc-dot" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= line[:color] %>"/>
-    <% end %>
-    <% if projection && projection_points.size > 1 %>
-      <path class="ss-barc-proj" d="<%= projection_d %>" style="stroke:<%= projection[:color] %>"/>
-      <% px, py = projection_points.last %><circle class="ss-barc-dot is-proj" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= projection[:color] %>"/>
-    <% end %>
-    <% guides.each do |(gy, v, zero)| %><% next if zero %>
-      <text class="ss-barc-ytext" x="<%= PX %>" y="<%= gy - 5 %>"><%= fmt(v) %></text>
-    <% end %>
-  </svg>
-  <% if legend? %>
+  <% if !data? %>
+    <p class="ss-chart-empty"><%= empty_text %></p>
+  <% elsif horizontal? %>
+    <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
+      <% hguides.each do |(gx, _v)| %>
+        <line class="ss-barc-guide" x1="<%= gx %>" x2="<%= gx %>" y1="<%= PT - 6 %>" y2="<%= h - PB %>"/>
+      <% end %>
+      <line class="ss-barc-zero" x1="<%= zero_x %>" x2="<%= zero_x %>" y1="<%= PT - 6 %>" y2="<%= h - PB %>"/>
+      <% labels.each_with_index do |label, i| %>
+        <g class="ss-barc-g<%= " is-active" if active?(i) %>" style="--i:<%= i %>">
+          <title><%= tip(i) %></title>
+          <rect class="ss-barc-hit" x="<%= PX %>" y="<%= row_y(i) %>" width="<%= w - 2 * PX %>" height="<%= ROW %>"/>
+          <text class="ss-barc-ltext" x="<%= PX + label_w - 8 %>" y="<%= (row_y(i) + ROW / 2 + 4).round(2) %>" text-anchor="end"><%= short_label(label) %></text>
+          <% hbars(i).each do |(bx, by, bw, bh, _s, v, color)| %>
+            <rect class="ss-barc-bar is-h<%= " is-neg" if v.negative? %>" x="<%= bx %>" y="<%= by %>" width="<%= bw %>" height="<%= bh %>" rx="<%= [bh / 6, 4].min.round(2) %>" style="fill:<%= color %>"/>
+          <% end %>
+          <% if (hv = hvalue(i)) %><text class="ss-barc-vtext" x="<%= hvalue_x(i) %>" y="<%= (row_y(i) + ROW / 2 + 4).round(2) %>"><%= fmt(hv) %></text><% end %>
+        </g>
+      <% end %>
+      <% hguides.each do |(gx, v)| %>
+        <text class="ss-barc-ytext" x="<%= gx %>" y="<%= h - 8 %>" text-anchor="middle"><%= fmt(v) %></text>
+      <% end %>
+    </svg>
+  <% else %>
+    <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
+      <% guides.each do |(gy, _v, zero)| %>
+        <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= w - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
+      <% end %>
+      <% labels.each_with_index do |label, i| %>
+        <g class="ss-barc-g<%= " is-active" if active?(i) %>" style="--i:<%= i %>">
+          <title><%= tip(i) %></title>
+          <rect class="ss-barc-hit" x="<%= (PX + slot * i).round(2) %>" y="<%= pt - 10 %>" width="<%= slot.round(2) %>" height="<%= h - pt - PB + 10 %>"/>
+          <% bars(i).each do |(bx, by, bw, bh, _s, v, color)| %>
+            <rect class="ss-barc-bar<%= " is-neg" if v.negative? %>" x="<%= bx %>" y="<%= by %>" width="<%= bw %>" height="<%= bh %>" rx="<%= [bw / 6, 4].min.round(2) %>" style="fill:<%= color %>"/>
+          <% end %>
+          <% if show_label?(i) %><text class="ss-barc-xtext" x="<%= cx(i) %>" y="<%= h - 8 %>" text-anchor="middle"><%= label %></text><% end %>
+        </g>
+      <% end %>
+      <% if line && line_points.size > 1 %>
+        <path class="ss-barc-line" d="<%= line_d %>" pathLength="1" style="stroke:<%= line[:color] %>"/>
+      <% end %>
+      <% line_points.each do |(px, py)| %>
+        <circle class="ss-barc-dot" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= line[:color] %>"/>
+      <% end %>
+      <% if projection && projection_points.size > 1 %>
+        <path class="ss-barc-proj" d="<%= projection_d %>" style="stroke:<%= projection[:color] %>"/>
+        <% px, py = projection_points.last %><circle class="ss-barc-dot is-proj" cx="<%= px %>" cy="<%= py %>" r="3.5" style="stroke:<%= projection[:color] %>"/>
+      <% end %>
+      <%= markers_svg(top: pt - 10, bottom: h - PB) if markers? %>
+      <% guides.each do |(gy, v, zero)| %><% next if zero %>
+        <text class="ss-barc-ytext" x="<%= PX %>" y="<%= gy - 5 %>"><%= fmt(v) %></text>
+      <% end %>
+    </svg>
+  <% end %>
+  <% if data? && legend? %>
     <ul class="ss-barc-legend" aria-hidden="true">
       <% series.each do |s| %><li><i style="background:<%= s[:color] %>"></i><%= s[:name] %></li><% end %>
       <% if line %><li class="is-line"><i style="background:<%= line[:color] %>"></i><%= line[:name] %></li><% end %>
       <% if projection %><li class="is-dashed"><i style="color:<%= projection[:color] %>"></i><%= projection[:name] %></li><% end %>
     </ul>
   <% end %>
-  <div class="ss-sr-wrap"><table class="ss-sr">
-    <caption><%= title %></caption>
-    <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if line %><th scope="col"><%= line[:name] %></th><% end %><% if projection %><th scope="col"><%= projection[:name] %></th><% end %></tr></thead>
-    <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if line %><td><%= line[:values][i].nil? ? "—" : fmt(line[:values][i]) %></td><% end %><% if projection %><td><%= projection[:values][i].nil? ? "—" : fmt(projection[:values][i]) %></td><% end %></tr><% end %></tbody>
-  </table></div>
+  <% if data? %>
+    <div class="ss-sr-wrap"><table class="ss-sr">
+      <caption><%= title %></caption>
+      <thead><tr><th scope="col"><%= ss_t("chart.period", default: "Período") %></th><% series.each do |s| %><th scope="col"><%= s[:name] %></th><% end %><% if line %><th scope="col"><%= line[:name] %></th><% end %><% if projection %><th scope="col"><%= projection[:name] %></th><% end %><% if markers? %><th scope="col"><%= ss_t("chart.markers", default: "Marcas") %></th><% end %></tr></thead>
+      <tbody><% labels.each_with_index do |label, i| %><tr><th scope="row"><%= label %></th><% series.each do |s| %><td><%= s[:values][i].nil? ? "—" : fmt(s[:values][i]) %></td><% end %><% if line %><td><%= line[:values][i].nil? ? "—" : fmt(line[:values][i]) %></td><% end %><% if projection %><td><%= projection[:values][i].nil? ? "—" : fmt(projection[:values][i]) %></td><% end %><% if markers? %><td><%= markers_at(i) %></td><% end %></tr><% end %></tbody>
+    </table></div>
+  <% end %>
 <% end %>
