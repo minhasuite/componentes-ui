@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.28.0
+      ref: v0.28.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.28.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.28.1"
 ```
 
 ```css
@@ -643,6 +643,14 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v0.28.1: etiqueta do grupo recolhível com fundo opaco (AA)
+
+`Ss::CollapsibleComponent(label:, tone:)`: a etiqueta à direita do título (`.ss-collapse-label`) tinha o
+fundo na cor do tom a 14% sobre transparente, e o contraste dependia do que estivesse atrás (4,08–4,40:1
+sobre a página clara, medido pela auditoria do meulog no "on" de sucesso). Agora o fundo é o suave opaco do
+tom, o mesmo dos selos (`--success-soft`, `--warn-soft`, `--danger-soft`, `--accent-soft`; `--field` no
+neutro; info misturado à superfície). Mudança só de cor, sem API.
 
 ## v0.28.0: texto apagado AA, faixa de status por dia, busca solta e o que o meulog montou à mão
 
@@ -1753,6 +1761,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.28.1` (16/11/2026): seção "v0.28.1". Etiqueta do `CollapsibleComponent` com o fundo suave opaco do tom (AA independente do fundo atrás). Nada quebra.
 - `v0.28.0` (16/11/2026): seção "v0.28.0" (a segunda rodada do meulog). `--muted` claro do web a `#615e78` (AA sobre superfície tingida; conferido no `gerar.py`); `Ss::DayStripComponent` ↔ `SsDayStrip` (novo); `Ss::FilterInputComponent` (novo); `max:` no BarChart/LineChart ↔ `SsBarChart`/`SsLineChart(max:)`; `QrCardComponent(qr_label:)` ↔ `SsQrCard(qrLabel:)`; `CardHeaderComponent(wrap:)`; `ListItemComponent(subtitle_wrap:)` ↔ `SsListItem(subtitleMaxLines:)`; ordenar com rótulo de ação; `SubnavComponent(count_label:)` e sem item atual; `ss_display_font_tag(self_hosted:)` + `ss_page_head`; `ss_select(include_hidden:)`; correções do Masonry, AsideLayout, `.ss-value-row` e `f.ss_fieldset` no SettingsLayout. Novos textos obrigatórios no `SsStrings`.
 - `v0.27.0` (16/11/2026), parte do meulog: seção "v0.27.0 (meulog)". `Ss::LineChartComponent` (novo) ↔ `SsLineChart(curved:, markers:, empty:)` + `SsSeries(dashed:, colors:)`; `BarChartComponent(horizontal:, markers:, empty:)` + `tones:`/`colors:` por valor ↔ `SsBarChart(horizontal:, markers:, empty:)`; `SsChartMarker`/`SsChartEmpty`; 16 ícones (Lucide) e apelidos do Phosphor; `ss_font_tags(self_hosted:, display:)` com Manrope e DM Mono servidas pela gem. Nada quebra.
 - `v0.26.0` (15/11/2026): seção "v0.26.0" (conversa entre pessoas). `Ss::ChatComponent::Message(from: :them, author:, status:)` ↔ `SsChatBubble(aiMark: false, author:)` e `SsChatStatus.delivered`/`read`; `Ss::ChatDividerComponent` ↔ `SsChatDivider`; `.ss-bubble-media`/`.ss-bubble-file`; o bloco do `ChatComponent` entra dentro do log. Nada quebra.

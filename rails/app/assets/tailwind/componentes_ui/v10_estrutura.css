@@ -127,12 +127,12 @@
   .ss-collapse-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; }
   .ss-collapse-count { padding: .05rem .45rem; border-radius: 999px; background: var(--field); color: var(--muted); font-size: .7rem; font-weight: 600; }
   .ss-collapse-label { --c: var(--accent); margin-left: auto; padding: .15rem .6rem; border-radius: 999px; font-size: .7rem; font-weight: 800;
-                       color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
-  .ss-collapse-label[data-tone="info"] { --c: var(--ss-info); }
-  .ss-collapse-label[data-tone="warn"] { --c: var(--warn); }
-  .ss-collapse-label[data-tone="success"] { --c: var(--success); }
-  .ss-collapse-label[data-tone="danger"] { --c: var(--danger); }
-  .ss-collapse-label[data-tone="neutral"] { --c: var(--muted); }
+                       color: var(--c); background: var(--c-soft, color-mix(in srgb, var(--c) 14%, transparent)); --c-soft: var(--accent-soft); }
+  .ss-collapse-label[data-tone="info"] { --c: var(--ss-info); --c-soft: color-mix(in srgb, var(--ss-info) 10%, var(--surface)); }
+  .ss-collapse-label[data-tone="warn"] { --c: var(--warn); --c-soft: var(--warn-soft); }
+  .ss-collapse-label[data-tone="success"] { --c: var(--success); --c-soft: var(--success-soft); }
+  .ss-collapse-label[data-tone="danger"] { --c: var(--danger); --c-soft: var(--danger-soft); }
+  .ss-collapse-label[data-tone="neutral"] { --c: var(--muted); --c-soft: var(--field); }
   .ss-collapse-body { padding: .15rem .35rem .6rem; }
 
   @keyframes ss-est-pop { 40% { scale: 1.12; } }
