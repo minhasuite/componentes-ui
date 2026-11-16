@@ -90,7 +90,7 @@
   --accent-solid: #5a45e8;
   --grad: linear-gradient(135deg, #5a45e8 0%, #7b5cff 52%, #3b82f6 100%);
   --grad-soft: linear-gradient(135deg, rgba(90, 69, 232, .10), rgba(59, 130, 246, .08));
-  --ink: #1e1a38; --ink-2: #3f3a5c; --muted: #6e6a88; --line: #e8e5f4;
+  --ink: #1e1a38; --ink-2: #3f3a5c; --muted: #615e78; --line: #e8e5f4;
   --surface: #ffffff; --field: #f6f5fb; --page: #f6f5fb; --head: #faf9fe;
   --side: #17132e; --side-ink: #e9e6f7;
   --success: #0b7a53; --success-soft: #e3f6ee; --danger: #b8324a; --danger-soft: #fbe9ec;
@@ -188,7 +188,7 @@
   .ss-input:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
   select.ss-input { appearance: none; padding-right: 2.2rem; background-repeat: no-repeat; background-position: right .75rem center; background-size: 1rem;
-                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236e6a88'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); }
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23615e78'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); }
   input[type=file].ss-input, input[type=file] { font-size: .85rem; color: var(--muted); }
   input[type=file]::file-selector-button { margin-right: .75rem; padding: .45rem .9rem; border: 0; border-radius: 10px; cursor: pointer;
                                            font: inherit; font-weight: 600; background: var(--accent-soft); color: var(--accent); }

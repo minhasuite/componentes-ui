@@ -17,6 +17,9 @@ Regras de acessibilidade (falha se quebrar):
   soft claro é um tom bem claro e soft escuro um tom bem escuro;
   accent sólido (--accent-solid / SsBrand.accentSolid*: preenchimento de checkbox,
   rádio, switch e botão sólido) com texto branco ≥ 4,5:1, no claro e no escuro.
+  texto apagado (--muted / AppColors.muted*) ≥ 4,5:1 sobre página, superfície, campo, o suave da
+  marca de cada paleta e o brilho do fundo da página (glow da marca + o azul do canto), no claro, no
+  escuro e no OLED, nos dois lados (v0.28); e os valores conferidos batem com engine.css e app_theme.dart.
 Só avisa: accent sobre o próprio soft (selo) abaixo de 4,5 e brandTo sob texto branco abaixo de 3.
 
 Alto contraste (v0.16, data-ss-contrast="high" no web; SsBrand.highContrast() no Flutter, mesma
@@ -44,6 +47,28 @@ FUNDOS_ESCUROS = {
     "página Rails": "#0e0d16", "superfície Rails": "#16142a",
     "OLED": "#000000", "superfície OLED": "#0b0b10", "superfície OLED Rails": "#0a0a0d",
 }
+# Texto apagado (v0.28): o mesmo valor que está no engine.css (web) e no app_theme.dart (Flutter).
+# O escuro do web vale também no OLED (o OLED só troca página, superfície e campo).
+MUTED = {
+    "rails": {"claro": "#615e78", "escuro": "#9a96b8"},
+    "flutter": {"claro": "#636981", "escuro": "#9aa0bd"},
+}
+# Fundos neutros de cada lado (engine.css / v09_fundacao.css e AppColors).
+NEUTROS = {
+    "rails": {
+        "claro": {"página": "#f6f5fb", "superfície": "#ffffff", "campo": "#f6f5fb", "cabeçalho": "#faf9fe"},
+        "escuro": {"página": "#0e0d16", "superfície": "#16142a", "campo": "#1d1a35", "cabeçalho": "#1a1832"},
+        "oled": {"página": "#000000", "superfície": "#0a0a0d", "campo": "#111116", "cabeçalho": "#0d0d11"},
+    },
+    "flutter": {
+        "claro": {"página": "#eef0f6", "superfície": "#ffffff", "campo": "#f4f5fa"},
+        "escuro": {"página": "#0f1017", "superfície": "#171925", "campo": "#23273a"},
+        "oled": {"página": "#000000", "superfície": "#0b0b10", "campo": "#17171f"},
+    },
+}
+# O brilho do fundo da página no web (engine.css, body): --glow (brandFrom a 10% no claro, 16% no
+# escuro; a violeta padrão 14%) mais o azul do outro canto a 7%. Conta-se a soma, o pior caso.
+AZUL_DO_CANTO = "#3b82f6"
 CAMPOS = ["stops", "accentLight", "accentHoverLight", "accentSoftLight", "accentDark", "accentSoftDark",
           "brandFrom", "brandTo", "brandDeep"]
 HEX = re.compile(r"^#[0-9a-f]{6}$")
@@ -210,6 +235,41 @@ def conferir(familias, paletas):
     return erros, avisos
 
 
+def sobre(fundo, cor_, alfa):
+    return mistura(fundo, cor_, alfa)
+
+
+def fundos_do_muted(lado, tema, paletas):
+    fs = dict(NEUTROS[lado][tema])
+    for p in paletas:
+        n = p["slug"]
+        fs[f"suave de {n}"] = p["accentSoftLight"] if tema == "claro" else p["accentSoftDark"]
+        if lado == "rails":
+            alfa = .10 if tema == "claro" else (.14 if p.get("padrao") else .16)
+            pagina = NEUTROS[lado][tema]["página"]
+            fs[f"brilho de {n}"] = sobre(sobre(pagina, p["brandFrom"], alfa), AZUL_DO_CANTO, .07)
+    return fs
+
+
+def conferir_muted(paletas):
+    erros = []
+    for lado, temas in MUTED.items():
+        for tema in ("claro", "escuro", "oled"):
+            m = temas["claro" if tema == "claro" else "escuro"]
+            for nome, bg in fundos_do_muted(lado, tema, paletas).items():
+                if (c := contraste(m, bg)) < 4.5:
+                    erros.append(f"muted {lado} {tema} {m} sobre {nome} {bg} = {c:.2f} (< 4,5)")
+    engine = (RAIZ / "rails/app/assets/tailwind/componentes_ui/engine.css").read_text(encoding="utf-8")
+    for tema, m in MUTED["rails"].items():
+        if f"--muted: {m};" not in engine:
+            erros.append(f"engine.css não tem --muted: {m}; ({tema}): atualize o MUTED do gerar.py junto")
+    tema_dart = DART_TEMA.read_text(encoding="utf-8")
+    for nome, m in (("mutedLight", MUTED["flutter"]["claro"]), ("mutedDark", MUTED["flutter"]["escuro"])):
+        if f"{nome} = Color(0xFF{m[1:].upper()})" not in tema_dart:
+            erros.append(f"app_theme.dart: {nome} não é {m}: atualize o MUTED do gerar.py junto")
+    return erros
+
+
 # ── Flutter ───────────────────────────────────────────────────────────────
 def cor(h):
     return f"Color(0xFF{h[1:].upper()})"
@@ -368,6 +428,8 @@ def main():
     so_conferir = "--check" in sys.argv
     familias, paletas = carregar()
     erros, avisos = conferir(familias, paletas)
+    if not erros:
+        erros += conferir_muted(paletas)
     for a in avisos:
         print(f"aviso: {a}")
     if erros:
