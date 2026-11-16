@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.0.0
+      ref: v1.0.1
 ```
 
 ```dart
@@ -643,6 +643,15 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.0.1: `find.ssTooltip` para os testes dos apps (material_ui)
+
+`package:componentes_ui/testing.dart` (só em `test/`): `find.ssTooltip(Pattern)`, o `find.byTooltip` que acha também o
+`Tooltip` do `material_ui`. O do `flutter_test` olha o `RawTooltip` pela semântica e, com `excludeFromSemantics: true`
+(o `SsHeaderAction`), só o `Tooltip` do Material do SDK, outro tipo desde o 3.50: o teste que tocava o sino ou uma ação
+do cabeçalho deixa de achar. Troque `find.byTooltip(` por `find.ssTooltip(` (mesmo comportamento) e importe o
+`testing.dart`. O `ssPreloadFonts` também sai por ele. O `flutter_test` passou para `dependencies` do pacote (só esse
+arquivo o importa; o app não leva nada a mais).
 
 ## v1.0.0: Flutter 3.50 e o Material fora do SDK (`material_ui`)
 
