@@ -1,0 +1,50 @@
+/* v0.26 · conversa entre pessoas (cliente e atendente; minhas-vendas: atendimento do WhatsApp).
+   .ss-bubble.is-them é a outra pessoa (à esquerda, na superfície, como a da IA: o .ss-bubble base já faz isso);
+   .ss-bubble-author é quem escreveu, no alto da bolha; .ss-bubble-foot é o rodapé com horário e situação
+   (.ss-bubble-status[data-status=sending|sent|delivered|read|failed]); .ss-chat-divider separa os dias;
+   .ss-bubble-media (<img>/<video>/<audio>) e .ss-bubble-file (documento) são mídia dentro da bolha.
+   Cor só por token: a da marca (--accent, --on-accent), --danger e currentColor; vale em claro, escuro e OLED. */
+@layer components {
+  /* Quem escreveu: pequeno, negrito, apagado (no meu, a tinta clara sobre a marca). */
+  .ss-bubble-author { display: block; margin-bottom: .15rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                      font-family: var(--font-sans); font-size: calc(.72rem * var(--ss-font-scale)); font-weight: 800; line-height: 1.3; color: var(--muted); }
+  .ss-bubble.is-me .ss-bubble-author { color: color-mix(in srgb, var(--on-accent) 85%, transparent); }
+
+  /* Rodapé com situação: horário apagado como antes; a situação ao lado, na cor do texto da bolha. */
+  .ss-bubble small.ss-bubble-foot { display: flex; align-items: center; justify-content: flex-end; gap: .3rem; opacity: 1; }
+  .ss-bubble-foot > .ss-bubble-time { opacity: .6; }
+  .ss-bubble-status { display: inline-flex; align-items: center; gap: .2rem; opacity: .6; }
+  .ss-bubble-status svg { flex: none; width: .95rem; height: .95rem; }
+  /* Lida: o ✓✓ inteiro, na cor da marca (sobre a marca, a tinta clara cheia). */
+  .ss-bubble-status[data-status="read"] { opacity: 1; color: var(--accent); }
+  .ss-bubble.is-me .ss-bubble-status[data-status="read"] { color: var(--on-accent); }
+  /* Não enviada: ícone e texto à vista no tom de perigo; na bolha da marca, numa pílula da superfície (contraste). */
+  .ss-bubble-status[data-status="failed"] { opacity: 1; color: var(--danger); font-family: var(--font-sans); font-weight: 700; }
+  .ss-bubble.is-me .ss-bubble-status[data-status="failed"] { padding: .05rem .45rem .05rem .3rem; border-radius: 999px; background: var(--surface); }
+
+  /* Separador de dia ("Hoje", "Ontem", "12/11"): pílula pequena centrada entre duas linhas finas. */
+  .ss-chat-divider { align-self: stretch; display: flex; align-items: center; gap: .6rem; margin-block: .35rem; color: var(--muted);
+                     font-size: calc(.72rem * var(--ss-font-scale)); font-weight: 700; line-height: 1.3; }
+  .ss-chat-divider::before, .ss-chat-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .ss-chat-divider > span { flex: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: .15rem .65rem;
+                            border-radius: 999px; background: var(--field); }
+
+  /* Mídia na bolha: até a largura da bolha, cantos pelo raio do campo; o áudio ocupa a bolha (16rem no mínimo). */
+  .ss-bubble:has(> :is(.ss-bubble-media, .ss-bubble-file)) { white-space: normal; }
+  .ss-bubble:has(> :is(.ss-bubble-media, .ss-bubble-file)) > p { white-space: pre-line; }
+  .ss-bubble-media { display: block; max-width: 100%; height: auto; margin-block: .1rem .35rem; border-radius: calc(var(--r-field) - 2px); }
+  :is(img, video).ss-bubble-media { max-height: 20rem; object-fit: cover; background: var(--field); }
+  audio.ss-bubble-media { width: 100%; min-width: min(16rem, 100%); height: 2.5rem; }
+  .ss-bubble:has(> audio.ss-bubble-media) { width: 16rem; max-width: 85%; }
+
+  /* Documento: linha-link com ícone, nome (reticências) e detalhe opcional (.ss-bubble-file-meta). */
+  .ss-bubble-file { display: flex; align-items: center; gap: .6rem; min-width: 0; margin-block: .1rem .35rem; padding: .55rem .7rem;
+                    border-radius: var(--r-field); background: var(--field); color: var(--ink); text-decoration: none; font-weight: 700; }
+  .ss-bubble-file > svg { flex: none; width: 1.25rem; height: 1.25rem; color: var(--accent); }
+  .ss-bubble-file > span:not(.ss-bubble-file-meta) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-bubble-file-meta { flex: none; font: 500 calc(.7rem * var(--ss-font-scale)) var(--font-mono); opacity: .7; }
+  .ss-bubble-file:hover > span:not(.ss-bubble-file-meta) { text-decoration: underline; }
+  .ss-bubble-file:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .ss-bubble.is-me .ss-bubble-file { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
+  .ss-bubble.is-me .ss-bubble-file > svg { color: currentColor; }
+}

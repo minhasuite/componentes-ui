@@ -8,15 +8,30 @@ import 'motion.dart';
 import 'ss_strings.dart';
 import 'v10/casa_aviso.dart' show SsMicButton, SsMicState;
 
-/// Situação de uma mensagem da pessoa no [SsChatBubble].
-enum SsChatStatus { sending, sent, failed }
+/// Situação de uma mensagem da pessoa no [SsChatBubble]. v0.26: [delivered]
+/// (✓✓) e [read] (✓✓ na tinta da marca), para conversa entre pessoas.
+enum SsChatStatus { sending, sent, delivered, read, failed }
 
-/// Bolha de conversa com a IA. Da pessoa ([fromMe]): cor da marca, à direita.
+/// Bolha de conversa. Da pessoa ([fromMe]): cor da marca, à direita.
 /// Da IA: superfície, à esquerda, com o ✦. Entra com mola. [text] aceita
-/// **negrito**; para outra coisa (cartão, lista), passe [child].
+/// **negrito**; para outra coisa (cartão, lista, foto), passe [child].
+///
+/// v0.26, conversa entre pessoas (cliente e atendente): [aiMark] falso tira o
+/// ✦ das bolhas da outra pessoa (não é a IA); [author] é a legenda pequena no
+/// alto da bolha ("Ana · pelo celular"); [status] ganhou entregue e lida.
+///
+/// `SsChatBubble(text: 'Chegou?', fromMe: false, aiMark: false, author: 'Cliente', time: '14:02')`
 class SsChatBubble extends StatelessWidget {
-  const SsChatBubble({super.key, this.text, this.child, required this.fromMe, this.time, this.status})
-    : assert(text != null || child != null);
+  const SsChatBubble({
+    super.key,
+    this.text,
+    this.child,
+    required this.fromMe,
+    this.time,
+    this.status,
+    this.author,
+    this.aiMark = true,
+  }) : assert(text != null || child != null);
 
   final String? text;
   final Widget? child;
@@ -26,12 +41,26 @@ class SsChatBubble extends StatelessWidget {
   final String? time;
   final SsChatStatus? status;
 
+  /// v0.26: quem escreveu, no alto da bolha ("Ana · pelo celular").
+  final String? author;
+
+  /// v0.26: o ✦ ao lado das bolhas que não são minhas. Falso numa conversa
+  /// entre pessoas (a bolha é de alguém, não da IA).
+  final bool aiMark;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final fg = fromMe ? AppColors.onDark : c.ink;
     const r = Radius.circular(18);
     const cauda = Radius.circular(6);
+    final marca = !fromMe && aiMark;
+    final conteudo =
+        child ??
+        Text.rich(
+          TextSpan(children: ssBoldSpans(text!)),
+          style: TextStyle(color: fg, fontSize: AppType.body, height: 1.4),
+        );
     final bolha = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -45,12 +74,26 @@ class SsChatBubble extends StatelessWidget {
         border: !fromMe && c.isDark ? Border.all(color: c.line) : null,
         boxShadow: !fromMe && !c.isDark ? AppShadows.card : null,
       ),
-      child:
-          child ??
-          Text.rich(
-            TextSpan(children: ssBoldSpans(text!)),
-            style: TextStyle(color: fg, fontSize: AppType.body, height: 1.4),
-          ),
+      child: author == null
+          ? conteudo
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  author!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fromMe ? AppColors.onDark.withValues(alpha: .85) : c.muted,
+                    fontSize: AppType.label,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                conteudo,
+              ],
+            ),
     );
 
     final rodape = [
@@ -73,7 +116,7 @@ class SsChatBubble extends StatelessWidget {
               mainAxisAlignment: fromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (!fromMe) ...[const SsAiMark(), const SizedBox(width: 8)],
+                if (marca) ...[const SsAiMark(), const SizedBox(width: 8)],
                 Flexible(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: math.min(MediaQuery.sizeOf(context).width * .78, 520)),
@@ -85,7 +128,7 @@ class SsChatBubble extends StatelessWidget {
             if (rodape.isNotEmpty)
               Padding(
                 // Com o ✦, o horário alinha com a bolha (28 + 8).
-                padding: EdgeInsets.only(top: 3, left: fromMe ? 4 : 40, right: 4),
+                padding: EdgeInsets.only(top: 3, left: marca ? 40 : 4, right: 4),
                 child: Row(mainAxisSize: MainAxisSize.min, children: rodape),
               ),
           ],
@@ -130,6 +173,19 @@ class _Status extends StatelessWidget {
         color: c.muted,
         semanticLabel: SsStrings.of(context).chatSent,
       ),
+      SsChatStatus.delivered => Icon(
+        Icons.done_all_rounded,
+        size: 14,
+        color: c.muted,
+        semanticLabel: SsStrings.of(context).chatDelivered,
+      ),
+      // Lida: o mesmo ✓✓ na tinta da marca (texto legível sobre a página).
+      SsChatStatus.read => Icon(
+        Icons.done_all_rounded,
+        size: 14,
+        color: c.accentText,
+        semanticLabel: SsStrings.of(context).chatRead,
+      ),
       SsChatStatus.failed => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -142,6 +198,48 @@ class _Status extends StatelessWidget {
         ],
       ),
     };
+  }
+}
+
+/// v0.26: separador de dia numa conversa ("Hoje", "Ontem", "12/11"): rótulo
+/// pequeno numa pílula, centrado entre duas linhas finas. Par do
+/// Ss::ChatDividerComponent do web.
+///
+/// `SsChatDivider(label: 'Hoje')`
+class SsChatDivider extends StatelessWidget {
+  const SsChatDivider({super.key, required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final linha = Expanded(child: Container(height: 1, color: c.line));
+    return Semantics(
+      container: true,
+      label: label,
+      child: ExcludeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              linha,
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(color: c.field, borderRadius: BorderRadius.circular(999)),
+                child: Text(
+                  label,
+                  style: TextStyle(color: c.muted, fontSize: AppType.label, fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 10),
+              linha,
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

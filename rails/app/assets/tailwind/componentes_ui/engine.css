@@ -54,6 +54,8 @@
 @import "./v24_web.css";
 /* v0.25: rodada 5 da auditoria de UX (grupo recolhível no celular) */
 @import "./v25_web.css";
+/* v0.26: conversa entre pessoas (bolha da outra pessoa, autor, situação entregue/lida, separador de dia e mídia na bolha). */
+@import "./v26_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

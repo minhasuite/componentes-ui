@@ -1,7 +1,7 @@
 <%= tag.section(**root_attrs(id: id, class: classes("ss-chat-panel"), "aria-label": label,
       data: { controller: "ss-chat", ss_chat_echo_value: echo?, ss_chat_thinking_value: thinking? })) do %>
   <div class="ss-chat" id="<%= messages_id %>" role="log" aria-live="polite" aria-relevant="additions" data-ss-chat-target="log">
-    <% if messages.any? %><% messages.each do |m| %><%= m %><% end %><% elsif empty? %><div class="ss-chat-empty" data-ss-chat-target="empty"><%= empty %></div><% end %>
+    <% messages.each do |m| %><%= m %><% end %><%= log_content %><% if show_empty? %><div class="ss-chat-empty" data-ss-chat-target="empty"><%= empty %></div><% end %>
   </div>
   <span class="ss-thinking" role="status" aria-label="<%= thinking_label %>" data-ss-chat-target="thinking"<% unless thinking? %> hidden<% end %>><i></i><i></i><i></i></span>
   <% if url %>

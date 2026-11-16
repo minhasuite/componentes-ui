@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.25.2
+      ref: v0.26.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.25.2"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.26.0"
 ```
 
 ```css
@@ -643,6 +643,68 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+## v0.26.0: conversa entre pessoas (cliente e atendente)
+
+Pedido do minhas-vendas (atendimento do WhatsApp: a atendente da loja conversa com o cliente). O chat da suíte só sabia
+"eu × assistente de IA"; agora a mesma peça desenha uma conversa entre pessoas. Tudo aditivo: sem os parâmetros novos, o
+chat é o da v0.25. Catálogo: estados `pessoas` e `situacoes` no `ss-chat` e o `ss-chat-divider` novo
+(`flutter/test/catalogo_v26.dart`); seções `ss-chat-pessoas`, `ss-chat-divider` e `ss-bubble-media` em
+`rails/catalogo/index.html` (`rails/sample/script/catalogo_v026.rb`). Testes: `flutter/test/v26_test.dart` e
+`rails/sample/test/components/v26_web_test.rb`. CSS em `v26_web.css`.
+
+| Peça | Flutter | Rails / CSS |
+|---|---|---|
+| A outra pessoa | `SsChatBubble(fromMe: false, aiMark: false)`: à esquerda, na superfície, **sem** o ✦ (o horário encosta na bolha) | `Ss::ChatComponent::Message.new(from: :them, ...)` → `.ss-bubble.is-them[data-from=them]` |
+| Quem escreveu | `author: 'Ana · pelo celular'`: legenda pequena em negrito no alto da bolha (apagada; no meu, branco translúcido) | `author: "Ana · pelo celular"` → `<span class="ss-bubble-author">` no alto da bolha |
+| Situação | `SsChatStatus.sending/sent/delivered/read/failed` (novos: `delivered` ✓✓ apagado, `read` ✓✓ em `accentText`); nome no leitor de tela por `SsStrings.chatDelivered`/`chatRead` | `status: :sending/:sent/:delivered/:read/:failed` → `<small class="num ss-bubble-foot"><span class="ss-bubble-time">…</span><span class="ss-bubble-status" data-status="read"><svg/><span class="ss-sr">Lida</span></span></small>`; `:failed` mostra "Não enviada" à vista no tom de perigo (na bolha da marca, numa pílula da superfície); lida na marca (`--accent`; na bolha da marca, `--on-accent` cheio). Textos em `chat.status.*` (pt-BR, en, es) |
+| Separador de dia | `SsChatDivider(label: 'Hoje')` | `Ss::ChatDividerComponent.new(label: "Hoje")` → `<div class="ss-chat-divider" role="separator" aria-label="Hoje"><span>Hoje</span></div>` |
+| Mídia na bolha | `child:` (já existia) | `<img>`/`<video controls>`/`<audio controls>` com `class="ss-bubble-media"` (até a largura da bolha; o áudio com 16rem no mínimo) e documento como `<a class="ss-bubble-file"><svg/><span>nome.pdf</span><span class="ss-bubble-file-meta">PDF · 84 KB</span></a>` |
+
+Assinaturas:
+
+```ruby
+Ss::ChatComponent::Message.new(from: :me | :ai | :them, text: nil, time: nil, status: nil, author: nil, **rest)  # status: :sending, :sent, :delivered, :read, :failed
+Ss::ChatDividerComponent.new(label:, **rest)
+```
+
+```dart
+enum SsChatStatus { sending, sent, delivered, read, failed }
+SsChatBubble({String? text, Widget? child, required bool fromMe, String? time, SsChatStatus? status, String? author, bool aiMark = true})
+SsChatDivider({required String label})
+```
+
+**O bloco do `Ss::ChatComponent` entra dentro do log.** O que vem no bloco é renderizado dentro do `.ss-chat`
+(`id="<id>-messages"`, `role="log"`), depois do slot `messages`: dá para intercalar mensagens e separadores renderizando
+direto, e o Turbo Stream `append` em `Ss::ChatComponent.messages_id(id)` continua caindo no mesmo lugar. O slot `empty` só
+aparece sem mensagem nenhuma (nem no slot, nem no bloco).
+
+```erb
+<%= render(Ss::ChatComponent.new(id: "conversa", url: conversa_mensagens_path(@conversa), echo: false, placeholder: "Responder")) do %>
+  <% @mensagens.group_by(&:dia).each do |dia, msgs| %>
+    <%= render Ss::ChatDividerComponent.new(label: dia) %>
+    <% msgs.each do |m| %>
+      <%= render Ss::ChatComponent::Message.new(from: m.da_loja? ? :me : :them, author: m.autor, text: m.texto, time: m.hora, status: m.situacao) %>
+    <% end %>
+  <% end %>
+<% end %>
+```
+
+```dart
+ListView(children: [
+  const SsChatDivider(label: 'Hoje'),
+  SsChatBubble(text: m.texto, fromMe: m.daLoja, aiMark: false, author: m.autor, time: m.hora, status: m.situacao),
+]);
+```
+
+Com `echo: true` (padrão) a bolha da pessoa entra na hora ao enviar, como antes; numa conversa entre pessoas costuma ser
+melhor `echo: false` e a resposta do envio (`turbo_stream.append`) trazer a mensagem com `status: :sending`/`:sent`, e
+depois um `replace` dela quando chegar entregue/lida. O "pensando" (`thinking:`) é da IA: numa conversa entre pessoas não
+precisa ligar.
+
+**Como cada produto adota:** subir a tag; nada muda sem os parâmetros novos. **Padrões que mudaram:** nenhum (o bloco do
+`ChatComponent` antes era ignorado; agora entra no log). **Textos novos:** Rails `chat.status.{sending,sent,delivered,read,failed}`,
+Flutter `SsStrings.chatDelivered` e `chatRead` (pt, en, es).
+
 ## v0.25.2: o botão do cabeçalho com selo tem nome no leitor de tela
 
 Achado das videoaulas do meu-gestor (15/11/2026): no `SsHeaderAction` com `badge`, o leitor de tela lia só o número do
@@ -1550,6 +1612,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.26.0` (15/11/2026): seção "v0.26.0" (conversa entre pessoas). `Ss::ChatComponent::Message(from: :them, author:, status:)` ↔ `SsChatBubble(aiMark: false, author:)` e `SsChatStatus.delivered`/`read`; `Ss::ChatDividerComponent` ↔ `SsChatDivider`; `.ss-bubble-media`/`.ss-bubble-file`; o bloco do `ChatComponent` entra dentro do log. Nada quebra.
 - `v0.25.2` (15/11/2026): seção "v0.25.2". O `SsHeaderAction` com selo tem o `tooltip` como nome no leitor de tela (antes lia só o número). Nada quebra.
 - `v0.25.1` (14/11/2026): seção "v0.25.1". O rótulo das abas da `SsNavBar` volta a usar a Manrope do tema (na v0.25.0 caía na fonte do sistema). Nada quebra.
 - `v0.25.0` (14/11/2026): seção "v0.25.0" (rodada 5 da auditoria de UX). `CollapsibleComponent`/`SsCollapsible` com título em até 2 linhas que não alarga a página; `SsNavBar` com o rótulo da aba ativa, anel `SsNavBar.ringColor`/`ringWidth` (3:1 em claro, escuro e OLED), miolo `field` no escuro, ação de tocar no nó de cada aba e o ícone com contagem centrado. Nada quebra na API.

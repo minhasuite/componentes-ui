@@ -40,6 +40,8 @@ class SsStrings {
     required this.chatSending,
     required this.chatSent,
     required this.chatNotSent,
+    required this.chatDelivered,
+    required this.chatRead,
     required this.chatThinking,
     required this.chatHint,
     required this.send,
@@ -440,6 +442,10 @@ class SsStrings {
   final String chatSending;
   final String chatSent;
   final String chatNotSent;
+
+  /// v0.26: situação da mensagem numa conversa entre pessoas (✓✓).
+  final String chatDelivered;
+  final String chatRead;
   final String chatThinking;
   final String chatHint;
   final String send;
@@ -1071,6 +1077,8 @@ class SsStrings {
     chatSending: 'Enviando',
     chatSent: 'Enviada',
     chatNotSent: 'Não enviada',
+    chatDelivered: 'Entregue',
+    chatRead: 'Lida',
     chatThinking: 'Pensando',
     chatHint: 'Escreva uma mensagem',
     send: 'Enviar',
@@ -1482,6 +1490,8 @@ class SsStrings {
     chatSending: 'Sending',
     chatSent: 'Sent',
     chatNotSent: 'Not sent',
+    chatDelivered: 'Delivered',
+    chatRead: 'Read',
     chatThinking: 'Thinking',
     chatHint: 'Write a message',
     send: 'Send',
@@ -1885,6 +1895,8 @@ class SsStrings {
     chatSending: 'Enviando',
     chatSent: 'Enviado',
     chatNotSent: 'No enviado',
+    chatDelivered: 'Entregado',
+    chatRead: 'Leído',
     chatThinking: 'Pensando',
     chatHint: 'Escribe un mensaje',
     send: 'Enviar',
@@ -2288,6 +2300,8 @@ class SsStrings {
     'chatSending': chatSending,
     'chatSent': chatSent,
     'chatNotSent': chatNotSent,
+    'chatDelivered': chatDelivered,
+    'chatRead': chatRead,
     'chatThinking': chatThinking,
     'chatHint': chatHint,
     'send': send,
@@ -2713,6 +2727,8 @@ class SsStrings {
     String? chatSending,
     String? chatSent,
     String? chatNotSent,
+    String? chatDelivered,
+    String? chatRead,
     String? chatThinking,
     String? chatHint,
     String? send,
@@ -3100,6 +3116,8 @@ class SsStrings {
     chatSending: chatSending ?? this.chatSending,
     chatSent: chatSent ?? this.chatSent,
     chatNotSent: chatNotSent ?? this.chatNotSent,
+    chatDelivered: chatDelivered ?? this.chatDelivered,
+    chatRead: chatRead ?? this.chatRead,
     chatThinking: chatThinking ?? this.chatThinking,
     chatHint: chatHint ?? this.chatHint,
     send: send ?? this.send,

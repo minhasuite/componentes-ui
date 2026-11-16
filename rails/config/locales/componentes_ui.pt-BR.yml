@@ -596,6 +596,13 @@ pt-BR:
       placeholder: 'Escreva uma mensagem'
       send: 'Enviar'
       thinking: 'Pensando'
+      # v0.26: situação da mensagem (Ss::ChatComponent::Message status:)
+      status:
+        sending: 'Enviando'
+        sent: 'Enviada'
+        delivered: 'Entregue'
+        read: 'Lida'
+        failed: 'Não enviada'
     money_input:
       invalid: 'Conta ou valor inválido'
     month_switcher:
