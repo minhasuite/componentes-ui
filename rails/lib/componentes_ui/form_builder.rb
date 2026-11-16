@@ -35,8 +35,9 @@ module ComponentesUi
 
     # f.ss_select :plano, opções, label:, include_blank: "Escolha…"
     # selected: (v0.13) marca a opção quando não há model (ou para sobrepor o valor dele).
-    def ss_select(method, choices = nil, label: nil, help: nil, include_blank: nil, prompt: nil, selected: nil, **opts)
-      select_opts = { include_blank:, prompt:, selected: }.compact
+    # v0.28: include_hidden: false (com multiple: true) tira o "" escondido que o Rails põe antes do select.
+    def ss_select(method, choices = nil, label: nil, help: nil, include_blank: nil, prompt: nil, selected: nil, include_hidden: nil, **opts)
+      select_opts = { include_blank:, prompt:, selected:, include_hidden: }.compact
       ss_field(method, opts.merge(label:, help:)) { |io| select(method, choices, select_opts, io) }
     end
 
@@ -155,7 +156,9 @@ module ComponentesUi
     # class: vai no corpo (a grade dos campos); wrapper_class: no fieldset.
     def ss_fieldset(legend:, help: nil, wrapper_class: nil, **opts, &block)
       body_class = opts.delete(:class)
-      @template.ss_fieldset(legend:, help:, wrapper_class:, body_class:, &block)
+      @ss_fieldset_seq = (@ss_fieldset_seq || 0) + 1
+      id = "ss-fs-#{object_name.to_s.parameterize.presence || 'form'}-#{object_id}-#{@ss_fieldset_seq}"
+      ComponentesUi::FormHelpers.fieldset_html(@template, id, legend:, help:, wrapper_class:, body_class:, &block)
     end
 
     private

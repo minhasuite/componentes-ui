@@ -52,7 +52,12 @@ class SsBarChart extends StatefulWidget {
     this.horizontal = false,
     this.markers = const [],
     this.empty,
+    this.max,
   });
+
+  /// Topo fixo da escala (v0.28, par do `max:` do Ss::BarChartComponent): o eixo vai de 0 até [max],
+  /// para pequenos múltiplos lado a lado na mesma escala. Valor acima alarga a escala.
+  final double? max;
 
   /// Barras deitadas, uma linha por rótulo (v0.27). Ignora [line], [projection] e [markers].
   final bool horizontal;
@@ -101,6 +106,7 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
   bool stacked = false,
   SsSeries? projection,
   int projectionFrom = 0,
+  double? max,
 }) {
   var lo = 0.0, hi = 0.0;
   for (var i = 0; i < n; i++) {
@@ -129,7 +135,8 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
   }
   if (hi == 0 && lo == 0) hi = 1;
   final pad = (hi - lo) * .08;
-  return (lo < 0 ? lo - pad : 0, hi > 0 ? hi + pad : 0);
+  final topo = max != null ? math.max(max, hi) : (hi > 0 ? hi + pad : 0.0);
+  return (lo < 0 ? lo - pad : 0, topo);
 }
 
 class _SsBarChartState extends State<SsBarChart> {
@@ -174,6 +181,7 @@ class _SsBarChartState extends State<SsBarChart> {
       stacked: widget.stacked,
       projection: widget.projection,
       projectionFrom: widget.projectionFrom,
+      max: widget.max,
     );
     final nome = widget.series.map((x) => x.name).whereType<String>().join(', ');
     final resumo = [
@@ -303,7 +311,7 @@ extension on _SsBarChartState {
   Widget _deitado(BuildContext context, List<Color> cores) {
     final c = SsColors.of(context);
     final s = SsStrings.of(context);
-    final (lo, hi) = ssBarRange(widget.series, _n, stacked: widget.stacked);
+    final (lo, hi) = ssBarRange(widget.series, _n, stacked: widget.stacked, max: widget.max);
     final nome = widget.series.map((x) => x.name).whereType<String>().join(', ');
     final resumo = [
       for (var i = 0; i < _n; i++)

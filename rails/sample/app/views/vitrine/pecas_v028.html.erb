@@ -1,0 +1,43 @@
+<%# titulo: Monitor de erros (v0.28): faixa por dia, busca solta, escala fixa e correções | grupo: Dados | ordem: 28 %>
+<%# v0.28: a segunda rodada do meulog (o que ele montou à mão vira peça) e o texto apagado AA. %>
+<% hoje = Date.new(2026, 11, 16)
+   tons = %i[ok ok ok warn ok ok ok ok bad ok ok ok ok ok warn ok ok ok ok ok ok ok ok bad bad ok ok ok ok none]
+   dias = tons.each_with_index.map { |t, i| { date: hoje - (29 - i), tone: t, text: { ok: "100% no ar", warn: "2 falhas em 288", bad: "fora 3 h", none: nil }[t] } } %>
+<div class="grid gap-6" id="v28">
+  <%= demo "Ss::DayStripComponent", "Faixa de status por dia, como numa página de status: um traço por dia, com respiro; sem dado é vazado (não verde).",
+        uso: 'days: [{ date:, tone: :ok|:warn|:bad|:none, text: }], start_label:, end_label:' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render Ss::DayStripComponent.new(title: "Disponibilidade, 30 dias", show_title: true, days: dias, start_label: "há 30 dias", end_label: "hoje") %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::FilterInputComponent", "O campo de busca do ss-filter, solto (sem <form>): filtra a lista que já está na página; Esc limpa." do %>
+    <div class="ss-card ss-card-pad grid gap-3" data-controller="ss-filter">
+      <%= render Ss::FilterInputComponent.new(label: "Buscar nos verbetes", placeholder: "Filtrar os verbetes") %>
+      <% %w[Erros Ocorrências Clientes Ao\ vivo Funil Caminhos].each do |v| %>
+        <%= render Ss::ListItemComponent.new(title: v, subtitle: "Verbete do manual", data: { ss_filter_target: "item" }) %>
+      <% end %>
+      <%= render Ss::NoteComponent.new(text: "Nenhum verbete com isso.", hidden: true, data: { ss_filter_target: "empty" }) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::BarChartComponent(max:)", "Pequenos múltiplos na mesma escala: comparar a altura de duas barras de gráficos diferentes só é honesto com o mesmo topo.",
+        uso: "max: maior_de_todos" do %>
+    <div class="grid gap-4 md:grid-cols-2">
+      <% [["EAccessViolation", [30, 12, 40, 22]], ["Net::ReadTimeout", [4, 6, 3, 5]]].each do |nome, v| %>
+        <div class="ss-card ss-card-pad"><%= render Ss::BarChartComponent.new(title: nome, show_title: true, labels: %w[seg ter qua qui], series: [{ name: nome, values: v }], max: 40, height: 160) %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= demo "CardHeader(wrap:) · ListItem(subtitle_wrap:) · QrCard(qr_label:)", "Título em 2 linhas, subtítulo inteiro e o QR com nome para o leitor de tela." do %>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="ss-card ss-card-pad grid gap-3">
+        <%= render Ss::CardHeaderComponent.new(title: "O relatório que a ferramenta manda toda manhã para o plantão", subtitle: "wrap: true", wrap: true) %>
+        <%= render Ss::ListItemComponent.new(title: "Erros e regressões", subtitle_wrap: true,
+              subtitle: "O que o meulog agrupa, como prioriza e quando avisa quem está de plantão, com exemplos.") %>
+      </div>
+      <%= render(Ss::QrCardComponent.new(code: "JBSWY3DPEHPK3PXP", title: "Autenticador", qr_label: "QR do autenticador", hint: false)) { ss_icon("qrcode", size: nil) } %>
+    </div>
+  <% end %>
+</div>

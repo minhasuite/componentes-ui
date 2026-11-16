@@ -45,6 +45,11 @@ class SsStrings {
     required this.sideMenu,
     required this.sideMenuOpen,
     required this.sideMenuHint,
+    required this.qrLabel,
+    required this.dayStripOk,
+    required this.dayStripWarn,
+    required this.dayStripBad,
+    required this.dayStripNone,
     required this.chatThinking,
     required this.chatHint,
     required this.send,
@@ -455,6 +460,13 @@ class SsStrings {
   final String sideMenu;
   final String sideMenuOpen;
   final String sideMenuHint;
+
+  /// v0.28: nome do QR para o leitor de tela ([SsQrCard]) e as situações da faixa por dia ([SsDayStrip]).
+  final String qrLabel;
+  final String dayStripOk;
+  final String dayStripWarn;
+  final String dayStripBad;
+  final String dayStripNone;
   final String chatThinking;
   final String chatHint;
   final String send;
@@ -1091,6 +1103,11 @@ class SsStrings {
     sideMenu: 'Menu',
     sideMenuOpen: 'Abrir o menu',
     sideMenuHint: 'Arraste para abrir o menu',
+    qrLabel: 'QR Code',
+    dayStripOk: 'No ar',
+    dayStripWarn: 'Instável',
+    dayStripBad: 'Fora',
+    dayStripNone: 'Sem dado',
     chatThinking: 'Pensando',
     chatHint: 'Escreva uma mensagem',
     send: 'Enviar',
@@ -1507,6 +1524,11 @@ class SsStrings {
     sideMenu: 'Menu',
     sideMenuOpen: 'Open the menu',
     sideMenuHint: 'Swipe to open the menu',
+    qrLabel: 'QR code',
+    dayStripOk: 'Up',
+    dayStripWarn: 'Unstable',
+    dayStripBad: 'Down',
+    dayStripNone: 'No data',
     chatThinking: 'Thinking',
     chatHint: 'Write a message',
     send: 'Send',
@@ -1915,6 +1937,11 @@ class SsStrings {
     sideMenu: 'Menú',
     sideMenuOpen: 'Abrir el menú',
     sideMenuHint: 'Desliza para abrir el menú',
+    qrLabel: 'Código QR',
+    dayStripOk: 'En línea',
+    dayStripWarn: 'Inestable',
+    dayStripBad: 'Caído',
+    dayStripNone: 'Sin datos',
     chatThinking: 'Pensando',
     chatHint: 'Escribe un mensaje',
     send: 'Enviar',
@@ -2323,6 +2350,11 @@ class SsStrings {
     'sideMenu': sideMenu,
     'sideMenuOpen': sideMenuOpen,
     'sideMenuHint': sideMenuHint,
+    'qrLabel': qrLabel,
+    'dayStripOk': dayStripOk,
+    'dayStripWarn': dayStripWarn,
+    'dayStripBad': dayStripBad,
+    'dayStripNone': dayStripNone,
     'chatThinking': chatThinking,
     'chatHint': chatHint,
     'send': send,
@@ -2753,6 +2785,11 @@ class SsStrings {
     String? sideMenu,
     String? sideMenuOpen,
     String? sideMenuHint,
+    String? qrLabel,
+    String? dayStripOk,
+    String? dayStripWarn,
+    String? dayStripBad,
+    String? dayStripNone,
     String? chatThinking,
     String? chatHint,
     String? send,
@@ -3145,6 +3182,11 @@ class SsStrings {
     sideMenu: sideMenu ?? this.sideMenu,
     sideMenuOpen: sideMenuOpen ?? this.sideMenuOpen,
     sideMenuHint: sideMenuHint ?? this.sideMenuHint,
+    qrLabel: qrLabel ?? this.qrLabel,
+    dayStripOk: dayStripOk ?? this.dayStripOk,
+    dayStripWarn: dayStripWarn ?? this.dayStripWarn,
+    dayStripBad: dayStripBad ?? this.dayStripBad,
+    dayStripNone: dayStripNone ?? this.dayStripNone,
     chatThinking: chatThinking ?? this.chatThinking,
     chatHint: chatHint ?? this.chatHint,
     send: send ?? this.send,

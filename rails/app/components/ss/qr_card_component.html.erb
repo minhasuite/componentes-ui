@@ -3,7 +3,7 @@
     <h3><%= title %></h3>
     <% if amount %><%= ss_amount(amount) %><% end %>
   </header>
-  <div class="ss-qr-box" role="img" aria-label="<%= ss_t("qr_card.qr", default: "QR Code para pagamento") %>"><%= qr %></div>
+  <div class="ss-qr-box" role="img" aria-label="<%= qr_label %>"><%= qr %></div>
   <% if expires_at %>
     <p class="ss-qrcard-timer" aria-live="off"><span class="ss-qrcard-valid"><%= ss_t("qr_card.valid_for", default: "Vale por") %> <b class="num" data-ss-countdown-target="clock"><%= mmss %></b></span><span class="ss-qrcard-expired" role="status"><%= ss_t("qr_card.expired", default: "Código expirado. Gere outro.") %></span></p>
   <% end %>

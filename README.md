@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.27.0
+      ref: v0.28.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.26.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.28.0"
 ```
 
 ```css
@@ -643,6 +643,52 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v0.28.0: texto apagado AA, faixa de status por dia, busca solta e o que o meulog montou à mão
+
+A segunda rodada do meulog: o que a migração dele montou com peças existentes vira peça ou parâmetro, e o texto
+apagado passa a 4,5:1 sobre superfície tingida. Vitrine Rails: "Monitor de erros (v0.28)"; catálogo: `ss-day-strip`,
+`ss-filter-input`, `ss-v28-correcoes` (web) e `ss-day-strip` + os estados v0.28 de `ss-bar-chart`, `ss-list-item` (Flutter).
+
+| Peça / parâmetro | Web (Rails) | Flutter |
+|---|---|---|
+| Faixa de status por dia (página de status; dias com respiro, sem dado vazado) | `Ss::DayStripComponent(days:, title:, start_label:, end_label:, height:, show_title:)`; dia `{ date:, tone: :ok/:warn/:bad/:none, text:, label: }` | `SsDayStrip(days:, title:, startLabel:, endLabel:, height:, showTitle:)` + `SsDay(label, SsDayTone.x, text:)` |
+| Busca solta do `ss-filter`, sem `<form>` | `Ss::FilterInputComponent(label:, placeholder:, id:, value:)` (já sai com `data-ss-filter-target="input"` e Esc) | — (o app usa `SsSearchField`) |
+| Topo fixo da escala (pequenos múltiplos) | `BarChartComponent(max:)`, `LineChartComponent(max:)` | `SsBarChart(max:)`, `SsLineChart(max:)` |
+| Nome do QR para o leitor de tela | `QrCardComponent(qr_label:)` | `SsQrCard(qrLabel:)` |
+| Título em 2 linhas / subtítulo inteiro | `CardHeaderComponent(wrap: true)`; `ListItemComponent(subtitle_wrap: true)` (sem ele, o texto inteiro no `title=`) | `SsCardHeader(titleMaxLines:)` (já havia); `SsListItem(subtitleMaxLines:)` |
+| Ordenar com rótulo de ação | `DataTableComponent`: o link diz "Total: ordenar decrescente" (I18n `data_table.sort_action`) | — |
+| Menu de seções sem item atual | `SubnavComponent`: mostra o `label:`; `count_label:` ("%{n} itens"; `false` tira) | — |
+| Fonte extra de uma página | `ss_display_font_tag(self_hosted: true)` no slot `:ss_head`; o layout chama `ss_page_head` no `<head>` | — |
+| `ss_select(multiple: true, include_hidden: false)` | aceito (sem o `""` escondido) | — |
+
+```erb
+<%= render Ss::DayStripComponent.new(title: "Disponibilidade, 30 dias", start_label: "há 30 dias", end_label: "hoje",
+      days: leituras.map { |d| { date: d.dia, tone: d.tom, text: d.resumo } }) %>
+<div data-controller="ss-filter">
+  <%= render Ss::FilterInputComponent.new(label: "Buscar no manual", placeholder: "Filtrar os verbetes") %>
+  <% verbetes.each do |v| %><%= render Ss::ListItemComponent.new(title: v.titulo, data: { ss_filter_target: "item" }) %><% end %>
+</div>
+<%= render Ss::BarChartComponent.new(title: classe, labels: dias, series: [{ name: classe, values: v }], max: maior_de_todos) %>
+<%# na página que precisa da fonte de exibição (o layout tem <%= ss_page_head %> no <head>): %>
+<% content_for :ss_head, ss_display_font_tag(self_hosted: true) %>
+```
+
+**Correções (web):** `MasonryComponent` não despeja mais o card mais alto numa coluna a mais quando o pai define a
+altura (`align-self: start; height: auto`); `AsideLayoutComponent` não alarga a página com filho largo (colunas
+`minmax(0, 1fr)`); `.ss-value-row` quebra o valor longo em vez de estourar a 390 px; `f.ss_fieldset` funciona dentro da
+seção com `form:` do `SettingsLayoutComponent` (antes `NoMethodError`: o builder chamava o helper no componente).
+
+**Padrões que mudaram.**
+- **Texto apagado (web, claro):** `--muted` de `#6e6a88` para `#615e78` (mesmo matiz, mais escuro). Media 3,74–4,44:1
+  sobre o brilho do fundo da página (o `--glow` da marca + o azul do canto) e sobre o suave da marca (o × do
+  `.ss-fb-chip`, o `.ss-collapse-label`); agora o pior caso, nas 30 paletas, é 4,51:1 (Neon pop, sobre o brilho). O
+  escuro/OLED do web (`#9a96b8`, pior 4,72:1) e o Flutter (`#636981` claro, pior 4,52:1; `#9aa0bd` escuro, 5,17:1) já
+  passavam e não mudam. O `paletas/gerar.py --check` passa a conferir o texto apagado nos dois lados, nos três temas e
+  em todas as paletas (página, superfície, campo, suave e brilho), e que o valor é o do `engine.css`/`app_theme.dart`.
+- `SubnavComponent` sem item atual mostrava o primeiro item como atual no menu do celular; agora mostra o rótulo.
+- `SsStrings` ganhou `qrLabel`, `dayStripOk`, `dayStripWarn`, `dayStripBad`, `dayStripNone` (obrigatórios no
+  construtor, como os da v0.26/v0.27): quem monta um `SsStrings` à mão precisa passá-los (o `copyWith` não).
 
 ## v0.27.0: menu lateral com a dica de arrastar e a casca única das abas
 
@@ -1707,6 +1753,7 @@ quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando 
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.
 - `v0.4.0` (31/10/2026): componentes "únicos" nos dois lados — aurora (`SsAuroraCard`, `SsAuroraBackground`, `.ss-aurora`), indicador (`SsStatCard`, `SsAmount`, `SsDelta`), gráficos (`SsSparkline`, `SsRings`, `SsPillBars`), `SsSegmented`, `SsFilterChip`/`SsChipBar`, `SsSearchField`, `SsListItem`/`SsGroupHeader`, `SsAvatar`/`SsAvatarStack`, `showSsToast`, `SsSeal`, `SsPressable`, `SsCountUp`; helpers Rails (`ss_amount`, `ss_sparkline`, `ss_rings`, `ss_avatar`). `SsNavBar`: a bolinha **pula** em arco (achata, estica, pousa). `SsButton` encolhe ao toque e tem brilho no topo. Botões do menu e dos planos voltam a usar a Manrope.
 - `v0.20.4` (11/11/2026): seção "v0.20.4". `RepeaterComponent(header:, hide_labels:, columns:)` + `r.row(columns:, data:, class:, **attrs)` ↔ `SsRepeater(header:, flex:)` + `SsRepeater.cells`; `DataTableComponent(stack: false)` ↔ `SsDataTable(stack: false)`; `.ss-figure` e o card do `.ss-stat` só com `.is-card`/`.ss-stat-body` (o `.ss-stat` solto deixa de ganhar fundo de card). A API não quebra.
+- `v0.28.0` (16/11/2026): seção "v0.28.0" (a segunda rodada do meulog). `--muted` claro do web a `#615e78` (AA sobre superfície tingida; conferido no `gerar.py`); `Ss::DayStripComponent` ↔ `SsDayStrip` (novo); `Ss::FilterInputComponent` (novo); `max:` no BarChart/LineChart ↔ `SsBarChart`/`SsLineChart(max:)`; `QrCardComponent(qr_label:)` ↔ `SsQrCard(qrLabel:)`; `CardHeaderComponent(wrap:)`; `ListItemComponent(subtitle_wrap:)` ↔ `SsListItem(subtitleMaxLines:)`; ordenar com rótulo de ação; `SubnavComponent(count_label:)` e sem item atual; `ss_display_font_tag(self_hosted:)` + `ss_page_head`; `ss_select(include_hidden:)`; correções do Masonry, AsideLayout, `.ss-value-row` e `f.ss_fieldset` no SettingsLayout. Novos textos obrigatórios no `SsStrings`.
 - `v0.27.0` (16/11/2026), parte do meulog: seção "v0.27.0 (meulog)". `Ss::LineChartComponent` (novo) ↔ `SsLineChart(curved:, markers:, empty:)` + `SsSeries(dashed:, colors:)`; `BarChartComponent(horizontal:, markers:, empty:)` + `tones:`/`colors:` por valor ↔ `SsBarChart(horizontal:, markers:, empty:)`; `SsChartMarker`/`SsChartEmpty`; 16 ícones (Lucide) e apelidos do Phosphor; `ss_font_tags(self_hosted:, display:)` com Manrope e DM Mono servidas pela gem. Nada quebra.
 - `v0.26.0` (15/11/2026): seção "v0.26.0" (conversa entre pessoas). `Ss::ChatComponent::Message(from: :them, author:, status:)` ↔ `SsChatBubble(aiMark: false, author:)` e `SsChatStatus.delivered`/`read`; `Ss::ChatDividerComponent` ↔ `SsChatDivider`; `.ss-bubble-media`/`.ss-bubble-file`; o bloco do `ChatComponent` entra dentro do log. Nada quebra.
 - `v0.25.2` (15/11/2026): seção "v0.25.2". O `SsHeaderAction` com selo tem o `tooltip` como nome no leitor de tela (antes lia só o número). Nada quebra.

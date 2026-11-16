@@ -50,7 +50,12 @@ class SsLineChart extends StatefulWidget {
     this.curved = true,
     this.markers = const [],
     this.empty,
+    this.max,
   });
+
+  /// Topo fixo da escala (v0.28, par do `max:` do Ss::LineChartComponent): com ele o eixo vai de 0
+  /// (ou do menor valor negativo) até [max], para pequenos múltiplos na mesma escala.
+  final double? max;
 
   final List<SsSeries> series;
 
@@ -117,6 +122,10 @@ class _SsLineChartState extends State<SsLineChart> {
     final todos = [for (final s in widget.series) ...s.values, ?widget.target];
     var lo = todos.isEmpty ? 0.0 : todos.reduce(math.min);
     var hi = todos.isEmpty ? 1.0 : todos.reduce(math.max);
+    if (widget.max != null) {
+      lo = math.min(lo, 0);
+      hi = math.max(widget.max!, hi);
+    }
     if (hi == lo) {
       hi += 1;
       lo -= 1;

@@ -1,0 +1,45 @@
+/* v0.28 · a segunda rodada do meulog: o que ele montou à mão com peças existentes vira peça ou correção.
+   .ss-day-strip é o Ss::DayStripComponent (par do SsDayStrip): faixa de status por dia, os dias com respiro.
+   .ss-filter-input é o Ss::FilterInputComponent: o campo de busca do ss-filter, solto, sem <form>.
+   Correções: título do card em 2 linhas (.ss-card-head.is-wrap), subtítulo inteiro (.ss-item-sub.is-wrap),
+   masonry que vazava numa coluna a mais, coluna principal do AsideLayout que alargava a página e o
+   .ss-value-row com valor longo no celular. Cor só por token. */
+@layer components {
+  /* Faixa de status por dia */
+  .ss-day-strip { margin: 0; display: grid; gap: .4rem; min-width: 0; }
+  .ss-day-strip-title { font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 700; color: var(--ink); }
+  .ss-day-strip-days { display: flex; gap: 3px; align-items: stretch; height: var(--ss-day-h, 32px); min-width: 0; }
+  .ss-day { flex: 1 1 0; min-width: 2px; border-radius: 3px; background: var(--success); }
+  .ss-day[data-tone="warn"] { background: var(--warn); }
+  .ss-day[data-tone="bad"] { background: var(--danger); }
+  .ss-day[data-tone="none"] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+  .ss-day:hover { opacity: .8; }
+  .ss-day-strip-ends { display: flex; justify-content: space-between; gap: 1rem; font: 500 calc(.72rem * var(--ss-font-scale)) var(--font-mono); color: var(--muted); }
+
+  /* Busca solta do ss-filter */
+  .ss-search.ss-filter-input { max-width: 28rem; height: var(--ss-control-h); border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); }
+  .ss-search.ss-filter-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .ss-search.ss-filter-input svg { width: var(--ss-icon); height: var(--ss-icon); color: var(--muted); }
+  .ss-search.ss-filter-input input { font-size: calc(.88rem * var(--ss-font-scale)); font-weight: 500; }
+
+  /* Título do card em até 2 linhas; subtítulo de linha inteiro */
+  .ss-card-head.is-wrap .ss-card-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow-wrap: anywhere; }
+  .ss-item-main > .ss-item-sub.is-wrap { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+
+  /* Masonry: o multicolunas com altura definida pelo pai (item de grid/flex esticado) despejava o card
+     mais alto numa coluna a mais, fora da tela. A altura é sempre a do conteúdo. */
+  .ss-masonry { align-self: start; height: auto; min-width: 0; column-fill: balance; }
+
+  /* AsideLayout: no celular a grade não tinha coluna definida, e o filho largo (bloco de código sem quebra)
+     alargava a página. Uma coluna que pode encolher. */
+  .ss-aside-layout, .ss-aside-layout-main, .ss-aside-layout-side { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 1024px) { .ss-aside-layout { grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr); } }
+
+  /* Valor longo no .ss-value-row: quebra e desce para baixo do rótulo, sem estourar a largura. */
+  .ss-value-row { flex-wrap: wrap; column-gap: 1rem; row-gap: .15rem; }
+  .ss-value-row > :first-child { min-width: 0; }
+  .ss-value-row > :last-child { white-space: normal; overflow-wrap: anywhere; text-align: right; margin-left: auto; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-day:hover { opacity: 1; }
+}

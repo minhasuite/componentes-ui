@@ -164,7 +164,14 @@ module ComponentesUi
     # preconnect: false quando o layout já faz o preconnect do Google Fonts.
     DISPLAY_FONT_URL = "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&display=swap".freeze
 
-    def ss_display_font_tag(preconnect: true)
+    #
+    # v0.28: self_hosted: true serve a Big Shoulders Display pelo próprio app (sem CDN), para a página
+    # que só ela usa (tela de entrada). Fonte de uma página só vai no <head> pelo slot :ss_head:
+    #   layout:  <head> … <%= ss_page_head %> </head>
+    #   página:  <% content_for :ss_head, ss_display_font_tag(self_hosted: true) %>
+    def ss_display_font_tag(preconnect: true, self_hosted: false)
+      return stylesheet_link_tag("componentes_ui/fonts_display", "data-turbo-track": "reload") if self_hosted
+
       tags = []
       if preconnect
         tags << %(<link rel="preconnect" href="https://fonts.googleapis.com">)
@@ -205,6 +212,10 @@ module ComponentesUi
       end
       tags.join("\n").html_safe
     end
+
+    # v0.28: o que uma página pede para o <head> (content_for :ss_head): fonte extra, meta, preload.
+    # O layout chama uma vez, no <head>; sem nada pedido, sai vazio.
+    def ss_page_head = (content_for(:ss_head) if respond_to?(:content_for)).to_s.html_safe
 
     # v0.10.2: "Pular para o conteúdo" (.ss-skip), o primeiro Tab da página. Ponha logo no
     # começo do <body>; o alvo precisa de id (o <main> do AppShell é #conteudo, com tabindex=-1).

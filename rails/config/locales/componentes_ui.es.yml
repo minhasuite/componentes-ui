@@ -138,7 +138,19 @@ es:
       volume: VOL
       volume_down: Bajar volumen
       volume_up: Subir volumen
+    filter_input:
+      label: Buscar en la lista
+    day_strip:
+      ok: En línea
+      warn: Inestable
+      bad: Caído
+      none: Sin datos
+      day: Día
+      status: Estado
     data_table:
+      sort_action: "%{column}: ordenar %{direction}"
+      sort_asc: ascendente
+      sort_desc: descendente
       total: Total
       actions: Acciones
       bulk_actions: Acciones en lote

@@ -695,9 +695,13 @@ class SsGoalCard extends StatelessWidget {
 /// app passa como widget (`Image.memory(bytes)` ou o widget do gerador dele),
 /// instrução embaixo e um rodapé opcional. Sem plugin no pacote.
 class SsQrCard extends StatelessWidget {
-  const SsQrCard({super.key, required this.qr, this.title, this.instruction, this.footer, this.tone});
+  const SsQrCard({super.key, required this.qr, this.title, this.instruction, this.footer, this.tone, this.qrLabel});
 
   final Widget qr;
+
+  /// Nome do QR para o leitor de tela (v0.28, par do `qr_label:` do web): ex. "QR do autenticador".
+  /// Sem ele, [SsStrings.qrLabel] ("QR Code").
+  final String? qrLabel;
   final String? title;
   final String? instruction;
   final Widget? footer;
@@ -735,7 +739,11 @@ class SsQrCard extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 240),
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(color: AppColors.onDark, borderRadius: BorderRadius.circular(18)),
-                child: AspectRatio(aspectRatio: 1, child: qr),
+                child: Semantics(
+                  image: true,
+                  label: qrLabel ?? SsStrings.of(context).qrLabel,
+                  child: ExcludeSemantics(child: AspectRatio(aspectRatio: 1, child: qr)),
+                ),
               ),
             ),
             if (instruction != null) ...[

@@ -58,6 +58,8 @@
 @import "./v26_web.css";
 /* v0.27: o que o meulog pediu (linhas por categoria, barras deitadas, cor por valor, marcas de deploy/incidente e o vazio dos gráficos). */
 @import "./v27_web.css";
+/* v0.28: o que o meulog montou à mão (faixa de status por dia, busca solta do ss-filter) e as correções (título e subtítulo que quebram, masonry, AsideLayout, value-row). */
+@import "./v28_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

@@ -207,6 +207,14 @@ module Ss
       @dir == "desc" ? "descending" : "ascending"
     end
 
+    # O que o Enter faz no link de ordenar (v0.28), para o leitor de tela: "Total: ordenar decrescente".
+    # A seta fala para quem enxerga; o estado atual continua no aria-sort do <th>.
+    def sort_label(col)
+      dir = @sort == col.key && @dir == "asc" ? "desc" : "asc"
+      tt("sort_action", column: col.label.to_s, direction: tt("sort_#{dir}", default: dir == "asc" ? "crescente" : "decrescente"),
+                        default: "%{column}: ordenar %{direction}")
+    end
+
     # Link do cabeçalho: mesma coluna alterna o sentido; outra coluna começa em asc. Volta à página 1.
     def sort_href(col)
       dir = @sort == col.key && @dir == "asc" ? "desc" : "asc"

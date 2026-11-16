@@ -23,10 +23,17 @@ module ComponentesUi
     # body_class: a grade dos campos; wrapper_class: o fieldset.
     def ss_fieldset(legend:, help: nil, wrapper_class: nil, body_class: nil, &block)
       @ss_fieldset_seq = (@ss_fieldset_seq || 0) + 1
-      help_id = "ss-fs-#{@ss_fieldset_seq}-help" if help
-      tag.fieldset(class: ["ss-fieldset", "ss-field-group", wrapper_class].compact.join(" "), "aria-describedby": help_id) do
-        safe_join([tag.legend(legend, class: "ss-label"), (tag.small(help, class: "ss-field-help", id: help_id) if help),
-                   tag.div(capture(&block), class: ["ss-field-group-body", body_class].compact.join(" "))].compact)
+      FormHelpers.fieldset_html(self, "ss-fs-#{@ss_fieldset_seq}", legend:, help:, wrapper_class:, body_class:, &block)
+    end
+
+    # O desenho do fieldset, para a view e para o builder (v0.28): o f.ss_fieldset dentro de um
+    # componente (ex. a seção com form: do SettingsLayoutComponent) não tem o helper ss_fieldset no
+    # @template; montar com o tag/capture do próprio contexto vale nos dois.
+    def self.fieldset_html(view, id, legend:, help: nil, wrapper_class: nil, body_class: nil, &block)
+      help_id = "#{id}-help" if help
+      view.tag.fieldset(class: ["ss-fieldset", "ss-field-group", wrapper_class].compact.join(" "), "aria-describedby": help_id) do
+        view.safe_join([view.tag.legend(legend, class: "ss-label"), (view.tag.small(help, class: "ss-field-help", id: help_id) if help),
+                        view.tag.div(view.capture(&block), class: ["ss-field-group-body", body_class].compact.join(" "))].compact)
       end
     end
 

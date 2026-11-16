@@ -27,6 +27,7 @@ class SsListItem extends StatelessWidget {
     this.trailing,
     this.dimmed = false,
     this.maxLines = 1,
+    this.subtitleMaxLines,
     this.subtitleTone,
     this.valueTone,
   });
@@ -63,6 +64,9 @@ class SsListItem extends StatelessWidget {
   /// Linhas do título e do subtítulo antes da reticência.
   final int maxLines;
 
+  /// Linhas do subtítulo (v0.28, par do `subtitle_wrap:` do web): sem ele, vale [maxLines].
+  final int? subtitleMaxLines;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -92,7 +96,7 @@ class SsListItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      maxLines: maxLines,
+                      maxLines: subtitleMaxLines ?? maxLines,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: subtitleTone?.colors(context).text ?? c.muted,

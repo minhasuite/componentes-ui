@@ -30,7 +30,7 @@
               <% if c.format == :actions %>
                 <span class="ss-sr"><%= c.label %></span>
               <% elsif c.sortable %>
-                <a class="ss-sort" href="<%= sort_href(c) %>"><%= header_html(c) %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                <a class="ss-sort" href="<%= sort_href(c) %>" aria-label="<%= sort_label(c) %>"><%= header_html(c) %><svg class="ss-dt-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
               <% else %>
                 <%= header_html(c) %>
               <% end %>

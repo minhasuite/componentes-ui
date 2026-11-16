@@ -43,6 +43,11 @@ module Ss
   #   render Ss::BarChartComponent.new(title: "Erros por classe", horizontal: true,
   #     labels: ["ActiveRecord::RecordNotFound", "Net::ReadTimeout", "Outros"],
   #     series: [{ name: "Ocorrências", values: [120, 48, 30], tones: [nil, nil, :muted] }], empty: "Sem dados")
+  #
+  # v0.28: max: fixa o topo da escala (o eixo vai de 0 até max), para pequenos múltiplos lado a lado na
+  # mesma escala: comparar a altura de duas barras de gráficos diferentes só é honesto com o mesmo topo.
+  # Um valor acima do max alarga a escala (nunca vaza do desenho). Par do SsBarChart(max:).
+  #   render Ss::BarChartComponent.new(title: "EAccessViolation", labels: dias, series: [...], max: maior_de_todos)
   class BarChartComponent < BaseComponent
     include ChartMarkers
 
@@ -57,8 +62,9 @@ module Ss
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
                    show_title: false, legend: true, width: W, label_every: nil, projection: nil, projection_from: nil,
-                   horizontal: false, empty: nil, markers: [], **rest)
+                   horizontal: false, empty: nil, markers: [], max: nil, **rest)
       super(**rest)
+      @max = max&.to_f
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
       @line = line && normalize(line, "var(--ink)")
@@ -130,7 +136,10 @@ module Ss
         lo, hi = vals.minmax
         hi = 1.0 if lo.zero? && hi.zero?
         pad = (hi - lo) * 0.08
-        [lo.negative? ? lo - pad : 0.0, hi.positive? ? hi + pad : 0.0]
+        # v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala). Valor acima do max
+        # alarga a escala em vez de vazar do desenho.
+        top = @max ? [@max, hi].max : (hi.positive? ? hi + pad : 0.0)
+        [lo.negative? ? lo - pad : 0.0, top]
       end
     end
 

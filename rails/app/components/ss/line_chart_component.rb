@@ -19,6 +19,7 @@ module Ss
   # - width:/label_every:/height:/format:/legend:/show_title:/active: como no BarChartComponent.
   # - markers: marcas verticais (deploy, incidente, nota); ver Ss::ChartMarkers.
   # - empty: texto quando não há rótulo nem valor (sem empty:, não desenha nada).
+  # - v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala), como no BarChartComponent.
   class LineChartComponent < BaseComponent
     include ChartMarkers
 
@@ -31,8 +32,9 @@ module Ss
     attr_reader :title, :labels, :series
 
     def initialize(labels:, series:, title:, stacked: false, format: nil, height: 240, active: nil, show_title: false,
-                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, **rest)
+                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, max: nil, **rest)
       super(**rest)
+      @max = max&.to_f
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
       @stacked = stacked
@@ -93,7 +95,10 @@ module Ss
         lo, hi = vals.minmax
         hi = 1.0 if lo.zero? && hi.zero?
         pad = (hi - lo) * 0.08
-        [lo.negative? ? lo - pad : 0.0, hi.positive? ? hi + pad : 0.0]
+        # v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala). Valor acima do max
+        # alarga a escala em vez de vazar do desenho.
+        top = @max ? [@max, hi].max : (hi.positive? ? hi + pad : 0.0)
+        [lo.negative? ? lo - pad : 0.0, top]
       end
     end
 
