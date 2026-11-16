@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.0.1
+      ref: v1.0.2
 ```
 
 ```dart
@@ -643,6 +643,11 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.0.2: `find.ssTooltip` com um alvo só por tooltip
+
+Na v1.0.1 ele achava o `Tooltip` e o `RawTooltip` de dentro (o `tap` reclamava de dois alvos). Agora segue a regra do
+`find.byTooltip`: o `RawTooltip` pela semântica, e o `Tooltip` só quando fica fora da semântica ou sem mensagem.
 
 ## v1.0.1: `find.ssTooltip` para os testes dos apps (material_ui)
 

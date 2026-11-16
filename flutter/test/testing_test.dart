@@ -28,7 +28,9 @@ void main() {
     expect(find.ssTooltip('Notificações, 3 novas'), findsOneWidget);
     expect(find.ssTooltip(RegExp(r'^Notificações')), findsOneWidget);
     await t.tap(find.ssTooltip('Notificações, 3 novas'));
-    await t.tap(find.ssTooltip('Editar').first);
+    // Um alvo só por tooltip (Tooltip e o RawTooltip dele não contam duas vezes).
+    expect(find.ssTooltip('Editar'), findsOneWidget);
+    await t.tap(find.ssTooltip('Editar'));
     expect(toques, 2);
     expect(find.ssTooltip('Nada'), findsNothing);
   });

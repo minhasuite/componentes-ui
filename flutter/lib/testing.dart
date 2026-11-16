@@ -20,10 +20,16 @@ extension SsFinders on CommonFinders {
   /// exemplo), só o `Tooltip` do Material do SDK, outro tipo desde o 3.50.
   Finder ssTooltip(Pattern message, {bool skipOffstage = true}) {
     bool bate(String? t) => t != null && (message is RegExp ? message.hasMatch(t) : t == message);
+    // A mesma regra do find.byTooltip (um alvo só por tooltip): o RawTooltip pela
+    // semântica; o Tooltip só quando ele não vai à semântica ou não tem mensagem.
     return byWidgetPredicate(
-      (w) =>
-          (w is Tooltip && bate(w.message ?? w.richMessage?.toPlainText())) ||
-          (w is RawTooltip && bate(w.semanticsTooltip)),
+      (w) {
+        if (w is Tooltip) {
+          final texto = w.message ?? w.richMessage?.toPlainText() ?? '';
+          if ((w.excludeFromSemantics ?? false) || texto.isEmpty) return bate(texto);
+        }
+        return w is RawTooltip && bate(w.semanticsTooltip);
+      },
       description: 'tooltip "$message"',
       skipOffstage: skipOffstage,
     );
