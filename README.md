@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v0.26.0
+      ref: v0.27.0
 ```
 
 ```dart
@@ -643,6 +643,35 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v0.27.0: menu lateral com a dica de arrastar e a casca única das abas
+
+Pedido do usuário em 16/11/2026 para todos os apps. Só Flutter: o gesto de arrastar da borda e a barra de abas com o
+círculo são do app (no web o menu lateral já é o do `Ss::AppShellComponent`). Tudo aditivo. Catálogo: `ss-side-menu`
+(aberto, espiando, borda) e `ss-nav-scaffold` (`flutter/test/catalogo_v27.dart`). Testes: `flutter/test/v27_test.dart`.
+
+| Peça | O que faz |
+|---|---|
+| `SsNavScaffold(body:, navBar:, sideMenu:)` | **Casca única das abas**: no lugar de `PopScope` + `Scaffold(bottomNavigationBar: SsNavBar(...))` no `MainShell` de cada app. A **faixa acima da barra** (os 22 px onde o círculo sobe) **fica transparente**: o corpo vai até a borda da barra e passa por trás dela, em vez de uma tira do fundo cortando a lista (com a sombra da barra mudando dentro dela a cada troca de aba). O corpo recebe `MediaQuery.padding.bottom = SsNavBar.rise`, então lista com padding padrão e `SafeArea` não ficam embaixo do círculo. O voltar do sistema fecha o menu; fora da 1ª aba vai para ela (`backToFirstTab`); na 1ª, sai |
+| `SsSideMenuHost(menu:, child:)` | Menu lateral por cima da tela: abre arrastando da borda esquerda (a faixa fica depois de `systemGestureInsets`, sem brigar com o voltar do Android) ou por `SsSideMenuHost.maybeOf(context)?.open()`; abre com a mola da suíte, fecha arrastando, tocando fora, no voltar ou ao tocar numa linha. **Dica a cada abertura do app** (`peek`, uma vez por processo): o painel abre uma fresta com a coluna de ícones, a pílula "Arraste para abrir o menu" entra com mola e a seta cutuca duas vezes, o painel volta e a borda pisca duas vezes na cor da marca. Não segura o toque (tocar na fresta abre). Sem dica com "reduzir movimento" |
+| `SsSideMenu(title:, subtitle:, leading:, sections:, footer:)` | O painel: cabeçalho, seções (`SsSideMenuSection(items, title:)`) de `SsSideMenuItem(icon, label, activeIcon:, subtitle:, onTap:, selected:, badge:, danger:)`, linhas que entram em cascata conforme o painel abre. No `SsNavScaffold` as abas entram como 1ª seção (`tabsInMenu`), com a atual marcada |
+
+Textos novos no `SsStrings` (pt/en/es): `sideMenu`, `sideMenuOpen`, `sideMenuHint`.
+
+```dart
+// MainShell de cada app (o mesmo desenho em todos):
+return SsNavScaffold(
+  body: navigationShell,
+  navBar: SsNavBar(items: _tabs, currentIndex: navigationShell.currentIndex, onTap: _go),
+  sideMenu: const SsSideMenu(title: 'Minhas Vendas', sections: [/* atalhos do app, opcional */]),
+);
+```
+
+**Padrões que mudaram:** nada muda sem `SsNavScaffold`. Quem trocar o `Scaffold` pelo `SsNavScaffold` passa a ter o
+conteúdo por trás da faixa do círculo: o fim da lista precisa do respiro normal (o `padding` padrão do `ListView` já
+lê os 22 px; `ListView(padding: EdgeInsets.all(16))` explícito fica com 16 + nada, então o último item pode passar por
+trás do círculo: some com `safeListPadding`/`SsFab.clearance` ou somando `MediaQuery.paddingOf(context).bottom`).
+
 ## v0.27.0 (meulog): gráficos sem Chart.js, ícones de monitor de erros e fontes sem CDN
 
 O que a migração do meulog (monitor de erros self-hosted, Bootstrap → componentes-ui) pediu. Tudo aditivo: sem os

@@ -42,6 +42,9 @@ class SsStrings {
     required this.chatNotSent,
     required this.chatDelivered,
     required this.chatRead,
+    required this.sideMenu,
+    required this.sideMenuOpen,
+    required this.sideMenuHint,
     required this.chatThinking,
     required this.chatHint,
     required this.send,
@@ -446,6 +449,12 @@ class SsStrings {
   /// v0.26: situação da mensagem numa conversa entre pessoas (✓✓).
   final String chatDelivered;
   final String chatRead;
+
+  /// v0.27: menu lateral ([SsSideMenuHost]): nome do painel, botão da borda
+  /// e a dica que aparece ao abrir o app.
+  final String sideMenu;
+  final String sideMenuOpen;
+  final String sideMenuHint;
   final String chatThinking;
   final String chatHint;
   final String send;
@@ -1079,6 +1088,9 @@ class SsStrings {
     chatNotSent: 'Não enviada',
     chatDelivered: 'Entregue',
     chatRead: 'Lida',
+    sideMenu: 'Menu',
+    sideMenuOpen: 'Abrir o menu',
+    sideMenuHint: 'Arraste para abrir o menu',
     chatThinking: 'Pensando',
     chatHint: 'Escreva uma mensagem',
     send: 'Enviar',
@@ -1492,6 +1504,9 @@ class SsStrings {
     chatNotSent: 'Not sent',
     chatDelivered: 'Delivered',
     chatRead: 'Read',
+    sideMenu: 'Menu',
+    sideMenuOpen: 'Open the menu',
+    sideMenuHint: 'Swipe to open the menu',
     chatThinking: 'Thinking',
     chatHint: 'Write a message',
     send: 'Send',
@@ -1897,6 +1912,9 @@ class SsStrings {
     chatNotSent: 'No enviado',
     chatDelivered: 'Entregado',
     chatRead: 'Leído',
+    sideMenu: 'Menú',
+    sideMenuOpen: 'Abrir el menú',
+    sideMenuHint: 'Desliza para abrir el menú',
     chatThinking: 'Pensando',
     chatHint: 'Escribe un mensaje',
     send: 'Enviar',
@@ -2302,6 +2320,9 @@ class SsStrings {
     'chatNotSent': chatNotSent,
     'chatDelivered': chatDelivered,
     'chatRead': chatRead,
+    'sideMenu': sideMenu,
+    'sideMenuOpen': sideMenuOpen,
+    'sideMenuHint': sideMenuHint,
     'chatThinking': chatThinking,
     'chatHint': chatHint,
     'send': send,
@@ -2729,6 +2750,9 @@ class SsStrings {
     String? chatNotSent,
     String? chatDelivered,
     String? chatRead,
+    String? sideMenu,
+    String? sideMenuOpen,
+    String? sideMenuHint,
     String? chatThinking,
     String? chatHint,
     String? send,
@@ -3118,6 +3142,9 @@ class SsStrings {
     chatNotSent: chatNotSent ?? this.chatNotSent,
     chatDelivered: chatDelivered ?? this.chatDelivered,
     chatRead: chatRead ?? this.chatRead,
+    sideMenu: sideMenu ?? this.sideMenu,
+    sideMenuOpen: sideMenuOpen ?? this.sideMenuOpen,
+    sideMenuHint: sideMenuHint ?? this.sideMenuHint,
     chatThinking: chatThinking ?? this.chatThinking,
     chatHint: chatHint ?? this.chatHint,
     send: send ?? this.send,

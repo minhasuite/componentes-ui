@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    componentes_ui (0.26.0)
+    componentes_ui (0.27.0)
       railties (>= 8.0)
       tailwindcss-rails (>= 4.2)
       view_component (>= 3.9)
