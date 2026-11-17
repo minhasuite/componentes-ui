@@ -62,6 +62,8 @@
 @import "./v28_web.css";
 /* v1.2: linha compacta do repetidor no celular (mobile: :compact) e a folga do foco embaixo da barra do topo da moldura. */
 @import "./v120_web.css";
+/* v1.2.1: linha do tempo horizontal sem rolagem (divide a largura; em pé quando estreita). */
+@import "./v121_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

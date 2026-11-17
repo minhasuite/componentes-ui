@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.2.0
+      ref: v1.2.1
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v1.2.0"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v1.2.1"
 ```
 
 ```css
@@ -643,6 +643,19 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.2.1: linha do tempo sem passo escondido e o stepper com vírgula
+
+Dois achados da loja online do minhas-vendas. Testes em `rails/sample/test/components/v121_web_test.rb`; CSS em
+`v121_web.css`; catálogo: seções `ss-htl-v121` e `ss-stepper-decimals` (`rails/sample/script/catalogo_v121.rb`). Só web.
+
+| Peça | O que mudou |
+|---|---|
+| `Ss::TimelineHorizontalComponent` (`.ss-htl`) | Cada marco tinha 12,5rem fixos e a lista rolava de lado: na ficha do pedido online a 1536 px "Entregue" ficava fora do cartão e, no celular (acompanhamento público), só "Recebido" e "Confirmado" apareciam. Agora os marcos **dividem a largura** (o texto quebra; nada rola) e, quando a própria lista tem **menos de 36rem** (container query: cartão estreito ou celular), ela **fica em pé**: um marco por linha, a bolinha à esquerda e o fio descendo até a próxima. Mesma marcação; só CSS. O Flutter não tem a peça horizontal (o `SsTimeline` já é em pé) |
+| `Ss::StepperInputComponent(decimals: N)` | Par do `SsStepper(decimals:)`. Com `decimals:` (> 0) o campo vira texto com `inputmode=decimal` e mostra o número no idioma da página com N casas ("0,5" em pt-BR; o `<input type=number>` do Chromium mostrava "0.5"). O `ss-stepper` lê e escreve pelo `Intl` com o `lang` do `<html>` ("0,5" e "0.5" valem), faz o −/+ (texto não tem `stepUp`) e prende em `min:`/`max:` (vão em `data-min`/`data-max`/`data-step`). **Ao servidor vai o ponto**: o `name:` fica num `<input type=hidden>` ("0.5", target `raw`) atualizado a cada mudança; o campo visível não tem `name`. Quem lê o `event.target.value` do `change` recebe o texto do idioma ("0,5"); quem lê `form.elements[name]`, o ponto. Sem `decimals:`, igual a antes |
+
+**Padrões que mudaram.** A linha do tempo horizontal deixa de rolar: quem contava com a rolagem (muitos marcos num
+espaço curto) passa a ver os marcos estreitos com o texto quebrado ou, abaixo de 36rem, a lista em pé.
 
 ## v1.2.0: linha de item compacta no celular, foco fora da barra do topo, eixo que não cola e o nome da caixa da linha
 
@@ -1853,6 +1866,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.2.1` (17/11/2026): seção "v1.2.1". `TimelineHorizontalComponent` sem rolagem (marcos dividem a largura; em pé abaixo de 36rem) e `StepperInputComponent(decimals:)` com vírgula pelo idioma da página e o ponto num hidden. Nada quebra na API.
 - `v1.2.0` (17/11/2026): seção "v1.2.0" (auditoria de UX e videoaulas do minhas-vendas). `RepeaterComponent(mobile: :compact, details_label:)` + `r.cell(:primary/:inline/:detail)` ↔ `SsRepeater(mobile: SsRepeaterMobile.compact, compactBelow:)` + `SsRepeaterCell(role:)` + `SsRepeater.compactOf`/`cells(detailsOpen:)` e o texto `repeaterDetails`; `scroll-padding-top` com a barra do topo da moldura (`--ss-top-room`); rótulos do eixo X pela largura do maior rótulo e a partir do ativo (`BarChart`, `LineChart`, `SsBarChart`, `ssAxisLabelStep`); `DataTableComponent(select_label:)` e a caixa da linha com o título, nunca o id. Nada quebra na API; ver "Padrões que mudaram".
 - `v0.1.0` (30/10/2026): primeira versão (base: minhas-vendas e meu-gestor).
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.

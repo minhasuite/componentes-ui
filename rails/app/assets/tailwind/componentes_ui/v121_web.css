@@ -1,0 +1,17 @@
+/* v1.2.1 · linha do tempo horizontal (Ss::TimelineHorizontalComponent, .ss-htl) que não esconde passo.
+   Antes cada marco tinha 12,5rem fixos e a lista rolava de lado: no cartão de 2/3 da tela a 1536 px o último
+   ("Entregue") ficava fora, e no celular só os dois primeiros apareciam. Agora os marcos dividem a largura
+   (o texto quebra) e, quando a própria lista tem menos de 36rem (container query), ela fica em pé: um marco
+   por linha, o fio descendo entre as bolinhas. Nada rola de lado. */
+@layer components {
+  .ss-htl { container: ss-htl / inline-size; flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
+  .ss-htl li { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+  @container ss-htl (max-width: 36rem) {
+    .ss-htl li { flex: 0 0 100%; grid-template-columns: 1.1rem minmax(0, 1fr); column-gap: .75rem; row-gap: .1rem; padding: 0 0 1rem; }
+    .ss-htl li:last-child { padding-bottom: 0; }
+    .ss-htl li > * { grid-column: 2; }
+    .ss-htl li > i { grid-column: 1; grid-row: 1 / span 4; height: auto; margin: 0; align-self: stretch; }
+    .ss-htl li > i::after { left: calc(.55rem - 1px); right: auto; top: 1.3rem; bottom: -1.1rem; width: 2px; height: auto;
+                            transform-origin: top; animation-name: ss-grow; }
+  }
+}
