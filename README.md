@@ -644,6 +644,18 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.4.1: chat sem o balão nativo, scrollspy da seção certa e `ss-reveal` com rádios
+
+Achados das videoaulas do meu-gestor (17/11/2026). Só web; nada quebra na API. Teste em
+`rails/sample/test/components/v141_web_test.rb` (falha na v1.4.0); catálogo: comportamentos novos em `ss-chat-panel` e
+`ss-settings`.
+
+| Peça | O que mudou |
+|---|---|
+| `Ss::ChatComponent` | O formulário tem `novalidate`: com o campo vazio, parar o mouse nele fazia o Chrome mostrar o balão "Preencha este campo." (o `required` continua para o leitor de tela; o `ss-chat` já não envia vazio) |
+| `ss-scrollspy` (`SettingsLayoutComponent`) | A seção marcada é a última cujo topo passou da linha de leitura (30% da janela, no máximo 200 px); no fim da página, a última. Antes valia a primeira seção visível numa faixa, e a de cima, ainda com a borda à vista, ganhava (recarregar em `#vendas` marcava "Plano"). A âncora da URL marca a dela ao abrir; clicar no menu marca na hora |
+| `ss-reveal` | O `source` pode ser um grupo de rádios: vale o valor do marcado. `f.ss_radio_buttons(..., data: { ss_reveal_target: "source", action: "change->ss-reveal#update" })` |
+
 ## v1.4.0: a folhinha da entrada reage (`AuthLayoutComponent(motion: true)`)
 
 Pedido do usuário em 17/11/2026 (landings e login mais vivos). Só web, aditivo: sem `motion:` nada muda. O par no
@@ -1936,6 +1948,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.4.1` (17/11/2026): seção "v1.4.1". `ChatComponent` com `novalidate`, `ss-scrollspy` pela linha de leitura e `ss-reveal` com rádios. Nada quebra na API.
 - `v1.2.2` (17/11/2026): seção "v1.2.2". O rótulo dos campos (`SsTextField`, `SsMoneyField`) é o nome do campo no leitor de tela, dentro e fora de lista, sem leitura dupla; `SsChoiceField`/`SsTimeField` sem o rótulo repetido. Só Flutter. Nada quebra na API.
 - `v1.2.1` (17/11/2026): seção "v1.2.1". `TimelineHorizontalComponent` sem rolagem (marcos dividem a largura; em pé abaixo de 36rem) e `StepperInputComponent(decimals:)` com vírgula pelo idioma da página e o ponto num hidden. Nada quebra na API.
 - `v1.2.0` (17/11/2026): seção "v1.2.0" (auditoria de UX e videoaulas do minhas-vendas). `RepeaterComponent(mobile: :compact, details_label:)` + `r.cell(:primary/:inline/:detail)` ↔ `SsRepeater(mobile: SsRepeaterMobile.compact, compactBelow:)` + `SsRepeaterCell(role:)` + `SsRepeater.compactOf`/`cells(detailsOpen:)` e o texto `repeaterDetails`; `scroll-padding-top` com a barra do topo da moldura (`--ss-top-room`); rótulos do eixo X pela largura do maior rótulo e a partir do ativo (`BarChart`, `LineChart`, `SsBarChart`, `ssAxisLabelStep`); `DataTableComponent(select_label:)` e a caixa da linha com o título, nunca o id. Nada quebra na API; ver "Padrões que mudaram".
