@@ -7,6 +7,7 @@ import 'ss_controls.dart' show SsSegmented;
 import 'ss_fields.dart' show SsSwitch;
 import 'ss_async.dart' show SsSelfScrolling;
 import 'ss_strings.dart';
+import 'v130/appearance.dart' show SsAppearanceController, SsAppearancePanel;
 
 // Aba "Mais" padrão da suíte (o modelo é o menu do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
@@ -62,8 +63,9 @@ class SsMenuView extends StatefulWidget implements SsSelfScrolling {
     required this.name,
     required this.email,
     required this.sections,
-    required this.themeMode,
-    required this.onThemeMode,
+    this.themeMode = ThemeMode.system,
+    this.onThemeMode,
+    this.appearanceController,
     this.onDeleteAccount,
     required this.onLogout,
     this.badge,
@@ -92,7 +94,13 @@ class SsMenuView extends StatefulWidget implements SsSelfScrolling {
 
   final List<SsMenuSection> sections;
   final ThemeMode themeMode;
-  final ValueChanged<ThemeMode> onThemeMode;
+
+  /// Troca o tema (seletor simples). Ignorado com [appearanceController].
+  final ValueChanged<ThemeMode>? onThemeMode;
+
+  /// v1.3.1: a aparência completa ([SsAppearancePanel]: tema, preto total, cores e densidade)
+  /// no lugar do seletor simples de tema.
+  final SsAppearanceController? appearanceController;
 
   /// Termos, privacidade, exclusão de dados, versão: vão em "Aparência e sobre".
   final List<SsMenuItem> about;
@@ -278,20 +286,26 @@ class _SsMenuViewState extends State<SsMenuView> {
           title: str.appearanceAndAbout,
           open: w.appearanceOpen,
           children: [
-            SsMenuCard(
-              padding: const EdgeInsets.all(12),
-              // O segmented da suíte (pílula que desliza com mola).
-              child: SsSegmented<ThemeMode>(
-                segments: [
-                  (ThemeMode.system, str.themeSystem),
-                  (ThemeMode.light, str.themeLight),
-                  (ThemeMode.dark, str.themeDark),
-                ],
-                icons: const [Icons.brightness_auto_rounded, Icons.light_mode_rounded, Icons.dark_mode_rounded],
-                value: w.themeMode,
-                onChanged: w.onThemeMode,
+            if (w.appearanceController != null)
+              SsMenuCard(
+                padding: const EdgeInsets.all(12),
+                child: SsAppearancePanel(controller: w.appearanceController!),
+              )
+            else if (w.onThemeMode != null)
+              SsMenuCard(
+                padding: const EdgeInsets.all(12),
+                // O segmented da suíte (pílula que desliza com mola).
+                child: SsSegmented<ThemeMode>(
+                  segments: [
+                    (ThemeMode.system, str.themeSystem),
+                    (ThemeMode.light, str.themeLight),
+                    (ThemeMode.dark, str.themeDark),
+                  ],
+                  icons: const [Icons.brightness_auto_rounded, Icons.light_mode_rounded, Icons.dark_mode_rounded],
+                  value: w.themeMode,
+                  onChanged: w.onThemeMode!,
+                ),
               ),
-            ),
             ...w.appearance,
             for (final i in w.about) SsMenuRow(i),
           ],

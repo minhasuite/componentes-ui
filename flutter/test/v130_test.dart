@@ -125,4 +125,29 @@ void main() {
     expect(c.value.paleta, isNull);
     expect(SsAppearance.fromJson(m.valor), c.value);
   });
+
+  testWidgets('v1.3.1: SsMenuView(appearanceController:) mostra a aparência completa, sem o seletor duplicado', (
+    t,
+  ) async {
+    final c = _controlador(_Memoria());
+    await t.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: SsMenuView(
+            name: 'Ana',
+            email: 'ana@exemplo.com',
+            sections: const [],
+            onLogout: () {},
+            appearanceController: c,
+            appearanceOpen: true,
+          ),
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(find.byType(SsAppearancePanel), findsOneWidget);
+    expect(find.text('Escuro'), findsOneWidget); // um seletor de tema só
+    expect(find.byType(SsPalettePicker), findsOneWidget);
+  });
 }

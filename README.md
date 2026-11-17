@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.3.0
+      ref: v1.3.1
 ```
 
 ```dart
@@ -643,6 +643,12 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.3.1: `SsMenuView(appearanceController:)`
+
+A tela de configurações dos apps mostra a aparência completa (`SsAppearancePanel`: tema, preto total, cores e
+densidade) no lugar do seletor simples de tema, sem duplicar. `themeMode`/`onThemeMode` deixam de ser obrigatórios
+(sem `appearanceController`, o seletor simples segue igual).
 
 ## v1.3.0: aparência em todos os produtos e a alça do menu na borda
 
