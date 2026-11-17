@@ -102,3 +102,4 @@ export 'src/v27/chart_markers.dart' show SsChartMarker, SsChartMarkerKind;
 export 'src/v28/day_strip.dart';
 export 'src/v100/fonts.dart';
 export 'src/version.dart';
+export 'src/v130/appearance.dart';

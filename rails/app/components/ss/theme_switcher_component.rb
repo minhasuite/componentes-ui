@@ -16,10 +16,21 @@ module Ss
     THEMES = [["system", "Auto", nil], ["light", "Claro", nil], ["dark", "Escuro", false], ["dark", "OLED", true]].freeze
     GROUP_FROM = 9
 
-    def initialize(palettes: PALETTES.keys, oled: true, compact: false, group: nil, label: nil, **opts)
+    # v1.3: app_palette: "ambar" (a paleta do produto, a do data-palette do <html>) faz a 1ª ficha
+    # ser a "Cor do app" (volta para ela) e a violeta virar uma ficha como as outras. Use com o
+    # ss_theme_head no <head>, que lembra a paleta do produto antes de aplicar a escolhida.
+    def initialize(palettes: PALETTES.keys, oled: true, compact: false, group: nil, label: nil, app_palette: nil, app_label: nil, **opts)
       super(**opts)
       keys = palettes ? Array(palettes).map { |k| k.to_s == ComponentesUi::PALETA_PADRAO ? "none" : k.to_s } : []
       @palettes = PALETTES.slice(*keys)
+      @app_palette = app_palette.to_s.presence
+      if @palettes.any? && @app_palette && @app_palette != ComponentesUi::PALETA_PADRAO
+        violeta = @palettes.delete("none")
+        @palettes.delete(@app_palette)
+        app = [app_label || ss_t("theme_switcher.app_color", default: "Cor do app"), @app_palette]
+        @palettes = { "none" => app }.merge(@palettes)
+        @palettes[ComponentesUi::PALETA_PADRAO] = violeta if violeta
+      end
       @oled = oled
       @compact = compact
       @group = group.nil? ? (!compact && @palettes.size >= GROUP_FROM) : group
@@ -33,12 +44,23 @@ module Ss
 
     # [[família ou nil, [[chave, nome, slug], …]], …]
     def palette_groups
-      items = @palettes.map { |key, (_name, slug)| [key, ss_palette_name(slug), slug] }
+      items = @palettes.map { |key, (name, slug)| [key, app_chip?(key) ? name : ss_palette_name(slug), slug] }
       return [[nil, items]] unless @group
-      items.group_by { |(_, _, slug)| ComponentesUi::PALETA_FAMILIA[slug] }
-           .sort_by { |fam, _| ComponentesUi::PALETA_FAMILIAS.index(fam) || 99 }
+      # A "Cor do app" fica sozinha na 1ª linha, sem família.
+      app, rest = items.partition { |(key, _, _)| app_chip?(key) }
+      groups = rest.group_by { |(_, _, slug)| ComponentesUi::PALETA_FAMILIA[slug] }
+                   .sort_by { |fam, _| ComponentesUi::PALETA_FAMILIAS.index(fam) || 99 }
+      app.any? ? [[nil, app], *groups] : groups
     end
 
-    def default_name = (slug = @palettes.values.first&.last) && ss_palette_name(slug)
+    def default_name
+      key, (name, slug) = @palettes.first
+      return unless key
+      app_chip?(key) ? name : ss_palette_name(slug)
+    end
+
+    private
+
+    def app_chip?(key) = key == "none" && @app_palette.present? && @app_palette != ComponentesUi::PALETA_PADRAO
   end
 end

@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.2.2
+      ref: v1.3.0
 ```
 
 ```dart
@@ -643,6 +643,34 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.3.0: aparência em todos os produtos e a alça do menu na borda
+
+Pedido do usuário em 17/11/2026. Tudo aditivo, menos o botão de menu automático da v1.1, que sai.
+
+| O quê | Como fica |
+|---|---|
+| Botão de menu nos cabeçalhos | **Sai** (era da v1.1): `SsScreenHeader`/`SsTopBar` voltam a mostrar só a seta de voltar. A dica ao abrir o app e a alça bastam |
+| Alça do menu | Pílula pequena na cor da marca, **sempre à vista** na borda esquerda com o menu fechado (tom suave). No fim da dica ao abrir o app ela pulsa duas vezes e assenta. Tocar abre o menu; o arraste que começa nela também. Só a área da alça recebe o toque (o resto da borda segue com a tela) |
+| Aparência no app | `SsAppearance` (paleta, tema, preto total, densidade; `toJson`/`fromJson`), `SsAppearanceController(brand:, read:, write:)` (guarda onde o app disser e monta os temas em cache; o `MaterialApp` ouve: `theme: c.theme(Brightness.light)`, `darkTheme: c.theme(Brightness.dark)`, `themeMode: c.value.themeMode`) e `SsAppearancePanel(controller:)`, a seção pronta: tema, preto total, cores (a **Cor do app** primeiro, depois as 30 paletas) e densidade. Textos novos no `SsStrings`: `appearanceTheme`, `appearanceOled`, `appearanceOledHint`, `appearanceColors`, `appearanceAppColor` |
+| Aparência no web | `Ss::ThemeSwitcherComponent(app_palette: "ambar")`: a 1ª ficha é a "Cor do app" (a paleta do produto) e a violeta vira ficha comum. `ss_theme_head` no `<head>` (antes do CSS) guarda a paleta do produto em `data-palette-default` e aplica tema, paleta e OLED escolhidos antes da 1ª pintura. No controlador `ss-theme`, "none" volta para a paleta do produto, não para a violeta |
+
+```dart
+final aparencia = SsAppearanceController(
+  brand: SsBrand.ambar,
+  read: () => storage.read(key: 'aparencia'),
+  write: (v) => storage.write(key: 'aparencia', value: v),
+)..load();
+// Configurações › Aparência:
+SsAppearancePanel(controller: aparencia)
+```
+
+```erb
+<%# <head>, antes do stylesheet %>
+<%= ss_theme_head %>
+<%# configurações %>
+<%= render Ss::ThemeSwitcherComponent.new(app_palette: "ambar") %>
+```
 
 ## v1.2.2: o rótulo do campo é o nome dele no leitor de tela
 

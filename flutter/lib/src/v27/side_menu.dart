@@ -633,17 +633,24 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
             animation: Listenable.merge([_c, _hint]),
             builder: (context, _) {
               final t = _c.value;
-              if (t <= 0) {
-                return _EdgeGlow(
-                  t: _hint.value,
-                  color: c.accent,
-                  active: _peeking && (_hint.isAnimating || widget.debugHintAt != null),
-                );
-              }
+              // A alça fica sempre na árvore (só some da vista com o painel aberto): o arraste que
+              // começa nela continua com o mesmo dono enquanto o painel abre.
+              final alca = _EdgeGlow(
+                t: _hint.value,
+                color: c.accent,
+                visible: t <= 0,
+                active: _peeking && (_hint.isAnimating || widget.debugHintAt != null),
+                onTap: open,
+                onDragStart: _dragStart,
+                onDragUpdate: _dragUpdate,
+                onDragEnd: _dragEnd,
+              );
+              if (t <= 0) return Stack(children: [Positioned.fill(child: alca)]);
               final shown = t.clamp(0.0, 1.0);
               final width = _w * math.max(t, 0);
               return Stack(
                 children: [
+                  Positioned.fill(child: alca),
                   // Fundo que escurece. Na dica ele só tinge, sem segurar o toque.
                   Positioned.fill(
                     child: IgnorePointer(
@@ -735,30 +742,67 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
   }
 }
 
-/// Depois que o painel volta, a borda esquerda pisca duas vezes na cor da
-/// marca: "o menu mora aqui".
+/// A alça do menu na borda esquerda: uma pílula pequena na cor da marca, sempre à vista com o
+/// menu fechado (v1.3), que diz "tem menu aqui" sem ocupar a tela. No fim da dica ao abrir o app
+/// ela pulsa duas vezes e assenta no tom suave. Tocar abre o menu (só a área da alça: o resto da
+/// borda segue com o toque da tela; o arraste continua na faixa da borda).
 class _EdgeGlow extends StatelessWidget {
-  const _EdgeGlow({required this.t, required this.color, required this.active});
+  const _EdgeGlow({
+    required this.t,
+    required this.color,
+    required this.visible,
+    required this.active,
+    required this.onTap,
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+  });
 
   final double t;
   final Color color;
+
+  /// Com o painel aberto (ou espiando) a alça fica invisível, mas segue na árvore.
+  final bool visible;
   final bool active;
+  final VoidCallback onTap;
+
+  // A alça fica por cima da faixa da borda: o arraste que começa nela também abre o menu.
+  final GestureDragStartCallback onDragStart;
+  final GestureDragUpdateCallback onDragUpdate;
+  final GestureDragEndCallback onDragEnd;
+
+  /// Opacidade em repouso.
+  static const _repouso = .38;
 
   @override
   Widget build(BuildContext context) {
-    if (!active || t < SsSideMenuHostState._closed) return const SizedBox.shrink();
-    final f = (t - SsSideMenuHostState._closed) / (1 - SsSideMenuHostState._closed);
-    final a = math.pow(math.sin(2 * math.pi * f), 2).toDouble() * (1 - f * .4);
-    return IgnorePointer(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          width: 5,
-          height: 72,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: a),
-            borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
-            boxShadow: [BoxShadow(color: color.withValues(alpha: a * .6), blurRadius: 16, spreadRadius: 2)],
+    var a = _repouso;
+    if (!visible || (active && t < SsSideMenuHostState._closed)) {
+      a = 0; // painel aberto, ou espiando na dica
+    } else if (active) {
+      final f = (t - SsSideMenuHostState._closed) / (1 - SsSideMenuHostState._closed);
+      a = _repouso + (1 - _repouso) * math.pow(math.sin(2 * math.pi * f), 2).toDouble() * (1 - f * .4);
+    }
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          onHorizontalDragStart: onDragStart,
+          onHorizontalDragUpdate: onDragUpdate,
+          onHorizontalDragEnd: onDragEnd,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 18, 16, 18),
+            child: Container(
+              width: 5,
+              height: 56,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: a),
+                borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
+                boxShadow: [BoxShadow(color: color.withValues(alpha: a * .5), blurRadius: 12, spreadRadius: 1)],
+              ),
+            ),
           ),
         ),
       ),

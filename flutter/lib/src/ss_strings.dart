@@ -45,6 +45,11 @@ class SsStrings {
     required this.sideMenu,
     required this.sideMenuOpen,
     required this.sideMenuHint,
+    required this.appearanceTheme,
+    required this.appearanceOled,
+    required this.appearanceOledHint,
+    required this.appearanceColors,
+    required this.appearanceAppColor,
     required this.qrLabel,
     required this.dayStripOk,
     required this.dayStripWarn,
@@ -461,6 +466,15 @@ class SsStrings {
   final String sideMenu;
   final String sideMenuOpen;
   final String sideMenuHint;
+
+  /// v1.3: seção de Aparência ([SsAppearancePanel]).
+  final String appearanceTheme;
+  final String appearanceOled;
+  final String appearanceOledHint;
+  final String appearanceColors;
+
+  /// A 1ª opção das cores: a cor da marca do app (o padrão).
+  final String appearanceAppColor;
 
   /// v0.28: nome do QR para o leitor de tela ([SsQrCard]) e as situações da faixa por dia ([SsDayStrip]).
   final String qrLabel;
@@ -1108,6 +1122,11 @@ class SsStrings {
     sideMenu: 'Menu',
     sideMenuOpen: 'Abrir o menu',
     sideMenuHint: 'Arraste para abrir o menu',
+    appearanceTheme: 'Tema',
+    appearanceOled: 'Preto total',
+    appearanceOledHint: 'Fundo preto puro no tema escuro (economiza bateria em tela OLED)',
+    appearanceColors: 'Cores',
+    appearanceAppColor: 'Cor do app',
     qrLabel: 'QR Code',
     dayStripOk: 'No ar',
     dayStripWarn: 'Instável',
@@ -1530,6 +1549,11 @@ class SsStrings {
     sideMenu: 'Menu',
     sideMenuOpen: 'Open the menu',
     sideMenuHint: 'Swipe to open the menu',
+    appearanceTheme: 'Theme',
+    appearanceOled: 'True black',
+    appearanceOledHint: 'Pure black background in the dark theme (saves battery on OLED screens)',
+    appearanceColors: 'Colors',
+    appearanceAppColor: 'App color',
     qrLabel: 'QR code',
     dayStripOk: 'Up',
     dayStripWarn: 'Unstable',
@@ -1944,6 +1968,11 @@ class SsStrings {
     sideMenu: 'Menú',
     sideMenuOpen: 'Abrir el menú',
     sideMenuHint: 'Desliza para abrir el menú',
+    appearanceTheme: 'Tema',
+    appearanceOled: 'Negro puro',
+    appearanceOledHint: 'Fondo negro puro en el tema oscuro (ahorra batería en pantallas OLED)',
+    appearanceColors: 'Colores',
+    appearanceAppColor: 'Color de la app',
     qrLabel: 'Código QR',
     dayStripOk: 'En línea',
     dayStripWarn: 'Inestable',
@@ -2358,6 +2387,11 @@ class SsStrings {
     'sideMenu': sideMenu,
     'sideMenuOpen': sideMenuOpen,
     'sideMenuHint': sideMenuHint,
+    'appearanceTheme': appearanceTheme,
+    'appearanceOled': appearanceOled,
+    'appearanceOledHint': appearanceOledHint,
+    'appearanceColors': appearanceColors,
+    'appearanceAppColor': appearanceAppColor,
     'qrLabel': qrLabel,
     'dayStripOk': dayStripOk,
     'dayStripWarn': dayStripWarn,
@@ -2794,6 +2828,11 @@ class SsStrings {
     String? sideMenu,
     String? sideMenuOpen,
     String? sideMenuHint,
+    String? appearanceTheme,
+    String? appearanceOled,
+    String? appearanceOledHint,
+    String? appearanceColors,
+    String? appearanceAppColor,
     String? qrLabel,
     String? dayStripOk,
     String? dayStripWarn,
@@ -3192,6 +3231,11 @@ class SsStrings {
     sideMenu: sideMenu ?? this.sideMenu,
     sideMenuOpen: sideMenuOpen ?? this.sideMenuOpen,
     sideMenuHint: sideMenuHint ?? this.sideMenuHint,
+    appearanceTheme: appearanceTheme ?? this.appearanceTheme,
+    appearanceOled: appearanceOled ?? this.appearanceOled,
+    appearanceOledHint: appearanceOledHint ?? this.appearanceOledHint,
+    appearanceColors: appearanceColors ?? this.appearanceColors,
+    appearanceAppColor: appearanceAppColor ?? this.appearanceAppColor,
     qrLabel: qrLabel ?? this.qrLabel,
     dayStripOk: dayStripOk ?? this.dayStripOk,
     dayStripWarn: dayStripWarn ?? this.dayStripWarn,

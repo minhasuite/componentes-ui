@@ -149,6 +149,24 @@ module ComponentesUi
       else if(v==="standard")document.documentElement.removeAttribute("data-ss-density")}catch(e){}})();
     JS
 
+    # v1.3: no <head>, antes do CSS: guarda a paleta do produto (o data-palette do <html>) em
+    # data-palette-default e aplica o tema, a paleta e o OLED escolhidos (localStorage do
+    # ss-theme) antes da 1ª pintura, sem piscar a cor padrão. "none" volta para a do produto.
+    SS_THEME_HEAD_JS = <<~JS.gsub(/\s*\n\s*/, "").freeze
+      (function(){try{var h=document.documentElement,d=h.dataset;
+      if(d.palette&&d.paletteDefault===undefined)d.paletteDefault=d.palette;
+      var t=localStorage.getItem("ss-theme");if(t==="light"||t==="dark")d.theme=t;else if(t==="none")delete d.theme;
+      var p=localStorage.getItem("ss-palette");if(p==="none"){if(d.paletteDefault)d.palette=d.paletteDefault;else delete d.palette}
+      else if(p)d.palette=p;
+      var o=localStorage.getItem("ss-oled");if(o==="true")d.oled="";else if(o==="false")delete d.oled}catch(e){}})();
+    JS
+
+    def ss_theme_head
+      nonce = (content_security_policy_nonce if respond_to?(:content_security_policy_nonce)) rescue nil
+      attr = nonce ? %( nonce="#{ERB::Util.html_escape(nonce)}") : ""
+      %(<script#{attr} data-ss-theme-head>#{SS_THEME_HEAD_JS}</script>).html_safe
+    end
+
     # No <head>, antes do CSS: aplica a densidade que a pessoa escolheu (localStorage
     # ss-density, do Ss::DensityPickerComponent) antes da 1ª pintura e sobrevive ao morph
     # do Turbo. Sem escolha, vale a do <html> (ss_density_attrs / config).

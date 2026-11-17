@@ -491,6 +491,7 @@ es:
       placeholder: Escribe y pulsa Enter
       remove: Quitar %{tag}
     theme_switcher:
+      app_color: "Color de la app"
       label: Apariencia
       palette: Paleta
       themes:

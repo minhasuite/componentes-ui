@@ -15,6 +15,10 @@ export default class extends Controller {
   static targets = ["name"]
 
   connect() {
+    // v1.3: a paleta do produto (a do <html> antes de qualquer escolha; o ss_theme_head já
+    // guarda) é a "Cor do app": escolher "none" volta para ela, e não para a violeta.
+    const root = document.documentElement
+    if (root.dataset.palette && root.dataset.paletteDefault === undefined) root.dataset.paletteDefault = root.dataset.palette
     try {
       const t = localStorage.getItem("ss-theme"); if (t) this.write("theme", t)
       const p = localStorage.getItem("ss-palette"); if (p) this.write("palette", p)
@@ -60,7 +64,9 @@ export default class extends Controller {
 
   write(kind, value) {
     const root = document.documentElement
-    if (value === null || value === undefined || value === "none") delete root.dataset[kind]
+    const none = value === null || value === undefined || value === "none"
+    if (kind === "palette" && none && root.dataset.paletteDefault) { root.dataset.palette = root.dataset.paletteDefault; return }
+    if (none) delete root.dataset[kind]
     else root.dataset[kind] = value
   }
 
@@ -70,7 +76,8 @@ export default class extends Controller {
     const root = document.documentElement
     const theme = root.dataset.theme || "system"
     const oled = root.dataset.oled !== undefined
-    const palette = root.dataset.palette || "none"
+    const cur = root.dataset.palette
+    const palette = !cur || cur === root.dataset.paletteDefault ? "none" : cur
     this.element.querySelectorAll("[data-ss-theme-theme-param],[data-ss-theme-palette-param],[data-ss-theme-oled-param]").forEach((b) => {
       const d = b.dataset
       let on = false

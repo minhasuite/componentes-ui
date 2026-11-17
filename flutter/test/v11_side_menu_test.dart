@@ -1,5 +1,4 @@
 import 'package:componentes_ui/componentes_ui.dart';
-import 'package:componentes_ui/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -43,7 +42,7 @@ void main() {
     expect(find.text('Meu App 1.4.0 (123) · componentes_ui $ssComponentesUiVersion'), findsOneWidget);
   });
 
-  testWidgets('tela principal com SsScreenHeader dentro do menu ganha o botão que o abre', (t) async {
+  testWidgets('v1.3: cabeçalhos da tela principal sem botão de menu (a dica e a alça bastam)', (t) async {
     await t.pumpWidget(
       _app(
         body: const Scaffold(
@@ -52,22 +51,14 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    expect(find.ssTooltip('Abrir o menu'), findsWidgets);
-    await t.tap(find.byIcon(Icons.menu_rounded));
-    await t.pumpAndSettle();
-    expect(t.state<SsSideMenuHostState>(find.byType(SsSideMenuHost)).isOpen, isTrue);
-  });
-
-  testWidgets('SsTopBar na tela principal também ganha o botão do menu', (t) async {
+    expect(find.byIcon(Icons.menu_rounded), findsNothing);
     await t.pumpWidget(
       _app(
         body: const Scaffold(appBar: SsTopBar(title: 'Início')),
       ),
     );
     await t.pumpAndSettle();
-    await t.tap(find.byIcon(Icons.menu_rounded));
-    await t.pumpAndSettle();
-    expect(t.state<SsSideMenuHostState>(find.byType(SsSideMenuHost)).isOpen, isTrue);
+    expect(find.byIcon(Icons.menu_rounded), findsNothing);
   });
 
   test('ssComponentesUiVersion igual ao version do pubspec', () {

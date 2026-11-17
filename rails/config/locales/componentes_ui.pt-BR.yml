@@ -493,6 +493,7 @@ pt-BR:
       placeholder: Digite e tecle Enter
       remove: Remover %{tag}
     theme_switcher:
+      app_color: "Cor do app"
       label: Aparência
       palette: Paleta
       themes:
