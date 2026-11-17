@@ -61,6 +61,8 @@ class _CascaState extends State<_Casca> {
     sideMenu: const SsSideMenu(
       title: 'Minhas Vendas',
       subtitle: 'ana@exemplo.com',
+      icon: Icons.storefront_rounded,
+      version: '1.4.0 (123)',
       sections: [
         SsSideMenuSection(title: 'Atalhos', [
           SsSideMenuItem(Icons.sync, 'Sincronização', subtitle: 'Tudo enviado'),
@@ -81,7 +83,9 @@ final List<Componente> _novos = [
       'Abre arrastando da borda esquerda (a faixa fica depois do gesto de voltar do Android), por SsSideMenuHost.maybeOf(context)?.open() ou pelo leitor de tela ("Abrir o menu").',
       'Abre com a mola da suíte (passa um pouco e assenta); fecha arrastando de volta, tocando fora, no voltar do sistema ou ao tocar numa linha.',
       'As linhas entram em cascata: com o painel abrindo, as de baixo ficam para trás e mais apagadas e alcançam as de cima no fim.',
-      'Dica ao abrir o app (uma vez por abertura): o painel abre uma fresta com a coluna de ícones, a pílula "Arraste para abrir o menu" entra com mola e a seta cutuca duas vezes; o painel volta e a borda pisca duas vezes na cor da marca. A tela segue usável; tocar na fresta abre o menu. Sem dica com "reduzir movimento".',
+      'Dica ao abrir o app (uma vez por abertura): o painel abre uma fresta com a coluna de ícones e volta, e a borda pisca duas vezes na cor da marca (v1.1: sem a pílula de texto). A tela segue usável; tocar na fresta abre o menu. Sem dica com "reduzir movimento".',
+      'v1.1: cartão do topo no gradiente da marca, com o ícone do app (icon:), o nome na fonte de exibição e a conta embaixo; no pé, a versão do app (version:) e a do componentes_ui num tom apagado.',
+      'v1.1: tela principal com SsScreenHeader ou SsTopBar dentro do menu ganha sozinha o botão de menu (o lugar da seta de voltar).',
       'Linha atual com fundo na marca suave, ícone cheio e negrito; contagem à direita (99+); danger em vermelho.',
       'No SsNavScaffold as abas entram como 1ª seção, com a aba atual marcada.',
     ],

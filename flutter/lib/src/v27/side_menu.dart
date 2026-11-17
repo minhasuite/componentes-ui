@@ -9,6 +9,7 @@ import '../app_theme.dart';
 import '../motion.dart';
 import '../ss_nav_bar.dart';
 import '../ss_strings.dart';
+import '../version.dart';
 
 /// Uma linha do [SsSideMenu].
 class SsSideMenuItem {
@@ -50,30 +51,52 @@ class SsSideMenuSection {
   final List<SsSideMenuItem> items;
 }
 
-/// Conteúdo do menu lateral: cabeçalho (o [leading], o [title] e o
-/// [subtitle]), as seções e o [footer]. Vai no [SsSideMenuHost.menu] (ou no
-/// `sideMenu:` do [SsNavScaffold]). Dentro do host, as linhas entram em
-/// cascata conforme o painel abre (as de baixo chegam por último).
+/// Conteúdo do menu lateral: cabeçalho (cartão na cor da marca com o [icon]
+/// ou o [leading], o [title] na fonte de exibição e o [subtitle]), as seções,
+/// o [footer] e, no pé, a versão do app ([version]) e a do componentes_ui num
+/// tom apagado. Vai no [SsSideMenuHost.menu] (ou no `sideMenu:` do
+/// [SsNavScaffold]). Dentro do host, as linhas entram em cascata conforme o
+/// painel abre (as de baixo chegam por último).
 class SsSideMenu extends StatelessWidget {
-  const SsSideMenu({super.key, this.sections = const [], this.title, this.subtitle, this.leading, this.footer});
+  const SsSideMenu({
+    super.key,
+    this.sections = const [],
+    this.title,
+    this.subtitle,
+    this.icon,
+    this.leading,
+    this.footer,
+    this.version,
+  });
 
+  /// Nome do app (fonte de exibição, no cartão da marca).
   final String? title;
+
+  /// Linha de baixo do cartão (a conta: nome ou e-mail).
   final String? subtitle;
 
-  /// Marca do app ou avatar, à esquerda do título.
+  /// v1.1: ícone do app num quadrado translúcido no cartão (ignorado com [leading]).
+  final IconData? icon;
+
+  /// Marca do app ou avatar no lugar do [icon].
   final Widget? leading;
   final List<SsSideMenuSection> sections;
 
-  /// Fica no pé do painel (versão, sair).
+  /// Fica no pé do painel, acima das versões (ex.: Sair).
   final Widget? footer;
+
+  /// v1.1: versão do app (ex. `1.4.0 (123)`), no pé ao lado da do componentes_ui.
+  final String? version;
 
   /// Uma cópia com [sections] na frente das seções atuais.
   SsSideMenu _withLeading(List<SsSideMenuSection> first) => SsSideMenu(
     key: key,
     title: title,
     subtitle: subtitle,
+    icon: icon,
     leading: leading,
     footer: footer,
+    version: version,
     sections: [...first, ...sections],
   );
 
@@ -118,53 +141,132 @@ class SsSideMenu extends StatelessWidget {
         );
       }
     }
+    final versoes = [
+      if (version != null && version!.isNotEmpty) '${title ?? ''} $version'.trim(),
+      'componentes_ui $ssComponentesUiVersion',
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (title != null || leading != null)
+        if (title != null || leading != null || icon != null)
           _Cascade(
             progress: progress,
             index: 0,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20, pad.top + 20, 20, 12),
-              child: Row(
-                children: [
-                  if (leading != null) ...[leading!, const SizedBox(width: 12)],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (title != null)
-                          Text(
-                            title!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: c.ink, fontSize: AppType.lg, fontWeight: FontWeight.w800),
-                          ),
-                        if (subtitle != null && subtitle!.isNotEmpty)
-                          Text(
-                            subtitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: c.muted, fontSize: AppType.sub),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              padding: EdgeInsets.fromLTRB(12, pad.top + 12, 12, 6),
+              child: _Cabecalho(title: title, subtitle: subtitle, icon: icon, leading: leading),
             ),
           )
         else
           SizedBox(height: pad.top + 12),
         Expanded(
-          child: ListView(
-            padding: EdgeInsets.fromLTRB(10, 4, 10, footer == null ? pad.bottom + 16 : 8),
-            children: children,
+          child: ListView(padding: const EdgeInsets.fromLTRB(10, 4, 10, 8), children: children),
+        ),
+        if (footer != null) Padding(padding: const EdgeInsets.fromLTRB(20, 4, 20, 0), child: footer),
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 10, 20, pad.bottom + 14),
+          child: Text(
+            versoes,
+            maxLines: 2,
+            style: TextStyle(color: c.muted2, fontSize: AppType.label, fontWeight: FontWeight.w600),
           ),
         ),
-        if (footer != null) Padding(padding: EdgeInsets.fromLTRB(20, 8, 20, pad.bottom + 16), child: footer),
       ],
+    );
+  }
+}
+
+/// O cartão do topo do menu: gradiente da marca, o ícone do app num quadrado
+/// translúcido, o nome na fonte de exibição e a conta embaixo. Um círculo
+/// claro no canto dá o acabamento (decoração, fora do leitor de tela).
+class _Cabecalho extends StatelessWidget {
+  const _Cabecalho({this.title, this.subtitle, this.icon, this.leading});
+
+  final String? title;
+  final String? subtitle;
+  final IconData? icon;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final marca =
+        leading ??
+        (icon == null
+            ? null
+            : Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AppColors.onDark.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.onDark.withValues(alpha: .28)),
+                ),
+                child: Icon(icon, color: AppColors.onDark, size: 26),
+              ));
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: c.gradient4,
+        // Sem sombra: a sombra tingida formava uma faixa escura embaixo do cartão.
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -38,
+            top: -46,
+            child: ExcludeSemantics(
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.onDark.withValues(alpha: .10)),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 34,
+            bottom: -30,
+            child: ExcludeSemantics(
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.onDark.withValues(alpha: .07)),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (marca != null) ...[marca, const SizedBox(height: 14)],
+                if (title != null)
+                  Text(
+                    title!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.display(context, size: 30, color: AppColors.onDark),
+                  ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.onDark.withValues(alpha: .86),
+                      fontSize: AppType.sub,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -302,8 +404,8 @@ class _SsSideMenuScope extends InheritedWidget {
 ///
 /// **Dica ao abrir o app** ([peek]): na primeira vez que o host aparece em
 /// cada abertura do app, o painel espia (abre uma fresta com mola mostrando a
-/// coluna de ícones, com a pílula "Arraste para abrir o menu" e a seta que
-/// cutuca), volta, e a borda pisca duas vezes na cor da marca. Não segura o
+/// coluna de ícones), volta, e a borda pisca duas vezes na cor da marca (v1.1:
+/// sem a pílula "Arraste para abrir o menu", rápida demais para ler). Não segura o
 /// toque: a tela segue usável durante a dica; tocar na fresta abre o menu.
 /// Com "reduzir movimento" a dica não roda.
 ///
@@ -363,7 +465,7 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
   // pouco de 1 ao abrir e assenta.
   late final _c = AnimationController.unbounded(vsync: this);
 
-  // Linha do tempo da dica (painel que espia, pílula, seta, borda que pisca).
+  // Linha do tempo da dica (painel que espia e a borda que pisca).
   late final _hint = AnimationController(vsync: this, duration: _hintTotal);
   static const _hintTotal = Duration(milliseconds: 3600);
 
@@ -600,7 +702,12 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
                               label: s.sideMenu,
                               child: ExcludeSemantics(
                                 excluding: !_open,
-                                child: _SsSideMenuScope(progress: _c, close: close, child: widget.menu),
+                                // Sem um Material acima, o Text do cabeçalho ganhava o sublinhado
+                                // amarelo duplo de depuração (o host fica por cima do Scaffold).
+                                child: Material(
+                                  type: MaterialType.transparency,
+                                  child: _SsSideMenuScope(progress: _c, close: close, child: widget.menu),
+                                ),
                               ),
                             ),
                           ),
@@ -608,7 +715,6 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
                       ),
                     ),
                   ),
-                  if (_peeking) _HintPill(t: _hint.value, left: width + 12, text: s.sideMenuHint),
                 ],
               );
             },
@@ -626,68 +732,6 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
       );
     }
     return host;
-  }
-}
-
-/// A pílula "Arraste para abrir o menu" ao lado da fresta, com a seta que
-/// cutuca para a direita. Entra com mola, sai antes do painel voltar.
-class _HintPill extends StatelessWidget {
-  const _HintPill({required this.t, required this.left, required this.text});
-
-  final double t;
-  final double left;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SsColors.of(context);
-    double seg(double a, double b) => ((t - a) / (b - a)).clamp(0.0, 1.0);
-    final enter = SsMotion.pop.transform(seg(.08, .22));
-    final exit = Curves.easeIn.transform(seg(.40, .47));
-    final opacity = (seg(.08, .14) * (1 - exit)).clamp(0.0, 1.0);
-    // Duas cutucadas da seta enquanto o painel está parado.
-    final nudge = 6 * math.pow(math.sin(2 * math.pi * seg(.2, .44)), 2).toDouble();
-    return Positioned(
-      left: left,
-      top: 0,
-      bottom: 0,
-      child: IgnorePointer(
-        child: Center(
-          child: Opacity(
-            opacity: opacity,
-            child: Transform.translate(
-              offset: Offset(-14 * (1 - enter) - 8 * exit, 0),
-              child: Transform.scale(
-                scale: .85 + .15 * enter,
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 14, 8),
-                  decoration: BoxDecoration(
-                    color: c.ink,
-                    borderRadius: BorderRadius.circular(99),
-                    boxShadow: c.tintedShadow(c.accent, strength: .6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Transform.translate(
-                        offset: Offset(nudge, 0),
-                        child: Icon(Icons.keyboard_double_arrow_right_rounded, size: 18, color: c.surface),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        text,
-                        style: TextStyle(color: c.surface, fontSize: AppType.sub, fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

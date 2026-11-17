@@ -12,6 +12,7 @@ import '../density.dart';
 import '../motion.dart';
 import '../ss_fit.dart';
 import '../ss_strings.dart';
+import '../v27/side_menu.dart' show SsSideMenuHost;
 
 /// Visual do [SsIconButton].
 enum SsIconButtonVariant {
@@ -196,6 +197,8 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
       SsTopBarStyle.overlay => Colors.transparent,
     };
     final podeVoltar = ModalRoute.of(context)?.impliesAppBarDismissal ?? false;
+    // v1.1: tela principal (sem voltar) dentro do menu lateral ganha o botão que o abre.
+    final menu = automaticallyImplyLeading && !podeVoltar && onBack == null ? SsSideMenuHost.maybeOf(context) : null;
     final volta =
         leading ??
         (automaticallyImplyLeading && (podeVoltar || onBack != null)
@@ -205,6 +208,8 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
                 color: fg,
                 onPressed: onBack ?? () => Navigator.of(context).maybePop(),
               )
+            : menu != null
+            ? SsIconButton(icon: Icons.menu_rounded, tooltip: s.sideMenuOpen, color: fg, onPressed: menu.open)
             : null);
     // Do tema (Manrope): o AppBar troca o DefaultTextStyle pelo titleTextStyle,
     // então um TextStyle cru cairia na fonte do sistema.

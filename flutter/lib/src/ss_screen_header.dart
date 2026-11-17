@@ -7,6 +7,7 @@ import 'density.dart';
 import 'ss_async.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
+import 'v27/side_menu.dart' show SsSideMenuHost, SsSideMenuHostState;
 
 /// Tela com título grande que encolhe ao rolar: monta um `CustomScrollView`
 /// com o [SsSliverHeader] e os seus [slivers]. Vai no `body` do Scaffold
@@ -142,7 +143,15 @@ class SsSliverHeader extends StatelessWidget {
                   tooltip: SsStrings.of(context).back,
                   onPressed: () => Navigator.maybePop(context),
                 )
-              : null),
+              // v1.1: tela principal dentro do menu lateral ganha o botão que o abre.
+              : switch (SsSideMenuHost.maybeOf(context)) {
+                  final SsSideMenuHostState menu => SsHeaderAction(
+                    icon: Icons.menu_rounded,
+                    tooltip: SsStrings.of(context).sideMenuOpen,
+                    onPressed: menu.open,
+                  ),
+                  null => null,
+                }),
       top: MediaQuery.paddingOf(context).top,
       scale: MediaQuery.textScalerOf(context).scale(100) / 100,
       reduce: reduceMotion(context),

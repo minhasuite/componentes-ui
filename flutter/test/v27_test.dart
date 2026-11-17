@@ -139,16 +139,16 @@ void main() {
     expect(abas, [0]);
   });
 
-  testWidgets('dica: espia uma vez por abertura do app, sem segurar o toque, e volta fechado', (t) async {
+  testWidgets('dica: espia uma vez por abertura do app (sem pílula), sem segurar o toque, e volta fechado', (t) async {
     await t.pumpWidget(_app(peek: true));
     await t.pump();
     await t.pump(const Duration(milliseconds: 950));
     await t.pump(const Duration(milliseconds: 600));
-    // Fresta aberta com a pílula.
-    expect(find.text('Arraste para abrir o menu'), findsOneWidget);
+    // Fresta aberta: o painel aparece (o cartão do topo), sem a pílula de texto (v1.1).
+    expect(find.text('Meu App'), findsOneWidget);
+    expect(find.text('Arraste para abrir o menu'), findsNothing);
     expect(_host(t).isOpen, isFalse);
     await t.pumpAndSettle();
-    expect(find.text('Arraste para abrir o menu'), findsNothing);
     expect(find.text('Meu App'), findsNothing);
 
     // Outra casca no mesmo processo: não espia de novo.
@@ -156,14 +156,14 @@ void main() {
     await t.pumpWidget(_app(peek: true));
     await t.pump();
     await t.pump(const Duration(milliseconds: 1500));
-    expect(find.text('Arraste para abrir o menu'), findsNothing);
+    expect(find.text('Meu App'), findsNothing);
   });
 
   testWidgets('dica: com "reduzir movimento" não roda', (t) async {
     await t.pumpWidget(_app(peek: true, semAnimacao: true));
     await t.pump();
     await t.pump(const Duration(milliseconds: 1500));
-    expect(find.text('Arraste para abrir o menu'), findsNothing);
+    expect(find.text('Meu App'), findsNothing);
   });
 
   testWidgets('leitor de tela: a borda tem o botão "Abrir o menu" (pt, en, es)', (t) async {
@@ -171,7 +171,6 @@ void main() {
     await t.pumpWidget(_app());
     await t.pumpAndSettle();
     expect(find.bySemanticsLabel('Abrir o menu'), findsOneWidget);
-    expect(SsStrings.en.sideMenuHint, 'Swipe to open the menu');
     expect(SsStrings.es.sideMenuOpen, 'Abrir el menú');
     sem.dispose();
   });

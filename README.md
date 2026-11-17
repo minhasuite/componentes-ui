@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.0.2
+      ref: v1.1.0
 ```
 
 ```dart
@@ -643,6 +643,19 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.1.0: menu lateral mais bonito e com o botão nas telas principais
+
+Pedido do usuário em 17/11/2026 (os apps tiram a aba "Mais" da barra de baixo e põem as opções dela no menu lateral).
+Tudo aditivo na API; muda o desenho do `SsSideMenu` e o cabeçalho das telas principais.
+
+| O quê | Como fica |
+|---|---|
+| Linhas amarelas embaixo do título | O painel do `SsSideMenuHost` fica dentro de um `Material` (transparente). Sem ele, o texto do cabeçalho ganhava o sublinhado amarelo duplo de depuração do Flutter: o host fica por cima do `Scaffold` |
+| Cabeçalho | Cartão no gradiente da marca com o ícone do app (`SsSideMenu(icon:)`, num quadrado translúcido; ou `leading:`), o nome na fonte de exibição (`AppTheme.display`, branco) e a conta (`subtitle:`) embaixo, com dois círculos claros de acabamento |
+| Versões | No pé, num tom apagado (`muted2`): `<title> <version> · componentes_ui <ssComponentesUiVersion>`. `SsSideMenu(version: '1.4.0 (123)')` vem do app (`package_info_plus`); `ssComponentesUiVersion` é constante do pacote (o teste confere com o pubspec) |
+| Dica ao abrir o app | Sai a pílula "Arraste para abrir o menu" (rápida demais para ler); ficam a fresta com os ícones e a borda que pisca. `SsStrings.sideMenuHint` continua, sem uso |
+| Botão de menu | `SsScreenHeader` e `SsTopBar` numa tela principal (sem voltar) dentro de um `SsSideMenuHost` ganham sozinhos o botão de menu no lugar da seta (`Icons.menu_rounded`, "Abrir o menu"). Com `leading:` próprio, vale o do app |
 
 ## v1.0.2: `find.ssTooltip` com um alvo só por tooltip
 
