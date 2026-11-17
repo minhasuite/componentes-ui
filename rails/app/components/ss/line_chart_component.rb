@@ -66,8 +66,15 @@ module Ss
     # Pontos visíveis: com poucos rótulos (até 14) ou dots: true.
     def dots? = @dots.nil? ? labels.size <= 14 : @dots
 
-    def label_every = @label_every || [((labels.size * 26.0) / (w - 2 * PX)).ceil, 1].max
-    def show_label?(i) = active?(i) || (i % label_every).zero?
+    # v1.2: a mesma conta do BarChartComponent (largura do maior rótulo; parte do grupo ativo).
+    def label_every
+      return @label_every if @label_every
+      return 1 if labels.empty?
+
+      room = BarChartComponent::X_CHAR * labels.map(&:size).max + BarChartComponent::X_GAP
+      [(room / slot).ceil, 1].max
+    end
+    def show_label?(i) = active?(i) || ((i - (@active || 0).to_i) % label_every).zero?
 
     def fmt(v)
       return @format.call(v) if @format

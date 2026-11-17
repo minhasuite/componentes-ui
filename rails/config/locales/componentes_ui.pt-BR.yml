@@ -172,6 +172,7 @@ pt-BR:
       prev_page: Página anterior
       select_all: Selecionar todas as linhas
       select_row: Selecionar linha %{row}
+      select_named: "Selecionar %{name}"
       selected: selecionados
       show_details: Ver detalhes
       visible_columns: Colunas visíveis
@@ -659,6 +660,7 @@ pt-BR:
       remove: Remover linha
       added: Linha adicionada
       removed: Linha removida
+      details: Detalhes
     terms_notice:
       text: 'Ao continuar, você concorda com os %{terms} e a %{privacy}.'
       terms: Termos de uso

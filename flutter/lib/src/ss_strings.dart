@@ -414,6 +414,7 @@ class SsStrings {
     required this.photoSource,
     required this.addRow,
     required this.removeRow,
+    this.repeaterDetails = 'Detalhes',
     required this.editValue,
     required this.termsNotice,
     required this.termsOfUse,
@@ -1058,6 +1059,10 @@ class SsStrings {
   /// v0.20: botão de tirar uma linha do [SsRepeater].
   final String removeRow;
 
+  /// v1.2: o botão que abre os campos recolhidos da linha compacta do [SsRepeater]
+  /// (`mobile: SsRepeaterMobile.compact`, células [SsRepeaterRole.detail]).
+  final String repeaterDetails;
+
   /// v0.20: dica do [SsEditableValue] ("editar").
   final String editValue;
 
@@ -1493,6 +1498,7 @@ class SsStrings {
     photoSource: 'Abrir a página da foto',
     addRow: 'Adicionar',
     removeRow: 'Remover linha',
+    repeaterDetails: 'Detalhes',
     editValue: 'Editar',
     termsNotice: 'Ao continuar, você concorda com os {terms} e a {privacy}.',
     termsOfUse: 'Termos de uso',
@@ -1906,6 +1912,7 @@ class SsStrings {
     photoSource: 'Open the photo page',
     addRow: 'Add',
     removeRow: 'Remove row',
+    repeaterDetails: 'Details',
     editValue: 'Edit',
     termsNotice: 'By continuing, you agree to the {terms} and the {privacy}.',
     termsOfUse: 'Terms of Use',
@@ -2319,6 +2326,7 @@ class SsStrings {
     photoSource: 'Abrir la página de la foto',
     addRow: 'Agregar',
     removeRow: 'Quitar fila',
+    repeaterDetails: 'Detalles',
     editValue: 'Editar',
     termsNotice: 'Al continuar, aceptas los {terms} y la {privacy}.',
     termsOfUse: 'Términos de uso',
@@ -2719,6 +2727,7 @@ class SsStrings {
     'photoSource': photoSource,
     'addRow': addRow,
     'removeRow': removeRow,
+    'repeaterDetails': repeaterDetails,
     'editValue': editValue,
     'termsNotice': termsNotice,
     'termsOfUse': termsOfUse,
@@ -3154,6 +3163,7 @@ class SsStrings {
     String? photoSource,
     String? addRow,
     String? removeRow,
+    String? repeaterDetails,
     String? editValue,
     String? termsNotice,
     String? termsOfUse,
@@ -3551,6 +3561,7 @@ class SsStrings {
     photoSource: photoSource ?? this.photoSource,
     addRow: addRow ?? this.addRow,
     removeRow: removeRow ?? this.removeRow,
+    repeaterDetails: repeaterDetails ?? this.repeaterDetails,
     editValue: editValue ?? this.editValue,
     termsNotice: termsNotice ?? this.termsNotice,
     termsOfUse: termsOfUse ?? this.termsOfUse,

@@ -170,6 +170,7 @@ en:
       prev_page: Previous page
       select_all: Select all rows
       select_row: Select row %{row}
+      select_named: "Select %{name}"
       selected: selected
       show_details: Show details
       visible_columns: Visible columns
@@ -657,6 +658,7 @@ en:
       remove: Remove row
       added: Row added
       removed: Row removed
+      details: Details
     terms_notice:
       text: 'By continuing, you agree to the %{terms} and the %{privacy}.'
       terms: Terms of Use

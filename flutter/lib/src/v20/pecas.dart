@@ -210,6 +210,16 @@ class SsStickyActionBar extends StatelessWidget {
 /// com os mesmos flex. Com [header] o × fica no meio da linha. Os campos da
 /// linha usam `SsTextField(label: 'Qtd', hideLabel: true)` (o rótulo continua
 /// para o leitor de tela). Par do `RepeaterComponent(header:, columns:)`.
+///
+/// v1.2: [mobile] `SsRepeaterMobile.compact` troca, abaixo de [compactBelow]
+/// (768, os 48rem do web), a linha de colunas apertadas por uma linha compacta:
+/// cada célula do [SsRepeater.cells] diz o papel com [SsRepeaterCell]
+/// ([SsRepeaterRole.primary] na largura inteira, [SsRepeaterRole.inline] lado
+/// a lado numa linha só, [SsRepeaterRole.detail] recolhida atrás do botão
+/// "Detalhes" da linha). Sem [SsRepeaterCell], a célula é primary. Compacto, o
+/// cabeçalho some e os rótulos dos campos voltam: use
+/// `hideLabel: !SsRepeater.compactOf(context)`. Par do
+/// `RepeaterComponent(mobile: :compact)` + `r.cell(:primary | :inline | :detail)`.
 class SsRepeater extends StatelessWidget {
   const SsRepeater({
     super.key,
@@ -223,7 +233,20 @@ class SsRepeater extends StatelessWidget {
     this.spacing,
     this.header,
     this.flex,
+    this.mobile = SsRepeaterMobile.row,
+    this.compactBelow = 768,
   });
+
+  /// v1.2: como a linha fica em tela estreita (padrão: as colunas de sempre).
+  final SsRepeaterMobile mobile;
+
+  /// v1.2: largura abaixo da qual o `mobile: compact` vale (padrão 768 = 48rem).
+  final double compactBelow;
+
+  /// v1.2: a linha deste [SsRepeater] está no modo compacto (para o app mostrar
+  /// os rótulos dos campos: `hideLabel: !SsRepeater.compactOf(context)`).
+  static bool compactOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SsRepeaterScope>()?.compact ?? false;
 
   /// v0.20.3: cabeçalho único (texto de cada coluna; vazio = célula vazia).
   final List<String>? header;
@@ -233,8 +256,14 @@ class SsRepeater extends StatelessWidget {
 
   /// v0.20.3: a linha com as colunas no mesmo [flex] do cabeçalho:
   /// `itemBuilder: (ctx, i) => SsRepeater.cells([produto, qtd, total], flex: const [4, 1, 2])`.
-  static Widget cells(List<Widget> children, {List<int>? flex, double? spacing}) => Builder(
+  ///
+  /// v1.2: no modo compacto (ver [mobile]) as células viram a linha compacta;
+  /// `detailsOpen: true` deixa os detalhes abertos (ex.: um campo recolhido com
+  /// erro depois do `validate()`, já que o web abre sozinho o detalhe com erro);
+  /// sem ele, o botão "Detalhes" abre e fecha.
+  static Widget cells(List<Widget> children, {List<int>? flex, double? spacing, bool detailsOpen = false}) => Builder(
     builder: (context) {
+      if (compactOf(context)) return _SsRepeaterCompactRow(cells: children, spacing: spacing, detailsOpen: detailsOpen);
       final gap = spacing ?? SsDensity.of(context).gap - 4;
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -264,11 +293,25 @@ class SsRepeater extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (mobile == SsRepeaterMobile.row) return _build(context, false);
+    return LayoutBuilder(
+      builder: (context, box) {
+        final compact = box.maxWidth < compactBelow;
+        return _SsRepeaterScope(
+          compact: compact,
+          child: Builder(builder: (context) => _build(context, compact)),
+        );
+      },
+    );
+  }
+
+  Widget _build(BuildContext context, bool compact) {
     final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     final gap = spacing ?? d.gap;
     final c = SsColors.of(context);
     final tira = onRemove != null && itemCount > minItems;
+    final header = compact ? null : this.header;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -285,7 +328,7 @@ class SsRepeater extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SsRepeater.cells([
-                      for (final h in header!)
+                      for (final h in header)
                         Text(
                           h.toUpperCase(),
                           maxLines: 1,
@@ -319,7 +362,7 @@ class SsRepeater extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(bottom: gap),
             child: Row(
-              crossAxisAlignment: header != null ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+              crossAxisAlignment: header != null && !compact ? CrossAxisAlignment.center : CrossAxisAlignment.start,
               children: [
                 Expanded(child: itemBuilder(context, i)),
                 if (tira)
@@ -336,6 +379,129 @@ class SsRepeater extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             child: SsButton.text(label: addLabel ?? s.addRow, icon: Icons.add_rounded, onPressed: onAdd),
           ),
+      ],
+    );
+  }
+}
+
+/// v1.2: como a linha do [SsRepeater] fica em tela estreita.
+enum SsRepeaterMobile {
+  /// As colunas de sempre (padrão).
+  row,
+
+  /// Linha compacta abaixo do `compactBelow`: papel de cada célula por [SsRepeaterCell].
+  compact,
+}
+
+/// v1.2: o papel de uma célula na linha compacta do [SsRepeater] (par do
+/// `r.cell(:primary | :inline | :detail)` do web).
+enum SsRepeaterRole {
+  /// Largura inteira (o produto do pedido).
+  primary,
+
+  /// Lado a lado numa linha só (quantidade × preço × total).
+  inline,
+
+  /// Recolhida atrás do "Detalhes" da linha (descrição, lote, desconto).
+  detail,
+}
+
+/// v1.2: uma célula do [SsRepeater.cells] com o papel dela na linha compacta.
+/// Fora do modo compacto é só o [child] (a coluna de sempre).
+///
+/// `SsRepeater.cells([SsRepeaterCell(produto), SsRepeaterCell(lote, role: SsRepeaterRole.detail), SsRepeaterCell(qtd, role: SsRepeaterRole.inline)], flex: const [4, 2, 1])`
+class SsRepeaterCell extends StatelessWidget {
+  const SsRepeaterCell(this.child, {super.key, this.role = SsRepeaterRole.primary});
+
+  final Widget child;
+  final SsRepeaterRole role;
+
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+class _SsRepeaterScope extends InheritedWidget {
+  const _SsRepeaterScope({required this.compact, required super.child});
+
+  final bool compact;
+
+  @override
+  bool updateShouldNotify(_SsRepeaterScope old) => old.compact != compact;
+}
+
+/// A linha compacta: primary em cima, inline numa linha, o "Detalhes" e as
+/// células recolhidas (que continuam montadas: o texto digitado e o validador
+/// do `Form` não se perdem ao fechar).
+class _SsRepeaterCompactRow extends StatefulWidget {
+  const _SsRepeaterCompactRow({required this.cells, this.spacing, this.detailsOpen = false});
+
+  final List<Widget> cells;
+  final double? spacing;
+  final bool detailsOpen;
+
+  @override
+  State<_SsRepeaterCompactRow> createState() => _SsRepeaterCompactRowState();
+}
+
+class _SsRepeaterCompactRowState extends State<_SsRepeaterCompactRow> {
+  bool _open = false;
+
+  SsRepeaterRole _role(Widget w) => w is SsRepeaterCell ? w.role : SsRepeaterRole.primary;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = SsStrings.of(context);
+    final gap = widget.spacing ?? SsDensity.of(context).gap - 4;
+    final primary = [
+      for (final w in widget.cells)
+        if (_role(w) == SsRepeaterRole.primary) w,
+    ];
+    final inline = [
+      for (final w in widget.cells)
+        if (_role(w) == SsRepeaterRole.inline) w,
+    ];
+    final detail = [
+      for (final w in widget.cells)
+        if (_role(w) == SsRepeaterRole.detail) w,
+    ];
+    final forced = widget.detailsOpen;
+    final open = forced || _open;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: gap,
+      children: [
+        ...primary,
+        if (inline.isNotEmpty)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            spacing: gap,
+            children: [for (final w in inline) Expanded(child: w)],
+          ),
+        if (detail.isNotEmpty) ...[
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Semantics(
+              expanded: open,
+              child: SsButton.text(
+                label: s.repeaterDetails,
+                small: true,
+                trailingIcon: open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                onPressed: forced ? null : () => setState(() => _open = !_open),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: open,
+            maintainState: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              spacing: gap,
+              children: detail,
+            ),
+          ),
+        ],
       ],
     );
   }

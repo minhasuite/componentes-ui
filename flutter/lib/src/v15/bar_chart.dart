@@ -633,7 +633,8 @@ class _BarPainter extends CustomPainter {
     }
 
     final gw = slot * .72;
-    final passo = (n / math.max(1, (size.width / 44).floor())).ceil();
+    final passo = ssAxisLabelStep(labels, slot: slot, style: axisStrong);
+    final ancora = active ?? 0;
     for (var i = 0; i < n; i++) {
       final left = _side + slot * i + (slot - gw) / 2;
       if (stacked) {
@@ -660,14 +661,14 @@ class _BarPainter extends CustomPainter {
           _bar(canvas, Rect.fromLTRB(x, math.min(y0, y(v)), x + bw, math.max(y0, y(v))), cor(j, i), v < 0);
         }
       }
-      if (i % passo == 0 || i == active) {
+      if ((i - ancora) % passo == 0 || i == active) {
         _text(
           canvas,
           labels[i],
           Offset(_side + slot * (i + .5), size.height - 14),
           i == active || i == sel ? axisStrong : axis,
           alignX: .5,
-          maxWidth: math.max(slot * passo, 24),
+          maxWidth: math.max(slot * passo - 4, 24),
         );
       }
     }
@@ -788,4 +789,24 @@ class _BarPainter extends CustomPainter {
       o.lo != lo ||
       o.hi != hi ||
       o.guide != guide;
+}
+
+/// v1.2: de quantos em quantos rótulos do eixo X mostrar para que não encostem
+/// (par do `label_every` automático do `Ss::BarChartComponent`): a largura do
+/// maior rótulo no [style] + [gap], dividida pela largura de cada grupo
+/// ([slot]). Antes eram 44 px fixos por rótulo e o ativo era desenhado além da
+/// conta, colado no vizinho; agora a contagem parte do ativo.
+int ssAxisLabelStep(List<String> labels, {required double slot, required TextStyle style, double gap = 8}) {
+  if (labels.isEmpty || slot <= 0) return 1;
+  var maior = 0.0;
+  for (final l in labels.toSet()) {
+    final tp = TextPainter(
+      text: TextSpan(text: l, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    maior = math.max(maior, tp.width);
+    tp.dispose();
+  }
+  return math.max(1, ((maior + gap) / slot).ceil());
 }

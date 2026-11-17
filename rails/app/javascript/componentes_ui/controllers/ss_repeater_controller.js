@@ -6,6 +6,8 @@ import { Controller } from "@hotwired/stimulus"
 // remove: linha que já existe no banco (tem input[name$="[_destroy]"]) é marcada _destroy=1 e
 // escondida; linha nova sai do DOM. min: não deixa ficar menos linhas visíveis que isso.
 // Eventos ss-repeater:add / ss-repeater:remove (detail: { row }).
+// v1.2: details abre e fecha os campos recolhidos da linha compacta do celular (RepeaterComponent(mobile: :compact),
+// r.cell(:detail)): .is-open na linha e aria-expanded no botão.
 export default class extends Controller {
   static targets = ["template", "list", "row", "live"]
   static values = { placeholder: { type: String, default: "NEW_RECORD" }, min: { type: Number, default: 0 }, added: String, removed: String }
@@ -43,6 +45,16 @@ export default class extends Controller {
     this.sync()
     this.dispatch("remove", { prefix: "ss-repeater", detail: { row } })
     ;(this.visible.at(-1)?.querySelector("input:not([type=hidden]), select, textarea") || this.element.querySelector("[data-action*='ss-repeater#add']"))?.focus()
+  }
+
+  details(event) {
+    event?.preventDefault()
+    const button = event.currentTarget
+    const row = button.closest("[data-ss-repeater-target~='row']")
+    if (!row) return
+    const open = !row.classList.contains("is-open")
+    row.classList.toggle("is-open", open)
+    button.setAttribute("aria-expanded", String(open))
   }
 
   // O × some quando só sobram min linhas.

@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.1.0
+      ref: v1.2.0
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v0.28.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v1.2.0"
 ```
 
 ```css
@@ -643,6 +643,38 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.2.0: linha de item compacta no celular, foco fora da barra do topo, eixo que não cola e o nome da caixa da linha
+
+O que a auditoria de UX de novembro (V02, P03, U03) e as videoaulas (achado 14) do minhas-vendas acharam nas peças
+genéricas. Tudo aditivo na API (parâmetros novos, opcionais): por isso 1.2. Testes em
+`rails/sample/test/components/v120_web_test.rb` e `flutter/test/v120_test.dart`; CSS em `v120_web.css`; catálogo:
+seções `ss-repeater-compact` e `ss-v120-correcoes` em `rails/catalogo/index.html` (`rails/sample/script/catalogo_v120.rb`)
+e os estados `compacto`/`compacto-aberto` do `ss-repeater` e `doze-meses` do `ss-bar-chart` (`flutter/test/catalogo_v120.dart`).
+
+| Peça | Flutter | Rails / CSS | No lugar de |
+|---|---|---|---|
+| Linha compacta do repetidor | `SsRepeater(mobile: SsRepeaterMobile.compact, compactBelow: 768)` + `SsRepeater.cells([SsRepeaterCell(produto), SsRepeaterCell(lote, role: SsRepeaterRole.detail), SsRepeaterCell(qtd, role: SsRepeaterRole.inline)], detailsOpen:)`; compacto, o cabeçalho some e os campos mostram o rótulo com `hideLabel: !SsRepeater.compactOf(context)`; as células recolhidas continuam montadas (texto e validador do `Form`); `detailsOpen: true` abre (campo com erro). Texto `SsStrings.repeaterDetails` (opcional no construtor) | `RepeaterComponent(mobile: :compact, details_label:)` + `r.cell(:primary \| :inline \| :detail) { … }` dentro do `r.row`: abaixo de 48rem `primary` na linha inteira, `inline` lado a lado numa linha, `detail` atrás do botão "Detalhes" da linha (`.ss-repeater-more`, `aria-expanded`, Stimulus `ss-repeater#details` põe `.is-open`); detalhe com erro aparece fechado; em tela larga a `.ss-repeater-cell` é `display: contents` e nada muda. Texto `componentes_ui.repeater.details` | 7 campos empilhados por item do pedido no celular |
+| Foco e âncora abaixo da barra do topo | — | `html:has(.ss-shell-top) { scroll-padding-top: var(--ss-top-room) }`: a altura da `.ss-shell-top` (a mesma conta do `min-height`/`padding` dela, na densidade) + área segura + respiro; sem barra no computador (`.is-bare`, ≥1024px), 0 | o produto medir a barra à mão (`scrollBy` com a altura da `.ss-shell-top` no caixa do minhas-vendas) |
+| Rótulos do eixo X que não colam | `ssAxisLabelStep(labels, slot:, style:)`: o passo sai da largura medida do maior rótulo (antes 44 px fixos) e a contagem parte do `active` | `BarChartComponent`/`LineChartComponent`: `label_every` automático pela largura do maior rótulo (~8,7 unidades por letra + 8; antes 26 fixas) e a partir do `active:`; `label_every:` ainda força | "MARABR" nos doze meses em 360 px |
+| Nome da caixa de seleção da linha | (o `SsDataTable` não tem seleção) | `DataTableComponent(selectable: true, select_label:)`: "Selecionar <título da linha>" (coluna `mobile: :title` ou a 1ª coluna, sem HTML); `select_label: ->(row) { "…" }` (texto inteiro) ou `:campo` (entra no "Selecionar %{name}"); sem texto, "Selecionar linha N" (posição). Textos `data_table.select_named` pt/en/es | "Selecionar linha 0b6f3f5e-…" (o uuid) |
+
+Uso no pedido (minhas-vendas): `RepeaterComponent.new(..., mobile: :compact)` e, na linha, `r.cell(:primary) { produto }`,
+`r.cell(:detail) { descrição + lote }`, `r.cell(:inline) { qtd + unitário }`, `r.cell(:detail) { desconto }`,
+`r.cell(:inline) { total }`. O par Flutter existe, mas o app do minhas-vendas monta o pedido em folhas próprias (sem
+`SsRepeater`): fica para quem usar o repetidor no app.
+
+**Padrões que mudaram.**
+
+- **Rótulos do eixo X do `BarChartComponent`/`LineChartComponent`/`SsBarChart`:** com `active:`, a contagem de N em N
+  parte do ativo (antes do 1º, e o ativo era desenhado além da conta, colado no vizinho): com 30 dias e `active: 9` saem
+  15 rótulos, não 16. Rótulo longo ("Seg 10/11") sai de N em N onde antes saía inteiro e encostado (web) ou cortado em
+  "Se…" (Flutter). Teste de produto que contava os rótulos do eixo pode mudar.
+- **`aria-label` da caixa de cada linha** do `DataTableComponent(selectable: true)`: de "Selecionar linha <id>" para
+  "Selecionar <título>". Teste de produto que procurava a caixa pelo rótulo antigo precisa do novo.
+- **`scroll-padding-top`** no `html` de toda página com a moldura: âncora (`#campo`), `scrollIntoView()` sem opções e o
+  foco que rola a página param abaixo da barra do topo. Contorno do produto que somava a altura da barra à mão fica
+  redundante (rolaria duas vezes).
 
 ## v1.1.0: menu lateral mais bonito e com o botão nas telas principais
 
@@ -1821,6 +1853,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.2.0` (17/11/2026): seção "v1.2.0" (auditoria de UX e videoaulas do minhas-vendas). `RepeaterComponent(mobile: :compact, details_label:)` + `r.cell(:primary/:inline/:detail)` ↔ `SsRepeater(mobile: SsRepeaterMobile.compact, compactBelow:)` + `SsRepeaterCell(role:)` + `SsRepeater.compactOf`/`cells(detailsOpen:)` e o texto `repeaterDetails`; `scroll-padding-top` com a barra do topo da moldura (`--ss-top-room`); rótulos do eixo X pela largura do maior rótulo e a partir do ativo (`BarChart`, `LineChart`, `SsBarChart`, `ssAxisLabelStep`); `DataTableComponent(select_label:)` e a caixa da linha com o título, nunca o id. Nada quebra na API; ver "Padrões que mudaram".
 - `v0.1.0` (30/10/2026): primeira versão (base: minhas-vendas e meu-gestor).
 - `v0.2.0` (30/10/2026): `SsNavBar`, a barra de abas com o item atual num círculo encaixado num recorte que desliza.
 - `v0.3.0` (30/10/2026): `.ss-kanban` na gem (vinha do minhas-vendas e do meu-gestor); `SsNavBar` sem exigir `extendBody`.

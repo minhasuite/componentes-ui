@@ -60,6 +60,8 @@
 @import "./v27_web.css";
 /* v0.28: o que o meulog montou à mão (faixa de status por dia, busca solta do ss-filter) e as correções (título e subtítulo que quebram, masonry, AsideLayout, value-row). */
 @import "./v28_web.css";
+/* v1.2: linha compacta do repetidor no celular (mobile: :compact) e a folga do foco embaixo da barra do topo da moldura. */
+@import "./v120_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

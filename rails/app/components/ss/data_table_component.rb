@@ -59,6 +59,12 @@ module Ss
   #     t.column :status, "Situação", mobile: :badge do |p| … end
   #     t.column :total, "Total", format: :money, mobile: :value
   #   end
+  #
+  # v1.2 (videoaulas do minhas-vendas, achado 14): a caixa de cada linha (selectable: true) dizia ao leitor de tela
+  # "Selecionar linha <uuid>". Agora diz "Selecionar <título da linha>": o texto da coluna de título (mobile: :title,
+  # ou a 1ª coluna de dados), sem HTML. select_label: troca: ->(row) { "Selecionar pedido #{row.numero}" } (o texto
+  # inteiro) ou :numero (o valor desse campo entra no "Selecionar %{name}"). Sem texto, "Selecionar linha N" (N =
+  # a posição na página, nunca o id). Textos em componentes_ui.data_table.select_named / select_row.
   class DataTableComponent < BaseComponent
     Column = Struct.new(:key, :label, :align, :sortable, :format, :hideable, :block, :sticky, :header, :mobile, keyword_init: true)
     MOBILE = %i[cards compact].freeze
@@ -69,7 +75,7 @@ module Ss
     def initialize(rows:, id:, caption:, sort: nil, dir: nil, sort_rows: false, selectable: false, bulk_url: nil,
                    row_id: :id, density: :comfortable, pagination: nil, params: nil, empty: nil, currency: nil,
                    max_height: nil, show_caption: false, tools: true, row_attrs: nil, empty_art: true, select_name: "ids[]",
-                   bulk_method: :post, row_href: nil, flat: false, stack: true, mobile: :cards, **opts)
+                   bulk_method: :post, row_href: nil, flat: false, stack: true, mobile: :cards, select_label: nil, **opts)
       super(**opts)
       @rows = rows.to_a
       @id = id
@@ -97,6 +103,8 @@ module Ss
       @stack = stack
       @mobile = mobile.to_s.to_sym
       raise ArgumentError, "mobile: #{mobile.inspect} (use :cards ou :compact)" unless MOBILE.include?(@mobile)
+
+      @select_label = select_label
 
       @totals = {}
       @columns = []
@@ -252,6 +260,20 @@ module Ss
     def select_name = @select_name
     def bulk_method = @bulk_method.to_sym
 
+    # v1.2: o nome da caixa de seleção da linha (i = posição na página, começando em 0).
+    def select_label(row, i)
+      case @select_label
+      when Proc then return @select_label.call(row).to_s
+      when Symbol, String then name = plain(value_of(row, @select_label.to_s))
+      else
+        col = @columns.find { _1.format != :actions && slot(_1) == :title }
+        name = col && plain(cell(row, col))
+      end
+      return tt("select_named", name:, default: "Selecionar %{name}") if name.present?
+
+      tt("select_row", row: i + 1, default: "Selecionar linha %{row}")
+    end
+
     # Janela de páginas: 1 … 4 5 6 … 20.
     def page_items
       page = @pagination[:page].to_i
@@ -277,6 +299,9 @@ module Ss
       merged = current_params.merge(changes.transform_keys(&:to_s)).reject { |_, v| v.nil? || v == "" }
       "?#{merged.to_query}"
     end
+
+    # Texto puro de uma célula (sem tags, espaços juntados).
+    def plain(v) = CGI.unescapeHTML(strip_tags(v.to_s)).squish.presence
 
     # Dinheiro no idioma da página e na moeda (currency: ou ComponentesUi.config.currency).
     def brl(v) = ss_money(v, currency: @currency, minus: "−")

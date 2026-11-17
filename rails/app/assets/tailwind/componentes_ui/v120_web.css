@@ -1,0 +1,40 @@
+/* v1.2 · o que as videoaulas e a auditoria de UX do minhas-vendas acharam nas peças genéricas.
+   .ss-repeater.is-compact é o RepeaterComponent(mobile: :compact) (par do SsRepeater(mobile: SsRepeaterMobile.compact)):
+   abaixo de 48rem cada campo tem um papel (r.cell): primary na linha inteira, inline lado a lado numa linha só,
+   detail recolhido atrás do "Detalhes" da linha (.ss-repeater-more; .is-open na linha abre). Em tela larga a
+   .ss-repeater-cell é display: contents e cada campo segue uma coluna da grade.
+   Moldura: o html ganha scroll-padding-top com a altura da .ss-shell-top (presa no topo), para o foco e a âncora
+   não caírem embaixo dela (--ss-top-room). Cor só por token. */
+@layer components {
+  /* ── Linha compacta do repetidor ── */
+  .ss-repeater-cell { display: contents; }
+  .ss-repeater-more { display: none; }
+  @media (max-width: 47.99rem) {
+    .ss-repeater.is-compact .ss-repeater-list { gap: calc(var(--ss-gap) * .5); }
+    .ss-repeater.is-compact .ss-repeater-row { padding-bottom: calc(var(--ss-gap) * .5); border-bottom: 1px solid var(--line); }
+    .ss-repeater.is-compact .ss-repeater-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem; }
+    .ss-repeater.is-compact .ss-repeater-fields > *,
+    .ss-repeater.is-compact .ss-repeater-cell > * { flex: 1 1 100%; min-width: 0; }
+    .ss-repeater.is-compact .ss-repeater-cell.is-inline > * { flex: 1 1 0; order: 1; }
+    .ss-repeater.is-compact .ss-repeater-more { order: 2; display: inline-flex; align-items: center; justify-content: flex-start; gap: .3rem; flex: 0 0 100%; width: auto;
+      min-height: 2.75rem; padding: 0 .15rem; color: var(--accent); font-size: calc(.8rem * var(--ss-font-scale)); font-weight: 700; }
+    .ss-repeater.is-compact .ss-repeater-more svg { transition: rotate .2s; }
+    .ss-repeater.is-compact .ss-repeater-row.is-open .ss-repeater-more svg { rotate: 180deg; }
+    .ss-repeater.is-compact .ss-repeater-cell.is-detail > * { order: 3; }
+    /* Fechado, o detalhe some, menos o que tem erro (o vendedor precisa ver o que corrigir). */
+    .ss-repeater.is-compact .ss-repeater-row:not(.is-open):not(:has(.ss-repeater-cell.is-detail :is(.is-invalid, [aria-invalid="true"], :user-invalid)))
+      .ss-repeater-cell.is-detail > * { display: none; }
+  }
+
+  /* ── Moldura: o foco não cai embaixo da barra do topo ── */
+  :root { --ss-top-room: calc(max(var(--ss-control-h) + 1.25rem, var(--ss-control-h) + var(--ss-pad-y) * 2.4) + 1px + env(safe-area-inset-top, 0px) + .75rem); }
+  html:has(.ss-shell-top) { scroll-padding-top: var(--ss-top-room); }
+}
+
+/* Fora das camadas, como a regra que esconde a barra vazia (v18_web.css): sem barra, sem folga. */
+@media (min-width: 1024px) {
+  html:has(.ss-shell-top.is-bare) { scroll-padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-repeater-more svg { transition: none; }
+}

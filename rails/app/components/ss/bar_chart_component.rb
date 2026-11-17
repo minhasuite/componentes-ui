@@ -105,9 +105,15 @@ module Ss
     def w = @w
 
     # De quantos em quantos rótulos do eixo X mostrar (v0.19): sem label_every:, o que cabe sem
-    # encostar (~26 unidades por rótulo); o grupo ativo sempre mostra o dele.
-    def label_every = @label_every || [((labels.size * 26.0) / (w - 2 * PX)).ceil, 1].max
-    def show_label?(i) = active?(i) || (i % label_every).zero?
+    # encostar; o grupo ativo sempre mostra o dele.
+    # v1.2: a conta usa a largura do maior rótulo (versalete em negrito, ~8,7 unidades por letra + 8 de
+    # respiro) e não mais 26 unidades fixas: em 360 px os doze meses ("MAR", "ABR") colavam ("MARABR").
+    # E a contagem parte do grupo ativo (active:, ex. o mês atual): o vizinho dele nunca encosta.
+    X_CHAR = 8.7
+    X_GAP = 8.0
+    def label_room = labels.map(&:size).max.to_i * X_CHAR + X_GAP
+    def label_every = @label_every || (labels.empty? ? 1 : [(label_room / slot).ceil, 1].max)
+    def show_label?(i) = active?(i) || ((i - (@active || 0).to_i) % label_every).zero?
     def stacked? = @stacked
     def show_title? = @show_title
     def legend? = @legend && (series.size + (line ? 1 : 0) + (projection ? 1 : 0)) > 1

@@ -30,15 +30,49 @@ module Ss
   # - r.row(columns:, class:, data:, id:, …): colunas só dessa linha e atributos no .ss-repeater-row
   #   (data: soma ao alvo do ss-repeater, class: soma). Sem Tailwind de grade no produto:
   #     <%= r.row(data: { auto_price: 1 }) do %> … os campos direto, cada um vira uma coluna … <% end %>
+  #
+  # v1.2 (auditoria de UX do minhas-vendas, V02; par do SsRepeater(mobile: SsRepeaterMobile.compact)):
+  # - mobile: :compact troca, abaixo de 48rem, a grade automática (um campo por linha: 7 campos empilhados por
+  #   item do pedido) por uma linha compacta. Cada campo diz o papel com r.cell(:primary | :inline | :detail):
+  #   primary = linha inteira (produto), inline = lado a lado numa linha só (qtd × preço × total), detail =
+  #   recolhido atrás do botão "Detalhes" da linha (descrição, lote, desconto). Campo fora de r.cell é primary.
+  #   O detalhe com erro (.is-invalid, aria-invalid, :user-invalid) aparece sozinho. Em tela larga nada muda: a
+  #   r.cell é display: contents e cada campo continua uma coluna do header:/columns:.
+  #     <%= render(Ss::RepeaterComponent.new(header: [...], columns: [...], mobile: :compact)) do |r| %>
+  #       <%= r.row do %>
+  #         <%= r.cell(:primary) { produto } %><%= r.cell(:detail) { descricao + lote } %>
+  #         <%= r.cell(:inline) { qtd + unitario } %><%= r.cell(:detail) { desconto } %><%= r.cell(:inline) { total } %>
+  #       <% end %>
+  #     <% end %>
   class RepeaterComponent < BaseComponent
+    MOBILE = %i[grid compact].freeze
+    ROLES = %i[primary inline detail].freeze
+
     renders_one :template
 
     def initialize(add_label: nil, remove_label: nil, min: 0, placeholder: "NEW_RECORD", label: nil, columns: nil, header: nil,
-                   hide_labels: nil, **rest)
+                   hide_labels: nil, mobile: :grid, details_label: nil, **rest)
       super(**rest)
       @add_label, @remove_label, @min, @placeholder, @label = add_label, remove_label, min.to_i, placeholder, label
       @columns, @header = self.class.grid(columns), header
       @hide_labels = hide_labels.nil? ? header.present? : hide_labels
+      @mobile = mobile.to_s.to_sym
+      raise ArgumentError, "mobile: #{mobile.inspect} (use :grid ou :compact)" unless MOBILE.include?(@mobile)
+
+      @details_label = details_label
+    end
+
+    def compact? = @mobile == :compact
+    def details_label = @details_label || ss_t("repeater.details", default: "Detalhes")
+
+    # v1.2: o papel do campo na linha compacta do celular (mobile: :compact). Em tela larga é só display: contents.
+    def cell(role = :primary, &block)
+      role = role.to_s.to_sym
+      raise ArgumentError, "r.cell(#{role.inspect}) (use #{ROLES.map(&:inspect).join(", ")})" unless ROLES.include?(role)
+
+      inner = block.binding.receiver.respond_to?(:capture) ? block.binding.receiver.capture(&block) : block.call
+      @row_detail = true if role == :detail
+      tag.div(inner, class: "ss-repeater-cell is-#{role}")
     end
 
     # columns: → valor do grid-template-columns ("2fr 1fr 6rem"); número vira fr.
@@ -55,6 +89,7 @@ module Ss
 
     # Uma linha: os campos do bloco + o × de tirar.
     def row(columns: nil, **attrs, &block)
+      @row_detail = false
       inner = block.binding.receiver.respond_to?(:capture) ? block.binding.receiver.capture(&block) : block.call
       attrs = attrs.transform_keys(&:to_sym)
       css = ["ss-repeater-row", attrs.delete(:class)].flatten.compact.join(" ")
@@ -62,7 +97,7 @@ module Ss
       cols = self.class.grid(columns)
       tag.div(class: css, data:, **attrs) do
         safe_join([
-          tag.div(inner, class: "ss-repeater-fields", style: ("--ss-repeater-cols: #{cols}" if cols)),
+          tag.div(safe_join([inner, details_button].compact), class: "ss-repeater-fields", style: ("--ss-repeater-cols: #{cols}" if cols)),
           tag.button(ss_icon("x", size: :xs), type: "button", class: "ss-icon-btn is-sm ss-repeater-remove", title: remove_label,
                                               "aria-label": remove_label, data: { action: "ss-repeater#remove" })
         ])
@@ -72,7 +107,7 @@ module Ss
     def call
       list = content # roda o bloco (linhas e o template)
       style = [("--ss-repeater-cols: #{@columns}" if @columns), @attrs[:style]].compact.join("; ").presence
-      tag.div(**root_attrs(class: classes("ss-repeater", ("is-labels-hidden" if @hide_labels), ("has-header" if @header.present?)),
+      tag.div(**root_attrs(class: classes("ss-repeater", ("is-labels-hidden" if @hide_labels), ("has-header" if @header.present?), ("is-compact" if compact?)),
                            role: "group", "aria-label": @label, style:,
                            data: { controller: "ss-repeater", ss_repeater_placeholder_value: @placeholder, ss_repeater_min_value: @min,
                                    ss_repeater_added_value: ss_t("repeater.added", default: "Linha adicionada"),
@@ -90,6 +125,16 @@ module Ss
     end
 
     private
+
+    # v1.2: o "Detalhes" da linha compacta (só no celular, só se a linha tem r.cell(:detail)).
+    def details_button
+      return nil unless compact? && @row_detail
+
+      tag.button(type: "button", class: "ss-btn-bare ss-repeater-more", "aria-expanded": "false",
+                 data: { action: "ss-repeater#details" }) do
+        safe_join([tag.span(details_label), ss_icon("chevron-down", size: :xs)])
+      end
+    end
 
     # Cabeçalho único (só visual: os campos continuam com o rótulo para o leitor de tela).
     def header_html

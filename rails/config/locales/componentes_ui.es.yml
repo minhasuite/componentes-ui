@@ -170,6 +170,7 @@ es:
       prev_page: Página anterior
       select_all: Seleccionar todas las filas
       select_row: Seleccionar fila %{row}
+      select_named: "Seleccionar %{name}"
       selected: seleccionados
       show_details: Ver detalles
       visible_columns: Columnas visibles
@@ -657,6 +658,7 @@ es:
       remove: Quitar fila
       added: Fila agregada
       removed: Fila quitada
+      details: Detalles
     terms_notice:
       text: 'Al continuar, aceptas los %{terms} y la %{privacy}.'
       terms: Términos de uso

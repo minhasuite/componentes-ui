@@ -129,7 +129,9 @@ class V19WebTest < ComponentTest
     assert_selector "text.ss-barc-xtext", count: 30, visible: :all
     render_inline(Ss::BarChartComponent.new(title: "Mês", labels:, series: serie, active: 9))
     assert_selector "figure.ss-barc svg[viewbox='0 0 560 240']", visible: :all
-    assert_selector "text.ss-barc-xtext", count: 16, visible: :all
+    # v1.2: de 2 em 2 a partir do ativo (o "10"), sem o vizinho colado (antes 16, com o "9" e o "11" encostando).
+    assert_selector "text.ss-barc-xtext", count: 15, visible: :all
+    assert_selector ".ss-barc-g.is-active text.ss-barc-xtext", text: "10", visible: :all
     render_inline(Ss::BarChartComponent.new(title: "Mês", labels:, series: serie, label_every: 5))
     assert_selector "text.ss-barc-xtext", count: 6, visible: :all
     render_inline(Ss::BarChartComponent.new(title: "Sem", labels: %w[a b c], series: [{ name: "x", values: [1, 2, 3] }]))
