@@ -645,6 +645,9 @@ es:
       months: [Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
       days: [Domingo, Lunes, Martes, Miércoles, Jueves, Viernes, Sábado]
       links_label: Enlaces de la página
+      greetings: [Buenos días, Buenas tardes, Buenas noches]
+      opening: 'Abriendo %{product}…'
+      stamp: Al día
     wallet_card:
       balance: Saldo total
       card: Tarjeta

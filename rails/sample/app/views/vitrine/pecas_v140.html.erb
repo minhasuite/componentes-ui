@@ -1,0 +1,18 @@
+<%# titulo: Entrada que reage (v1.4) | grupo: Tela | ordem: 46 %>
+<%# v1.4: AuthLayoutComponent(motion: true). Envie o formulário para ver a folha cair; ?erro=1 abre tremendo. %>
+<div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+  <%= render(Ss::AuthLayoutComponent.new(product: "Meu Gestor", tagline: "A loja em dia, sem planilha.", title: "Entrar",
+                                         subtitle: "no Meu Gestor", variant: :wall, motion: true, error: params[:erro].present?,
+                                         links: [["Termos", "#"], ["Privacidade", "#"]], style: "min-height:0")) do %>
+    <% if params[:erro].present? %>
+      <%= render(Ss::CalloutComponent.new(tone: :danger, title: "E-mail ou senha não conferem.")) { "Confira os dois ou use Esqueci a senha." } %>
+    <% end %>
+    <%= render Ss::GoogleButtonComponent.new(href: "#", method: :get) %>
+    <div class="ss-divider">ou com e-mail</div>
+    <%= ss_form_with(url: vitrine_path("pecas_v140"), method: :get) do |f| %>
+      <%= f.ss_email_field :email, label: "E-mail", placeholder: "voce@exemplo.com" %>
+      <%= f.ss_password_field :password, label: "Senha" %>
+      <%= f.ss_submit "Entrar", css: "w-full" %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,51 @@
+/* v1.4 · a folhinha da entrada reage (Ss::AuthLayoutComponent(motion: true), variante :wall, controlador ss-auth).
+   Ao entrar, a folha (.ss-auth-sheet) se solta do pino e cai; por baixo, .ss-auth-next com a saudação, a barra de
+   "Abrindo o <produto>…" e o carimbo .ss-auth-stamp. No erro, a folha treme (.is-shaking). Cor só por token. */
+@layer components {
+  .ss-auth-wall { position: relative; }
+  .ss-auth-wall > .ss-auth-sheet { position: relative; z-index: 2; transform-origin: 50% -14px; }
+  .ss-auth-sheet.is-tearing { animation: ss-auth-tear 1s cubic-bezier(.5, 0, .75, .3) forwards; z-index: 3; pointer-events: none; }
+  .ss-auth-sheet.is-shaking { animation: ss-auth-shake .5s cubic-bezier(.36, .07, .19, .97); }
+
+  /* Posição, largura e altura vêm do ss-auth: as mesmas da folha de cima. */
+  .ss-auth-next { position: absolute; z-index: 1; margin: 0; display: flex; flex-direction: column;
+    background: var(--surface); box-shadow: 0 1px 1px color-mix(in srgb, var(--ink) 6%, transparent), 0 24px 50px -24px color-mix(in srgb, var(--ink) 45%, transparent); }
+  .ss-auth-next .ss-auth-head { opacity: .7; }
+  .ss-auth-hello { margin: 0; padding: 26px 32px 0; font-family: var(--ss-font-display); font-weight: 900; line-height: .92;
+    font-size: clamp(3.4rem, 6vw, 5.2rem); color: var(--ink); }
+  .ss-auth-opening { margin: auto 32px 20px; padding-top: 36px; font-weight: 700; font-size: calc(.9375rem * var(--ss-font-scale)); color: var(--ink-2); }
+  .ss-auth-bar { display: block; width: 62%; height: 4px; margin-top: 10px; border-radius: 4px; overflow: hidden;
+    background: color-mix(in srgb, var(--ink) 10%, transparent); }
+  .ss-auth-bar i { display: block; width: 0; height: 100%; background: var(--accent-solid); animation: ss-auth-fill 2.2s .3s cubic-bezier(.3, .6, .3, 1) forwards; }
+  .ss-auth-stamp { position: absolute; right: 24px; bottom: 112px; width: 118px; height: 118px; display: grid; place-items: center;
+    border: 5px solid var(--danger); border-radius: 50%; color: var(--danger); text-align: center; rotate: -14deg; opacity: 0;
+    font-family: var(--ss-font-display); font-weight: 900; font-size: 1.5rem; line-height: .95;
+    animation: ss-auth-stamp .45s .75s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .ss-auth-stamp::before { content: ""; position: absolute; inset: 6px; border: 2px solid currentColor; border-radius: 50%; }
+  .ss-auth-stamp > span { max-width: 80px; }
+
+  @media (max-width: 960px) {
+    .ss-auth-hello { font-size: 3rem; padding-top: 18px; }
+    .ss-auth-stamp { width: 92px; height: 92px; font-size: 1.15rem; bottom: 96px; }
+  }
+}
+@keyframes ss-auth-tear {
+  0% { transform: none; }
+  18% { transform: rotate(-4deg) translateY(4px); }
+  35% { transform: rotate(9deg) translate(10px, 8px); opacity: 1; }
+  100% { transform: rotate(38deg) translate(180px, 120vh); opacity: .9; }
+}
+@keyframes ss-auth-shake {
+  10%, 90% { transform: translateX(-2px) rotate(-.4deg); }
+  20%, 80% { transform: translateX(4px) rotate(.6deg); }
+  30%, 50%, 70% { transform: translateX(-7px) rotate(-1deg); }
+  40%, 60% { transform: translateX(7px) rotate(1deg); }
+}
+@keyframes ss-auth-fill { to { width: 100%; } }
+@keyframes ss-auth-stamp { from { opacity: 0; transform: scale(2.4); } 60% { opacity: .95; } to { opacity: .9; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-auth-sheet.is-tearing { animation: none; opacity: 0; }
+  .ss-auth-sheet.is-shaking { animation: none; }
+  .ss-auth-stamp { animation: none; opacity: .9; }
+  .ss-auth-bar i { animation: none; width: 100%; }
+}

@@ -644,6 +644,29 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.4.0: a folhinha da entrada reage (`AuthLayoutComponent(motion: true)`)
+
+Pedido do usuário em 17/11/2026 (landings e login mais vivos). Só web, aditivo: sem `motion:` nada muda. O par no
+Flutter (`SsAuthLayout.folhinha`) fica para depois e é dívida aberta.
+
+| O quê | Como fica |
+|---|---|
+| `motion: true` (só `variant: :wall`) | Ao enviar o formulário ou tocar em "Entrar com o Google", a folhinha se solta do pino e cai; por baixo aparece a folha seguinte (mesma largura e altura) com a saudação da hora (Bom dia até 12h, Boa tarde até 18h, Boa noite), "Abrindo o &lt;produto&gt;…" com a barra enchendo e o carimbo "Em dia". O envio **não espera** a animação |
+| `error: true` | A folha treme ao abrir. Use quando a página volta com o erro de login (ex.: `error: flash[:alert].present?`). Se o Turbo devolver falha sem trocar a página, a folha volta ao pino e treme |
+| Reduzir movimento | A folha só some, nada treme; carimbo e barra já aparecem prontos |
+| Textos | `componentes_ui.auth.greetings`, `opening` (`%{product}`) e `stamp`, em pt/en/es |
+
+Peças: controlador `ss-auth` (`ss_auth_controller.js`), CSS em `v140_web.css`, teste em
+`rails/sample/test/components/v140_web_test.rb`, vitrine `pecas_v140` (envie o formulário; `?erro=1` abre tremendo),
+catálogo `ss-auth-motion` (`rails/sample/script/catalogo_v140.rb`).
+
+```erb
+<%= render(Ss::AuthLayoutComponent.new(product: "Meu Gestor", tagline: "A loja em dia, sem planilha.", title: "Entrar",
+                                       variant: :wall, motion: true, error: flash[:alert].present?)) do %>
+  …
+<% end %>
+```
+
 ## v1.3.1: `SsMenuView(appearanceController:)`
 
 A tela de configurações dos apps mostra a aparência completa (`SsAppearancePanel`: tema, preto total, cores e

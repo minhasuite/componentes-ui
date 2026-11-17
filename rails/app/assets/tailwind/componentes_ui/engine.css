@@ -64,6 +64,8 @@
 @import "./v120_web.css";
 /* v1.2.1: linha do tempo horizontal sem rolagem (divide a largura; em pé quando estreita). */
 @import "./v121_web.css";
+/* v1.4: a folhinha da entrada reage (AuthLayoutComponent(motion: true)): cai ao entrar e treme no erro. */
+@import "./v140_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

@@ -19,7 +19,7 @@
 <% data = capture do %>
   <span class="ss-auth-month"><%= month %></span><span class="ss-auth-year"><%= date.year %></span>
 <% end %>
-<%= tag.main(**root_attrs(class: root_classes)) do %>
+<%= tag.main(**root_attrs(class: root_classes, data: root_data)) do %>
   <% case variant %>
   <% when :wall %>
     <section class="ss-auth-wall">
@@ -30,6 +30,17 @@
         <p class="ss-auth-weekday"><%= weekday %></p>
         <%= faixa %>
       </div>
+      <% if motion? %>
+        <template data-ss-auth-target="next">
+          <div class="ss-auth-next" aria-hidden="true">
+            <div class="ss-auth-head"><%= data %></div>
+            <p class="ss-auth-hello"></p>
+            <span class="ss-auth-stamp"><span><%= stamp %></span></span>
+            <p class="ss-auth-opening"><%= opening %><span class="ss-auth-bar"><i></i></span></p>
+            <%= faixa %>
+          </div>
+        </template>
+      <% end %>
     </section>
     <section class="ss-auth-panel">
       <p class="ss-auth-part"><%= part_of %></p>
