@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.2.1
+      ref: v1.2.2
 ```
 
 ```dart
@@ -55,7 +55,7 @@ for mexido.
 
 ```ruby
 # Gemfile
-gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v1.2.1"
+gem "componentes_ui", git: "https://github.com/minhasuite/componentes-ui.git", tag: "v1.2.2"
 ```
 
 ```css
@@ -643,6 +643,19 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.2.2: o rótulo do campo é o nome dele no leitor de tela
+
+Achado 17 das videoaulas do minhas-vendas (app). O `SsTextField` só dava o rótulo ao campo com `hideLabel: true`; com o
+rótulo visível (o `SsFieldLabel` acima da caixa), o campo ficava sem nome fora de lista e, dentro de `ListView`, o
+rótulo só chegava como dica do `EditText`. Agora, sempre que há `label:`, o campo leva `Semantics(label:)` e o rótulo
+visível fica em `ExcludeSemantics` (não é lido duas vezes). Vale para o `SsMoneyField` (que monta um `SsTextField`); no
+`SsChoiceField` e no `SsTimeField` o botão já dizia rótulo e valor, e o rótulo visível passa a ficar fora da semântica.
+Teste: `flutter/test/v122_test.dart` (dentro e fora de `ListView`). Catálogo: comportamento novo em `ss-text-field`,
+`ss-money-field`, `ss-choice-field` e `ss-time-field` (`flutter/test/catalogo_v122.dart`). Só Flutter.
+
+**Padrões que mudaram.** Teste de app que achava o rótulo como texto solto na semântica (`find.bySemanticsLabel('CNPJ')`
+num nó que não é o campo) passa a achar o próprio campo (o nó do `EditableText` com o rótulo).
 
 ## v1.2.1: linha do tempo sem passo escondido e o stepper com vírgula
 
@@ -1866,6 +1879,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.2.2` (17/11/2026): seção "v1.2.2". O rótulo dos campos (`SsTextField`, `SsMoneyField`) é o nome do campo no leitor de tela, dentro e fora de lista, sem leitura dupla; `SsChoiceField`/`SsTimeField` sem o rótulo repetido. Só Flutter. Nada quebra na API.
 - `v1.2.1` (17/11/2026): seção "v1.2.1". `TimelineHorizontalComponent` sem rolagem (marcos dividem a largura; em pé abaixo de 36rem) e `StepperInputComponent(decimals:)` com vírgula pelo idioma da página e o ponto num hidden. Nada quebra na API.
 - `v1.2.0` (17/11/2026): seção "v1.2.0" (auditoria de UX e videoaulas do minhas-vendas). `RepeaterComponent(mobile: :compact, details_label:)` + `r.cell(:primary/:inline/:detail)` ↔ `SsRepeater(mobile: SsRepeaterMobile.compact, compactBelow:)` + `SsRepeaterCell(role:)` + `SsRepeater.compactOf`/`cells(detailsOpen:)` e o texto `repeaterDetails`; `scroll-padding-top` com a barra do topo da moldura (`--ss-top-room`); rótulos do eixo X pela largura do maior rótulo e a partir do ativo (`BarChart`, `LineChart`, `SsBarChart`, `ssAxisLabelStep`); `DataTableComponent(select_label:)` e a caixa da linha com o título, nunca o id. Nada quebra na API; ver "Padrões que mudaram".
 - `v0.1.0` (30/10/2026): primeira versão (base: minhas-vendas e meu-gestor).

@@ -441,7 +441,9 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (widget.label != null && !widget.hideLabel) SsFieldLabel(widget.label!),
+            // v1.2.2 (achado 17): o rótulo visível não é lido à parte; o nome do campo vai no próprio
+            // campo (abaixo), dentro e fora de lista, com ou sem hideLabel.
+            if (widget.label != null && !widget.hideLabel) ExcludeSemantics(child: SsFieldLabel(widget.label!)),
             // O halo só sem erro: com erro, a caixa ganharia a altura da mensagem.
             AnimatedContainer(
               duration: dur,
@@ -451,7 +453,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
                     ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)]
                     : const [],
               ),
-              child: widget.hideLabel && widget.label != null ? Semantics(label: widget.label, child: campo) : campo,
+              child: widget.label != null ? Semantics(label: widget.label, child: campo) : campo,
             ),
           ],
         ),
@@ -1185,7 +1187,7 @@ class SsChoiceField<T> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (label != null) SsFieldLabel(label!),
+            if (label != null) ExcludeSemantics(child: SsFieldLabel(label!)),
             SsTapTarget(
               minSize: Size(0, d.minTarget),
               child: Semantics(
@@ -1686,7 +1688,7 @@ class SsTimeField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null) SsFieldLabel(label!),
+        if (label != null) ExcludeSemantics(child: SsFieldLabel(label!)),
         SsTapTarget(
           minSize: Size(0, d.minTarget),
           child: Semantics(

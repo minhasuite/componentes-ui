@@ -45,6 +45,7 @@ import 'catalogo_v27.dart';
 import 'catalogo_v27_graficos.dart';
 import 'catalogo_v28.dart';
 import 'catalogo_v120.dart';
+import 'catalogo_v122.dart';
 import 'catalogo_v21.dart';
 import 'catalogo_v22.dart';
 import 'catalogo_v23.dart';
@@ -120,10 +121,12 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV120(
-  comV28(
-    comV27Graficos(
-      comV27(comV26(comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))))),
+final catalogo = comV122(
+  comV120(
+    comV28(
+      comV27Graficos(
+        comV27(comV26(comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))))),
+      ),
     ),
   ),
 );
