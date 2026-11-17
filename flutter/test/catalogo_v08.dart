@@ -216,6 +216,7 @@ final Map<String, (List<String>, List<Estado>)> _v08 = {
     [
       'SsChatInput: enabled falso trava campo e botão; leading vai antes do campo (anexar).',
       'SsChatInput: maxLength corta no limite e mostra a contagem perto dele (80%); sendTooltip é a dica do botão.',
+      'SsChatInput(attachments:): chips removíveis acima do campo; com anexo o enviar vale com o campo vazio e o anexo só vai no toque do enviar (v1.5.0).',
     ],
     [
       Estado(
@@ -226,7 +227,7 @@ final Map<String, (List<String>, List<Estado>)> _v08 = {
           onSend: (_) {},
           maxLength: 48,
         ),
-        tamanho: const Size(360, 100),
+        tamanho: const Size(360, 110),
       ),
       Estado(
         'input-anexo-travado',
@@ -239,6 +240,19 @@ final Map<String, (List<String>, List<Estado>)> _v08 = {
           leading: IconButton(onPressed: null, icon: const Icon(Icons.attach_file_rounded)),
         ),
         tamanho: const Size(360, 80),
+      ),
+      Estado(
+        'input-com-anexo',
+        'anexo pendente: chip com × e o enviar ligado com o campo vazio',
+        (_) => SsChatInput(
+          controller: TextEditingController(),
+          onSend: (_) {},
+          leading: IconButton(onPressed: () {}, icon: const Icon(Icons.attach_file_rounded)),
+          attachments: [
+            SsChatAttachment('roteiro-balneario.pdf', icon: Icons.picture_as_pdf_outlined, onRemove: () {}),
+          ],
+        ),
+        tamanho: const Size(360, 140),
       ),
     ],
   ),
@@ -309,7 +323,7 @@ final Map<String, (List<String>, List<Estado>)> _v08 = {
             ],
           ),
         ),
-        tamanho: const Size(360, 130),
+        tamanho: const Size(360, 140),
       ),
     ],
   ),

@@ -102,6 +102,24 @@ void main() {
     expect(enviados, ['oi']);
   });
 
+  testWidgets('SsChatInput(attachments:): chip com ×, enviar com o campo vazio manda \'\' (v1.5.0)', (t) async {
+    final enviados = <String>[];
+    var removidos = 0;
+    final ctrl = TextEditingController();
+    Widget campo(List<SsChatAttachment> anexos) =>
+        _app(SsChatInput(controller: ctrl, onSend: enviados.add, attachments: anexos));
+    await t.pumpWidget(campo([SsChatAttachment('roteiro.pdf', onRemove: () => removidos++)]));
+    expect(find.text('roteiro.pdf'), findsOneWidget);
+    await t.tap(find.byIcon(Icons.arrow_upward_rounded));
+    expect(enviados, ['']);
+    await t.tap(find.byIcon(Icons.close_rounded).first);
+    expect(removidos, 1);
+    // Sem anexo, campo vazio volta a não enviar.
+    await t.pumpWidget(campo(const []));
+    await t.tap(find.byIcon(Icons.arrow_upward_rounded));
+    expect(enviados, ['']);
+  });
+
   testWidgets('SsOverflowMenu: uma ação vira ícone; várias abrem menu', (t) async {
     var editou = 0;
     var excluiu = 0;

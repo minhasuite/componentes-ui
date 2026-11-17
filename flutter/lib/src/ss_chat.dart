@@ -7,6 +7,7 @@ import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
 import 'v10/casa_aviso.dart' show SsMicButton, SsMicState;
+import 'v16/input_chip.dart' show SsInputChip;
 
 /// Situação de uma mensagem da pessoa no [SsChatBubble]. v0.26: [delivered]
 /// (✓✓) e [read] (✓✓ na tinta da marca), para conversa entre pessoas.
@@ -398,6 +399,11 @@ class _SsThinkingState extends State<SsThinking> with SingleTickerProviderStateM
 /// para longe. O app passa [micState] e [micLevel] (anéis do nível); fora de
 /// `idle`, o microfone fica mesmo com texto.
 ///
+/// Anexos (v1.5.0): [attachments] aparecem como chips acima do campo, cada um
+/// com o × que chama o seu `onRemove`. Com anexo, enviar vale com o campo
+/// vazio (o `onSend` recebe ''), e o anexo vai junto com o texto, só no toque
+/// do enviar (anexar não manda nada sozinho).
+///
 /// `SsChatInput(controller: c, onSend: enviar, onMicHoldStart: rec.start, onMicHoldEnd: rec.stop, micState: st, micLevel: lv)`
 class SsChatInput extends StatelessWidget {
   const SsChatInput({
@@ -415,10 +421,14 @@ class SsChatInput extends StatelessWidget {
     this.onMicHoldCancel,
     this.micState = SsMicState.idle,
     this.micLevel = 0,
+    this.attachments = const [],
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onSend;
+
+  /// Arquivos que vão junto na próxima mensagem (chips removíveis acima do campo).
+  final List<SsChatAttachment> attachments;
 
   /// Padrão: [SsStrings.chatHint].
   final String? hint;
@@ -441,9 +451,11 @@ class SsChatInput extends StatelessWidget {
   /// Nível do áudio 0..1 enquanto ouve.
   final double micLevel;
 
+  bool get _temConteudo => controller.text.trim().isNotEmpty || attachments.isNotEmpty;
+
   void _enviar() {
     final t = controller.text.trim();
-    if (t.isEmpty || sending || !enabled) return;
+    if (!_temConteudo || sending || !enabled) return;
     SsHaptics.tick();
     onSend(t);
   }
@@ -455,112 +467,137 @@ class SsChatInput extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ?leading,
-            Expanded(
-              child: TextField(
-                controller: controller,
-                enabled: enabled,
-                minLines: 1,
-                maxLines: 5,
-                textCapitalization: TextCapitalization.sentences,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _enviar(),
-                maxLength: maxLength,
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                // A contagem só aparece perto do limite (sem ocupar espaço antes).
-                buildCounter: maxLength == null
-                    ? null
-                    : (context, {required currentLength, required isFocused, required maxLength}) =>
-                          maxLength == null || currentLength < maxLength * .8
-                          ? null
-                          : Text(
-                              '$currentLength/$maxLength',
-                              style: AppTheme.number(
-                                context,
-                                size: AppType.label,
-                                color: currentLength >= maxLength ? c.dangerText : c.muted,
-                              ),
-                            ),
-                decoration: InputDecoration(
-                  hintText: hint ?? SsStrings.of(context).chatHint,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide(color: c.accent, width: 1.5),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            if (attachments.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    for (final a in attachments)
+                      SsInputChip(a.name, icon: a.icon, onDeleted: sending ? null : a.onRemove),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 6),
-            ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) {
-                final pode = enabled && controller.text.trim().isNotEmpty && !sending;
-                final mic =
-                    onMicHoldStart != null &&
-                    (micState != SsMicState.idle || (controller.text.trim().isEmpty && !sending));
-                if (mic) {
-                  return SsMicButton(
-                    key: const ValueKey('ss-chat-mic'),
-                    holdToTalk: true,
-                    compact: true,
-                    size: 44,
-                    state: micState,
-                    level: micLevel,
-                    onHoldStart: enabled ? onMicHoldStart : null,
-                    onHoldEnd: onMicHoldEnd,
-                    onHoldCancel: onMicHoldCancel,
-                  );
-                }
-                return Semantics(
-                  button: true,
-                  enabled: pode,
-                  label: SsStrings.of(context).send,
-                  child: ExcludeSemantics(
-                    child: Tooltip(
-                      message: sendTooltip ?? SsStrings.of(context).send,
-                      child: AnimatedScale(
-                        scale: pode || reduceMotion(context) ? 1 : .9,
-                        duration: SsMotion.fast,
-                        curve: SsMotion.spring,
-                        child: Material(
-                          color: pode ? c.accent : c.field,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: pode ? _enviar : null,
-                            child: SizedBox(
-                              width: 48,
-                              height: 48,
-                              child: Center(
-                                child: sending
-                                    ? SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: c.muted),
-                                      )
-                                    : Icon(Icons.arrow_upward_rounded, color: pode ? AppColors.onDark : c.muted),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+            _linha(context, c),
           ],
         ),
       ),
     );
   }
+
+  Widget _linha(BuildContext context, SsColors c) => Row(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      ?leading,
+      Expanded(
+        child: TextField(
+          controller: controller,
+          enabled: enabled,
+          minLines: 1,
+          maxLines: 5,
+          textCapitalization: TextCapitalization.sentences,
+          textInputAction: TextInputAction.send,
+          onSubmitted: (_) => _enviar(),
+          maxLength: maxLength,
+          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+          // A contagem só aparece perto do limite (sem ocupar espaço antes).
+          buildCounter: maxLength == null
+              ? null
+              : (context, {required currentLength, required isFocused, required maxLength}) =>
+                    maxLength == null || currentLength < maxLength * .8
+                    ? null
+                    : Text(
+                        '$currentLength/$maxLength',
+                        style: AppTheme.number(
+                          context,
+                          size: AppType.label,
+                          color: currentLength >= maxLength ? c.dangerText : c.muted,
+                        ),
+                      ),
+          decoration: InputDecoration(
+            hintText: hint ?? SsStrings.of(context).chatHint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide(color: c.accent, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          ),
+        ),
+      ),
+      const SizedBox(width: 6),
+      ListenableBuilder(
+        listenable: controller,
+        builder: (context, _) {
+          final pode = enabled && _temConteudo && !sending;
+          final mic = onMicHoldStart != null && (micState != SsMicState.idle || (!_temConteudo && !sending));
+          if (mic) {
+            return SsMicButton(
+              key: const ValueKey('ss-chat-mic'),
+              holdToTalk: true,
+              compact: true,
+              size: 44,
+              state: micState,
+              level: micLevel,
+              onHoldStart: enabled ? onMicHoldStart : null,
+              onHoldEnd: onMicHoldEnd,
+              onHoldCancel: onMicHoldCancel,
+            );
+          }
+          return Semantics(
+            button: true,
+            enabled: pode,
+            label: SsStrings.of(context).send,
+            child: ExcludeSemantics(
+              child: Tooltip(
+                message: sendTooltip ?? SsStrings.of(context).send,
+                child: AnimatedScale(
+                  scale: pode || reduceMotion(context) ? 1 : .9,
+                  duration: SsMotion.fast,
+                  curve: SsMotion.spring,
+                  child: Material(
+                    color: pode ? c.accent : c.field,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: pode ? _enviar : null,
+                      child: SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Center(
+                          child: sending
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: c.muted),
+                                )
+                              : Icon(Icons.arrow_upward_rounded, color: pode ? AppColors.onDark : c.muted),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ],
+  );
+}
+
+/// Anexo pendente no [SsChatInput] (vai na próxima mensagem).
+class SsChatAttachment {
+  const SsChatAttachment(this.name, {this.icon = Icons.attach_file, this.onRemove});
+  final String name;
+  final IconData icon;
+
+  /// × do chip; nulo = sem ×.
+  final VoidCallback? onRemove;
 }
