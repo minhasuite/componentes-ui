@@ -868,6 +868,10 @@ class _SsNavScaffoldState extends State<SsNavScaffold> {
   Widget build(BuildContext context) {
     final nav = widget.navBar;
     final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
+    // Teclado aberto: o Scaffold já encolhe o corpo até o teclado e a barra
+    // fica atrás dele. Reservar a faixa da barra deixava um vão vazio entre o
+    // campo e o teclado (o chat do assistente no Minhas Viagens).
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
     Widget shell = Scaffold(
       extendBody: true,
       body: Builder(
@@ -876,11 +880,11 @@ class _SsNavScaffoldState extends State<SsNavScaffold> {
           // trocado pela faixa do círculo.
           final mq = MediaQuery.of(context);
           return Padding(
-            padding: EdgeInsets.only(bottom: SsNavBar.barHeight + safeBottom),
+            padding: EdgeInsets.only(bottom: keyboard ? 0 : SsNavBar.barHeight + safeBottom),
             child: MediaQuery(
               data: mq.copyWith(
-                padding: mq.padding.copyWith(bottom: SsNavBar.rise),
-                viewPadding: mq.viewPadding.copyWith(bottom: SsNavBar.rise),
+                padding: mq.padding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise),
+                viewPadding: mq.viewPadding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise),
               ),
               child: widget.body,
             ),

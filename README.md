@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.3.1
+      ref: v1.4.2
 ```
 
 ```dart
@@ -1948,6 +1948,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.4.2` (17/11/2026): `SsNavScaffold` com o teclado aberto não reserva mais a faixa da barra: o corpo vai até o teclado (antes ficava um vão vazio entre o campo e o teclado, ex. o chat). Só Flutter. Nada quebra na API.
 - `v1.4.1` (17/11/2026): seção "v1.4.1". `ChatComponent` com `novalidate`, `ss-scrollspy` pela linha de leitura e `ss-reveal` com rádios. Nada quebra na API.
 - `v1.2.2` (17/11/2026): seção "v1.2.2". O rótulo dos campos (`SsTextField`, `SsMoneyField`) é o nome do campo no leitor de tela, dentro e fora de lista, sem leitura dupla; `SsChoiceField`/`SsTimeField` sem o rótulo repetido. Só Flutter. Nada quebra na API.
 - `v1.2.1` (17/11/2026): seção "v1.2.1". `TimelineHorizontalComponent` sem rolagem (marcos dividem a largura; em pé abaixo de 36rem) e `StepperInputComponent(decimals:)` com vírgula pelo idioma da página e o ponto num hidden. Nada quebra na API.

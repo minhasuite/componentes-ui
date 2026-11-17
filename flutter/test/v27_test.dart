@@ -16,6 +16,7 @@ Widget _app({
   bool semAnimacao = false,
   VoidCallback? onAtalho,
   Widget? body,
+  double teclado = 0,
 }) => MaterialApp(
   theme: AppTheme.light,
   locale: const Locale('pt'),
@@ -27,6 +28,7 @@ Widget _app({
         disableAnimations: semAnimacao,
         size: const Size(390, 760),
         padding: const EdgeInsets.only(bottom: 20),
+        viewInsets: EdgeInsets.only(bottom: teclado),
       ),
       child: SsNavScaffold(
         peek: peek,
@@ -77,6 +79,27 @@ void main() {
     // O corpo termina na borda da barra (barra inteira menos a faixa), não no topo da faixa.
     expect(corpo.bottom, closeTo(barra.top + SsNavBar.rise, .5));
     expect(padding.bottom, SsNavBar.rise);
+  });
+
+  testWidgets('SsNavScaffold: com teclado o corpo vai até o teclado, sem o vão da barra (v1.4.2)', (t) async {
+    late EdgeInsets padding;
+    await t.pumpWidget(
+      _app(
+        teclado: 300,
+        body: Builder(
+          builder: (context) {
+            padding = MediaQuery.paddingOf(context);
+            return const SizedBox.expand(key: ValueKey('corpo'));
+          },
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    final corpo = t.getRect(find.byKey(const ValueKey('corpo')));
+    final tela = t.getRect(find.byType(Scaffold).first);
+    // Antes ficava a faixa da barra (barHeight + rodapé) vazia acima do teclado.
+    expect(corpo.bottom, closeTo(tela.bottom - 300, .5));
+    expect(padding.bottom, 0);
   });
 
   testWidgets('menu: arrastar da borda abre, as abas entram com a atual marcada, tocar fora fecha', (t) async {
