@@ -1,0 +1,14 @@
+/* v1.5.1 · a entrada mais calma (Ss::AuthLayoutComponent, todas as variações). Pedido do usuário em 17/11/2026: o
+   login estava com cores fortes. A faixa do produto deixa de ser um bloco sólido (fundo --accent-soft, fio de 3px e o
+   nome em --accent), o botão principal da entrada fica em cor sólida (sem o degradê e o brilho) e o carimbo do
+   motion: true passa a usar a cor do produto. Só CSS; a marcação não muda. Cor só por token. */
+@layer components {
+  .ss-auth-band { background: var(--accent-soft); color: var(--ink-2); border-top: 3px solid var(--accent); }
+  .ss-auth-band strong { color: var(--accent); }
+  .ss-auth-band span { color: var(--ink-2); }
+  .ss-auth .ss-btn-primary { background-image: none; background-color: var(--accent-solid); box-shadow: none; }
+  .ss-auth .ss-btn-primary:hover { background-color: var(--accent-hover); box-shadow: none; }
+  .ss-auth .ss-btn-primary::after { display: none; }
+  .ss-auth { --ss-auth-shadow: 0 1px 1px color-mix(in srgb, var(--ink) 5%, transparent), 0 16px 36px -22px color-mix(in srgb, var(--ink) 28%, transparent); }
+  .ss-auth-stamp { border-color: var(--accent); color: var(--accent); }
+}

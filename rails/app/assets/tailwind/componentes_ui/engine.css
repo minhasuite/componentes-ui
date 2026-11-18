@@ -66,6 +66,8 @@
 @import "./v121_web.css";
 /* v1.4: a folhinha da entrada reage (AuthLayoutComponent(motion: true)): cai ao entrar e treme no erro. */
 @import "./v140_web.css";
+/* v1.5.1: a entrada mais calma (faixa do produto em tom suave, botão sólido, carimbo na cor do produto). */
+@import "./v151_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

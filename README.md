@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.5.0
+      ref: v1.5.1
 ```
 
 ```dart
@@ -643,6 +643,21 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.5.1: a entrada mais calma
+
+Pedido do usuário em 17/11/2026 (login com cores fortes). Só CSS, em `v151_web.css`; a marcação não muda e vale para
+todas as variações do `Ss::AuthLayoutComponent`.
+
+| O quê | Como fica |
+|---|---|
+| Faixa do produto (`.ss-auth-band`) | Fundo `--accent-soft`, fio de 3px em `--accent` e o nome em `--accent` (era bloco sólido em `--accent-solid` com texto branco) |
+| Botão principal na entrada (`.ss-auth .ss-btn-primary`) | Cor sólida `--accent-solid`, sem o degradê, a sombra colorida e o brilho que passa. Fora da entrada o botão segue igual |
+| Carimbo do `motion: true` | Na cor do produto (`--accent`), não mais em `--danger` |
+| Sombra da folha | Mais leve |
+
+Teste: `rails/sample/test/components/v151_web_test.rb`. O par no Flutter (`SsAuthLayout.folhinha`) segue com a faixa
+sólida: dívida aberta, junto com a do `motion:`.
 
 ## v1.4.1: chat sem o balão nativo, scrollspy da seção certa e `ss-reveal` com rádios
 
@@ -1948,6 +1963,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.5.1` (17/11/2026): seção "v1.5.1". Entrada mais calma: faixa do produto em tom suave, botão principal sólido na entrada e carimbo na cor do produto. Só web, só CSS. Nada quebra na API.
 - `v1.5.0` (17/11/2026): `SsChatInput(attachments: [SsChatAttachment(nome, icon:, onRemove:)])`: anexos pendentes como chips com × acima do campo; com anexo, enviar vale com o campo vazio (`onSend('')`) e o anexo só vai no toque do enviar. Corrige `ssComponentesUiVersion` (a v1.4.2 saiu com 1.4.1). Só Flutter. Nada quebra na API.
 - `v1.4.2` (17/11/2026): `SsNavScaffold` com o teclado aberto não reserva mais a faixa da barra: o corpo vai até o teclado (antes ficava um vão vazio entre o campo e o teclado, ex. o chat). Só Flutter. Nada quebra na API.
 - `v1.4.1` (17/11/2026): seção "v1.4.1". `ChatComponent` com `novalidate`, `ss-scrollspy` pela linha de leitura e `ss-reveal` com rádios. Nada quebra na API.
