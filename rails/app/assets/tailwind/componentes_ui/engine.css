@@ -68,6 +68,8 @@
 @import "./v140_web.css";
 /* v1.5.1: a entrada mais calma (faixa do produto em tom suave, botão sólido, carimbo na cor do produto). */
 @import "./v151_web.css";
+/* v1.5.2: sino de avisos no topo e o selo com link; tile de aparelho que empilha quando bem estreito (era a v0.25 do branch onda7). */
+@import "./v152_sino_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

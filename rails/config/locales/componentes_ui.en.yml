@@ -35,6 +35,15 @@ en:
       empty: empty
       label: Change history
       to: to
+    bell:
+      all: See all notifications
+      empty: No notifications here.
+      loading: Loading…
+      read_all: Mark all as read
+      settings: Notification preferences
+      title: Notifications
+      unread: "%{count} unread"
+      unread_one: unread
     block_list:
       delete: Delete
       duplicate: Duplicate

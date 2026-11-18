@@ -37,6 +37,15 @@ pt-BR:
       empty: vazio
       label: Histórico de alterações
       to: para
+    bell:
+      all: Ver todos os avisos
+      empty: Nenhum aviso por aqui.
+      loading: Carregando…
+      read_all: Marcar todas como lidas
+      settings: Preferências dos avisos
+      title: Avisos
+      unread: "%{count} não lidos"
+      unread_one: não lido
     block_list:
       delete: Excluir
       duplicate: Duplicar
