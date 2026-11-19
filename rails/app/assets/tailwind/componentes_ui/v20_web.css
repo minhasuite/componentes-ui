@@ -109,6 +109,10 @@
   /* ── Google Identity Services: o iframe do Google centrado, na largura do contêiner ── */
   .ss-google-gis { display: flex; justify-content: center; width: 100%; min-height: 44px; }
   .ss-google-gis > .g_id_signin { max-width: 100%; }
+  /* v1.7.1: no tema escuro o Chrome pinta de branco o fundo do iframe do Google quando o color-scheme da página (dark)
+     difere do da página do botão (light): fica uma caixa branca em volta da pílula. O iframe em light mantém o fundo
+     transparente. Vale para qualquer botão do GIS na página (o do componente ou o .g_id_signin montado pelo produto). */
+  iframe[src*="accounts.google.com/gsi/"] { color-scheme: light; }
 
   /* ── Palco de editor de nós (NodeCanvasComponent): pele dos elementos do Drawflow ── */
   .ss-node-canvas-wrap { position: relative; }

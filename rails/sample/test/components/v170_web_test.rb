@@ -89,4 +89,8 @@ class V170WebTest < ComponentTest
     assert_includes css, "color-mix(in srgb, var(--brand-deep) 52%, var(--page))"
     assert_empty css.scan(/#[0-9a-fA-F]{3,8}\b/), "cor solta no CSS do cartaz"
   end
+
+  test "v1.7.1: o iframe do botão do Google (GIS) não ganha caixa branca no escuro" do
+    assert_includes CSS.join("v20_web.css").read, %(iframe[src*="accounts.google.com/gsi/"] { color-scheme: light; })
+  end
 end

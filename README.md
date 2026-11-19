@@ -644,6 +644,14 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.7.1: o botão do Google sem caixa branca no escuro
+
+`Ss::GoogleButtonComponent(mode: :gis)` no tema escuro: o Chrome pintava de branco o fundo do iframe do Google (a página
+em `color-scheme: dark`, a do botão em light), e ficava uma caixa branca em volta da pílula, bem à vista no papel escuro
+do `:cartaz`. Todo iframe do GIS (`accounts.google.com/gsi/`, do componente ou montado pelo produto) passa a usar
+`color-scheme: light` e o fundo volta a ser transparente. Só CSS (`v20_web.css`);
+teste em `v170_web_test.rb`. Nada quebra.
+
 ## v1.7.0: tela de entrada "Cartaz + papel"
 
 A proposta B escolhida pelo usuário em 19/11/2026 (`propostas/cartaz-landings-login/`): a entrada abre como as capas dos
@@ -2074,6 +2082,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.7.1` (19/11/2026): seção "v1.7.1". Botão do Google (GIS) sem a caixa branca do iframe no tema escuro. Só web, só CSS. Nada quebra.
 - `v1.7.0` (19/11/2026): seção "v1.7.0". Tela de entrada "Cartaz + papel": `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split, word:, facts:, icon:)` ↔ `SsAuthLayout.cartaz(...)` (`SsAuthCartaz`, `SsCartazLayout`, `SsCartazColors`); `--brand-deep/--brand-from/--brand-to` no `paletas.css` e no `brand_css`; o `gerar.py` confere o contraste do cartaz. Nada quebra na API.
 - `v1.6.0` (18/11/2026): seção "v1.6.0". Ajuda na moldura: `Ss::HelpMenuComponent` (Stimulus `ss-help`) no slot `help` do `Ss::AppShellComponent` ↔ `SsHelpMenu.section`; `SsSideMenuItem(external:, badgeLabel:)`; textos novos obrigatórios no `SsStrings` (`help*`, `opensOutside`). Nada quebra na API.
 - `v1.5.1` (17/11/2026): seção "v1.5.1". Entrada mais calma: faixa do produto em tom suave, botão principal sólido na entrada e carimbo na cor do produto. Só web, só CSS. Nada quebra na API.
