@@ -20,6 +20,9 @@ Regras de acessibilidade (falha se quebrar):
   texto apagado (--muted / AppColors.muted*) ≥ 4,5:1 sobre página, superfície, campo, o suave da
   marca de cada paleta e o brilho do fundo da página (glow da marca + o azul do canto), no claro, no
   escuro e no OLED, nos dois lados (v0.28); e os valores conferidos batem com engine.css e app_theme.dart.
+  cartaz (v1.7, tela de entrada :cartaz e o site): texto branco ≥ 7:1 (AAA) sobre o brandDeep e sobre o
+  tom do escuro (brandDeep a 52% com a página escura do web, do Flutter e do OLED); o texto secundário do
+  cartaz (branco a 82% sobre a cor) ≥ 4,5:1 nos mesmos fundos.
 Só avisa: accent sobre o próprio soft (selo) abaixo de 4,5 e brandTo sob texto branco abaixo de 3.
 
 Alto contraste (v0.16, data-ss-contrast="high" no web; SsBrand.highContrast() no Flutter, mesma
@@ -232,7 +235,29 @@ def conferir(familias, paletas):
             avisos.append(f"{n}: accentDark sobre o soft escuro = {c:.2f}")
         if (c := contraste(p["brandTo"], "#ffffff")) < 3:
             avisos.append(f"{n}: brandTo {p['brandTo']} com texto branco = {c:.2f} (< 3)")
+        for nome, fundo in cartazes(p).items():
+            if (c := contraste("#ffffff", fundo)) < 7:
+                erros.append(f"{n}: texto branco sobre o cartaz {nome} {fundo} = {c:.2f} (< 7)")
+            seg = mistura(fundo, "#ffffff", CARTAZ_TEXTO_2)
+            if (c := contraste(seg, fundo)) < 4.5:
+                erros.append(f"{n}: texto secundário {seg} sobre o cartaz {nome} {fundo} = {c:.2f} (< 4,5)")
     return erros, avisos
+
+
+# Cartaz (v1.7): a cor cheia da tela de entrada :cartaz e do site. No escuro, o brandDeep a 52% com a
+# página escura (a mesma regra do portal). O texto secundário é o branco a 82% sobre a cor.
+CARTAZ_ESCURO = .52
+CARTAZ_TEXTO_2 = .82
+
+
+def cartazes(p):
+    deep = p["brandDeep"]
+    fs = {"claro": deep}
+    for nome, pagina in (("escuro web", NEUTROS["rails"]["escuro"]["página"]),
+                         ("escuro Flutter", NEUTROS["flutter"]["escuro"]["página"]),
+                         ("OLED", "#000000")):
+        fs[nome] = mistura(pagina, deep, CARTAZ_ESCURO)
+    return fs
 
 
 def sobre(fundo, cor_, alfa):
@@ -331,6 +356,10 @@ def dart_tema(atual, paletas):
 
 
 # ── Rails ─────────────────────────────────────────────────────────────────
+def marca(p):
+    return f"--brand-deep: {p['brandDeep']}; --brand-from: {p['brandFrom']}; --brand-to: {p['brandTo']};"
+
+
 def css(familias, paletas):
     padrao = paletas[0]
     s = lambda p: p["stops"]
@@ -342,14 +371,16 @@ def css(familias, paletas):
            "   sistema. Accent claro ≥ 4,5:1 sobre branco e página; accent escuro ≥ 4,5:1 sobre a página",
            "   escura; --grad (botão primário) e --accent-solid (checkbox, rádio, switch) ≥ 4,5:1 com texto",
            "   branco. Os 4 tons crus ficam em --p1…--p4",
-           "   (usados pelo .ss-swatch e pelo seletor de paleta). Sem data-palette vale a padrão (engine.css). */",
+           "   (usados pelo .ss-swatch e pelo seletor de paleta). Sem data-palette vale a padrão (engine.css).",
+           "   v1.7: --brand-deep/--brand-from/--brand-to (o tom fundo e as duas manchas do cartaz, iguais ao",
+           "   brandDeep/brandFrom/brandTo do Flutter), por paleta; o --ss-poster do v170_cartaz_web.css lê daqui. */",
            "",
-           f"/* {padrao['nome']} (padrão): só ganha o gradiente de 4 paradas. */",
-           f":root {{ --grad-4: {g4(padrao)}; }}",
+           f"/* {padrao['nome']} (padrão): só ganha o gradiente de 4 paradas e as cores do cartaz. */",
+           f":root {{ --grad-4: {g4(padrao)}; {marca(padrao)} }}",
            ""]
     for p in paletas:
         sel = f'[data-swatch="{p["slug"]}"]' + ("" if p.get("padrao") else f', :root[data-palette="{p["slug"]}"]')
-        out.append(f"{sel} {{ --p1: {s(p)[0]}; --p2: {s(p)[1]}; --p3: {s(p)[2]}; --p4: {s(p)[3]}; }}")
+        out.append(f"{sel} {{ --p1: {s(p)[0]}; --p2: {s(p)[1]}; --p3: {s(p)[2]}; --p4: {s(p)[3]}; {marca(p)} }}")
     out.append("")
     outras = [p for p in paletas if not p.get("padrao")]
     for p in outras:

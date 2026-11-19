@@ -21,22 +21,45 @@ module Ss
   # folhinha se solta do pino e cai, e por baixo aparece a folha seguinte com a saudação da hora, "Abrindo o
   # <produto>…" e o carimbo "Em dia". O envio não espera a animação. error: true faz a folha tremer ao abrir (use
   # quando a página volta com o erro de login). Com "reduzir movimento", a folha só some e nada treme.
+  #
+  # v1.7 · variant: :cartaz (par do SsAuthLayout.cartaz; proposta "Cartaz + papel" de 19/11/2026): metade cartaz na
+  # cor funda da paleta do produto (--brand-deep; no escuro, misturada à página) com a marca, o nome do produto, o
+  # tagline: grande na fonte de exibição, a linha de dados (facts:, em DM Mono) e a palavra gigante (word:, padrão a
+  # última palavra do produto) cortada pela borda; a outra metade é o papel (--page) com "Parte da MinhaSuite", o
+  # título, o formulário e os links. layout: :split (único por enquanto; no celular o cartaz vira uma faixa em cima).
+  # icon: (nome do ss_icon) vai antes do nome do produto. Ao abrir, uma passada de cor varre o cartaz uma vez; com
+  # "reduzir movimento", não. date:, note: e motion: não valem no :cartaz (sem folhinha).
+  #
+  #   render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", variant: :cartaz,
+  #                                      word: "vendas", facts: %w[Web Windows Caixa App], icon: "chart-bar",
+  #                                      title: "Entrar", subtitle: "no Minhas Vendas")) { … }
   class AuthLayoutComponent < BaseComponent
-    VARIANTS = %i[sheet wall pad].freeze
+    VARIANTS = %i[sheet wall pad cartaz].freeze
+    LAYOUTS = %i[split].freeze
 
-    attr_reader :product, :tagline, :title, :subtitle, :note, :brand_href, :links, :date
+    attr_reader :product, :tagline, :title, :subtitle, :note, :brand_href, :links, :date, :facts, :icon
 
     def initialize(product:, title:, tagline: nil, subtitle: nil, variant: :sheet, date: nil, note: nil,
-                   brand: nil, brand_href: nil, links: [], motion: false, error: false, **opts)
+                   brand: nil, brand_href: nil, links: [], motion: false, error: false,
+                   word: nil, layout: :split, facts: [], icon: nil, **opts)
       super(**opts)
       @motion, @error = motion, error
       @product, @title, @tagline, @subtitle, @note = product, title, tagline, subtitle, note
       @variant = VARIANTS.include?(variant.to_s.to_sym) ? variant.to_s.to_sym : :sheet
+      @layout = LAYOUTS.include?(layout.to_s.to_sym) ? layout.to_s.to_sym : :split
       @date = (date || Date.current).to_date
       @brand, @brand_href, @links = brand, brand_href, Array(links)
+      @word, @facts, @icon = word, Array(facts).compact_blank, icon
     end
 
     def variant = @variant
+    def layout = @layout
+
+    # A palavra gigante do cartaz (decorativa, fora do leitor de tela): a dada ou a última do nome do produto.
+    def word
+      w = @word.presence || product.to_s.split.last.to_s
+      w.downcase
+    end
 
     def brand
       @brand || safe_join(["Minha", tag.b("Suite")])
@@ -53,7 +76,7 @@ module Ss
     end
 
     def root_classes
-      classes("ss-auth", "is-#{@variant}")
+      classes("ss-auth", "is-#{@variant}", ("is-#{@layout}" if @variant == :cartaz))
     end
 
     # Movimento só na :wall, onde a folhinha é separada do formulário.

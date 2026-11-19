@@ -644,6 +644,55 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.7.0: tela de entrada "Cartaz + papel"
+
+A proposta B escolhida pelo usuário em 19/11/2026 (`propostas/cartaz-landings-login/`): a entrada abre como as capas dos
+vídeos e o portal, em cartaz na cor do produto, e o formulário fica no papel do Lista Clara. Aditivo: `:sheet`, `:wall` e
+`:pad` (a Folhinha) seguem iguais. Testes em `rails/sample/test/components/v170_web_test.rb` e `flutter/test/v170_test.dart`
+(com `CARTAZ_SAIDA=<pasta>` grava as capturas de 390 e 1440 em claro, escuro, OLED, alto contraste e texto 1,6×); CSS em
+`v170_cartaz_web.css`; vitrine `pecas_v170` (`?tela=1` abre sozinha, com `?tema=claro|escuro|oled`, `?paleta=<slug>`,
+`?contraste=alto`, `?produto=gestor|financeiro|central`, `?erro=1`); catálogo `ss-auth-cartaz` nos dois lados
+(`rails/sample/script/catalogo_v170.rb`, `flutter/test/catalogo_v170.dart`).
+
+| Peça | Web | Flutter |
+|---|---|---|
+| Tela de entrada | `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split, word:, facts:, icon:)` + os parâmetros de sempre (`product:`, `tagline:`, `title:`, `subtitle:`, `brand:`, `brand_href:`, `links:`) | `SsAuthLayout.cartaz(product:, title:, subtitle:, tagline:, word:, layout: SsCartazLayout.split, facts:, icon:, brand:, footer:, children:)` (widget `SsAuthCartaz`) |
+| Cores do cartaz | `--brand-deep`, `--brand-from` e `--brand-to` por `data-palette` no `paletas.css` (gerado; a violeta no `:root`) e no `ss_brand_style`/`ComponentesUi.brand_css` | `SsColors.brandDeep/brandFrom/brandTo` (já existiam) e `SsCartazColors.of(context)` com a conta pronta |
+| Fontes | `--ss-font-display` (Big Shoulders Display 900, `ss_display_font_tag`) e `--font-mono` (DM Mono 500, já no `ss_font_tags`) | `AppTheme.display` e `AppTheme.number` |
+
+- **O cartaz:** a marca, o ícone e o nome do produto, o `tagline:` grande na fonte de exibição, a linha de dados `facts:`
+  em DM Mono e a palavra gigante `word:` cortada pela borda (padrão: a última palavra do `product:` em minúsculas). A palavra
+  é decorativa: `aria-hidden` / `ExcludeSemantics`. O `h1` é o título do papel.
+- **Cor:** `--brand-deep` no claro; no escuro e no OLED, `--brand-deep` a 52% com a `--page`, a mesma regra do portal. O
+  `gerar.py` reprova paleta com texto branco abaixo de 7:1 ou texto secundário (branco a 82%) abaixo de 4,5:1 sobre o cartaz,
+  no claro, no escuro do web e do Flutter e no OLED. As 30 paletas passam.
+- **O papel:** `--page` / `c.page`, sem caixa em volta; no web os campos e o botão do Google ficam em `--surface`. Em cima,
+  "Parte da MinhaSuite" em DM Mono (`componentes_ui.auth.part_of` / `SsStrings.authPartOf`, pt/en/es; nenhum texto novo).
+- **Celular:** abaixo de 860 px no web (840 no Flutter) o cartaz vira uma faixa de 240 px em cima, sem a linha de dados, e o
+  papel desce. Sem rolagem lateral em 390.
+- **Movimento:** ao abrir, uma passada de cor varre o cartaz uma vez (1 s) e a palavra entra deslizando. "Reduzir
+  movimento" desliga (`prefers-reduced-motion` / `MediaQuery.disableAnimations`). `motion:`, `error:`, `date:` e `note:` não
+  valem no `:cartaz`.
+- **Acessibilidade:** foco visível em branco sobre o cartaz e na cor da marca no papel; alto contraste deixa o texto
+  secundário do cartaz em branco inteiro.
+
+```erb
+<%= render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", variant: :cartaz,
+                                       word: "vendas", facts: %w[Web Windows Caixa App], icon: "chart-bar",
+                                       title: content_for(:auth_title) || "Entrar", subtitle: content_for(:auth_subtitle),
+                                       brand_href: "https://www.minhasuite.com/", links: [["Termos", terms_path]])) do %>
+  …
+<% end %>
+```
+
+```dart
+SsAuthLayout.cartaz(product: 'Minhas Vendas', tagline: 'A venda não para.', word: 'vendas',
+  facts: const ['Web', 'Windows', 'Caixa', 'App'], title: 'Entrar', subtitle: 'no Minhas Vendas', children: [...])
+```
+
+**Padrões que mudaram.** Nenhum. Para trocar a Folhinha pelo cartaz no produto, mude `variant: :wall` para `variant: :cartaz`
+e passe `word:`/`facts:`/`icon:` se quiser; o resto do layout de entrada fica igual.
+
 ## v1.6.0: ajuda na moldura e no menu lateral (Aprenda e Novidades)
 
 Fase 1 do portal de aulas e novidades (www.minhasuite.com/&lt;produto&gt;/aprenda e /novidades), pedido em 18/11/2026 para
@@ -2025,6 +2074,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.7.0` (19/11/2026): seção "v1.7.0". Tela de entrada "Cartaz + papel": `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split, word:, facts:, icon:)` ↔ `SsAuthLayout.cartaz(...)` (`SsAuthCartaz`, `SsCartazLayout`, `SsCartazColors`); `--brand-deep/--brand-from/--brand-to` no `paletas.css` e no `brand_css`; o `gerar.py` confere o contraste do cartaz. Nada quebra na API.
 - `v1.6.0` (18/11/2026): seção "v1.6.0". Ajuda na moldura: `Ss::HelpMenuComponent` (Stimulus `ss-help`) no slot `help` do `Ss::AppShellComponent` ↔ `SsHelpMenu.section`; `SsSideMenuItem(external:, badgeLabel:)`; textos novos obrigatórios no `SsStrings` (`help*`, `opensOutside`). Nada quebra na API.
 - `v1.5.1` (17/11/2026): seção "v1.5.1". Entrada mais calma: faixa do produto em tom suave, botão principal sólido na entrada e carimbo na cor do produto. Só web, só CSS. Nada quebra na API.
 - `v1.5.0` (17/11/2026): `SsChatInput(attachments: [SsChatAttachment(nome, icon:, onRemove:)])`: anexos pendentes como chips com × acima do campo; com anexo, enviar vale com o campo vazio (`onSend('')`) e o anexo só vai no toque do enviar. Corrige `ssComponentesUiVersion` (a v1.4.2 saiu com 1.4.1). Só Flutter. Nada quebra na API.

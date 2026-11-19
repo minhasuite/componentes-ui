@@ -10,7 +10,9 @@ class VitrineController < ApplicationController
     @pagina = params[:pagina].to_s
     raise ActionController::RoutingError, "não achei" unless paginas.any? { |p| p[:slug] == @pagina }
 
-    render @pagina
+    # v1.7: ?tela=1 abre a peça de tela cheia (entrada) sem a moldura da vitrine, para conferir em 390 e 1440;
+    # ?tema=claro|escuro|oled, ?paleta=<slug> e ?contraste=alto vão no <html> (layout "tela").
+    render @pagina, layout: (params[:tela].present? ? "tela" : "application")
   end
 
   private

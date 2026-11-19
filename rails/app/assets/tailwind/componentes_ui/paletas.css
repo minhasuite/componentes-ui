@@ -5,41 +5,43 @@
    sistema. Accent claro ≥ 4,5:1 sobre branco e página; accent escuro ≥ 4,5:1 sobre a página
    escura; --grad (botão primário) e --accent-solid (checkbox, rádio, switch) ≥ 4,5:1 com texto
    branco. Os 4 tons crus ficam em --p1…--p4
-   (usados pelo .ss-swatch e pelo seletor de paleta). Sem data-palette vale a padrão (engine.css). */
+   (usados pelo .ss-swatch e pelo seletor de paleta). Sem data-palette vale a padrão (engine.css).
+   v1.7: --brand-deep/--brand-from/--brand-to (o tom fundo e as duas manchas do cartaz, iguais ao
+   brandDeep/brandFrom/brandTo do Flutter), por paleta; o --ss-poster do v170_cartaz_web.css lê daqui. */
 
-/* Violeta (padrão): só ganha o gradiente de 4 paradas. */
-:root { --grad-4: linear-gradient(120deg, #3b2bb0 0%, #5a45e8 35%, #7b5cff 70%, #8f7dff 100%); }
+/* Violeta (padrão): só ganha o gradiente de 4 paradas e as cores do cartaz. */
+:root { --grad-4: linear-gradient(120deg, #3b2bb0 0%, #5a45e8 35%, #7b5cff 70%, #8f7dff 100%); --brand-deep: #3b2bb0; --brand-from: #7b5cff; --brand-to: #5a45e8; }
 
-[data-swatch="violeta"] { --p1: #3b2bb0; --p2: #5a45e8; --p3: #7b5cff; --p4: #8f7dff; }
-[data-swatch="tokyo-night"], :root[data-palette="tokyo-night"] { --p1: #130f40; --p2: #5b2a86; --p3: #c724b1; --p4: #ff7ee3; }
-[data-swatch="safira"], :root[data-palette="safira"] { --p1: #0a1650; --p2: #1e3fae; --p3: #3d6df2; --p4: #b6c9ff; }
-[data-swatch="meia-noite"], :root[data-palette="meia-noite"] { --p1: #05070f; --p2: #141d45; --p3: #2f4590; --p4: #8c9fe0; }
-[data-swatch="vinho"], :root[data-palette="vinho"] { --p1: #2a0614; --p2: #6b1131; --p3: #a8325a; --p4: #e8b4c4; }
-[data-swatch="ameixa"], :root[data-palette="ameixa"] { --p1: #2a0f33; --p2: #5e2470; --p3: #9a4fb0; --p4: #e2c6ec; }
-[data-swatch="ardosia"], :root[data-palette="ardosia"] { --p1: #1a2028; --p2: #3d4a5c; --p3: #7a8aa0; --p4: #d5dde7; }
-[data-swatch="neon-pop"], :root[data-palette="neon-pop"] { --p1: #12002e; --p2: #2c0e63; --p3: #da0090; --p4: #f2cb30; }
-[data-swatch="cereja"], :root[data-palette="cereja"] { --p1: #4a0012; --p2: #a3001f; --p3: #e0193f; --p4: #ff9aaa; }
-[data-swatch="coral"], :root[data-palette="coral"] { --p1: #5a1a1a; --p2: #d8504a; --p3: #ff8a70; --p4: #ffd6c7; }
-[data-swatch="laranja"], :root[data-palette="laranja"] { --p1: #4d1a00; --p2: #c2410c; --p3: #f97316; --p4: #fed7aa; }
-[data-swatch="turquesa"], :root[data-palette="turquesa"] { --p1: #003b46; --p2: #00838f; --p3: #00c2c7; --p4: #a6f4f0; }
-[data-swatch="marple"], :root[data-palette="marple"] { --p1: #ca2851; --p2: #ff6766; --p3: #ffb173; --p4: #ffe3b3; }
-[data-swatch="terracota"], :root[data-palette="terracota"] { --p1: #4a1d12; --p2: #a0442a; --p3: #d9734e; --p4: #f3c9a8; }
-[data-swatch="por-do-sol"], :root[data-palette="por-do-sol"] { --p1: #3d1452; --p2: #b8336a; --p3: #f26b4f; --p4: #ffc46b; }
-[data-swatch="ambar"], :root[data-palette="ambar"] { --p1: #4a2600; --p2: #b35c00; --p3: #f29e1f; --p4: #ffe08a; }
-[data-swatch="cafe"], :root[data-palette="cafe"] { --p1: #2b1a12; --p2: #6f4a33; --p3: #b08463; --p4: #ead7c3; }
-[data-swatch="violet-dusk"], :root[data-palette="violet-dusk"] { --p1: #502d55; --p2: #935073; --p3: #f6dbc0; --p4: #f8f4e9; }
-[data-swatch="lavanda"], :root[data-palette="lavanda"] { --p1: #4b3f72; --p2: #8e7cc3; --p3: #c3b5ea; --p4: #f1ecfb; }
-[data-swatch="pessego"], :root[data-palette="pessego"] { --p1: #7a3f2a; --p2: #e8916b; --p3: #ffc3a1; --p4: #fff0e6; }
-[data-swatch="algodao-doce"], :root[data-palette="algodao-doce"] { --p1: #6a3f8a; --p2: #e88bc4; --p3: #f7c4e0; --p4: #c9e6ff; }
-[data-swatch="oceano"], :root[data-palette="oceano"] { --p1: #06204a; --p2: #0b5c9e; --p3: #2a9fd6; --p4: #a8e3f5; }
-[data-swatch="artico"], :root[data-palette="artico"] { --p1: #14324a; --p2: #3d7ea6; --p3: #8fc7e3; --p4: #e8f6fb; }
-[data-swatch="menta"], :root[data-palette="menta"] { --p1: #0c3b33; --p2: #138a72; --p3: #4fd1b0; --p4: #c9f5e8; }
-[data-swatch="azul"], :root[data-palette="azul"] { --p1: #1e40af; --p2: #2563eb; --p3: #3b82f6; --p4: #5b8cff; }
-[data-swatch="petroleo"], :root[data-palette="petroleo"] { --p1: #0b4f63; --p2: #0e7c86; --p3: #1f9ca6; --p4: #14b8c4; }
-[data-swatch="eucalipto"], :root[data-palette="eucalipto"] { --p1: #233b32; --p2: #4c7a66; --p3: #8fbba6; --p4: #ddeee3; }
-[data-swatch="floresta"], :root[data-palette="floresta"] { --p1: #0f2a1a; --p2: #1f5c36; --p3: #4a9a5c; --p4: #bfe3b4; }
-[data-swatch="oliva"], :root[data-palette="oliva"] { --p1: #33300f; --p2: #6b6420; --p3: #b0a346; --p4: #efe9bf; }
-[data-swatch="salvia"], :root[data-palette="salvia"] { --p1: #343b2c; --p2: #6e7d5c; --p3: #aab894; --p4: #edf1e4; }
+[data-swatch="violeta"] { --p1: #3b2bb0; --p2: #5a45e8; --p3: #7b5cff; --p4: #8f7dff; --brand-deep: #3b2bb0; --brand-from: #7b5cff; --brand-to: #5a45e8; }
+[data-swatch="tokyo-night"], :root[data-palette="tokyo-night"] { --p1: #130f40; --p2: #5b2a86; --p3: #c724b1; --p4: #ff7ee3; --brand-deep: #130f40; --brand-from: #c724b1; --brand-to: #5b2a86; }
+[data-swatch="safira"], :root[data-palette="safira"] { --p1: #0a1650; --p2: #1e3fae; --p3: #3d6df2; --p4: #b6c9ff; --brand-deep: #0a1650; --brand-from: #3d6df2; --brand-to: #1e3fae; }
+[data-swatch="meia-noite"], :root[data-palette="meia-noite"] { --p1: #05070f; --p2: #141d45; --p3: #2f4590; --p4: #8c9fe0; --brand-deep: #05070f; --brand-from: #3c55a8; --brand-to: #1d2a62; }
+[data-swatch="vinho"], :root[data-palette="vinho"] { --p1: #2a0614; --p2: #6b1131; --p3: #a8325a; --p4: #e8b4c4; --brand-deep: #2a0614; --brand-from: #a8325a; --brand-to: #6b1131; }
+[data-swatch="ameixa"], :root[data-palette="ameixa"] { --p1: #2a0f33; --p2: #5e2470; --p3: #9a4fb0; --p4: #e2c6ec; --brand-deep: #2a0f33; --brand-from: #9a4fb0; --brand-to: #5e2470; }
+[data-swatch="ardosia"], :root[data-palette="ardosia"] { --p1: #1a2028; --p2: #3d4a5c; --p3: #7a8aa0; --p4: #d5dde7; --brand-deep: #1a2028; --brand-from: #6b7c94; --brand-to: #3d4a5c; }
+[data-swatch="neon-pop"], :root[data-palette="neon-pop"] { --p1: #12002e; --p2: #2c0e63; --p3: #da0090; --p4: #f2cb30; --brand-deep: #12002e; --brand-from: #da0090; --brand-to: #2c0e63; }
+[data-swatch="cereja"], :root[data-palette="cereja"] { --p1: #4a0012; --p2: #a3001f; --p3: #e0193f; --p4: #ff9aaa; --brand-deep: #4a0012; --brand-from: #e0193f; --brand-to: #a3001f; }
+[data-swatch="coral"], :root[data-palette="coral"] { --p1: #5a1a1a; --p2: #d8504a; --p3: #ff8a70; --p4: #ffd6c7; --brand-deep: #5a1a1a; --brand-from: #ff6f5e; --brand-to: #c8423b; }
+[data-swatch="laranja"], :root[data-palette="laranja"] { --p1: #4d1a00; --p2: #c2410c; --p3: #f97316; --p4: #fed7aa; --brand-deep: #4d1a00; --brand-from: #f97316; --brand-to: #c2410c; }
+[data-swatch="turquesa"], :root[data-palette="turquesa"] { --p1: #003b46; --p2: #00838f; --p3: #00c2c7; --p4: #a6f4f0; --brand-deep: #003b46; --brand-from: #00b3b8; --brand-to: #00838f; }
+[data-swatch="marple"], :root[data-palette="marple"] { --p1: #ca2851; --p2: #ff6766; --p3: #ffb173; --p4: #ffe3b3; --brand-deep: #7a1530; --brand-from: #ff6766; --brand-to: #ca2851; }
+[data-swatch="terracota"], :root[data-palette="terracota"] { --p1: #4a1d12; --p2: #a0442a; --p3: #d9734e; --p4: #f3c9a8; --brand-deep: #4a1d12; --brand-from: #d9734e; --brand-to: #a0442a; }
+[data-swatch="por-do-sol"], :root[data-palette="por-do-sol"] { --p1: #3d1452; --p2: #b8336a; --p3: #f26b4f; --p4: #ffc46b; --brand-deep: #3d1452; --brand-from: #f26b4f; --brand-to: #b8336a; }
+[data-swatch="ambar"], :root[data-palette="ambar"] { --p1: #4a2600; --p2: #b35c00; --p3: #f29e1f; --p4: #ffe08a; --brand-deep: #4a2600; --brand-from: #e08a10; --brand-to: #b35c00; }
+[data-swatch="cafe"], :root[data-palette="cafe"] { --p1: #2b1a12; --p2: #6f4a33; --p3: #b08463; --p4: #ead7c3; --brand-deep: #2b1a12; --brand-from: #b08463; --brand-to: #6f4a33; }
+[data-swatch="violet-dusk"], :root[data-palette="violet-dusk"] { --p1: #502d55; --p2: #935073; --p3: #f6dbc0; --p4: #f8f4e9; --brand-deep: #502d55; --brand-from: #b86a93; --brand-to: #935073; }
+[data-swatch="lavanda"], :root[data-palette="lavanda"] { --p1: #4b3f72; --p2: #8e7cc3; --p3: #c3b5ea; --p4: #f1ecfb; --brand-deep: #4b3f72; --brand-from: #9d88d6; --brand-to: #7462b0; }
+[data-swatch="pessego"], :root[data-palette="pessego"] { --p1: #7a3f2a; --p2: #e8916b; --p3: #ffc3a1; --p4: #fff0e6; --brand-deep: #7a3f2a; --brand-from: #e8916b; --brand-to: #b85a35; }
+[data-swatch="algodao-doce"], :root[data-palette="algodao-doce"] { --p1: #6a3f8a; --p2: #e88bc4; --p3: #f7c4e0; --p4: #c9e6ff; --brand-deep: #5c2e6e; --brand-from: #e88bc4; --brand-to: #b0478f; }
+[data-swatch="oceano"], :root[data-palette="oceano"] { --p1: #06204a; --p2: #0b5c9e; --p3: #2a9fd6; --p4: #a8e3f5; --brand-deep: #06204a; --brand-from: #2a9fd6; --brand-to: #0b5c9e; }
+[data-swatch="artico"], :root[data-palette="artico"] { --p1: #14324a; --p2: #3d7ea6; --p3: #8fc7e3; --p4: #e8f6fb; --brand-deep: #14324a; --brand-from: #5fa5cc; --brand-to: #3d7ea6; }
+[data-swatch="menta"], :root[data-palette="menta"] { --p1: #0c3b33; --p2: #138a72; --p3: #4fd1b0; --p4: #c9f5e8; --brand-deep: #0c3b33; --brand-from: #2fb894; --brand-to: #138a72; }
+[data-swatch="azul"], :root[data-palette="azul"] { --p1: #1e40af; --p2: #2563eb; --p3: #3b82f6; --p4: #5b8cff; --brand-deep: #1e40af; --brand-from: #3b82f6; --brand-to: #2563eb; }
+[data-swatch="petroleo"], :root[data-palette="petroleo"] { --p1: #0b4f63; --p2: #0e7c86; --p3: #1f9ca6; --p4: #14b8c4; --brand-deep: #0b4f63; --brand-from: #14b8c4; --brand-to: #0e7c86; }
+[data-swatch="eucalipto"], :root[data-palette="eucalipto"] { --p1: #233b32; --p2: #4c7a66; --p3: #8fbba6; --p4: #ddeee3; --brand-deep: #233b32; --brand-from: #8fbba6; --brand-to: #4c7a66; }
+[data-swatch="floresta"], :root[data-palette="floresta"] { --p1: #0f2a1a; --p2: #1f5c36; --p3: #4a9a5c; --p4: #bfe3b4; --brand-deep: #0f2a1a; --brand-from: #4a9a5c; --brand-to: #1f5c36; }
+[data-swatch="oliva"], :root[data-palette="oliva"] { --p1: #33300f; --p2: #6b6420; --p3: #b0a346; --p4: #efe9bf; --brand-deep: #33300f; --brand-from: #9a8f36; --brand-to: #6b6420; }
+[data-swatch="salvia"], :root[data-palette="salvia"] { --p1: #343b2c; --p2: #6e7d5c; --p3: #aab894; --p4: #edf1e4; --brand-deep: #343b2c; --brand-from: #8a9a72; --brand-to: #6e7d5c; }
 
 :root[data-palette="tokyo-night"] {
   --accent: #b01e9c; --accent-hover: #93177f; --accent-soft: #fbe6f7;

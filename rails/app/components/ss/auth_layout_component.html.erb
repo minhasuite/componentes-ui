@@ -21,6 +21,26 @@
 <% end %>
 <%= tag.main(**root_attrs(class: root_classes, data: root_data)) do %>
   <% case variant %>
+  <% when :cartaz %>
+    <section class="ss-auth-poster">
+      <span class="ss-auth-sweep" aria-hidden="true"></span>
+      <p class="ss-auth-word" aria-hidden="true"><%= word %></p>
+      <%= marca %>
+      <div class="ss-auth-poster-main">
+        <p class="ss-auth-product"><% if icon %><%= ss_icon(icon, size: nil) %><% end %><span><%= product %></span></p>
+        <% if tagline %><p class="ss-auth-slogan"><%= tagline %></p><% end %>
+      </div>
+      <% if facts.any? %>
+        <p class="ss-auth-facts"><% facts.each_with_index do |f, i| %><% if i > 0 %><i aria-hidden="true"></i><% end %><span><%= f %></span><% end %></p>
+      <% end %>
+    </section>
+    <section class="ss-auth-paper">
+      <div class="ss-auth-paper-in">
+        <p class="ss-auth-part"><%= part_of %></p>
+        <%= corpo %>
+      </div>
+      <%= rodape %>
+    </section>
   <% when :wall %>
     <section class="ss-auth-wall">
       <%= marca %>

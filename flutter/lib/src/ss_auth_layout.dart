@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'ss_auth_folhinha.dart';
 import 'ss_strings.dart';
+import 'v170/auth_cartaz.dart';
 
 // Tela de entrada padrão da suíte (o modelo é o login do meu-financeiro).
 // Arquivo idêntico em todos os apps: só usa o ColorScheme, então não depende
@@ -45,6 +46,43 @@ class SsAuthLayout extends StatelessWidget {
     variant: variant,
     date: date,
     note: note,
+    brand: brand,
+    footer: footer,
+    children: children,
+  );
+
+  /// v1.7: a tela de entrada "Cartaz + papel" (par do `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split)`):
+  /// metade cartaz na cor funda da marca ([SsColors.brandDeep]) com o [product], o [tagline] grande, a linha de
+  /// dados [facts] e a palavra gigante [word] (padrão: a última palavra do produto) cortada pela borda; metade papel
+  /// com "Parte da MinhaSuite", o título e o formulário do app. Abaixo de 840 de largura, o cartaz vira uma faixa
+  /// em cima. Uma passada de cor ao abrir; "reduzir movimento" desliga.
+  ///
+  ///     SsAuthLayout.cartaz(product: 'Minhas Vendas', tagline: 'A venda não para.', word: 'vendas',
+  ///       facts: const ['Web', 'Windows', 'Caixa', 'App'], title: 'Entrar', subtitle: 'no Minhas Vendas',
+  ///       children: [SsTextField(...), SsButton(...)])
+  static Widget cartaz({
+    Key? key,
+    required String product,
+    required String title,
+    required List<Widget> children,
+    String? subtitle,
+    String? tagline,
+    String? word,
+    SsCartazLayout layout = SsCartazLayout.split,
+    List<String> facts = const [],
+    IconData? icon,
+    (String, String) brand = const ('Minha', 'Suite'),
+    List<Widget> footer = const [],
+  }) => SsAuthCartaz(
+    key: key,
+    product: product,
+    title: title,
+    subtitle: subtitle,
+    tagline: tagline,
+    word: word,
+    layout: layout,
+    facts: facts,
+    icon: icon,
     brand: brand,
     footer: footer,
     children: children,

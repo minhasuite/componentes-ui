@@ -47,7 +47,10 @@ module ComponentesUi
     ["--accent: #{a}", "--accent-solid: #{a}", "--accent-hover: color-mix(in srgb, #{a} 86%, #000)",
      "--accent2: #{b}", "--accent-soft: color-mix(in srgb, #{a} 14%, var(--surface))",
      "--grad: linear-gradient(135deg, #{a} 0%, #{b} 100%)", "--glow: color-mix(in srgb, #{a} 16%, transparent)",
-     "--ring: color-mix(in srgb, #{a} 22%, transparent)"].join("; ")
+     "--ring: color-mix(in srgb, #{a} 22%, transparent)",
+     # v1.7: as cores do cartaz (AuthLayoutComponent(variant: :cartaz)), como o SsBrand.fromColors do Flutter.
+     "--brand-deep: color-mix(in srgb, #{a} 65%, #000)", "--brand-from: color-mix(in srgb, #{a} 88%, #fff)",
+     "--brand-to: #{b}"].join("; ")
   end
 
   # O tailwindcss-rails acha app/assets/tailwind/componentes_ui/engine.css e gera

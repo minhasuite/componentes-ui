@@ -1,0 +1,96 @@
+/* v1.7 · tela de entrada "Cartaz + papel" (Ss::AuthLayoutComponent(variant: :cartaz, layout: :split) ↔ SsAuthLayout.cartaz).
+   Proposta B de 19/11/2026: metade cartaz na cor funda da paleta do produto (--brand-deep, do paletas.css; no escuro,
+   misturada a 52% com a página, a mesma regra do portal e das capas), com a palavra gigante cortada pela borda e uma
+   passada de cor ao abrir; a outra metade é o papel (--page) com o formulário solto. No celular o cartaz vira uma faixa
+   em cima. Só tokens: o branco é --on-accent, as manchas são --brand-from/--brand-to. O gerar.py confere texto branco
+   ≥ 7:1 e o secundário (82%) ≥ 4,5:1 sobre o cartaz de todas as paletas, no claro, no escuro e no OLED. */
+@layer components {
+  .ss-auth.is-cartaz {
+    --ss-poster: var(--brand-deep);
+    --ss-poster-ink: var(--on-accent);
+    --ss-poster-ink-2: color-mix(in srgb, var(--on-accent) 82%, var(--ss-poster));
+    --ss-poster-word: color-mix(in srgb, var(--brand-from) 46%, var(--ss-poster));
+    --ss-poster-line: color-mix(in srgb, var(--on-accent) 40%, var(--ss-poster));
+    --ss-pass: cubic-bezier(.7, 0, .2, 1);
+    --ss-settle: cubic-bezier(.16, 1, .3, 1);
+    display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  }
+  :root[data-theme="dark"] .ss-auth.is-cartaz {
+    --ss-poster: color-mix(in srgb, var(--brand-deep) 52%, var(--page));
+    --ss-poster-word: color-mix(in srgb, var(--brand-from) 34%, var(--ss-poster));
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .ss-auth.is-cartaz {
+      --ss-poster: color-mix(in srgb, var(--brand-deep) 52%, var(--page));
+      --ss-poster-word: color-mix(in srgb, var(--brand-from) 34%, var(--ss-poster));
+    }
+  }
+  /* Alto contraste: o texto secundário do cartaz fica branco inteiro e o fio dos dados mais forte. */
+  [data-ss-contrast="high"] .ss-auth.is-cartaz, .ss-auth.is-cartaz[data-ss-contrast="high"] {
+    --ss-poster-ink-2: var(--on-accent);
+    --ss-poster-line: var(--on-accent);
+  }
+
+  /* O cartaz: a cor cheia com as duas manchas da paleta (o fundo das capas dos vídeos). */
+  .ss-auth-poster { position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column;
+                    justify-content: space-between; gap: 40px; padding: clamp(24px, 4vw, 56px);
+                    background: var(--ss-poster); color: var(--ss-poster-ink); }
+  .ss-auth-poster::before { content: ""; position: absolute; z-index: -1; width: 1100px; height: 1100px; border-radius: 50%;
+                            right: -320px; top: -680px; pointer-events: none;
+                            background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-from) 38%, transparent), transparent); }
+  .ss-auth-poster::after { content: ""; position: absolute; z-index: -1; width: 900px; height: 900px; border-radius: 50%;
+                           left: -440px; bottom: -640px; pointer-events: none;
+                           background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-to) 42%, transparent), transparent); }
+  .ss-auth-poster > * { position: relative; z-index: 1; }
+  .ss-auth-poster > .ss-auth-word { position: absolute; z-index: 0; right: -4vw; bottom: -.18em; margin: 0; pointer-events: none;
+                                    user-select: none; font-family: var(--ss-font-display); font-weight: 900; line-height: .8;
+                                    letter-spacing: -.02em; white-space: nowrap; font-size: clamp(12rem, 30vw, 34rem);
+                                    color: var(--ss-poster-word); }
+  .ss-auth-poster .ss-auth-brand { align-self: flex-start; text-align: left; color: var(--ss-poster-ink); }
+  .ss-auth-poster .ss-auth-brand b { color: color-mix(in srgb, var(--brand-from) 40%, var(--on-accent)); }
+  .ss-auth-poster :focus-visible { outline: 3px solid var(--on-accent); outline-offset: 3px; border-radius: 4px; }
+  .ss-auth-product { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 16px; font-weight: 800; font-size: 1.25rem; line-height: 1.2; }
+  .ss-auth-product .ss-icon { width: 1.5rem; height: 1.5rem; }
+  .ss-auth-slogan { margin: 0; max-width: 11ch; font-family: var(--ss-font-display); font-weight: 900; line-height: .9;
+                    letter-spacing: -.01em; font-size: clamp(3.5rem, 7vw, 7.5rem); text-wrap: balance; overflow-wrap: break-word; }
+  .ss-auth-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin: 0; color: var(--ss-poster-ink);
+                   font-family: var(--font-mono); font-weight: 500; font-size: 1rem; letter-spacing: .01em; }
+  .ss-auth-facts i { width: 2px; height: 1.2em; background: var(--ss-poster-line); }
+
+  /* O papel: o formulário solto, sem caixa em volta. Campo e botão do Google em --surface sobre a página. */
+  .ss-auth-paper { --field: var(--surface); display: flex; flex-direction: column; justify-content: center; gap: 32px;
+                   padding: clamp(24px, 5vw, 80px); background: var(--page); }
+  .ss-auth-paper-in { width: min(400px, 100%); margin-inline: auto; }
+  .ss-auth-paper .ss-auth-part { margin: 0 0 12px; font-family: var(--font-mono); font-weight: 500; font-size: .875rem; color: var(--muted); }
+  .ss-auth-paper .ss-auth-body { padding: 0; }
+  .ss-auth-paper .ss-auth-title { font-size: 3.5rem; line-height: .9; margin: 0 0 4px; }
+  .ss-auth-paper .ss-auth-sub { margin: 0 0 24px; }
+  .ss-auth-paper .ss-auth-links { justify-content: center; }
+  .ss-auth-paper .ss-auth-links a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* A passada de cor (a serigrafia), uma vez ao abrir; "reduzir movimento" desliga. */
+  .ss-auth-poster { animation: ss-cartaz-pass 1.05s var(--ss-pass) both; }
+  .ss-auth-poster > .ss-auth-word { animation: ss-cartaz-slide 1.9s var(--ss-settle) .45s both; }
+  .ss-auth-poster > .ss-auth-sweep { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: var(--brand-from);
+                                     clip-path: polygon(-8% 0, -2% 0, -14% 100%, -20% 100%);
+                                     animation: ss-cartaz-light 1.05s var(--ss-pass) both; }
+  @keyframes ss-cartaz-pass { from { clip-path: polygon(0 0, 0 0, -12% 100%, 0 100%); } to { clip-path: polygon(0 0, 140% 0, 100% 100%, 0 100%); } }
+  @keyframes ss-cartaz-light { to { clip-path: polygon(112% 0, 118% 0, 106% 100%, 100% 100%); } }
+  @keyframes ss-cartaz-slide { from { opacity: 0; transform: translateX(18vw); } 30% { opacity: 1; } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ss-auth-poster, .ss-auth-poster > .ss-auth-word { animation: none; }
+    .ss-auth-poster > .ss-auth-sweep { display: none; }
+  }
+
+  /* Celular e janela estreita: o cartaz vira uma faixa em cima (sem a linha de dados) e o papel desce. */
+  @media (max-width: 860px) {
+    .ss-auth.is-cartaz { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    .ss-auth-poster { min-height: 240px; gap: 20px; padding: max(16px, env(safe-area-inset-top)) 16px 24px; }
+    .ss-auth-poster > .ss-auth-word { font-size: 12rem; right: -6vw; }
+    .ss-auth-poster .ss-auth-brand { font-size: 1.5rem; }
+    .ss-auth-facts { display: none; }
+    .ss-auth-slogan { font-size: clamp(2.75rem, 13vw, 3.25rem); max-width: 11ch; }
+    .ss-auth-paper { justify-content: flex-start; gap: 24px; padding: 28px 16px max(24px, env(safe-area-inset-bottom)); }
+    .ss-auth-paper .ss-auth-title { font-size: 3rem; }
+  }
+}

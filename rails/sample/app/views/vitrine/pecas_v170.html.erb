@@ -1,0 +1,42 @@
+<%# titulo: Entrada "Cartaz + papel" (v1.7) | grupo: Tela | ordem: 47 %>
+<%# v1.7: AuthLayoutComponent(variant: :cartaz, layout: :split). ?tela=1 abre sozinha (390/1440); ?erro=1 mostra o aviso;
+    ?produto=gestor|financeiro|central troca o produto; com ?tela=1, ?tema=claro|escuro|oled, ?paleta=<slug>, ?contraste=alto. %>
+<% produtos = {
+     "vendas" => { product: "Minhas Vendas", tagline: "A venda não para.", icon: "chart-bar", facts: %w[Web Windows Caixa App] },
+     "gestor" => { product: "Meu Gestor", tagline: "A loja em dia, sem planilha.", icon: "clipboard-document-check", facts: ["Fluxos", "Recebimento", "Checklist", "Escala"] },
+     "financeiro" => { product: "Meu Financeiro", tagline: "Seu dinheiro, sem susto.", icon: "banknotes", facts: ["Contas", "Cartões", "Metas", "App"] },
+     "central" => { product: "Central", tagline: "Licenças, assinaturas e IA da suíte.", icon: "key", word: "central", facts: [] }
+   } %>
+<% p = produtos[params[:produto].to_s] || produtos["vendas"] %>
+<% links = [["Termos", "#"], ["Privacidade", "#"]] %>
+<% formulario = capture do %>
+  <% if params[:erro].present? %>
+    <%= render(Ss::CalloutComponent.new(tone: :danger, title: "E-mail ou senha não conferem.")) { "Confira os dois ou use Esqueci a senha." } %>
+  <% end %>
+  <%= render Ss::GoogleButtonComponent.new(href: "#", method: :get) %>
+  <div class="ss-divider">ou com e-mail</div>
+  <%= ss_form_with(url: vitrine_path("pecas_v170"), method: :get) do |f| %>
+    <%= f.ss_email_field :email, label: "E-mail", autocomplete: "email", placeholder: "voce@exemplo.com" %>
+    <%= f.ss_password_field :password, label: "Senha", autocomplete: "current-password" %>
+    <p style="margin:-4px 0 12px;text-align:right"><%= render Ss::TextLinkComponent.new(label: "Esqueci a senha", href: "#") %></p>
+    <%= f.ss_submit "Entrar", css: "w-full" %>
+  <% end %>
+  <p class="ss-auth-sub" style="margin:18px 0 0;text-align:center">Não tem conta? <%= render Ss::TextLinkComponent.new(label: "Criar conta grátis", href: "#") %></p>
+<% end %>
+<% entrada = ->(style: nil) do
+     render(Ss::AuthLayoutComponent.new(**p, title: "Entrar", subtitle: "no #{p[:product]}", variant: :cartaz, layout: :split,
+                                        brand_href: "#", links: links, style: style)) { formulario }
+   end %>
+
+<% if params[:tela].present? %>
+  <%= entrada.call %>
+<% else %>
+  <%= demo "Ss::AuthLayoutComponent (variant: :cartaz, layout: :split)",
+           "Metade cartaz na cor funda da paleta (--brand-deep; no escuro, misturada à página), com o nome do produto, o tagline grande, a linha de dados (facts:) e a palavra gigante (word:) cortada pela borda; metade papel com o formulário solto. No celular o cartaz vira uma faixa em cima. Uma passada de cor ao abrir, desligada por reduzir movimento. Par: SsAuthLayout.cartaz(...). Tela cheia: ?tela=1 (com ?tema=escuro, ?paleta=azul, ?contraste=alto, ?produto=gestor).",
+           uso: 'render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", variant: :cartaz, word: "vendas", facts: %w[Web Windows Caixa App], icon: "chart-bar", title: "Entrar", subtitle: "no Minhas Vendas", links: [["Termos", terms_path]])) { … }' do %>
+    <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+      <%= entrada.call(style: "min-height:640px") %>
+    </div>
+    <p style="margin-top:12px"><%= link_to "Abrir em tela cheia", vitrine_path("pecas_v170", tela: 1, produto: params[:produto]) %></p>
+  <% end %>
+<% end %>
