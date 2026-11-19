@@ -1,0 +1,18 @@
+<%# titulo: Ajuda: Aprenda e Novidades (v1.6) | grupo: Tela | ordem: 47 %>
+<%# v1.6: HelpMenuComponent (slot help do AppShell). Abra o "?"; clicar em Novidades apaga o ponto e o selo. %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Com 2 novidades não vistas", subtitle: "Ponto no botão e o selo na linha") %>
+    <div class="flex items-center gap-4">
+      <%= render Ss::HelpMenuComponent.new(id: "vitrine-ajuda", learn_href: "https://www.minhasuite.com/vendas/aprenda/",
+                                           news_href: "https://www.minhasuite.com/vendas/novidades/", unseen_news: 2) %>
+    </div>
+  </section>
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Tudo visto, e sem novidades publicadas", subtitle: "Sem news_href a linha Novidades não aparece") %>
+    <div class="flex items-center gap-4">
+      <%= render Ss::HelpMenuComponent.new(id: "vitrine-ajuda-visto", learn_href: "#", news_href: "#") %>
+      <%= render Ss::HelpMenuComponent.new(id: "vitrine-ajuda-so-aulas", learn_href: "#") %>
+    </div>
+  </section>
+</div>

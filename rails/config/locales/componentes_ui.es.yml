@@ -286,6 +286,18 @@ es:
       bar_sr: "%{label}, del %{from} al %{to}, %{pct}% hecho"
       bar_title: "%{label}: %{from} a %{to}, %{pct}%"
       label: Cronograma
+    help:
+      button_unseen:
+        one: "%{label}, %{count} novedad sin ver"
+        other: "%{label}, %{count} novedades sin ver"
+      learn: "Aprende"
+      learn_note: "Videoclases de cada pantalla"
+      news: "Novedades"
+      news_note: "Qué cambió en el sistema"
+      title: "Ayuda"
+      unseen:
+        one: "%{count} nueva"
+        other: "%{count} nuevas"
     heat:
       label: Constancia
     icon_picker:

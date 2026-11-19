@@ -644,6 +644,37 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.6.0: ajuda na moldura e no menu lateral (Aprenda e Novidades)
+
+Fase 1 do portal de aulas e novidades (www.minhasuite.com/&lt;produto&gt;/aprenda e /novidades), pedido em 18/11/2026 para
+o minhas-vendas e o meu-gestor; serve a qualquer produto com portal. Tudo aditivo; nada quebra. Testes em
+`rails/sample/test/components/v160_web_test.rb` e `flutter/test/v160_test.dart`; CSS em `v160_ajuda_web.css`; vitrine
+`pecas_v160`; catálogo `ss-help` (`rails/sample/script/catalogo_v160.rb`) e `ss-help-menu` (`flutter/test/catalogo_v160.dart`).
+
+| Peça | Web | Flutter |
+|---|---|---|
+| Ajuda | `Ss::HelpMenuComponent(learn_href:, news_href:, unseen_news:, items:)` no slot novo `with_help` do `Ss::AppShellComponent` (barra de cima, antes do sino, no computador e no celular): botão "?" com o ponto da marca quando há novidade não vista e o popover com **Aprenda** (videoaulas) e **Novidades**, os dois em outra aba; o selo "2 novas" na linha. Clicar em Novidades apaga ponto e selo na hora (Stimulus `ss-help`) e fecha o popover. `news_href: nil` esconde Novidades | `SsHelpMenu.section(context, onLearn:, onNews:, unseenNews:, extra:)`: a `SsSideMenuSection` "Ajuda" com as mesmas duas linhas e o mesmo selo. Sem `onNews`, só Aprenda |
+| Linha que abre fora | `{ external: true }` já existia no menu (v0.20) | `SsSideMenuItem(external: true)`: ícone de saída à direita e "abre no navegador" no leitor de tela |
+| Selo em texto na linha do menu | `.ss-badge.ss-badge-accent` | `SsSideMenuItem(badgeLabel: '2 novas')`: `SsBadge` na cor da marca; ganha do `badge:` (contagem vermelha) e do ícone de saída |
+| Textos | `componentes_ui.help.*` (pt/en/es) | `SsStrings.helpTitle`, `helpLearn`, `helpLearnNote`, `helpNews`, `helpNewsNote`, `helpNewsUnseen(n)`, `opensOutside` (obrigatórios no construtor, como os da v1.3) |
+
+Guardar o "visto até" é do produto (por usuário, no servidor): o `news_href`/`onNews` passa por uma rota do produto que
+grava e leva ao portal. Ponto e selo são da marca, não o vermelho do sino: novidade não é alerta.
+
+```erb
+<% s.with_help do %>
+  <%= render Ss::HelpMenuComponent.new(learn_href: "https://www.minhasuite.com/vendas/aprenda/",
+                                       news_href: (novidades_path if portal.news?), unseen_news: portal.unseen) %>
+<% end %>
+```
+
+```dart
+SsSideMenu(sections: [
+  ...,
+  SsHelpMenu.section(context, onLearn: () => abrir(aprenda), onNews: temNovidade ? abrirNovidades : null, unseenNews: 2),
+])
+```
+
 ## v1.5.2: sino de avisos no topo, o selo como componente e o tile de aparelho que empilha quando estreito
 
 Pedidos do minha-automacao (branches `shell-sino` e `paineis-ia`, feitos no branch `onda7` como v0.25.0 e juntados ao `main` na v1.5.2 em 18/11/2026; CSS em `v152_sino_web.css`, catálogo Flutter em `catalogo_sino.dart`, testes em `sino_test.dart` e `sino_web_test.rb`). Tudo aditivo; nada quebra.
@@ -1994,6 +2025,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.6.0` (18/11/2026): seção "v1.6.0". Ajuda na moldura: `Ss::HelpMenuComponent` (Stimulus `ss-help`) no slot `help` do `Ss::AppShellComponent` ↔ `SsHelpMenu.section`; `SsSideMenuItem(external:, badgeLabel:)`; textos novos obrigatórios no `SsStrings` (`help*`, `opensOutside`). Nada quebra na API.
 - `v1.5.1` (17/11/2026): seção "v1.5.1". Entrada mais calma: faixa do produto em tom suave, botão principal sólido na entrada e carimbo na cor do produto. Só web, só CSS. Nada quebra na API.
 - `v1.5.0` (17/11/2026): `SsChatInput(attachments: [SsChatAttachment(nome, icon:, onRemove:)])`: anexos pendentes como chips com × acima do campo; com anexo, enviar vale com o campo vazio (`onSend('')`) e o anexo só vai no toque do enviar. Corrige `ssComponentesUiVersion` (a v1.4.2 saiu com 1.4.1). Só Flutter. Nada quebra na API.
 - `v1.4.2` (17/11/2026): `SsNavScaffold` com o teclado aberto não reserva mais a faixa da barra: o corpo vai até o teclado (antes ficava um vão vazio entre o campo e o teclado, ex. o chat). Só Flutter. Nada quebra na API.

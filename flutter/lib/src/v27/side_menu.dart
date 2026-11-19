@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../app_theme.dart';
 import '../motion.dart';
+import '../ss_badge.dart';
 import '../ss_nav_bar.dart';
 import '../ss_strings.dart';
 import '../version.dart';
@@ -22,6 +23,8 @@ class SsSideMenuItem {
     this.selected = false,
     this.badge,
     this.danger = false,
+    this.external = false,
+    this.badgeLabel,
   });
 
   /// Contornado; [activeIcon] (cheio) entra quando [selected].
@@ -41,6 +44,15 @@ class SsSideMenuItem {
 
   /// Vermelho: só para o que apaga ou sai.
   final bool danger;
+
+  /// v1.6: abre fora do app (navegador ou aba personalizada): ícone de saída à
+  /// direita e "abre no navegador" para o leitor de tela. O par do item
+  /// `external: true` do menu do web.
+  final bool external;
+
+  /// v1.6: selo em texto na cor da marca (ex. "2 novas"); ganha do [badge] e
+  /// do ícone de saída. Novidade, não alerta: por isso não é o vermelho.
+  final String? badgeLabel;
 }
 
 /// Grupo de linhas do [SsSideMenu], com título pequeno opcional.
@@ -311,11 +323,13 @@ class _SideRow extends StatelessWidget {
     final sel = item.selected;
     final fg = item.danger ? c.dangerText : (sel ? c.accentText : c.ink);
     final n = item.badge ?? 0;
+    final tag = item.badgeLabel;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Semantics(
         button: true,
         selected: sel,
+        hint: item.external ? SsStrings.of(context).opensOutside : null,
         child: Material(
           color: sel ? c.accentSoft : AppColors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.field),
@@ -364,7 +378,10 @@ class _SideRow extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (n > 0)
+                    if (tag != null) ...[
+                      const SizedBox(width: 8),
+                      SsBadge(tag),
+                    ] else if (n > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(99)),
@@ -374,6 +391,10 @@ class _SideRow extends StatelessWidget {
                               .copyWith(color: AppColors.onDark, fontSize: AppType.label, fontWeight: FontWeight.w800),
                         ),
                       ),
+                    if (item.external && tag == null && n == 0) ...[
+                      const SizedBox(width: 8),
+                      ExcludeSemantics(child: Icon(Icons.open_in_new_rounded, size: 18, color: c.muted)),
+                    ],
                   ],
                 ),
               ),

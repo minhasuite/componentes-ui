@@ -50,6 +50,13 @@ class SsStrings {
     required this.appearanceOledHint,
     required this.appearanceColors,
     required this.appearanceAppColor,
+    required this.helpTitle,
+    required this.helpLearn,
+    required this.helpLearnNote,
+    required this.helpNews,
+    required this.helpNewsNote,
+    required this.helpNewsUnseen,
+    required this.opensOutside,
     required this.qrLabel,
     required this.dayStripOk,
     required this.dayStripWarn,
@@ -475,6 +482,15 @@ class SsStrings {
 
   /// A 1ª opção das cores: a cor da marca do app (o padrão).
   final String appearanceAppColor;
+
+  /// v1.6 · ajuda no menu lateral ([SsHelpMenu]) e linha que abre fora do app ([SsSideMenuItem.external]).
+  final String helpTitle;
+  final String helpLearn;
+  final String helpLearnNote;
+  final String helpNews;
+  final String helpNewsNote;
+  final String Function(int n) helpNewsUnseen;
+  final String opensOutside;
 
   /// v0.28: nome do QR para o leitor de tela ([SsQrCard]) e as situações da faixa por dia ([SsDayStrip]).
   final String qrLabel;
@@ -1127,6 +1143,13 @@ class SsStrings {
     appearanceOledHint: 'Fundo preto puro no tema escuro (economiza bateria em tela OLED)',
     appearanceColors: 'Cores',
     appearanceAppColor: 'Cor do app',
+    helpTitle: 'Ajuda',
+    helpLearn: 'Aprenda',
+    helpLearnNote: 'Videoaulas de cada tela',
+    helpNews: 'Novidades',
+    helpNewsNote: 'O que mudou no sistema',
+    helpNewsUnseen: (n) => n == 1 ? '1 nova' : '$n novas',
+    opensOutside: 'abre no navegador',
     qrLabel: 'QR Code',
     dayStripOk: 'No ar',
     dayStripWarn: 'Instável',
@@ -1554,6 +1577,13 @@ class SsStrings {
     appearanceOledHint: 'Pure black background in the dark theme (saves battery on OLED screens)',
     appearanceColors: 'Colors',
     appearanceAppColor: 'App color',
+    helpTitle: 'Help',
+    helpLearn: 'Learn',
+    helpLearnNote: 'Video lessons for each screen',
+    helpNews: "What's new",
+    helpNewsNote: 'What changed in the app',
+    helpNewsUnseen: (n) => '$n new',
+    opensOutside: 'opens in the browser',
     qrLabel: 'QR code',
     dayStripOk: 'Up',
     dayStripWarn: 'Unstable',
@@ -1973,6 +2003,13 @@ class SsStrings {
     appearanceOledHint: 'Fondo negro puro en el tema oscuro (ahorra batería en pantallas OLED)',
     appearanceColors: 'Colores',
     appearanceAppColor: 'Color de la app',
+    helpTitle: 'Ayuda',
+    helpLearn: 'Aprende',
+    helpLearnNote: 'Videoclases de cada pantalla',
+    helpNews: 'Novedades',
+    helpNewsNote: 'Qué cambió en el sistema',
+    helpNewsUnseen: (n) => n == 1 ? '1 nueva' : '$n nuevas',
+    opensOutside: 'abre en el navegador',
     qrLabel: 'Código QR',
     dayStripOk: 'En línea',
     dayStripWarn: 'Inestable',
@@ -2392,6 +2429,13 @@ class SsStrings {
     'appearanceOledHint': appearanceOledHint,
     'appearanceColors': appearanceColors,
     'appearanceAppColor': appearanceAppColor,
+    'helpTitle': helpTitle,
+    'helpLearn': helpLearn,
+    'helpLearnNote': helpLearnNote,
+    'helpNews': helpNews,
+    'helpNewsNote': helpNewsNote,
+    'helpNewsUnseen': helpNewsUnseen(2),
+    'opensOutside': opensOutside,
     'qrLabel': qrLabel,
     'dayStripOk': dayStripOk,
     'dayStripWarn': dayStripWarn,
@@ -2833,6 +2877,13 @@ class SsStrings {
     String? appearanceOledHint,
     String? appearanceColors,
     String? appearanceAppColor,
+    String? helpTitle,
+    String? helpLearn,
+    String? helpLearnNote,
+    String? helpNews,
+    String? helpNewsNote,
+    String Function(int n)? helpNewsUnseen,
+    String? opensOutside,
     String? qrLabel,
     String? dayStripOk,
     String? dayStripWarn,
@@ -3236,6 +3287,13 @@ class SsStrings {
     appearanceOledHint: appearanceOledHint ?? this.appearanceOledHint,
     appearanceColors: appearanceColors ?? this.appearanceColors,
     appearanceAppColor: appearanceAppColor ?? this.appearanceAppColor,
+    helpTitle: helpTitle ?? this.helpTitle,
+    helpLearn: helpLearn ?? this.helpLearn,
+    helpLearnNote: helpLearnNote ?? this.helpLearnNote,
+    helpNews: helpNews ?? this.helpNews,
+    helpNewsNote: helpNewsNote ?? this.helpNewsNote,
+    helpNewsUnseen: helpNewsUnseen ?? this.helpNewsUnseen,
+    opensOutside: opensOutside ?? this.opensOutside,
     qrLabel: qrLabel ?? this.qrLabel,
     dayStripOk: dayStripOk ?? this.dayStripOk,
     dayStripWarn: dayStripWarn ?? this.dayStripWarn,

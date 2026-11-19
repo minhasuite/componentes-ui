@@ -286,6 +286,18 @@ en:
       bar_sr: "%{label}, from %{from} to %{to}, %{pct}% done"
       bar_title: "%{label}: %{from} to %{to}, %{pct}%"
       label: Timeline
+    help:
+      button_unseen:
+        one: "%{label}, %{count} unseen update"
+        other: "%{label}, %{count} unseen updates"
+      learn: "Learn"
+      learn_note: "Video lessons for each screen"
+      news: "What's new"
+      news_note: "What changed in the app"
+      title: "Help"
+      unseen:
+        one: "%{count} new"
+        other: "%{count} new"
     heat:
       label: Consistency
     icon_picker:

@@ -45,6 +45,8 @@ module Ss
   #   ícone vai antes do título (com o menu recolhido o grupo segue sendo só a linha divisória).
   # - v0.25: with_bell { render Ss::NotificationBellComponent.new(...) } = o sino de avisos no canto direito da barra
   #   de cima (computador e celular), entre o top e o user; tira "Avisos" do menu lateral.
+  # - v1.6: with_help { render Ss::HelpMenuComponent.new(learn_href:, news_href:, unseen_news:) } = o "?" da ajuda
+  #   (Aprenda e Novidades) na barra de cima (computador e celular), entre o top e o sino.
   #
   # v0.24 (auditoria de UX, C02/U14): a troca de empresa só vira menu com 2 ou mais empresas. Com uma só, o nome fica
   # parado (sem seta nem menu; single_tenant: false nem mostra). O nome longo ganha reticências (num <span>, que o
@@ -59,6 +61,7 @@ module Ss
     renders_one :top_mobile
     renders_one :side_footer
     renders_one :bell
+    renders_one :help
 
     attr_reader :nav, :tenants
 
@@ -111,7 +114,7 @@ module Ss
     end
 
     # Nada para a barra de cima do computador: ela some (CSS, a partir de 1024 px).
-    def top_bare? = !@search && !top? && !user? && !bell?
+    def top_bare? = !@search && !top? && !user? && !bell? && !help?
 
     def top_class = ["ss-shell-top", ("is-bare" if top_bare?)].compact.join(" ")
 

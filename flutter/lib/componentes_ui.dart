@@ -98,6 +98,8 @@ export 'src/v20/pecas.dart';
 export 'src/v21/cue.dart';
 export 'src/v24/ai_insight_card.dart';
 export 'src/v27/side_menu.dart';
+// v1.6: ajuda no menu lateral (Aprenda e Novidades).
+export 'src/v160/help_menu.dart';
 export 'src/v27/chart_markers.dart' show SsChartMarker, SsChartMarkerKind;
 export 'src/v28/day_strip.dart';
 export 'src/v100/fonts.dart';

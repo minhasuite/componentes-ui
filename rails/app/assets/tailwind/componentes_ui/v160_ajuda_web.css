@@ -1,0 +1,25 @@
+/* v1.6.0 · ajuda da moldura (Ss::HelpMenuComponent, par do SsHelpMenu): o botão "?" da barra de cima com o ponto de
+   novidade não vista e o popover com "Aprenda" e "Novidades" (em outra aba). Só tokens. */
+
+/* O painel estende o .ss-popover (fora das camadas, como ele). */
+.ss-popover.ss-help-panel { width: min(20rem, calc(100vw - 1.5rem)); max-width: none; padding: .5rem; }
+.ss-help-panel .ss-popover-title { margin: .25rem .5rem .5rem; }
+
+@layer components {
+  .ss-help { position: relative; display: inline-flex; }
+  .ss-help-btn { position: relative; }
+  .ss-help-btn > svg { width: 1.375rem; height: 1.375rem; }
+  /* Ponto da marca no canto de cima à direita (novidade, não alerta: por isso não é o vermelho do sino). */
+  .ss-help-dot { position: absolute; top: .45rem; right: .45rem; width: .55rem; height: .55rem; border-radius: 50%;
+                 background: var(--accent); box-shadow: 0 0 0 2px var(--surface); pointer-events: none; }
+  .ss-help-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .ss-help-item { display: flex; align-items: center; gap: .75rem; width: 100%; min-height: 3rem; padding: .5rem; border-radius: var(--r-field);
+                  color: var(--ink); text-decoration: none; }
+  .ss-help-item:hover { background: var(--field); }
+  .ss-help-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .ss-help-text { display: grid; gap: .1rem; flex: 1; min-width: 0; }
+  .ss-help-title { font-weight: 700; }
+  .ss-help-note { font-size: .8rem; color: var(--muted); }
+  .ss-help-out { flex: none; width: 1rem; height: 1rem; color: var(--muted); }
+  .ss-help-new { flex: none; }
+}

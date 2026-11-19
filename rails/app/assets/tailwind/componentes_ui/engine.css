@@ -70,6 +70,8 @@
 @import "./v151_web.css";
 /* v1.5.2: sino de avisos no topo e o selo com link; tile de aparelho que empilha quando bem estreito (era a v0.25 do branch onda7). */
 @import "./v152_sino_web.css";
+/* v1.6.0: ajuda da moldura (Aprenda e Novidades, Ss::HelpMenuComponent). */
+@import "./v160_ajuda_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
