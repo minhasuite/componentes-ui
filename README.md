@@ -644,6 +644,42 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.8.0: cartão de conquista
+
+Pedido do meu-gestor (gamificação, fase 2: "Meus pontos" › Conquistas, web e app), genérico para qualquer produto. Tudo
+aditivo; nada quebra. Testes em `rails/sample/test/components/v180_web_test.rb` e `flutter/test/v180_test.dart` (com
+`CONQUISTA_SAIDA=<pasta>` grava as capturas: 360 em 2 colunas, claro, escuro, OLED e texto 1,6×); CSS em
+`v180_conquista_web.css`; vitrine `pecas_v180`; catálogo `ss-achievement` nos dois lados (`rails/sample/script/catalogo_v180.rb`,
+`flutter/test/catalogo_v180.dart`).
+
+| Peça | Web | Flutter |
+|---|---|---|
+| Cartão | `Ss::AchievementCardComponent(title:, description:, icon: "trophy", earned: false, caption: nil, progress: nil, progress_label: nil, href: nil)` (`.ss-card.ss-achievement` + `.is-earned`/`.is-locked`) | `SsAchievementCard(title:, description:, icon: Icons.verified_outlined, earned: false, caption:, progress:, progressLabel:, onTap:)` |
+| Grade | `.ss-achievement-grid` (auto-fill, mínimo 14rem; uma coluna em 390) | `Row`/`Wrap` do app (sem altura fixa, serve em 2 colunas de 360) |
+| Textos | `componentes_ui.achievement.{label,earned,missing}` (pt/en/es) | `SsStrings.achievementLabel`, `achievementEarned`, `achievementMissing` (obrigatórios no construtor, como os da v1.6) |
+
+- **Conquistada** (`earned`): medalhão na cor da marca (`--accent`/`accentText` sobre `--accent-soft`), título em `ink`,
+  o selo "Conquistada" e o `caption` ("em 12/11").
+- **Ainda não**: medalhão apagado (`--field` com contorno `--line`, ícone `muted`); com `progress` (0 a 1) a barra fina
+  (`.ss-progress` com `role="progressbar"` e "Falta: 12 de 30 dias" / `SsProgress`) e o `progress_label`. Sem progresso, sem rodapé.
+- **Ícone**: o padrão é o "trophy" do conjunto da suíte, que é apelido do `badge-check` (Heroicons v1 não tem troféu):
+  `ss_icon("trophy")` no web e `SsIcons.named('trophy')` (= `Icons.verified_outlined`) no Flutter, o mesmo desenho.
+- **Leitor de tela**: no Flutter um nó só, "Conquista: título. Conquistada em 12/11. A regra." (ou "Falta: 12 de 30 dias.");
+  no web o título leva "Conquista:" em `.ss-sr`. Com `href`/`onTap` o cartão é link/botão.
+- **Texto grande**: nada tem altura fixa; o selo quebra depois do ícone, nunca no meio da palavra.
+
+```erb
+<div class="ss-achievement-grid">
+  <%= render Ss::AchievementCardComponent.new(title: "Primeiro turno coberto", description: "Cobriu um turno aberto.", earned: true, caption: "em 12/11") %>
+  <%= render Ss::AchievementCardComponent.new(title: "30 dias seguidos", description: "Sequência de 30 dias.", icon: "fire", progress: 0.4, progress_label: "12 de 30 dias") %>
+</div>
+```
+
+```dart
+SsAchievementCard(title: '30 dias seguidos', description: 'Sequência de 30 dias.', icon: SsIcons.named('fire'),
+  progress: 12 / 30, progressLabel: '12 de 30 dias')
+```
+
 ## v1.7.1: o botão do Google sem caixa branca no escuro
 
 `Ss::GoogleButtonComponent(mode: :gis)` no tema escuro: o Chrome pintava de branco o fundo do iframe do Google (a página

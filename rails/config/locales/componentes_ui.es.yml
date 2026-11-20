@@ -1,6 +1,10 @@
 # Textos da gem componentes_ui (Lista Clara) em espanhol. Mesmas chaves do pt-BR.
 es:
   componentes_ui:
+    achievement:
+      earned: "Conseguido"
+      label: "Logro"
+      missing: "Falta"
     agenda:
       all_day: Todo el día
       label: Agenda

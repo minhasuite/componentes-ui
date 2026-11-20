@@ -101,6 +101,8 @@ export 'src/v27/side_menu.dart';
 // v1.6: ajuda no menu lateral (Aprenda e Novidades).
 export 'src/v160/help_menu.dart';
 export 'src/v170/auth_cartaz.dart';
+// v1.8: cartão de conquista.
+export 'src/v180/achievement_card.dart';
 export 'src/v27/chart_markers.dart' show SsChartMarker, SsChartMarkerKind;
 export 'src/v28/day_strip.dart';
 export 'src/v100/fonts.dart';

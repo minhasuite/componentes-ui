@@ -1,0 +1,24 @@
+/* v1.8.0 · cartão de conquista (Ss::AchievementCardComponent, par do SsAchievementCard): medalhão, título, a regra e o
+   rodapé (selo "Conquistada" ou a barra do que falta). Só tokens; sem altura fixa (o texto quebra). */
+@layer components {
+  .ss-achievement-grid { display: grid; gap: var(--ss-gap, .75rem); grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr)); }
+  .ss-achievement { display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; padding: var(--ss-card-pad);
+                    min-width: 0; color: var(--ink); text-decoration: none; }
+  a.ss-achievement:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  a.ss-achievement:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-achievement-medal { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; margin-bottom: calc(var(--ss-gap, .75rem) - .25rem);
+                          border-radius: 50%; border: 1.5px solid var(--line); background: var(--field); color: var(--muted); flex: none; }
+  .ss-achievement-medal > svg { width: 1.6rem; height: 1.6rem; }
+  .ss-achievement.is-earned .ss-achievement-medal { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .ss-achievement-title { margin: 0; font-size: .95rem; font-weight: 800; line-height: 1.25; color: var(--ink-2); overflow-wrap: anywhere; }
+  .ss-achievement.is-earned .ss-achievement-title { color: var(--ink); }
+  .ss-achievement-text { margin: 0; font-size: .82rem; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+  .ss-achievement-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .4rem; margin: calc(var(--ss-gap, .75rem) - .25rem) 0 0; }
+  .ss-achievement-seal { white-space: normal; }
+  .ss-achievement-caption { font-size: .78rem; color: var(--muted); }
+  .ss-achievement-progress { display: grid; gap: .25rem; width: 100%; margin-top: calc(var(--ss-gap, .75rem) - .25rem); }
+  .ss-achievement-progress .ss-progress { height: .375rem; }
+  .ss-achievement-progress .ss-progress-bar { transition: width .6s var(--ss-bounce, ease-out); }
+  .ss-achievement-progress small { font-size: .78rem; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .ss-achievement-progress .ss-progress-bar { transition: none; } }
+}

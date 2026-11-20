@@ -57,6 +57,9 @@ class SsStrings {
     required this.helpNewsNote,
     required this.helpNewsUnseen,
     required this.opensOutside,
+    required this.achievementLabel,
+    required this.achievementEarned,
+    required this.achievementMissing,
     required this.qrLabel,
     required this.dayStripOk,
     required this.dayStripWarn,
@@ -491,6 +494,11 @@ class SsStrings {
   final String helpNewsNote;
   final String Function(int n) helpNewsUnseen;
   final String opensOutside;
+
+  /// v1.8 · cartão de conquista ([SsAchievementCard]): o nome lido antes do título, o selo e o "falta".
+  final String achievementLabel;
+  final String achievementEarned;
+  final String achievementMissing;
 
   /// v0.28: nome do QR para o leitor de tela ([SsQrCard]) e as situações da faixa por dia ([SsDayStrip]).
   final String qrLabel;
@@ -1150,6 +1158,9 @@ class SsStrings {
     helpNewsNote: 'O que mudou no sistema',
     helpNewsUnseen: (n) => n == 1 ? '1 nova' : '$n novas',
     opensOutside: 'abre no navegador',
+    achievementLabel: 'Conquista',
+    achievementEarned: 'Conquistada',
+    achievementMissing: 'Falta',
     qrLabel: 'QR Code',
     dayStripOk: 'No ar',
     dayStripWarn: 'Instável',
@@ -1584,6 +1595,9 @@ class SsStrings {
     helpNewsNote: 'What changed in the app',
     helpNewsUnseen: (n) => '$n new',
     opensOutside: 'opens in the browser',
+    achievementLabel: 'Achievement',
+    achievementEarned: 'Earned',
+    achievementMissing: 'To go',
     qrLabel: 'QR code',
     dayStripOk: 'Up',
     dayStripWarn: 'Unstable',
@@ -2010,6 +2024,9 @@ class SsStrings {
     helpNewsNote: 'Qué cambió en el sistema',
     helpNewsUnseen: (n) => n == 1 ? '1 nueva' : '$n nuevas',
     opensOutside: 'abre en el navegador',
+    achievementLabel: 'Logro',
+    achievementEarned: 'Conseguido',
+    achievementMissing: 'Falta',
     qrLabel: 'Código QR',
     dayStripOk: 'En línea',
     dayStripWarn: 'Inestable',
@@ -2436,6 +2453,9 @@ class SsStrings {
     'helpNewsNote': helpNewsNote,
     'helpNewsUnseen': helpNewsUnseen(2),
     'opensOutside': opensOutside,
+    'achievementLabel': achievementLabel,
+    'achievementEarned': achievementEarned,
+    'achievementMissing': achievementMissing,
     'qrLabel': qrLabel,
     'dayStripOk': dayStripOk,
     'dayStripWarn': dayStripWarn,
@@ -2884,6 +2904,9 @@ class SsStrings {
     String? helpNewsNote,
     String Function(int n)? helpNewsUnseen,
     String? opensOutside,
+    String? achievementLabel,
+    String? achievementEarned,
+    String? achievementMissing,
     String? qrLabel,
     String? dayStripOk,
     String? dayStripWarn,
@@ -3294,6 +3317,9 @@ class SsStrings {
     helpNewsNote: helpNewsNote ?? this.helpNewsNote,
     helpNewsUnseen: helpNewsUnseen ?? this.helpNewsUnseen,
     opensOutside: opensOutside ?? this.opensOutside,
+    achievementLabel: achievementLabel ?? this.achievementLabel,
+    achievementEarned: achievementEarned ?? this.achievementEarned,
+    achievementMissing: achievementMissing ?? this.achievementMissing,
     qrLabel: qrLabel ?? this.qrLabel,
     dayStripOk: dayStripOk ?? this.dayStripOk,
     dayStripWarn: dayStripWarn ?? this.dayStripWarn,

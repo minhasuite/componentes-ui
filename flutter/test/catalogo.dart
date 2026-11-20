@@ -42,6 +42,7 @@ import 'catalogo_v24.dart';
 import 'catalogo_sino.dart';
 import 'catalogo_v160.dart';
 import 'catalogo_v170.dart';
+import 'catalogo_v180.dart';
 import 'catalogo_v25.dart';
 import 'catalogo_v26.dart';
 import 'catalogo_v27.dart';
@@ -978,6 +979,7 @@ final _catalogo = comV08(<Componente>[
   ...catalogoSino,
   ...catalogoV160,
   ...catalogoV170,
+  ...catalogoV180,
 ]);
 
 const _verde = SsBrand(

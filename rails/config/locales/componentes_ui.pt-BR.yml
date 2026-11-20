@@ -3,6 +3,10 @@
 # chave no locale dele. No código, o default: de cada chamada repete o texto pt-BR.
 pt-BR:
   componentes_ui:
+    achievement:
+      earned: "Conquistada"
+      label: "Conquista"
+      missing: "Falta"
     agenda:
       all_day: Dia todo
       label: Agenda

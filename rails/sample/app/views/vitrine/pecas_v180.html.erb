@@ -1,0 +1,15 @@
+<%# titulo: Conquistas (v1.8) | grupo: Dados | ordem: 48 %>
+<%# v1.8: AchievementCardComponent dentro de .ss-achievement-grid (conquistada, em andamento, sem progresso, com link). %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Conquistas", subtitle: "Regra à vista; conquistada com a data, ou o quanto falta") %>
+    <div class="ss-achievement-grid">
+      <%= render Ss::AchievementCardComponent.new(title: "Primeiro turno coberto", description: "Cobriu um turno aberto da escala.", earned: true, caption: "em 12/11") %>
+      <%= render Ss::AchievementCardComponent.new(title: "30 dias seguidos", description: "Sequência de 30 dias escalados com tudo feito.", icon: "fire",
+                                                  progress: 0.4, progress_label: "12 de 30 dias") %>
+      <%= render Ss::AchievementCardComponent.new(title: "1 mês sem prova recusada", description: "Nenhuma prova por foto recusada em 30 dias.", icon: "camera",
+                                                  progress: 0.8, progress_label: "24 de 30 dias") %>
+      <%= render Ss::AchievementCardComponent.new(title: "100 checklists no prazo", description: "Conclua 100 checklists antes do prazo.", href: "#") %>
+    </div>
+  </section>
+</div>

@@ -74,6 +74,8 @@
 @import "./v160_ajuda_web.css";
 /* v1.7.0: tela de entrada "Cartaz + papel" (AuthLayoutComponent(variant: :cartaz)): o cartaz na cor funda da paleta e o papel com o formulário. */
 @import "./v170_cartaz_web.css";
+/* v1.8.0: cartão de conquista (Ss::AchievementCardComponent). */
+@import "./v180_conquista_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
