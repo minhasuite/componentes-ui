@@ -270,6 +270,32 @@ void main() {
     expect(find.text('200 over'), findsOneWidget);
   });
 
+  testWidgets('SsProgressRow (v1.8.1): com texto 1,6× e valor longo, quebra a linha de baixo em vez de cortar', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(360, 800);
+    t.view.devicePixelRatio = 1;
+    t.platformDispatcher.textScaleFactorTestValue = 1.6;
+    addTearDown(t.view.reset);
+    addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
+    await t.pumpWidget(
+      _app(
+        SsProgressRow(
+          label: 'Prêmios aprovados no mês (valor estimado)',
+          value: 3500,
+          limit: 4000,
+          format: (v) => 'R\$ ${(v / 100).toStringAsFixed(2).replaceAll('.', ',')}',
+        ),
+      ),
+    );
+    await t.pump(const Duration(seconds: 1));
+    expect(t.takeException(), isNull);
+    expect(find.text(r'R$ 35,00 de R$ 40,00'), findsOneWidget);
+    final texto = t.widget<Text>(find.text(r'R$ 35,00 de R$ 40,00'));
+    expect(texto.overflow, isNull);
+    expect(texto.maxLines, isNull);
+  });
+
   testWidgets('SsChatActionCard: confirma, trava ocupado e mostra o resultado', (t) async {
     var sim = 0, nao = 0;
     await t.pumpWidget(

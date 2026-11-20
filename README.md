@@ -644,6 +644,12 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.8.1: a linha de progresso não corta o valor
+
+`SsProgressRow`: a linha de baixo ("R$ 35,00 de R$ 40,00" e "Restam…") quebra quando não cabe, em vez de cortar o valor
+com reticências (texto 1,6×, valores longos em reais), e o rótulo vai a 2 linhas. Achado no orçamento de prêmios do
+Meu Gestor. Nada muda na API.
+
 ## v1.8.0: cartão de conquista
 
 Pedido do meu-gestor (gamificação, fase 2: "Meus pontos" › Conquistas, web e app), genérico para qualquer produto. Tudo

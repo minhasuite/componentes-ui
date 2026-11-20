@@ -98,7 +98,7 @@ class SsProgressRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: d.font(AppType.body), fontWeight: FontWeight.w700, color: c.ink),
               ),
@@ -140,17 +140,17 @@ class SsProgressRow extends StatelessWidget {
           ),
         ),
         SizedBox(height: d.space(6)),
-        Row(
+        // v1.8.1: "gasto de limite" e o texto da direita quebram de linha quando não cabem (texto 1,6×, valores
+        // longos em reais) em vez de cortar o valor com reticências.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 8,
+          runSpacing: 2,
           children: [
-            Expanded(
-              child: Text(
-                oculto ? '•••' : gasto,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTheme.number(context, size: AppType.meta, color: c.muted),
-              ),
+            Text(
+              oculto ? '•••' : gasto,
+              style: AppTheme.number(context, size: AppType.meta, color: c.muted),
             ),
-            const SizedBox(width: 8),
             Text(
               oculto && caption == null && t != SsProgressTone.done ? '•••' : direita,
               style: TextStyle(
