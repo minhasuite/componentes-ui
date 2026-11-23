@@ -238,7 +238,8 @@ class SsRankItem {
 /// proporcional ao maior (o 1º cheio) e uma linha menor opcional. O 1º lugar
 /// ganha a posição na cor ([tone], padrão a marca). Vai dentro de um card,
 /// com o [SsCardHeader] em cima ("Consumo por aparelho", "Mais vendidos").
-/// [numbered] tira a posição. Web: `Ss::RankListComponent` (`.ss-rank`).
+/// [numbered] tira a posição. O nome vai a até 2 linhas (v1.8.2). Web:
+/// `Ss::RankListComponent` (`.ss-rank`).
 class SsRankList extends StatelessWidget {
   const SsRankList({super.key, required this.items, this.tone, this.numbered = true, this.semanticLabel});
 
@@ -333,9 +334,10 @@ class _LinhaRank extends StatelessWidget {
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Expanded(
+                    // Até 2 linhas (v1.8.2): com texto 1,6× o nome cortava com "…" em 1 linha.
                     child: Text(
                       item.label,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: c.ink, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
                     ),

@@ -98,6 +98,9 @@ class V12WebTest < ComponentTest
     assert_selector ".ss-rank-value b", text: "160 kWh"
     assert_selector ".ss-rank-value small", text: "· 40%"
     assert_selector ".ss-rank-caption", text: "R$ 150,00"
+    # v1.8.2: o nome vai a 2 linhas (CSS) e leva o texto inteiro no title.
+    assert_selector "a.ss-rank-label[title='Ar']"
+    assert_selector "span.ss-rank-label[title='Chuveiro']"
     render_inline(Ss::RankListComponent.new(numbered: false, items: [{ label: "X", value: "1" }]))
     assert_selector "ol.ss-rank.is-plain[aria-label=Ranking]"
     assert_no_selector ".ss-rank-n, .ss-rank-bar"

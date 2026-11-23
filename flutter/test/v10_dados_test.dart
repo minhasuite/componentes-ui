@@ -117,9 +117,9 @@ void main() {
       expect(SsTimeFormat(const Locale('pt')).day(t, now: t), 'qua, 04/11');
       expect(SsTimeFormat(const Locale('es')).day(t, now: DateTime(2027)), 'mié, 04/11/2026');
       final pt = SsTimeFormat(const Locale('pt'));
-      expect(pt.duration(const Duration(minutes: 150)), '2 h 30 min');
-      expect(pt.duration(const Duration(minutes: 45)), '45 min');
-      expect(pt.duration(const Duration(hours: 52)), '2 d 4 h');
+      expect(pt.duration(const Duration(minutes: 150)), '2\u00A0h 30\u00A0min');
+      expect(pt.duration(const Duration(minutes: 45)), '45\u00A0min');
+      expect(pt.duration(const Duration(hours: 52)), '2\u00A0d 4\u00A0h');
       expect(SsTimeFormat(const Locale('en')).duration(const Duration(minutes: 150)), '2h 30m');
     });
 
@@ -307,12 +307,15 @@ void main() {
       await t.tapAt(t.getTopLeft(barra) + const Offset(20, 10));
       await t.pump();
       expect(find.text('Ligada'), findsOneWidget);
-      expect(find.text('04/11 08:00 – 10:30 · 2 h 30 min'), findsOneWidget);
+      expect(find.text('04/11 08:00 – 10:30 · 2\u00A0h 30\u00A0min'), findsOneWidget);
       // Tocar de novo fecha.
       await t.tapAt(t.getTopLeft(barra) + const Offset(20, 10));
       await t.pump();
       expect(find.text('Ligada'), findsNothing);
-      expect(find.bySemanticsLabel(RegExp('Luz: Ligada 2 h 30 min, Desligada 1 h 30 min')), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp('Luz: Ligada 2\u00A0h 30\u00A0min, Desligada 1\u00A0h 30\u00A0min')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('vazio e linha sem leituras', (t) async {

@@ -62,10 +62,10 @@ en:
     breadcrumbs:
       label: You are here
     camera_tile:
-      age_d: "%{n} d ago"
-      age_h: "%{n} h ago"
-      age_min: "%{n} min ago"
-      age_s: "%{n} s ago"
+      age_d: "%{n}\u00A0d ago"
+      age_h: "%{n}\u00A0h ago"
+      age_min: "%{n}\u00A0min ago"
+      age_s: "%{n}\u00A0s ago"
       error: Couldn't load the image
       live: LIVE
       loading: Loading image

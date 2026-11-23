@@ -168,10 +168,11 @@ class SsTimeFormat {
     return '${_weekday(t).replaceAll('.', '')}, ${ano ? _dmy(t) : _dm(t)}';
   }
 
-  /// Duração curta: `2 h 30 min`, `3 d 4 h`, `45 min` (en: `2h 30m`).
+  /// Duração curta: `2 h 30 min`, `3 d 4 h`, `45 min` (en: `2h 30m`). Número e unidade com
+  /// espaço não separável (U+00A0, v1.8.2): o "h" nunca cai sozinho na linha de baixo.
   String duration(Duration d) {
     final en = lang == 'en';
-    String u(int n, String pt, String e) => en ? '$n$e' : '$n $pt';
+    String u(int n, String pt, String e) => en ? '$n$e' : '$n\u00A0$pt';
     final min = d.inMinutes;
     if (min < 1) return u(d.inSeconds, 's', 's');
     if (min < 60) return u(min, 'min', 'm');

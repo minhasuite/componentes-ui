@@ -644,6 +644,18 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.8.2: tempo relativo sem quebrar o número da unidade e ranking em 2 linhas
+
+Achados das telas de "Pediram e não tinha" (minhas-vendas e meu-gestor, 22–23/11/2026):
+
+- **Tempo relativo com espaço não separável** (U+00A0) entre o número e a unidade, nos dois lados: `timeAgo` e
+  `SsStrings.ago*` (pt/en/es), `SsCameraTile.formatAge`, `SsTimeFormat.duration` ↔ `Ss::CameraTileComponent`
+  (`camera_tile.age_*` nos locales e no padrão). "há 14 h" não deixa mais o "h" sozinho na linha de baixo.
+  **Padrão que mudou:** teste de produto que compara `timeAgo(...)` com `'há 2 h'` (espaço comum) quebra; compare com
+  `'há 2\u00A0h'` ou monte o esperado com o próprio `timeAgo`.
+- **`SsRankList` / `RankListComponent`: o nome vai a até 2 linhas** (antes 1 linha com "…", que cortava com texto
+  1,6×). No web, `.ss-rank-label` com `line-clamp: 2` e o nome inteiro no `title`. Nada muda na API.
+
 ## v1.8.1: a linha de progresso não corta o valor
 
 `SsProgressRow`: a linha de baixo ("R$ 35,00 de R$ 40,00" e "Restam…") quebra quando não cabe, em vez de cortar o valor
@@ -2124,6 +2136,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.8.2` (23/11/2026): seção "v1.8.2". Tempo relativo com U+00A0 entre número e unidade (Flutter e Rails) e nome do ranking em até 2 linhas. Nada quebra na API; teste que compara o texto com espaço comum precisa do U+00A0.
 - `v1.7.1` (19/11/2026): seção "v1.7.1". Botão do Google (GIS) sem a caixa branca do iframe no tema escuro. Só web, só CSS. Nada quebra.
 - `v1.7.0` (19/11/2026): seção "v1.7.0". Tela de entrada "Cartaz + papel": `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split, word:, facts:, icon:)` ↔ `SsAuthLayout.cartaz(...)` (`SsAuthCartaz`, `SsCartazLayout`, `SsCartazColors`); `--brand-deep/--brand-from/--brand-to` no `paletas.css` e no `brand_css`; o `gerar.py` confere o contraste do cartaz. Nada quebra na API.
 - `v1.6.0` (18/11/2026): seção "v1.6.0". Ajuda na moldura: `Ss::HelpMenuComponent` (Stimulus `ss-help`) no slot `help` do `Ss::AppShellComponent` ↔ `SsHelpMenu.section`; `SsSideMenuItem(external:, badgeLabel:)`; textos novos obrigatórios no `SsStrings` (`help*`, `opensOutside`). Nada quebra na API.

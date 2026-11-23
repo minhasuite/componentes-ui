@@ -62,10 +62,10 @@ es:
     breadcrumbs:
       label: Estás en
     camera_tile:
-      age_d: hace %{n} d
-      age_h: hace %{n} h
-      age_min: hace %{n} min
-      age_s: hace %{n} s
+      age_d: "hace %{n}\u00A0d"
+      age_h: "hace %{n}\u00A0h"
+      age_min: "hace %{n}\u00A0min"
+      age_s: "hace %{n}\u00A0s"
       error: No se pudo cargar la imagen
       live: EN VIVO
       loading: Cargando imagen

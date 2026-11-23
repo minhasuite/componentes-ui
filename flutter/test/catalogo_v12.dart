@@ -228,7 +228,7 @@ final catalogoV12 = <Componente>[
     'Cabeçalho de card (título 14/800, linha menor, ícone tonal ou trailing) e lista ranqueada com barra proporcional ao maior, valor · fatia e linha menor. Pares do Ss::CardHeaderComponent e Ss::RankListComponent.',
     comportamentos: [
       'O 1º lugar ganha a posição na cor (tone); as barras enchem da esquerda com a mola (paradas com menos movimento).',
-      'Nome numa linha com reticências; valor e fatia em DM Mono.',
+      'Nome em até 2 linhas (v1.8.2: com texto 1,6× não corta numa linha só); valor e fatia em DM Mono.',
       'Leitor de tela: "1. nome valor fatia legenda" por item, dentro de uma lista "Ranking" (SsStrings.ranking).',
     ],
     estados: [Estado('consumo', 'consumo por aparelho', (_) => _ranking(), tamanho: const Size(390, 330))],

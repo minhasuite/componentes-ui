@@ -87,7 +87,9 @@
   .ss-rank-item:first-child .ss-rank-n { background: color-mix(in srgb, var(--tone) 18%, var(--surface)); color: color-mix(in srgb, var(--tone) 80%, var(--ink)); font-weight: 800; }
   .ss-rank-body { flex: 1; min-width: 0; }
   .ss-rank-top { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; margin: 0; min-width: 0; }
-  .ss-rank-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(.84rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink); }
+  /* v1.8.2: o nome vai a até 2 linhas (com texto 1,6× cortava com "…" numa linha só). */
+  .ss-rank-label { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+                   overflow-wrap: anywhere; font-size: calc(.84rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink); }
   .ss-rank-link { text-decoration: none; }
   .ss-rank-link:hover { color: var(--accent); }
   .ss-rank-value { flex: none; font-size: calc(.78rem * var(--ss-font-scale)); color: var(--muted); white-space: nowrap; }

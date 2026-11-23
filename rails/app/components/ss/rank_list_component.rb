@@ -8,6 +8,7 @@ module Ss
   #     { label: "Ar-condicionado", value: "163,6 kWh", amount: 163.6, share: "41%", caption: "R$ 155,44", url: aparelho_path(a) },
   #     { label: "Chuveiro", value: "128 kWh", amount: 128, share: "32%" }])
   #
+  # O nome vai a até 2 linhas (v1.8.2), com o texto inteiro no title.
   # amount: número da barra (sem ele, sem barra); share: texto da fatia ao lado do valor ("41%").
   # numbered: false tira a posição. tone: :accent (padrão), :success, :warn, :danger, :info, :heat ou uma
   # cor CSS simples. label: nome da lista no leitor de tela (padrão rank_list.label "Ranking").
@@ -41,7 +42,7 @@ module Ss
             safe_join([
               tag.p(class: "ss-rank-top") do
                 safe_join([
-                  it[:url] ? link_to(it[:label], it[:url], class: "ss-rank-label ss-rank-link") : tag.span(it[:label], class: "ss-rank-label"),
+                  it[:url] ? link_to(it[:label], it[:url], class: "ss-rank-label ss-rank-link", title: it[:label]) : tag.span(it[:label], class: "ss-rank-label", title: it[:label]),
                   tag.span(class: "ss-rank-value num") { safe_join([tag.b(it[:value]), (tag.small(" · #{it[:share]}") if it[:share].present?)].compact) }
                 ])
               end,

@@ -20,8 +20,8 @@ module Ss
   class CameraTileComponent < BaseComponent
     STATES = %i[loading live stale error offline].freeze
     DEFAULTS = { live: "AO VIVO", loading: "Carregando imagem", error: "Não deu para carregar a imagem",
-                 offline: "Câmera offline", retry: "Tentar de novo", age_s: "há %{n} s", age_min: "há %{n} min",
-                 age_h: "há %{n} h", age_d: "há %{n} d" }.freeze
+                 offline: "Câmera offline", retry: "Tentar de novo", age_s: "há %{n}\u00A0s", age_min: "há %{n}\u00A0min",
+                 age_h: "há %{n}\u00A0h", age_d: "há %{n}\u00A0d" }.freeze
 
     renders_one :frame
     renders_one :status
@@ -44,7 +44,8 @@ module Ss
       vars.empty? ? text : I18n.interpolate(text, vars)
     end
 
-    # "há 12 s", "há 3 min", "há 2 h", "há 1 d".
+    # "há 12 s", "há 3 min", "há 2 h", "há 1 d", com espaço não separável (U+00A0, v1.8.2)
+    # entre o número e a unidade: o "h" não cai sozinho na linha de baixo.
     def age_text
       return nil if @age.nil?
       s = @age

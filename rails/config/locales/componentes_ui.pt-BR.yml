@@ -64,10 +64,10 @@ pt-BR:
     breadcrumbs:
       label: Você está em
     camera_tile:
-      age_d: há %{n} d
-      age_h: há %{n} h
-      age_min: há %{n} min
-      age_s: há %{n} s
+      age_d: "há %{n}\u00A0d"
+      age_h: "há %{n}\u00A0h"
+      age_min: "há %{n}\u00A0min"
+      age_s: "há %{n}\u00A0s"
       error: Não deu para carregar a imagem
       live: AO VIVO
       loading: Carregando imagem

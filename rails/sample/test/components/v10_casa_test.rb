@@ -14,9 +14,13 @@ class V10CasaTest < ComponentTest
 
     render_inline(Ss::CameraTileComponent.new(title: "Quintal", state: :stale, age: 12)) { |c| c.with_frame { "<video></video>".html_safe } }
     assert_selector ".ss-cam[data-state=stale][data-ss-camera-age-value='12'] .ss-cam-frame video"
-    assert_selector ".ss-cam-age [data-ss-camera-target=age]", text: "há 12 s"
+    assert_selector ".ss-cam-age [data-ss-camera-target=age]", text: "há 12\u00A0s"
     render_inline(Ss::CameraTileComponent.new(title: "X", state: :stale, age: 185))
-    assert_selector ".ss-cam-age", text: "há 3 min"
+    assert_selector ".ss-cam-age", text: "há 3\u00A0min"
+    # v1.8.2: número e unidade com espaço não separável (o "min"/"h" não cai sozinho na linha de baixo).
+    assert_includes page.find(".ss-cam-age").native.text, "há 3\u00A0min"
+    render_inline(Ss::CameraTileComponent.new(title: "X", state: :stale, age: 14 * 3600))
+    assert_includes page.find(".ss-cam-age").native.text, "há 14\u00A0h"
 
     render_inline(Ss::CameraTileComponent.new(title: "Portão", state: :offline, retry_url: "/cam/1/retry"))
     assert_selector ".ss-cam[data-state=offline] form[action='/cam/1/retry'] button.ss-cam-retry", text: "Tentar de novo"

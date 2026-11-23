@@ -60,16 +60,34 @@ void main() {
       expect(es.keys, pt.keys);
       expect(en['cancel'], 'Cancel');
       expect(es['cancel'], 'Cancelar');
-      expect(SsStrings.en.agoMinutes(5), '5 min ago');
-      expect(SsStrings.es.agoDays(3), 'hace 3 días');
+      expect(SsStrings.en.agoMinutes(5), '5\u00A0min ago');
+      expect(SsStrings.es.agoDays(3), 'hace 3\u00A0días');
       expect(SsStrings.en.longDate(DateTime(2026, 10, 5)), 'Monday, October 5');
       expect(SsStrings.pt.longDate(DateTime(2026, 10, 5)), 'segunda, 5 de outubro');
     });
 
+    test('tempo relativo: número e unidade com espaço não separável (v1.8.2)', () {
+      final agora = DateTime(2026, 11, 23, 12);
+      for (final s in [SsStrings.pt, SsStrings.en, SsStrings.es]) {
+        for (final txt in [
+          timeAgo(agora.subtract(const Duration(minutes: 5)), now: agora, strings: s),
+          timeAgo(agora.subtract(const Duration(hours: 14)), now: agora, strings: s),
+          timeAgo(agora.subtract(const Duration(days: 3)), now: agora, strings: s),
+          SsCameraTile.formatAge(const Duration(seconds: 12), s),
+          SsCameraTile.formatAge(const Duration(days: 2), s),
+        ]) {
+          expect(RegExp(r'\d \w').hasMatch(txt), isFalse, reason: '"$txt" separa número e unidade com espaço comum');
+          expect(txt, contains('\u00A0'));
+        }
+      }
+      expect(timeAgo(agora.subtract(const Duration(hours: 14)), now: agora), 'há 14\u00A0h');
+      expect(SsTimeFormat(const Locale('pt')).duration(const Duration(minutes: 150)), '2\u00A0h 30\u00A0min');
+    });
+
     test('funções de fora do contexto continuam em pt sem SsStrings', () {
       final agora = DateTime(2026, 10, 6, 12);
-      expect(timeAgo(agora.subtract(const Duration(minutes: 5)), now: agora), 'há 5 min');
-      expect(timeAgo(agora.subtract(const Duration(minutes: 5)), now: agora, strings: SsStrings.en), '5 min ago');
+      expect(timeAgo(agora.subtract(const Duration(minutes: 5)), now: agora), 'há 5\u00A0min');
+      expect(timeAgo(agora.subtract(const Duration(minutes: 5)), now: agora, strings: SsStrings.en), '5\u00A0min ago');
       expect(timeAgo(agora.subtract(const Duration(days: 1)), now: agora, strings: SsStrings.es), 'ayer');
       expect(ssMonthName(DateTime(2026, 10)), 'Outubro 2026');
       expect(ssMonthName(DateTime(2026, 10), SsStrings.en), 'October 2026');
@@ -400,7 +418,7 @@ void main() {
       );
       expect(find.text('Buscar de nuevo'), findsOneWidget);
       expect(find.text('miércoles, 4 de noviembre'), findsOneWidget);
-      expect(SsCameraTile.formatAge(const Duration(seconds: 12), SsStrings.en), '12 s ago');
+      expect(SsCameraTile.formatAge(const Duration(seconds: 12), SsStrings.en), '12\u00A0s ago');
       expect(SsScanRadar.foundPt(3), '3 encontrados');
       expect(SsStrings.en.foundCount(3), '3 found');
     });

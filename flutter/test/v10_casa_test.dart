@@ -116,10 +116,10 @@ void main() {
 
   group('SsCameraTile', () {
     test('formatAge', () {
-      expect(SsCameraTile.formatAge(const Duration(seconds: 12)), 'há 12 s');
-      expect(SsCameraTile.formatAge(const Duration(minutes: 3, seconds: 4)), 'há 3 min');
-      expect(SsCameraTile.formatAge(const Duration(hours: 2)), 'há 2 h');
-      expect(SsCameraTile.formatAge(const Duration(days: 3)), 'há 3 d');
+      expect(SsCameraTile.formatAge(const Duration(seconds: 12)), 'há 12\u00A0s');
+      expect(SsCameraTile.formatAge(const Duration(minutes: 3, seconds: 4)), 'há 3\u00A0min');
+      expect(SsCameraTile.formatAge(const Duration(hours: 2)), 'há 2\u00A0h');
+      expect(SsCameraTile.formatAge(const Duration(days: 3)), 'há 3\u00A0d');
     });
 
     testWidgets('ao vivo mostra o selo; offline mostra tentar de novo', (t) async {

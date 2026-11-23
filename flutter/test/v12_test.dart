@@ -1,6 +1,7 @@
 // v0.12: tile de aparelho com o ícone como chave, faixa do dia inteiro do
 // SsDayAgenda, cabeçalho de card, card de indicador e lista ranqueada.
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -188,5 +189,31 @@ void main() {
     expect(titulo.style!.fontWeight, FontWeight.w800);
     expect(titulo.style!.fontSize, AppType.set);
     sem.dispose();
+  });
+
+  testWidgets('SsRankList (v1.8.2): com texto 1,6× o nome vai a 2 linhas em vez de cortar', (t) async {
+    t.view.physicalSize = const Size(360, 800);
+    t.view.devicePixelRatio = 1;
+    t.platformDispatcher.textScaleFactorTestValue = 1.6;
+    addTearDown(t.view.reset);
+    addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
+    const nome = 'Distribuidora Brilho Limpo';
+    await t.pumpWidget(
+      _app(
+        width: 300,
+        const SsRankList(
+          items: [
+            SsRankItem(label: nome, value: r'R$ 12.345,67', amount: 12345, share: '41%'),
+            SsRankItem(label: 'Rota Certa', value: r'R$ 1.200,00', amount: 1200),
+          ],
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(t.takeException(), isNull);
+    expect(t.widget<Text>(find.text(nome)).maxLines, 2);
+    final p = t.renderObject<RenderParagraph>(find.text(nome));
+    expect(p.didExceedMaxLines, isFalse, reason: 'o nome não pode cortar com reticências');
+    expect(p.size.height, greaterThan(p.preferredLineHeight * 1.5), reason: 'quebrou em 2 linhas');
   });
 }

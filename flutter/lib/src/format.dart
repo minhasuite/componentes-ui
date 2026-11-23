@@ -34,6 +34,8 @@ String dateTime(DateTime? d, [SsStrings? strings]) =>
 
 /// "há 5 min", "há 2 h", "ontem", "06/10". Com [strings], no idioma dele
 /// (`timeAgo(d, strings: SsStrings.of(context))`).
+/// Número e unidade com espaço não separável (U+00A0, v1.8.2): "há 14\u00A0h" não quebra
+/// entre o 14 e o h. Teste que compara com espaço comum quebra: monte com `timeAgo`.
 String timeAgo(DateTime? d, {DateTime? now, SsStrings? strings}) {
   if (d == null) return '';
   final s = strings ?? SsStrings.pt;
