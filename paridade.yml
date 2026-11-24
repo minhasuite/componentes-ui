@@ -10,7 +10,7 @@
 # Seções:
 #   pares:      SsX: "alvo" ou ["alvo", "alvo"]. Alvo: Ss::XComponent | helper:ss_x (ComponentesUi::Helpers)
 #               | form:ss_x (o FormBuilder da gem) | css:.ss-x (classe do CSS da gem) | js:ss-x (controller Stimulus).
-#               { rails: "...", pendente_v19: true }: peça que outro agente da onda v1.9 está criando; o teste
+#               "...": peça que outro agente da onda v1.9 está criando; o teste
 #               não cobra a existência enquanto tiver a marca (tirar no merge).
 #   apis:       funções e classes do Flutter que não são widget (showSsSheet, SsIcons) com o par web.
 #   so_app:     SsX: "motivo" (particularidade do app: gesto, câmera, infra do Flutter, carregar depois de abrir).
@@ -22,7 +22,7 @@
 pares:
   SsAchievementCard: "Ss::AchievementCardComponent"
   SsActionButton: "css:.ss-action-btn"
-  SsAdaptiveScaffold: { rails: "Ss::AppShellComponent", pendente_v19: true }
+  SsAdaptiveScaffold: "Ss::AppShellComponent"
   SsAgendaList: "Ss::AgendaListComponent"
   SsAiInsightCard: "Ss::AiInsightCardComponent"
   SsAiMark: "css:.ss-ai-badge"
@@ -30,9 +30,9 @@ pares:
   SsAppearancePanel: "Ss::ThemeSwitcherComponent"
   SsAreaChart: "Ss::AreaChartComponent"
   SsAsideLayout: "Ss::AsideLayoutComponent"
-  SsAssistantConversations: { rails: "Ss::AssistantComponent", pendente_v19: true }
-  SsAssistantView: { rails: "Ss::AssistantComponent", pendente_v19: true }
-  SsAuditTrail: { rails: "Ss::AuditTrailComponent", pendente_v19: true }
+  SsAssistantConversations: "Ss::AssistantComponent"
+  SsAssistantView: "Ss::AssistantComponent"
+  SsAuditTrail: "Ss::AuditTrailComponent"
   SsAuroraBackground: "css:.ss-aurora-bg"
   SsAuroraCard: "css:.ss-aurora"
   SsAuthCartaz: "Ss::AuthLayoutComponent"
@@ -44,7 +44,7 @@ pares:
   SsBadge: "Ss::BadgeComponent"
   SsBarChart: "Ss::BarChartComponent"
   SsBellDot: "css:.ss-bell-dot"
-  SsBentoGrid: { rails: "Ss::BentoGridComponent", pendente_v19: true }
+  SsBentoGrid: "Ss::BentoGridComponent"
   SsBigRing: "Ss::BigRingComponent"
   SsBlockList: "Ss::BlockListComponent"
   SsBoardingPass: "Ss::BoardingPassComponent"
@@ -54,10 +54,10 @@ pares:
   SsButtonPair: "Ss::FormActionsComponent"
   SsCallout: "Ss::CalloutComponent"
   SsCameraTile: "Ss::CameraTileComponent"
-  SsCaptureHub: { rails: "Ss::CaptureHubComponent", pendente_v19: true }
+  SsCaptureHub: "Ss::CaptureHubComponent"
   SsCard: "css:.ss-card"
   SsCardHeader: "Ss::CardHeaderComponent"
-  SsCelebrate: { rails: "Ss::CelebrateComponent", pendente_v19: true }
+  SsCelebrate: "Ss::CelebrateComponent"
   SsChartEmpty: "css:.ss-chart-empty"
   SsChartLegend: "Ss::ChartLegendComponent"
   SsChatActionCard: "Ss::ChatActionComponent"
@@ -91,7 +91,7 @@ pares:
   SsDashedDivider: "css:.ss-dashed"
   SsDataTable: "Ss::DataTableComponent"
   SsDateField: "form:ss_date_field"
-  SsDateRangeField: { rails: "Ss::DateRangeComponent", pendente_v19: true }
+  SsDateRangeField: "Ss::DateRangeComponent"
   SsDateStrip: "Ss::DateStripComponent"
   SsDateTimeField: "form:ss_datetime_local_field"
   SsDayAgenda: "Ss::AgendaComponent"
@@ -114,7 +114,7 @@ pares:
   SsFieldLabel: "css:.ss-label"
   SsFilterChip: "form:ss_chip_check_box"
   SsFlowDiagram: "Ss::FlowDiagramComponent"
-  SsGantt: { rails: "Ss::GanttComponent", pendente_v19: true }
+  SsGantt: "Ss::GanttComponent"
   SsGauge: "helper:ss_gauge"
   SsGlass: "css:.ss-glass"
   SsGlow: "css:.ss-glow"
@@ -168,19 +168,19 @@ pares:
   SsNote: "Ss::NoteComponent"
   SsNoticeCard: "Ss::NoticeCardComponent"
   SsNotificationBell: "Ss::NotificationBellComponent"
-  SsNotificationCenter: { rails: ["Ss::NotificationListComponent", "Ss::NotificationCenterComponent"], pendente_v19: true }
-  SsNotificationTile: { rails: "Ss::NotificationCenterComponent", pendente_v19: true }
+  SsNotificationCenter: ["Ss::NotificationListComponent", "Ss::NotificationCenterComponent"]
+  SsNotificationTile: "Ss::NotificationCenterComponent"
   SsOdometer: "Ss::OdometerComponent"
   SsOfferCard: "css:.ss-offer"
   SsOfflineBanner: "css:.ss-offline"
   SsOnboarding: "css:.ss-onboarding"
-  SsOpenContainer: { rails: "Ss::TransitionComponent", pendente_v19: true }
-  SsOtpField: { rails: "Ss::OtpInputComponent", pendente_v19: true }
+  SsOpenContainer: "Ss::TransitionComponent"
+  SsOtpField: "Ss::OtpInputComponent"
   SsOverflowMenu: "Ss::RowActionsComponent"
   SsPageDots: "css:.ss-onboarding"
   SsPagedList: "Ss::PaginationComponent"
   SsPalettePicker: "Ss::ThemeSwitcherComponent"
-  SsPersonCard: { rails: "Ss::PersonCardComponent", pendente_v19: true }
+  SsPersonCard: "Ss::PersonCardComponent"
   SsPhotoCard: "Ss::PhotoCardComponent"
   SsPickerSheet: "Ss::ComboboxComponent"
   SsPillBars: "Ss::BarChartComponent"
@@ -210,7 +210,7 @@ pares:
   SsRepeater: "Ss::RepeaterComponent"
   SsRepeaterCell: "css:.ss-repeater-cell"
   SsReveal: "js:ss-reveal"
-  SsReviewCard: { rails: "Ss::ReviewCardComponent", pendente_v19: true }
+  SsReviewCard: "Ss::ReviewCardComponent"
   SsRings: "Ss::RingsComponent"
   SsRollSwitcher: "css:.ss-roll"
   SsRollingText: "css:.ss-roll"
@@ -229,8 +229,8 @@ pares:
   SsSideMenu: "Ss::AppShellComponent"
   SsSideMenuHost: "Ss::AppShellComponent"
   SsSideRail: "Ss::AppShellComponent"
-  SsSkeleton: { rails: "Ss::SkeletonComponent", pendente_v19: true }
-  SsSkeletonSwitch: { rails: "Ss::SkeletonComponent", pendente_v19: true }
+  SsSkeleton: "Ss::SkeletonComponent"
+  SsSkeletonSwitch: "Ss::SkeletonComponent"
   SsSlider: "Ss::RangeComponent"
   SsSliverHeader: "css:.ss-screen-header"
   SsSnapCarousel: "Ss::SnapCarouselComponent"
@@ -240,7 +240,7 @@ pares:
   SsSpinner: "css:.ss-spinner"
   SsSplash: "Ss::SplashComponent"
   SsSplitSlider: ["Ss::SplitSliderComponent", "Ss::SplitAllocatorComponent"]
-  SsSplitView: { rails: "Ss::SplitViewComponent", pendente_v19: true }
+  SsSplitView: "Ss::SplitViewComponent"
   SsSquircle: "css:.ss-squircle"
   SsStatCard: ["Ss::KpiCardComponent", "Ss::KpiStripComponent"]
   SsStateBandRow: "Ss::StateBandsComponent"
@@ -259,7 +259,7 @@ pares:
   SsSyncStatus: "Ss::SyncStatusComponent"
   SsTabsUnderline: "Ss::TabsComponent"
   SsTabsView: "Ss::TabsComponent"
-  SsTagField: { rails: "Ss::TagInputComponent", pendente_v19: true }
+  SsTagField: "Ss::TagInputComponent"
   SsTaskItem: "css:.ss-checklist"
   SsTermsNotice: "Ss::TermsNoticeComponent"
   SsTextField: "form:ss_text_field"
@@ -275,9 +275,9 @@ pares:
   SsToast: "Ss::ToastComponent"
   SsTooltip: "Ss::TooltipComponent"
   SsTopBar: "Ss::TopBarComponent"
-  SsTour: { rails: "Ss::TourComponent", pendente_v19: true }
+  SsTour: "Ss::TourComponent"
   SsTweenInView: "js:ss-in-view"
-  SsUndoableRemoval: { rails: "Ss::UndoableRemovalComponent", pendente_v19: true }
+  SsUndoableRemoval: "Ss::UndoableRemovalComponent"
   SsUnsavedGuard: "js:ss-dirty"
   SsValueRow: "css:.ss-value-row"
   SsValueTile: "css:.ss-value-row"
@@ -285,9 +285,9 @@ pares:
   SsWeatherCard: "Ss::WeatherCardComponent"
   SsWeatherIcon: "Ss::WeatherCardComponent"
   SsWeekdayPicker: "Ss::WeekdayPickerComponent"
-  SsWhatsNew: { rails: "Ss::WhatsNewComponent", pendente_v19: true }
-  SsWhatsNewList: { rails: "Ss::WhatsNewComponent", pendente_v19: true }
-  SsWizard: { rails: "Ss::WizardComponent", pendente_v19: true }
+  SsWhatsNew: "Ss::WhatsNewComponent"
+  SsWhatsNewList: "Ss::WhatsNewComponent"
+  SsWizard: "Ss::WizardComponent"
   SsWormProgress: "css:.ss-progress"
 
 apis:
@@ -332,10 +332,10 @@ so_app:
   SsSwipeAction: "deslizar o item (gesto); no web as mesmas ações ficam no menu ⋮ (Ss::RowActionsComponent)"
   SsSyncPanel: "fila de envio do aparelho (offline); o web salva direto no servidor e mostra só o Ss::SyncStatusComponent"
   SsTapTarget: "infra: alvo de toque mínimo do Flutter; no web é o --ss-target do CSS"
-  SsBackGestureListener: { motivo: "voltar preditivo do Android (gesto do sistema)", pendente_v19: true }
-  SsBackShrink: { motivo: "voltar preditivo do Android (gesto do sistema)", pendente_v19: true }
-  SsPredictiveBackScope: { motivo: "voltar preditivo do Android (gesto do sistema)", pendente_v19: true }
-  SsSliverEntrance: { motivo: "entrada de sliver do Flutter; no web é o ss-in-view", pendente_v19: true }
+  SsBackGestureListener: "voltar preditivo do Android (gesto do sistema)"
+  SsBackShrink: "voltar preditivo do Android (gesto do sistema)"
+  SsPredictiveBackScope: "voltar preditivo do Android (gesto do sistema)"
+  SsSliverEntrance: "entrada de sliver do Flutter; no web é o ss-in-view"
 
 so_web:
   Ss::BlockComponent: "peça interna do Ss::BlockListComponent (o with_block da lista)"
@@ -374,7 +374,7 @@ divida:
   SsShapeIcon: "ícone dentro de uma forma da marca"
   SsThumbRail: "miniaturas em coluna ao lado da foto"
   SsVerticalSlider: "slider de pé (volume, brilho)"
-  SsIllustrationArt: { motivo: "ilustração animada do app; falta o par web", pendente_v19: true }
+  SsIllustrationArt: "ilustração animada do app; falta o par web"
 
 divida_app:
   Ss::ProductCardComponent: "cartão de produto com a imagem vazando (falta o SsProductCard)"

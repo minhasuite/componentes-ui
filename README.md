@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.5.2
+      ref: v1.9.0
 ```
 
 ```dart
@@ -653,6 +653,29 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.9.0: movimento, transições, peças repetidas dos apps, paridade e as vitrines por categoria
+
+Pedido do usuário em 24/11/2026 (lista de melhorias de componentes, animação e UI/UX). Tudo aditivo:
+nenhuma API mudou de forma incompatível. A API completa de cada área está em `docs/v19/`.
+
+| Área | Flutter | Web | Doc |
+|---|---|---|---|
+| Peças que os apps repetiam | `SsNotificationCenter` (+ `SsNotificationTile`), `SsAssistantView`, `SsCaptureHub`/`showSsCaptureHub` | `NotificationCenterComponent`, `AssistantComponent` (`ss-assistant`, polling), `CaptureHubComponent` | `docs/v19/produto.md` |
+| Movimento | tokens `SsMotion.short/medium/long`, `standard/enter/exit/spring`, distâncias; `SsHaptics` (selection, limit, success, warning, error); skeleton que vira conteúdo no `SsAsyncBody`; `SsUndoableRemoval`; "Cores do sistema" no `SsAppearanceController(systemColor:)` | `--ss-dur-*`, `--ss-ease-*`, `--ss-dist-*`; `ss-haptics`; `ss-skeleton`; `UndoableRemovalComponent` (`ss-undoable`) | `docs/v19/movimento.md` |
+| Transições | `SsOpenContainer`/`SsOpenRoute`/`SsOpenPage` (lista → detalhe), voltar preditivo no `AppTheme.build` (o app põe `android:enableOnBackInvokedCallback="true"`), gráficos que deslizam entre dados, `SsEmptyState(illustration:)`, `SsCelebrate(kind:, gate:)` | View Transitions (`ss_view_transitions_head`, `ss_view_transition_name`), animações por rolagem (`animation-timeline`), `EmptyStateComponent(illustration:)`, `CelebrateComponent` | `docs/v19/transicoes.md` |
+| Peças do web no app | `SsGantt`, `SsTour`, `SsWizard`, `SsDateRangeField`, `SsOtpField`, `SsTagField`, `SsAuditTrail`, `SsReviewCard`, `SsPersonCard`, `SsBentoGrid`, `SsWhatsNew`, `SsSkeleton`, `SsSplitView`/`SsAdaptiveScaffold` | `WizardComponent(with_summary, save_later_label:)` | `docs/v19/paridade_app.md` |
+| Peças do app no web | `SsNavBar(hideOnScroll:)`, `SsSideMenu(search:)` (Ctrl+K), `SsSyncStatus`/`SsSyncPanel`, `SsListItem(contextActions:, swipeStart:, swipeEnd:)`, `ssA11yAudit(tester)` (testing.dart) | `SwipeToConfirm`, `HoldToConfirm`, `SnapCarousel`, `StoryRing`, `Odometer`, `MorphButton`, `Burst`, `HeatCalendar`, `BigRing`, `Rings`, `DateStrip`, `SplitSlider`, `SyncStatus` | `docs/v19/paridade_web.md` |
+| Paridade | `paridade.yml` na raiz: o par de cada peça (ou a exceção com motivo, ou a dívida). O teste dos dois lados falha com peça num lado só sem registro | | `paridade.yml` |
+| Vitrines | Por categoria de uso (16, iguais nos dois lados); `example/lib/categorias.dart` + `test/categorias_test.dart` (peça sem categoria falha) | 1ª linha da página: `grupo:`, `tambem:`, `versao:`; `test/vitrine_test.rb` (página fora do menu falha) | — |
+| Correções | `SsPagedList(onRefresh:)` sem altura infinita | `ss-validate` não engole o clique do botão logo abaixo do campo | — |
+
+**Demonstração:** https://demo.minhasuite.com (vitrine web; `/app/` = vitrine do app; `/componentes-demo.apk`),
+atualizada a cada push na `main` pelo `.github/workflows/demo.yml`; cada tag anexa o APK à release.
+
+**Ao subir nos apps:** `android:enableOnBackInvokedCallback="true"` no manifesto; trocar central de avisos,
+aba do assistente e folha de captura feitas à mão pelas peças; `ssA11yAudit` nos testes de tela; tirar o
+contorno `ponytail:` do `SsPagedList` (minhas-vendas-app).
 
 ## v1.8.3: chat sem `required` no campo
 

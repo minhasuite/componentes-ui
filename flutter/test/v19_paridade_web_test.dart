@@ -167,7 +167,8 @@ void main() {
       expect(yml['pares']!['SsSwipeToConfirm']!.alvos, ['Ss::SwipeToConfirmComponent']);
       expect(yml['pares']!['SsOdometer']!.alvos, ['Ss::OdometerComponent']);
       expect(yml['pares']!['SsSyncStatus']!.alvos, ['Ss::SyncStatusComponent']);
-      expect(yml['pares']!['SsGantt']!.pendente, isTrue);
+      expect(yml['pares']!['SsGantt']!.alvos, ['Ss::GanttComponent']); // a onda v1.9 juntada: nada pendente
+      expect(yml['pares']!.values.where((p) => p.pendente), isEmpty);
       expect(yml['so_app']!.containsKey('SsSyncPanel'), isTrue);
     });
 

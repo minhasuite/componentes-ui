@@ -134,17 +134,18 @@ class _NavDemoState extends State<_NavDemo> {
 
 final catalogo = comV19ParidadeWeb(
   comV19Produto(
-  comV19ParidadeApp(
-    comV19Transicoes(
-      comV19Movimento(
-        comV130(
-          comV122(
-            comV120(
-              comV28(
-                comV27Graficos(
-                  comV27(
-                    comV26(
-                      comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+    comV19ParidadeApp(
+      comV19Transicoes(
+        comV19Movimento(
+          comV130(
+            comV122(
+              comV120(
+                comV28(
+                  comV27Graficos(
+                    comV27(
+                      comV26(
+                        comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+                      ),
                     ),
                   ),
                 ),
@@ -155,7 +156,7 @@ final catalogo = comV19ParidadeWeb(
       ),
     ),
   ),
-));
+);
 
 final _catalogo = comV08(<Componente>[
   Componente(
