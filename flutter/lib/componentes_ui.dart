@@ -110,3 +110,6 @@ export 'src/version.dart';
 export 'src/v130/appearance.dart';
 // v1.5.2: sino de avisos (era a v0.25 do branch onda7).
 export 'src/v25/bell.dart';
+// v1.9 · paridade_app: gantt, tour, assistente, período, código, etiquetas, histórico, depoimento,
+// pessoa, mosaico, novidades, esqueleto por forma, lista + detalhe e a casca adaptável.
+export 'src/v19/paridade_app/paridade_app.dart';

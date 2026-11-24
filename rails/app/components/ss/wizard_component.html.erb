@@ -12,19 +12,24 @@
 <% end %>
 <% else %>
 <%= tag.div(class: classes("ss-wizard"), **root_attrs(data: { controller: "ss-wizard", ss_wizard_key_value: draft_key }.compact)) do %>
-  <ol class="ss-wizard-steps" style="--n:<%= steps.size %>" data-controller="ss-indicator" data-ss-indicator-selector-value="li > span" data-ss-indicator-active-value="[aria-current=step] > span" data-ss-indicator-motion-value="pop">
+  <ol class="ss-wizard-steps" style="--n:<%= client_count %>" data-controller="ss-indicator" data-ss-indicator-selector-value="li > span" data-ss-indicator-active-value="[aria-current=step] > span" data-ss-indicator-motion-value="pop">
     <% steps.each_with_index do |s, i| %>
       <li data-ss-wizard-target="dot" <% if i.zero? %>aria-current="step"<% end %>><span class="num"><%= i + 1 %></span><b><%= s.title %></b></li>
     <% end %>
+    <% if summary? %><li data-ss-wizard-target="dot"><span class="num"><%= steps.size + 1 %></span><b><%= summary_title %></b></li><% end %>
   </ol>
-  <div class="ss-progress ss-wizard-progress" role="progressbar" aria-label="<%= ss_t("status_tab_card.progress", default: "Progresso") %>" aria-valuemin="1" aria-valuemax="<%= steps.size %>" aria-valuenow="1" data-ss-wizard-target="progress">
-    <div class="ss-progress-bar" style="width:<%= (100.0 / [steps.size, 1].max).round(1) %>%"></div>
+  <div class="ss-progress ss-wizard-progress" role="progressbar" aria-label="<%= ss_t("status_tab_card.progress", default: "Progresso") %>" aria-valuemin="1" aria-valuemax="<%= client_count %>" aria-valuenow="1" data-ss-wizard-target="progress">
+    <div class="ss-progress-bar" style="width:<%= (100.0 / [client_count, 1].max).round(1) %>%"></div>
   </div>
   <% steps.each_with_index do |s, i| %>
     <section class="ss-wizard-panel" data-ss-wizard-target="panel" aria-label="<%= ss_t("wizard.step", default: "Passo %{n}: %{title}", n: i + 1, title: s.title) %>" <% unless i.zero? %>hidden<% end %>><%= s %></section>
   <% end %>
+  <% if summary? %>
+    <section class="ss-wizard-panel ss-wizard-summary" data-ss-wizard-target="panel" aria-label="<%= ss_t("wizard.step", default: "Passo %{n}: %{title}", n: steps.size + 1, title: summary_title) %>" hidden><%= summary %></section>
+  <% end %>
   <div class="ss-wizard-nav">
     <button type="button" class="ss-btn ss-btn-ghost" data-ss-wizard-target="back" data-action="ss-wizard#back" disabled><%= ss_t("common.back", default: "Voltar") %></button>
+    <% if save_later_label %><button type="submit" class="ss-btn ss-btn-ghost ss-wizard-later" name="<%= save_later_name %>" value="1" formnovalidate><%= save_later_label %></button><% end %>
     <button type="button" class="ss-btn ss-btn-primary" data-ss-wizard-target="next" data-action="ss-wizard#next"><%= ss_t("wizard.next", default: "Avançar") %></button>
     <button type="submit" class="ss-btn ss-btn-primary" data-ss-wizard-target="submit" data-action="ss-wizard#finish" hidden><%= submit_label %></button>
   </div>

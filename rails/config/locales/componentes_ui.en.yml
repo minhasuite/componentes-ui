@@ -599,6 +599,9 @@ en:
       next: Next
       step: 'Step %{n}: %{title}'
       submit: Finish
+      # v1.9 · paridade_app (SsWizard.summary / onSaveForLater)
+      review: Review
+      save_later: Save and continue later
     # v0.10.2
     check_all:
       label: 'Select all'
