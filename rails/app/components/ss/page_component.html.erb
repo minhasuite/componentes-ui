@@ -1,5 +1,5 @@
-<%= tag.div(**root_attrs(class: classes("ss-page", ("is-compact" if @compact)))) do %>
-  <header class="ss-page-head">
+<%= tag.div(**root_attrs(class: classes("ss-page", ("is-compact" if @compact), ("is-shrink" if @shrink)))) do %>
+  <%= tag.header(class: "ss-page-head", **view_transition_attrs) do %>
     <div class="ss-page-titles">
       <% if @crumbs.present? %><%= render Ss::BreadcrumbsComponent.new(items: @crumbs) %><% end %>
       <% if @back %><%= link_to @back, class: "ss-page-back" do %><%= BACK.html_safe %><span><%= back_label %></span><% end %><% end %>
@@ -12,7 +12,7 @@
       <% if @subtitle %><p class="ss-page-sub"><%= @subtitle %></p><% end %>
     </div>
     <% if actions? %><div class="ss-page-actions"><%= actions %></div><% end %>
-  </header>
+  <% end %>
   <% if tabs? %><div class="ss-page-tabs"><%= tabs %></div><% end %>
   <% if filters? %><div class="ss-page-filters"><%= filters %></div><% end %>
   <% if body? %><div class="ss-page-body"><%= content %></div><% end %>

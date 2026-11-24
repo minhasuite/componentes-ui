@@ -8,16 +8,20 @@ module Ss
   #
   # key: lembra no navegador (localStorage "ss-celebrated:<key>") e não repete. on: :connect
   # (padrão) ou :click (só pelo data-action). Por JS: window.ssConfetti().
+  #
+  # v1.9: kind: :goal, :streak ou :first_use liga a regra da suíte (uma por sessão por tipo, no
+  # sessionStorage "ss-celebrate:<tipo>"), igual ao Ss::CelebrateComponent e ao SsCelebrate(kind:).
   class ConfettiComponent < BaseComponent
-    def initialize(key: nil, on: :connect, **rest)
+    def initialize(key: nil, on: :connect, kind: nil, **rest)
       super(**rest)
       @key, @on = key, on.to_s == "click" ? "click" : "connect"
+      @kind = Ss::CelebrateComponent.kind(kind)
     end
 
     def call
       inner = content
       tag.span(**root_attrs(class: classes("ss-confetti"), hidden: inner.blank?, "aria-hidden": (inner.blank? ? "true" : nil),
-                            data: { controller: "ss-confetti", ss_confetti_key_value: @key, ss_confetti_auto_value: @on == "connect" }.compact)) { inner }
+                            data: { controller: "ss-confetti", ss_confetti_key_value: @key, ss_confetti_kind_value: @kind, ss_confetti_auto_value: @on == "connect" }.compact)) { inner }
     end
   end
 end

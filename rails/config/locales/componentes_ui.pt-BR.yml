@@ -7,6 +7,11 @@ pt-BR:
       earned: "Conquistada"
       label: "Conquista"
       missing: "Falta"
+    # v1.9 · transições: anúncio da comemoração (Ss::CelebrateComponent, par do SsCelebrate(kind:)).
+    celebrate:
+      goal: "Meta batida!"
+      streak: "Sequência mantida!"
+      first_use: "Primeiro passo dado!"
     agenda:
       all_day: Dia todo
       label: Agenda

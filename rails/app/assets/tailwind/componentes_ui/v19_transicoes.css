@@ -1,0 +1,101 @@
+/* v1.9 · transições (par do Flutter: SsOpenContainer, SsChartTransition, SsIllustrationArt, SsCelebrate).
+   1. Lista → detalhe: View Transitions com Turbo (ss_view_transitions_head + ss_view_transition_attrs): o card
+      da lista vira o cabeçalho do detalhe ([data-ss-vt="card"]). Sem suporte: corte normal.
+   2. Gráficos: a linha se desenha, as barras crescem do eixo, a rosca gira ao entrar e, quando o gráfico é
+      atualizado no lugar (Turbo morph, turbo_stream, JS), cada traço vai do valor anterior ao novo
+      (transição de d, y/height, stroke-dasharray; onde o navegador não anima atributo de SVG, troca direto).
+   3. Rolagem só com CSS (animation-timeline): o cabeçalho de página encolhe (.ss-page.is-shrink) e números e
+      cards aparecem ao entrar na tela (.ss-scroll-reveal, .ss-scroll-stagger > *), dentro de @supports.
+   4. Estados vazios ilustrados (EmptyStateComponent(illustration:)): entrada com mola e loop sutil.
+   5. Comemoração (Ss::CelebrateComponent): o estouro da sequência.
+   Tudo some com prefers-reduced-motion. Cor só por token. Durações: ver os comentários "v1.9 tokens". */
+
+/* ── 1. Lista → detalhe ── */
+[data-ss-vt="card"] { view-transition-class: ss-card; }
+[data-ss-vt="title"] { view-transition-class: ss-title; }
+[data-ss-vt="image"] { view-transition-class: ss-img; }
+/* O card cresce/encolhe até o cabeçalho (a caixa do grupo anima sozinha); os dois retratos trocam em
+   crossfade ancorados no alto à esquerda, sem esticar o texto. */
+::view-transition-group(*.ss-card) { animation-duration: .42s; /* v1.9 tokens */ animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-old(*.ss-card), ::view-transition-new(*.ss-card) { height: 100%; width: 100%; object-fit: none; object-position: left top; }
+::view-transition-old(*.ss-card) { animation: ss-vt-card-out .18s ease-out both; /* v1.9 tokens */ }
+::view-transition-new(*.ss-card) { animation: ss-vt-card-in .28s cubic-bezier(.2, .8, .2, 1) .08s both; /* v1.9 tokens */ }
+@keyframes ss-vt-card-out { to { opacity: 0; } }
+@keyframes ss-vt-card-in { from { opacity: 0; } }
+
+@layer components {
+  /* ── 2. Gráficos ── */
+  /* Linha que se desenha (da esquerda para a direita), no lugar do só-aparecer da v0.27. */
+  .ss-linec-line, .ss-linec-area { animation: ss-tc-draw .9s cubic-bezier(.2, .8, .2, 1) backwards; /* v1.9 tokens */ }
+  /* Rosca: gira um quarto de volta enquanto as fatias varrem. */
+  .ss-donut-chart svg { animation: ss-donut-turn .9s cubic-bezier(.2, .8, .2, 1) backwards; /* v1.9 tokens */ }
+  /* Troca de dados no lugar: do valor anterior ao novo. */
+  .ss-barc-bar { transition: y .52s cubic-bezier(.4, 0, .2, 1), height .52s cubic-bezier(.4, 0, .2, 1), /* v1.9 tokens */
+                             x .52s cubic-bezier(.4, 0, .2, 1), width .52s cubic-bezier(.4, 0, .2, 1); }
+  .ss-linec-line, .ss-linec-area, .ss-area-line, .ss-area-fill, .ss-barc-line, .ss-barc-proj { transition: d .52s cubic-bezier(.4, 0, .2, 1); /* v1.9 tokens */ }
+  .ss-linec-dot, .ss-barc-dot { transition: cx .52s cubic-bezier(.4, 0, .2, 1), cy .52s cubic-bezier(.4, 0, .2, 1); }
+  .ss-donut-slice { transition: opacity .2s, stroke-width .3s var(--ss-bounce),
+                                stroke-dasharray .52s cubic-bezier(.4, 0, .2, 1), stroke-dashoffset .52s cubic-bezier(.4, 0, .2, 1); }
+
+  /* ── 3. Rolagem ── */
+  .ss-page.is-shrink > .ss-page-head { position: sticky; top: 0; z-index: 5; background: var(--page); padding-block: .5rem; }
+
+  /* ── 4. Estados vazios ilustrados ── */
+  .ss-empty-art.is-anim .ss-ill-symbol { transform-box: fill-box; transform-origin: center;
+                                         animation: ss-ill-float 3.6s ease-in-out .6s infinite; /* v1.9 tokens */ }
+  .ss-empty-art.is-anim .ss-ill-shadow { transform-box: fill-box; transform-origin: center; animation: ss-ill-shadow 3.6s ease-in-out .6s infinite; }
+  .ss-empty-art.is-anim .ss-ill-spark { transform-box: fill-box; transform-origin: center;
+                                        animation: ss-iv-pop .5s var(--ss-bounce) .35s backwards, ss-ill-twinkle 2.4s ease-in-out .9s infinite; }
+  .ss-empty-art.is-anim .ss-ill-spark.is-2 { animation-delay: .45s, 1.5s; }
+  .ss-empty-art.is-anim .ss-ill-spark.is-3 { animation-delay: .55s, 2.1s; }
+  .ss-empty-art.is-anim .ss-ill-check { stroke-dasharray: 1; animation: ss-draw .6s cubic-bezier(.2, .8, .2, 1) .45s backwards; }
+  .ss-ill-orbit.is-danger { stroke: color-mix(in srgb, var(--danger) 30%, transparent); }
+  .ss-ill-soft.is-danger { fill: color-mix(in srgb, var(--danger) 10%, transparent); }
+  .ss-ill-danger-s { fill: none; stroke: var(--danger); stroke-width: 5; stroke-linecap: round; }
+  .ss-empty-state[data-illustration="error"] .ss-ill-floor { fill: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+  /* ── 5. Comemoração ── */
+  .ss-celebrate { position: relative; }
+  .ss-celebrate.is-bursting { animation: ss-celebrate-pop .52s var(--ss-bounce); /* v1.9 tokens */ }
+  /* Estouro: risquinhos em volta (máscara cônica) que saem e somem; na cor da marca. */
+  .ss-celebrate.is-bursting::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; pointer-events: none;
+    background: repeating-conic-gradient(var(--accent) 0 4deg, transparent 4deg 36deg);
+    -webkit-mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 98%, transparent 100%);
+    mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 98%, transparent 100%);
+    animation: ss-celebrate-burst .6s cubic-bezier(.2, .8, .2, 1) forwards; /* v1.9 tokens */ }
+}
+
+/* Rolagem com animation-timeline (Chrome/Edge 115+, Safari 26): sem suporte, nada muda. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .ss-page.is-shrink > .ss-page-head { animation: ss-page-shrink linear both; animation-timeline: scroll(); animation-range: 0 96px; }
+    .ss-page.is-shrink > .ss-page-head .ss-page-title { animation: ss-page-shrink-title linear both; animation-timeline: scroll(); animation-range: 0 96px; }
+  }
+  @supports (animation-timeline: view()) {
+    .ss-scroll-reveal, .ss-scroll-stagger > * { animation: ss-scroll-in linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+    .ss-scroll-stagger > :nth-child(3n + 2) { animation-range: entry 8% entry 78%; }
+    .ss-scroll-stagger > :nth-child(3n + 3) { animation-range: entry 16% entry 86%; }
+  }
+}
+
+@keyframes ss-donut-turn { from { rotate: -90deg; } }
+@keyframes ss-ill-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+@keyframes ss-ill-shadow { 0%, 100% { scale: 1; } 50% { scale: .9; } }
+@keyframes ss-ill-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes ss-page-shrink { to { padding-block: .25rem; box-shadow: 0 1px 0 var(--line); } }
+@keyframes ss-page-shrink-title { to { font-size: 1.15rem; } }
+@keyframes ss-scroll-in { from { opacity: 0; translate: 0 18px; scale: .98; } }
+@keyframes ss-celebrate-pop { 40% { scale: 1.08; } }
+@keyframes ss-celebrate-burst { from { opacity: 1; scale: .7; } to { opacity: 0; scale: 1.25; } }
+
+/* Entrada ao aparecer (ss-in-view): armado e ainda não visto, a rosca espera parada. */
+.ss-iv:not([data-in-view]) .ss-donut-chart svg { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*.ss-card), ::view-transition-old(*.ss-card), ::view-transition-new(*.ss-card) { animation: none !important; }
+  .ss-linec-line, .ss-linec-area, .ss-donut-chart svg, .ss-empty-art.is-anim :is(.ss-ill-symbol, .ss-ill-shadow, .ss-ill-spark, .ss-ill-check),
+  .ss-celebrate.is-bursting, .ss-celebrate.is-bursting::after { animation: none !important; }
+  .ss-barc-bar, .ss-linec-line, .ss-linec-area, .ss-area-line, .ss-area-fill, .ss-barc-line, .ss-barc-proj,
+  .ss-linec-dot, .ss-barc-dot, .ss-donut-slice { transition: none !important; }
+  .ss-celebrate.is-bursting::after { content: none; }
+}

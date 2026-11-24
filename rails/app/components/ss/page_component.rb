@@ -18,6 +18,11 @@ module Ss
   # compact: true encolhe o cabeçalho (título 1,2 rem, menos espaço): o topo discreto de um painel,
   # com as ações em botões de ícone. Par do SsTopBar(eyebrow:).
   #   render Ss::PageComponent.new(title: "Sala", eyebrow: "Casa · 10 de novembro", compact: true) { |p| p.with_actions { ... } }
+  #
+  # v1.9 · transições: view_transition: (registro) dá ao cabeçalho o mesmo nome do card da lista
+  # (ss_view_transition_attrs): na navegação do Turbo o card vira o cabeçalho. shrink: true deixa o
+  # cabeçalho grudado no alto e encolhe ao rolar (animation-timeline: scroll(), só CSS; sem suporte
+  # ou com reduzir movimento, fica parado).
   class PageComponent < BaseComponent
     BACK = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg>).freeze
 
@@ -26,7 +31,7 @@ module Ss
     renders_one :filters
     renders_one :badge
 
-    def initialize(title:, subtitle: nil, crumbs: nil, back: nil, back_label: nil, eyebrow: nil, compact: false, **opts)
+    def initialize(title:, subtitle: nil, crumbs: nil, back: nil, back_label: nil, eyebrow: nil, compact: false, view_transition: nil, shrink: false, **opts)
       super(**opts)
       @title = title
       @subtitle = subtitle
@@ -35,9 +40,14 @@ module Ss
       @back_label = back_label
       @eyebrow = eyebrow.presence
       @compact = compact
+      @view_transition = view_transition
+      @shrink = shrink
     end
 
     def body? = content.present? && content.to_s.strip.present?
+
+    # v1.9: o cabeçalho leva o view-transition-name do registro (o card da lista vira ele).
+    def view_transition_attrs = @view_transition ? ss_view_transition_attrs(@view_transition) : {}
 
     def back_label = @back_label || ss_t("page.back", default: "Voltar")
   end

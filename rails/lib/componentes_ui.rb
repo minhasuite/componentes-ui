@@ -5,6 +5,7 @@ require "view_component"
 require "componentes_ui/helpers"
 require "componentes_ui/form_builder"
 require "componentes_ui/form_helpers"
+require "componentes_ui/transition_helpers"
 
 module ComponentesUi
   # Configuração da gem (v0.10). No app, num initializer:
@@ -70,7 +71,7 @@ module ComponentesUi
     config.i18n.load_path += Dir[File.expand_path("../config/locales/*.yml", __dir__)]
 
     initializer "componentes_ui.helpers" do
-      ActiveSupport.on_load(:action_view) { include ComponentesUi::Helpers; include ComponentesUi::FormHelpers }
+      ActiveSupport.on_load(:action_view) { include ComponentesUi::Helpers; include ComponentesUi::FormHelpers; include ComponentesUi::TransitionHelpers }
     end
 
     initializer "componentes_ui.assets" do |app|

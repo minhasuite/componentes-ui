@@ -40,8 +40,21 @@ export function ssConfetti() {
   requestAnimationFrame(frame)
 }
 
+// v1.9 · regra de comemoração (par do SsCelebrationGate do Flutter): no máximo uma por sessão
+// por tipo (goal, streak, first_use), guardada no sessionStorage ("ss-celebrate:<tipo>").
+// Devolve true na primeira vez do tipo na sessão (e marca). Sem sessionStorage, deixa passar.
+export function ssCelebrationClaim(kind) {
+  if (!kind) return true
+  const k = `ss-celebrate:${kind}`
+  try {
+    if (sessionStorage.getItem(k)) return false
+    sessionStorage.setItem(k, "1")
+  } catch (_) {}
+  return true
+}
+
 export default class extends Controller {
-  static values = { key: String, auto: { type: Boolean, default: true } }
+  static values = { key: String, kind: String, auto: { type: Boolean, default: true } }
 
   connect() {
     window.ssConfetti = ssConfetti
@@ -56,5 +69,9 @@ export default class extends Controller {
     this.burst()
   }
 
-  burst() { ssConfetti() }
+  burst() {
+    // v1.9: com kind:, só a primeira do tipo na sessão.
+    if (this.kindValue && !ssCelebrationClaim(this.kindValue)) return
+    ssConfetti()
+  }
 }
