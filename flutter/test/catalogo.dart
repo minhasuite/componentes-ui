@@ -56,6 +56,8 @@ import 'catalogo_v21.dart';
 import 'catalogo_v22.dart';
 import 'catalogo_v23.dart';
 import 'catalogo_v19_movimento.dart';
+// v1.9 · paridade_app
+import 'catalogo_v19_paridade_app.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -128,7 +130,8 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV19Transicoes(
+final catalogo = comV19ParidadeApp(
+  comV19Transicoes(
   comV19Movimento(
   comV130(
     comV122(
@@ -143,7 +146,7 @@ final catalogo = comV19Transicoes(
       ),
     ),
   ),
-));
+)));
 
 final _catalogo = comV08(<Componente>[
   Componente(

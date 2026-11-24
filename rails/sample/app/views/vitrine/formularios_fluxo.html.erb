@@ -17,11 +17,11 @@
 <% end %>
 </div>
 
-<%= demo "Ss::WizardComponent", "Passos com progresso; Avançar valida os campos do passo (validação nativa); Voltar não perde nada. Com draft_key: guarda o rascunho no localStorage e restaura ao voltar.",
-      uso: 'render Ss::WizardComponent.new(draft_key: "novo-cliente") { |w| w.with_step(title: "Dados") { … } }' do %>
+<%= demo "Ss::WizardComponent", "Passos com progresso; Avançar valida os campos do passo (validação nativa); Voltar não perde nada. Com draft_key: guarda o rascunho no localStorage e restaura ao voltar. v1.9 (pares do SsWizard): with_summary vira o passo final Revisão e save_later_label: põe "Salvar e continuar depois" (submit sem validação, name=save_later).",
+      uso: 'render Ss::WizardComponent.new(draft_key: "novo-cliente", save_later_label: true) { |w| w.with_step(title: "Dados") { … }; w.with_summary { … } }' do %>
   <form class="ss-card ss-card-pad" style="max-width:640px" action="<%= vitrine_path("formularios_fluxo") %>" method="post" data-turbo="false">
     <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-    <%= render Ss::WizardComponent.new(draft_key: "vitrine-cliente", submit_label: "Cadastrar") do |w| %>
+    <%= render Ss::WizardComponent.new(draft_key: "vitrine-cliente", submit_label: "Cadastrar", save_later_label: true) do |w| %>
       <% w.with_step(title: "Dados") do %>
         <div class="ss-field"><label for="wz-nome">Nome <abbr class="ss-req" title="obrigatório">*</abbr></label><input id="wz-nome" name="wz[nome]" class="ss-input" required><small class="ss-field-error">Preencha este campo.</small></div>
         <div class="ss-field"><label for="wz-doc">CPF ou CNPJ</label><input id="wz-doc" name="wz[doc]" class="ss-input num" inputmode="numeric"></div>
@@ -30,7 +30,7 @@
         <div class="ss-field"><label for="wz-cep">CEP</label><input id="wz-cep" name="wz[cep]" class="ss-input num" inputmode="numeric" pattern="\d{5}-?\d{3}" placeholder="00000-000"><small class="ss-field-error">CEP com 8 números.</small></div>
         <div class="ss-field"><label for="wz-cidade">Cidade</label><input id="wz-cidade" name="wz[cidade]" class="ss-input"></div>
       <% end %>
-      <% w.with_step(title: "Revisão") do %>
+      <% w.with_summary do %>
         <label class="ss-switch-row"><span>Mandar boas-vindas<small>Por WhatsApp, agora.</small></span><input type="checkbox" role="switch" name="wz[boas_vindas]" value="1" checked></label>
       <% end %>
     <% end %>

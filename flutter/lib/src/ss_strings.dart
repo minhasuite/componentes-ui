@@ -441,6 +441,35 @@ class SsStrings {
     this.celebrateGoal = 'Meta batida!',
     this.celebrateStreak = 'Sequência mantida!',
     this.celebrateFirstUse = 'Primeiro passo dado!',
+    // v1.9 · paridade_app (os {n}, {total}, {label}… o componente troca)
+    this.tourCount = '{n} de {total}',
+    this.tourNext = 'Próximo',
+    this.tourDone = 'Concluir',
+    this.wizardNext = 'Avançar',
+    this.wizardSubmit = 'Concluir',
+    this.wizardReview = 'Revisão',
+    this.wizardSaveLater = 'Salvar e continuar depois',
+    this.wizardStep = 'Passo {n}: {title}',
+    this.dateRangeLabel = 'Período',
+    this.dateRangeFrom = 'De',
+    this.dateRangeTo = 'Até',
+    this.dateRangeShortcuts = 'Atalhos de período',
+    this.dateRange7d = '7 dias',
+    this.dateRangeMonth = 'Este mês',
+    this.dateRangeLastMonth = 'Mês passado',
+    this.otpLabel = 'Código de verificação',
+    this.otpDigit = 'Dígito {n} de {total}',
+    this.tagFieldHint = 'Digite e confirme no teclado',
+    this.tagFieldChosen = '{label} escolhidas',
+    this.auditTrailLabel = 'Histórico de alterações',
+    this.auditTrailEmpty = 'vazio',
+    this.auditTrailTo = 'para',
+    this.personTeam = 'Equipe',
+    this.whatsNewNew = 'novo',
+    this.ganttLabel = 'Cronograma',
+    this.ganttBar = '{label}, de {from} a {to}, {pct}% feito',
+    this.splitList = 'Lista',
+    this.splitEmpty = 'Escolha um item da lista.',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -505,6 +534,38 @@ class SsStrings {
   final String achievementLabel;
   final String achievementEarned;
   final String achievementMissing;
+
+  /// v1.9 · paridade_app: tour, assistente, período, código, etiquetas, histórico,
+  /// pessoa, novidades, cronograma e lista + detalhe (pares do web). Os `{n}`,
+  /// `{total}`, `{label}`… o componente troca.
+  final String tourCount;
+  final String tourNext;
+  final String tourDone;
+  final String wizardNext;
+  final String wizardSubmit;
+  final String wizardReview;
+  final String wizardSaveLater;
+  final String wizardStep;
+  final String dateRangeLabel;
+  final String dateRangeFrom;
+  final String dateRangeTo;
+  final String dateRangeShortcuts;
+  final String dateRange7d;
+  final String dateRangeMonth;
+  final String dateRangeLastMonth;
+  final String otpLabel;
+  final String otpDigit;
+  final String tagFieldHint;
+  final String tagFieldChosen;
+  final String auditTrailLabel;
+  final String auditTrailEmpty;
+  final String auditTrailTo;
+  final String personTeam;
+  final String whatsNewNew;
+  final String ganttLabel;
+  final String ganttBar;
+  final String splitList;
+  final String splitEmpty;
 
   /// v0.28: nome do QR para o leitor de tela ([SsQrCard]) e as situações da faixa por dia ([SsDayStrip]).
   final String qrLabel;
@@ -1577,6 +1638,35 @@ class SsStrings {
     celebrateGoal: 'Meta batida!',
     celebrateStreak: 'Sequência mantida!',
     celebrateFirstUse: 'Primeiro passo dado!',
+    // v1.9 · paridade_app
+    tourCount: '{n} de {total}',
+    tourNext: 'Próximo',
+    tourDone: 'Concluir',
+    wizardNext: 'Avançar',
+    wizardSubmit: 'Concluir',
+    wizardReview: 'Revisão',
+    wizardSaveLater: 'Salvar e continuar depois',
+    wizardStep: 'Passo {n}: {title}',
+    dateRangeLabel: 'Período',
+    dateRangeFrom: 'De',
+    dateRangeTo: 'Até',
+    dateRangeShortcuts: 'Atalhos de período',
+    dateRange7d: '7 dias',
+    dateRangeMonth: 'Este mês',
+    dateRangeLastMonth: 'Mês passado',
+    otpLabel: 'Código de verificação',
+    otpDigit: 'Dígito {n} de {total}',
+    tagFieldHint: 'Digite e confirme no teclado',
+    tagFieldChosen: '{label} escolhidas',
+    auditTrailLabel: 'Histórico de alterações',
+    auditTrailEmpty: 'vazio',
+    auditTrailTo: 'para',
+    personTeam: 'Equipe',
+    whatsNewNew: 'novo',
+    ganttLabel: 'Cronograma',
+    ganttBar: '{label}, de {from} a {to}, {pct}% feito',
+    splitList: 'Lista',
+    splitEmpty: 'Escolha um item da lista.',
   );
 
   /// Inglês.
@@ -2012,6 +2102,35 @@ class SsStrings {
     celebrateGoal: 'Goal reached!',
     celebrateStreak: 'Streak kept!',
     celebrateFirstUse: 'First step done!',
+    // v1.9 · paridade_app
+    tourCount: '{n} of {total}',
+    tourNext: 'Next',
+    tourDone: 'Finish',
+    wizardNext: 'Next',
+    wizardSubmit: 'Finish',
+    wizardReview: 'Review',
+    wizardSaveLater: 'Save and continue later',
+    wizardStep: 'Step {n}: {title}',
+    dateRangeLabel: 'Period',
+    dateRangeFrom: 'From',
+    dateRangeTo: 'To',
+    dateRangeShortcuts: 'Period shortcuts',
+    dateRange7d: '7 days',
+    dateRangeMonth: 'This month',
+    dateRangeLastMonth: 'Last month',
+    otpLabel: 'Verification code',
+    otpDigit: 'Digit {n} of {total}',
+    tagFieldHint: 'Type and confirm on the keyboard',
+    tagFieldChosen: '{label} chosen',
+    auditTrailLabel: 'Change history',
+    auditTrailEmpty: 'empty',
+    auditTrailTo: 'to',
+    personTeam: 'Team',
+    whatsNewNew: 'new',
+    ganttLabel: 'Timeline',
+    ganttBar: '{label}, from {from} to {to}, {pct}% done',
+    splitList: 'List',
+    splitEmpty: 'Choose an item from the list.',
   );
 
   /// Espanhol.
@@ -2447,6 +2566,35 @@ class SsStrings {
     celebrateGoal: '¡Meta alcanzada!',
     celebrateStreak: '¡Racha mantenida!',
     celebrateFirstUse: '¡Primer paso dado!',
+    // v1.9 · paridade_app
+    tourCount: '{n} de {total}',
+    tourNext: 'Siguiente',
+    tourDone: 'Terminar',
+    wizardNext: 'Siguiente',
+    wizardSubmit: 'Terminar',
+    wizardReview: 'Revisión',
+    wizardSaveLater: 'Guardar y seguir después',
+    wizardStep: 'Paso {n}: {title}',
+    dateRangeLabel: 'Período',
+    dateRangeFrom: 'Desde',
+    dateRangeTo: 'Hasta',
+    dateRangeShortcuts: 'Atajos de período',
+    dateRange7d: '7 días',
+    dateRangeMonth: 'Este mes',
+    dateRangeLastMonth: 'Mes pasado',
+    otpLabel: 'Código de verificación',
+    otpDigit: 'Dígito {n} de {total}',
+    tagFieldHint: 'Escribe y confirma en el teclado',
+    tagFieldChosen: '{label} elegidas',
+    auditTrailLabel: 'Historial de cambios',
+    auditTrailEmpty: 'vacío',
+    auditTrailTo: 'a',
+    personTeam: 'Equipo',
+    whatsNewNew: 'nuevo',
+    ganttLabel: 'Cronograma',
+    ganttBar: '{label}, del {from} al {to}, {pct}% hecho',
+    splitList: 'Lista',
+    splitEmpty: 'Elige un elemento de la lista.',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2869,6 +3017,35 @@ class SsStrings {
     'celebrateGoal': celebrateGoal,
     'celebrateStreak': celebrateStreak,
     'celebrateFirstUse': celebrateFirstUse,
+    // v1.9 · paridade_app
+    'tourCount': tourCount,
+    'tourNext': tourNext,
+    'tourDone': tourDone,
+    'wizardNext': wizardNext,
+    'wizardSubmit': wizardSubmit,
+    'wizardReview': wizardReview,
+    'wizardSaveLater': wizardSaveLater,
+    'wizardStep': wizardStep,
+    'dateRangeLabel': dateRangeLabel,
+    'dateRangeFrom': dateRangeFrom,
+    'dateRangeTo': dateRangeTo,
+    'dateRangeShortcuts': dateRangeShortcuts,
+    'dateRange7d': dateRange7d,
+    'dateRangeMonth': dateRangeMonth,
+    'dateRangeLastMonth': dateRangeLastMonth,
+    'otpLabel': otpLabel,
+    'otpDigit': otpDigit,
+    'tagFieldHint': tagFieldHint,
+    'tagFieldChosen': tagFieldChosen,
+    'auditTrailLabel': auditTrailLabel,
+    'auditTrailEmpty': auditTrailEmpty,
+    'auditTrailTo': auditTrailTo,
+    'personTeam': personTeam,
+    'whatsNewNew': whatsNewNew,
+    'ganttLabel': ganttLabel,
+    'ganttBar': ganttBar,
+    'splitList': splitList,
+    'splitEmpty': splitEmpty,
   };
 
   /// Os idiomas prontos.
@@ -3326,6 +3503,35 @@ class SsStrings {
     String? celebrateGoal,
     String? celebrateStreak,
     String? celebrateFirstUse,
+    // v1.9 · paridade_app
+    String? tourCount,
+    String? tourNext,
+    String? tourDone,
+    String? wizardNext,
+    String? wizardSubmit,
+    String? wizardReview,
+    String? wizardSaveLater,
+    String? wizardStep,
+    String? dateRangeLabel,
+    String? dateRangeFrom,
+    String? dateRangeTo,
+    String? dateRangeShortcuts,
+    String? dateRange7d,
+    String? dateRangeMonth,
+    String? dateRangeLastMonth,
+    String? otpLabel,
+    String? otpDigit,
+    String? tagFieldHint,
+    String? tagFieldChosen,
+    String? auditTrailLabel,
+    String? auditTrailEmpty,
+    String? auditTrailTo,
+    String? personTeam,
+    String? whatsNewNew,
+    String? ganttLabel,
+    String? ganttBar,
+    String? splitList,
+    String? splitEmpty,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3745,6 +3951,35 @@ class SsStrings {
     celebrateGoal: celebrateGoal ?? this.celebrateGoal,
     celebrateStreak: celebrateStreak ?? this.celebrateStreak,
     celebrateFirstUse: celebrateFirstUse ?? this.celebrateFirstUse,
+    // v1.9 · paridade_app
+    tourCount: tourCount ?? this.tourCount,
+    tourNext: tourNext ?? this.tourNext,
+    tourDone: tourDone ?? this.tourDone,
+    wizardNext: wizardNext ?? this.wizardNext,
+    wizardSubmit: wizardSubmit ?? this.wizardSubmit,
+    wizardReview: wizardReview ?? this.wizardReview,
+    wizardSaveLater: wizardSaveLater ?? this.wizardSaveLater,
+    wizardStep: wizardStep ?? this.wizardStep,
+    dateRangeLabel: dateRangeLabel ?? this.dateRangeLabel,
+    dateRangeFrom: dateRangeFrom ?? this.dateRangeFrom,
+    dateRangeTo: dateRangeTo ?? this.dateRangeTo,
+    dateRangeShortcuts: dateRangeShortcuts ?? this.dateRangeShortcuts,
+    dateRange7d: dateRange7d ?? this.dateRange7d,
+    dateRangeMonth: dateRangeMonth ?? this.dateRangeMonth,
+    dateRangeLastMonth: dateRangeLastMonth ?? this.dateRangeLastMonth,
+    otpLabel: otpLabel ?? this.otpLabel,
+    otpDigit: otpDigit ?? this.otpDigit,
+    tagFieldHint: tagFieldHint ?? this.tagFieldHint,
+    tagFieldChosen: tagFieldChosen ?? this.tagFieldChosen,
+    auditTrailLabel: auditTrailLabel ?? this.auditTrailLabel,
+    auditTrailEmpty: auditTrailEmpty ?? this.auditTrailEmpty,
+    auditTrailTo: auditTrailTo ?? this.auditTrailTo,
+    personTeam: personTeam ?? this.personTeam,
+    whatsNewNew: whatsNewNew ?? this.whatsNewNew,
+    ganttLabel: ganttLabel ?? this.ganttLabel,
+    ganttBar: ganttBar ?? this.ganttBar,
+    splitList: splitList ?? this.splitList,
+    splitEmpty: splitEmpty ?? this.splitEmpty,
   );
 }
 

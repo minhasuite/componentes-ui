@@ -1,0 +1,9 @@
+/* v1.9 · paridade_app: o que o web ganhou para ficar igual ao app.
+   Wizard: "Salvar e continuar depois" (save_later_label:) entre Voltar e Avançar; no celular desce para uma linha própria. */
+@layer components {
+  .ss-wizard-nav:has(.ss-wizard-later) { flex-wrap: wrap; justify-content: flex-start; }
+  .ss-wizard-nav .ss-wizard-later { margin-inline-start: auto; }
+  @media (max-width: 520px) {
+    .ss-wizard-nav .ss-wizard-later { order: 3; flex-basis: 100%; margin-inline-start: 0; }
+  }
+}

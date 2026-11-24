@@ -604,6 +604,9 @@ es:
       next: Siguiente
       step: 'Paso %{n}: %{title}'
       submit: Terminar
+      # v1.9 · paridade_app (SsWizard.summary / onSaveForLater)
+      review: Revisión
+      save_later: Guardar y seguir después
     # v0.10.2
     check_all:
       label: 'Marcar todos'

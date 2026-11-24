@@ -80,6 +80,8 @@
 @import "./v19_movimento.css";
 /* v1.9 · transições: lista → detalhe (View Transitions), gráficos, rolagem, vazios ilustrados, comemoração. */
 @import "./v19_transicoes.css";
+/* v1.9 · paridade_app: o "Salvar e continuar depois" do wizard (par do SsWizard.onSaveForLater). */
+@import "./v19_paridade_app.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

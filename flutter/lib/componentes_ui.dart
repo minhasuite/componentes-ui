@@ -120,3 +120,6 @@ export 'src/v19/transicoes/predictive_back.dart';
 export 'src/v19/transicoes/chart_transition.dart';
 export 'src/v19/transicoes/illustrations.dart';
 export 'src/v19/transicoes/celebration.dart';
+// v1.9 · paridade_app: gantt, tour, assistente, período, código, etiquetas, histórico, depoimento,
+// pessoa, mosaico, novidades, esqueleto por forma, lista + detalhe e a casca adaptável.
+export 'src/v19/paridade_app/paridade_app.dart';
