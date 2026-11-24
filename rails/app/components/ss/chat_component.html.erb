@@ -5,10 +5,10 @@
   </div>
   <span class="ss-thinking" role="status" aria-label="<%= thinking_label %>" data-ss-chat-target="thinking"<% unless thinking? %> hidden<% end %>><i></i><i></i><i></i></span>
   <% if url %>
-    <%# novalidate (v1.4.1): o ss-chat já não envia vazio; sem ele, o Chrome mostrava o balão "Preencha este campo." ao parar o mouse no campo. %>
+    <%# novalidate (v1.4.1) e sem `required` (v1.8.3): o ss-chat já não envia vazio; com `required`, o Chrome mostra o balão "Preencha este campo." ao parar o mouse no campo vazio mesmo com novalidate. %>
     <%= form_with url: url, method: http_method, class: "ss-chat-form", html: { novalidate: true }, data: { ss_chat_target: "form", action: "submit->ss-chat#sending turbo:submit-end->ss-chat#sent" } do %>
       <label class="ss-sr" for="<%= id %>-input"><%= placeholder %></label>
-      <textarea id="<%= id %>-input" name="<%= name %>" rows="1" class="ss-input ss-chat-input" placeholder="<%= placeholder %>" maxlength="<%= max_length %>" required
+      <textarea id="<%= id %>-input" name="<%= name %>" rows="1" class="ss-input ss-chat-input" placeholder="<%= placeholder %>" maxlength="<%= max_length %>" aria-required="true"
                 autocomplete="off"<% if disabled? %> disabled<% end %> data-ss-chat-target="input" data-action="keydown->ss-chat#key input->ss-chat#grow"></textarea>
       <button type="submit" class="ss-btn ss-btn-primary ss-chat-send" aria-label="<%= send_label %>" title="<%= send_label %>"<% if disabled? %> disabled<% end %> data-ss-chat-target="send">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
