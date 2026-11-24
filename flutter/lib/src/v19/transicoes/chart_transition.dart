@@ -23,7 +23,7 @@ mixin SsChartTransition<T extends StatefulWidget> on State<T>, TickerProvider {
   List<List<double>> chartValues(T widget);
 
   /// Duração da troca.
-  Duration get chartTransitionDuration => const Duration(milliseconds: 520); // v1.9 tokens
+  Duration get chartTransitionDuration => const Duration(milliseconds: 520); // ritmo próprio
 
   late final AnimationController _troca = AnimationController(vsync: this, duration: chartTransitionDuration, value: 1)
     ..addListener(_aoTrocar);

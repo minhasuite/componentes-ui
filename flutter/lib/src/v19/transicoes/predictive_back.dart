@@ -50,7 +50,7 @@ class _SsBackGestureListenerState extends State<SsBackGestureListener>
   // Desistiu (sem mover a rota): o desenho volta ao lugar sozinho.
   late final AnimationController _volta = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 220), // v1.9 tokens
+    duration: SsMotion.short,
   )..addListener(_aoVoltar);
   double _de = 0;
 

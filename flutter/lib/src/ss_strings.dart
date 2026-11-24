@@ -1186,6 +1186,7 @@ class SsStrings {
   // v1.9 · movimento
   /// Opção "Cores do sistema" (Material You) do [SsAppearancePanel].
   final String appearanceSystemColors;
+
   /// v1.9 · transições: o que o leitor de tela anuncia na comemoração ([SsCelebrate] com kind).
   final String celebrateGoal;
   final String celebrateStreak;

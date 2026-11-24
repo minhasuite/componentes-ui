@@ -151,10 +151,10 @@ class SsOpenRoute<T> extends PageRoute<T> {
   }
 
   @override
-  Duration get transitionDuration => Duration(milliseconds: _rapido ? 200 : 460); // v1.9 tokens
+  Duration get transitionDuration => _rapido ? SsMotion.short : const Duration(milliseconds: 460); // 460/380: ritmo próprio do container
 
   @override
-  Duration get reverseTransitionDuration => Duration(milliseconds: _rapido ? 200 : 380); // v1.9 tokens
+  Duration get reverseTransitionDuration => _rapido ? SsMotion.short : const Duration(milliseconds: 380);
 
   @override
   bool get maintainState => true;

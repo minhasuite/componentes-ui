@@ -51,11 +51,11 @@ class SsIllustrationArt extends StatefulWidget {
 class _SsIllustrationArtState extends State<SsIllustrationArt> with TickerProviderStateMixin {
   late final AnimationController _entra = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 620), // v1.9 tokens
+    duration: const Duration(milliseconds: 620), // ritmo próprio
   );
   late final AnimationController _loop = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 3600), // v1.9 tokens
+    duration: const Duration(milliseconds: 3600), // ritmo próprio
   );
 
   @override

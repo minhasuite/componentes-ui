@@ -8,7 +8,7 @@
       cards aparecem ao entrar na tela (.ss-scroll-reveal, .ss-scroll-stagger > *), dentro de @supports.
    4. Estados vazios ilustrados (EmptyStateComponent(illustration:)): entrada com mola e loop sutil.
    5. Comemoração (Ss::CelebrateComponent): o estouro da sequência.
-   Tudo some com prefers-reduced-motion. Cor só por token. Durações: ver os comentários "v1.9 tokens". */
+   Tudo some com prefers-reduced-motion. Cor só por token. Durações curtas pelos tokens do v19_movimento.css; as longas (.42s, .52s, .9s) têm ritmo próprio. */
 
 /* ── 1. Lista → detalhe ── */
 [data-ss-vt="card"] { view-transition-class: ss-card; }
@@ -16,25 +16,25 @@
 [data-ss-vt="image"] { view-transition-class: ss-img; }
 /* O card cresce/encolhe até o cabeçalho (a caixa do grupo anima sozinha); os dois retratos trocam em
    crossfade ancorados no alto à esquerda, sem esticar o texto. */
-::view-transition-group(*.ss-card) { animation-duration: .42s; /* v1.9 tokens */ animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-group(*.ss-card) { animation-duration: .42s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
 ::view-transition-old(*.ss-card), ::view-transition-new(*.ss-card) { height: 100%; width: 100%; object-fit: none; object-position: left top; }
-::view-transition-old(*.ss-card) { animation: ss-vt-card-out .18s ease-out both; /* v1.9 tokens */ }
-::view-transition-new(*.ss-card) { animation: ss-vt-card-in .28s cubic-bezier(.2, .8, .2, 1) .08s both; /* v1.9 tokens */ }
+::view-transition-old(*.ss-card) { animation: ss-vt-card-out var(--ss-dur-short) var(--ss-ease-exit) both; }
+::view-transition-new(*.ss-card) { animation: ss-vt-card-in var(--ss-dur-medium) var(--ss-ease-enter) .08s both; }
 @keyframes ss-vt-card-out { to { opacity: 0; } }
 @keyframes ss-vt-card-in { from { opacity: 0; } }
 
 @layer components {
   /* ── 2. Gráficos ── */
   /* Linha que se desenha (da esquerda para a direita), no lugar do só-aparecer da v0.27. */
-  .ss-linec-line, .ss-linec-area { animation: ss-tc-draw .9s cubic-bezier(.2, .8, .2, 1) backwards; /* v1.9 tokens */ }
+  .ss-linec-line, .ss-linec-area { animation: ss-tc-draw .9s cubic-bezier(.2, .8, .2, 1) backwards; }
   /* Rosca: gira um quarto de volta enquanto as fatias varrem. */
-  .ss-donut-chart svg { animation: ss-donut-turn .9s cubic-bezier(.2, .8, .2, 1) backwards; /* v1.9 tokens */ }
+  .ss-donut-chart svg { animation: ss-donut-turn .9s cubic-bezier(.2, .8, .2, 1) backwards; }
   /* Troca de dados no lugar: do valor anterior ao novo. */
-  .ss-barc-bar { transition: y .52s cubic-bezier(.4, 0, .2, 1), height .52s cubic-bezier(.4, 0, .2, 1), /* v1.9 tokens */
+  .ss-barc-bar { transition: y .52s cubic-bezier(.4, 0, .2, 1), height .52s cubic-bezier(.4, 0, .2, 1),
                              x .52s cubic-bezier(.4, 0, .2, 1), width .52s cubic-bezier(.4, 0, .2, 1); }
-  .ss-linec-line, .ss-linec-area, .ss-area-line, .ss-area-fill, .ss-barc-line, .ss-barc-proj { transition: d .52s cubic-bezier(.4, 0, .2, 1); /* v1.9 tokens */ }
+  .ss-linec-line, .ss-linec-area, .ss-area-line, .ss-area-fill, .ss-barc-line, .ss-barc-proj { transition: d .52s cubic-bezier(.4, 0, .2, 1); }
   .ss-linec-dot, .ss-barc-dot { transition: cx .52s cubic-bezier(.4, 0, .2, 1), cy .52s cubic-bezier(.4, 0, .2, 1); }
-  .ss-donut-slice { transition: opacity .2s, stroke-width .3s var(--ss-bounce),
+  .ss-donut-slice { transition: opacity var(--ss-dur-short), stroke-width var(--ss-dur-medium) var(--ss-bounce),
                                 stroke-dasharray .52s cubic-bezier(.4, 0, .2, 1), stroke-dashoffset .52s cubic-bezier(.4, 0, .2, 1); }
 
   /* ── 3. Rolagem ── */
@@ -42,7 +42,7 @@
 
   /* ── 4. Estados vazios ilustrados ── */
   .ss-empty-art.is-anim .ss-ill-symbol { transform-box: fill-box; transform-origin: center;
-                                         animation: ss-ill-float 3.6s ease-in-out .6s infinite; /* v1.9 tokens */ }
+                                         animation: ss-ill-float 3.6s ease-in-out .6s infinite; }
   .ss-empty-art.is-anim .ss-ill-shadow { transform-box: fill-box; transform-origin: center; animation: ss-ill-shadow 3.6s ease-in-out .6s infinite; }
   .ss-empty-art.is-anim .ss-ill-spark { transform-box: fill-box; transform-origin: center;
                                         animation: ss-iv-pop .5s var(--ss-bounce) .35s backwards, ss-ill-twinkle 2.4s ease-in-out .9s infinite; }
@@ -56,13 +56,13 @@
 
   /* ── 5. Comemoração ── */
   .ss-celebrate { position: relative; }
-  .ss-celebrate.is-bursting { animation: ss-celebrate-pop .52s var(--ss-bounce); /* v1.9 tokens */ }
+  .ss-celebrate.is-bursting { animation: ss-celebrate-pop .52s var(--ss-bounce); }
   /* Estouro: risquinhos em volta (máscara cônica) que saem e somem; na cor da marca. */
   .ss-celebrate.is-bursting::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; pointer-events: none;
     background: repeating-conic-gradient(var(--accent) 0 4deg, transparent 4deg 36deg);
     -webkit-mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 98%, transparent 100%);
     mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 98%, transparent 100%);
-    animation: ss-celebrate-burst .6s cubic-bezier(.2, .8, .2, 1) forwards; /* v1.9 tokens */ }
+    animation: ss-celebrate-burst .6s cubic-bezier(.2, .8, .2, 1) forwards; }
 }
 
 /* Rolagem com animation-timeline (Chrome/Edge 115+, Safari 26): sem suporte, nada muda. */
