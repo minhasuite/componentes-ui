@@ -127,3 +127,6 @@ export 'src/v19/paridade_app/paridade_app.dart';
 export 'src/v19/produto/assistant_view.dart';
 export 'src/v19/produto/capture_hub.dart';
 export 'src/v19/produto/notification_center.dart';
+// v1.9 · paridade web: a busca do menu lateral (SsSideMenu(search:)) e o cartão da fila de sincronização.
+export 'src/v19/paridade_web/side_search.dart' show SsSideMenuSearch;
+export 'src/v19/paridade_web/sync_panel.dart';

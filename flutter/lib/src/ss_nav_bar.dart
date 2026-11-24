@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'app_theme.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
+import 'v19/paridade_web/hide_on_scroll.dart';
 
 /// Uma aba da [SsNavBar].
 class SsNavItem {
@@ -65,8 +66,21 @@ class SsNavCenter {
 /// esquerda e as da direita), num recorte fixo; o círculo da aba atual passa
 /// por cima dele ao pular de um lado para o outro. Use com 2 ou 4 abas.
 class SsNavBar extends StatefulWidget {
-  const SsNavBar({super.key, required this.items, required this.currentIndex, required this.onTap, this.center})
-    : assert(items.length >= 2);
+  const SsNavBar({
+    super.key,
+    required this.items,
+    required this.currentIndex,
+    required this.onTap,
+    this.center,
+    this.hideOnScroll = false,
+  }) : assert(items.length >= 2);
+
+  /// v1.9: some ao rolar a lista da tela para baixo e volta ao rolar para cima (ou ao chegar no topo, ou ao
+  /// trocar de aba). Escuta o `ScrollNotificationObserver` do `Scaffold` (o mesmo do `AppBar`), então serve
+  /// no `bottomNavigationBar` de qualquer `Scaffold`; dentro do [SsNavScaffold] quem cuida é ele
+  /// (`hideNavOnScroll:`, que também devolve ao corpo a altura da barra). Com leitor de tela ligado não some;
+  /// com "reduzir movimento" some sem animar.
+  final bool hideOnScroll;
 
   final List<SsNavItem> items;
   final int currentIndex;
@@ -100,8 +114,28 @@ class SsNavBar extends StatefulWidget {
 /// Onde o círculo está num instante do pulo.
 typedef _Pose = ({double x, double lift, double squash, double notch});
 
-class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin {
+class _SsNavBarState extends State<SsNavBar> with TickerProviderStateMixin {
   late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 640), value: 1);
+  late final _hide = SsScrollHide(this);
+  ScrollNotificationObserverState? _observer;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hide.configure(context);
+    _listen();
+  }
+
+  void _listen() {
+    final want = widget.hideOnScroll && !SsNavHideScope.of(context);
+    final o = want ? ScrollNotificationObserver.maybeOf(context) : null;
+    if (o == _observer) return;
+    _observer?.removeListener(_onScroll);
+    _observer = o?..addListener(_onScroll);
+    if (o == null) _hide.show();
+  }
+
+  void _onScroll(ScrollNotification n) => _hide.handle(n);
   late double _from = widget.currentIndex.toDouble();
   double _fromLift = 0;
 
@@ -112,7 +146,9 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
   @override
   void didUpdateWidget(SsNavBar old) {
     super.didUpdateWidget(old);
+    if (old.hideOnScroll != widget.hideOnScroll) _listen();
     if (old.currentIndex == widget.currentIndex) return;
+    _hide.show();
     // Começa de onde o círculo está (troca no meio do pulo não teleporta).
     final p = _pose(old.currentIndex);
     _from = p.x;
@@ -126,6 +162,8 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
 
   @override
   void dispose() {
+    _observer?.removeListener(_onScroll);
+    _hide.dispose();
     _c.dispose();
     super.dispose();
   }
@@ -161,7 +199,7 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
     final half = n ~/ 2;
     double slotOf(double x) => center == null ? x : x + (x - (half - 1)).clamp(0.0, 1.0);
     final slots = center == null ? n : n + 1;
-    return SizedBox(
+    final bar = SizedBox(
       height: SsNavBar.rise + SsNavBar.barHeight + bottom,
       child: LayoutBuilder(
         builder: (context, box) {
@@ -267,6 +305,8 @@ class _SsNavBarState extends State<SsNavBar> with SingleTickerProviderStateMixin
         },
       ),
     );
+    if (!widget.hideOnScroll || SsNavHideScope.of(context)) return bar;
+    return SsHideOnScrollBox(visibility: _hide.visibility, child: bar);
   }
 }
 

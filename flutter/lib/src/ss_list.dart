@@ -6,7 +6,9 @@ import 'app_theme.dart';
 import 'density.dart';
 import 'motion.dart';
 import 'ss_badge.dart' show SsTone;
+import 'ss_context_menu.dart';
 import 'ss_strings.dart';
+import 'ss_swipe.dart';
 
 /// Item de lista: ícone num quadrado no tom da categoria (14%), título e
 /// subtítulo, e o valor à direita em DM Mono. Sem [tone], usa a cor da marca.
@@ -30,7 +32,21 @@ class SsListItem extends StatelessWidget {
     this.subtitleMaxLines,
     this.subtitleTone,
     this.valueTone,
+    this.contextActions = const [],
+    this.swipeStart,
+    this.swipeEnd,
   });
+
+  /// v1.9: o toque longo abre o [SsContextMenu] com estas ações (o item levanta e as ações aparecem
+  /// ancoradas); no leitor de tela viram ações personalizadas do item. Ganha do [onLongPress]. Par do menu ⋮
+  /// do web (`Ss::RowActionsComponent`).
+  final List<SsContextAction> contextActions;
+
+  /// v1.9: deslizar para a direita ([swipeStart]) ou para a esquerda ([swipeEnd]) faz a ação rápida
+  /// ([SsSwipeAction]; destrutiva encolhe o item). Use com `key:` estável na lista. Só app: no web as mesmas
+  /// ações vão no menu ⋮.
+  final SsSwipeSide? swipeStart;
+  final SsSwipeSide? swipeEnd;
 
   /// v0.20: pinta o subtítulo no tom ("Vence hoje" em [SsTone.danger],
   /// "Pago" em [SsTone.success]); par do `.ss-item-sub[data-tone]` /
@@ -75,7 +91,7 @@ class SsListItem extends StatelessWidget {
     final lead = leading ?? (icon == null ? null : SsIconTile(icon!, tone: cor));
     final item = InkWell(
       onTap: onTap,
-      onLongPress: onLongPress,
+      onLongPress: contextActions.isEmpty ? onLongPress : null,
       borderRadius: BorderRadius.circular(d.radiusField),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 4, vertical: d.rowPadV),
@@ -137,8 +153,27 @@ class SsListItem extends StatelessWidget {
       ),
     );
     // Tocável: afunda de leve no toque e volta com mola ao soltar.
-    final tocavel = SsPressable(enabled: onTap != null || onLongPress != null, scale: .98, child: item);
-    return dimmed ? Opacity(opacity: .5, child: tocavel) : tocavel;
+    final tocavel = SsPressable(
+      enabled: onTap != null || onLongPress != null || contextActions.isNotEmpty,
+      scale: .98,
+      child: item,
+    );
+    Widget out = dimmed ? Opacity(opacity: .5, child: tocavel) : tocavel;
+    // v1.9: toque longo com o menu de contexto e deslizar, padronizados.
+    if (contextActions.isNotEmpty) {
+      out = SsContextMenu(
+        actions: contextActions,
+        child: ColoredBox(color: c.surface, child: out),
+      );
+    }
+    if (swipeStart != null || swipeEnd != null) {
+      out = SsSwipeAction(
+        start: swipeStart,
+        end: swipeEnd,
+        child: ColoredBox(color: c.surface, child: out),
+      );
+    }
+    return out;
   }
 }
 

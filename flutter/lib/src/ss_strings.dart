@@ -505,6 +505,12 @@ class SsStrings {
     this.captureFileHint = 'PDF, XML ou imagem',
     this.captureRecommended = 'Recomendado',
     this.captureUnavailable = 'Indisponível',
+    // v1.9 · paridade web
+    this.syncFailedCount = _syncFailedCountPt,
+    this.syncedAt = _syncedAtPt,
+    this.syncedOn = _syncedOnPt,
+    this.syncNever = 'Nunca sincronizado',
+    this.syncNow = 'Sincronizar agora',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1262,6 +1268,18 @@ class SsStrings {
   final String captureFileHint;
   final String captureRecommended;
   final String captureUnavailable;
+  // v1.9 · paridade web (SsSyncStatus, SsSyncPanel)
+
+  /// "2 com erro" (o SsSyncStatus em falha com `failedCount`).
+  final String Function(int n) syncFailedCount;
+
+  /// "Sincronizado às 14:32" (hoje).
+  final String Function(String time) syncedAt;
+
+  /// "Sincronizado em 12/11" (outro dia).
+  final String Function(String date) syncedOn;
+  final String syncNever;
+  final String syncNow;
 
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
@@ -1774,6 +1792,12 @@ class SsStrings {
     captureFileHint: 'PDF, XML ou imagem',
     captureRecommended: 'Recomendado',
     captureUnavailable: 'Indisponível',
+    // v1.9 · paridade web
+    syncFailedCount: _syncFailedCountPt,
+    syncedAt: _syncedAtPt,
+    syncedOn: _syncedOnPt,
+    syncNever: 'Nunca sincronizado',
+    syncNow: 'Sincronizar agora',
   );
 
   /// Inglês.
@@ -2273,6 +2297,12 @@ class SsStrings {
     captureFileHint: 'PDF, XML or image',
     captureRecommended: 'Recommended',
     captureUnavailable: 'Unavailable',
+    // v1.9 · paridade web
+    syncFailedCount: (n) => n == 1 ? '1 with errors' : '$n with errors',
+    syncedAt: (time) => 'Synced at $time',
+    syncedOn: (date) => 'Synced on $date',
+    syncNever: 'Never synced',
+    syncNow: 'Sync now',
   );
 
   /// Espanhol.
@@ -2772,6 +2802,12 @@ class SsStrings {
     captureFileHint: 'PDF, XML o imagen',
     captureRecommended: 'Recomendado',
     captureUnavailable: 'No disponible',
+    // v1.9 · paridade web
+    syncFailedCount: (n) => n == 1 ? '1 con error' : '$n con error',
+    syncedAt: (time) => 'Sincronizado a las $time',
+    syncedOn: (date) => 'Sincronizado el $date',
+    syncNever: 'Nunca sincronizado',
+    syncNow: 'Sincronizar ahora',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -3258,6 +3294,12 @@ class SsStrings {
     'captureFileHint': captureFileHint,
     'captureRecommended': captureRecommended,
     'captureUnavailable': captureUnavailable,
+    // v1.9 · paridade web
+    'syncFailedCount': syncFailedCount(2),
+    'syncedAt': syncedAt('14:32'),
+    'syncedOn': syncedOn('12/11'),
+    'syncNever': syncNever,
+    'syncNow': syncNow,
   };
 
   /// Os idiomas prontos.
@@ -4502,3 +4544,7 @@ class SsFormatsScope extends InheritedWidget {
 // v1.9 · produto: padrões (pt) das funções de texto (constantes, para o construtor).
 String _v19NotifUnreadCount(int n) => n == 1 ? '1 não lida' : '$n não lidas';
 String _v19AssistantRemaining(int n) => n == 1 ? '1 mensagem restante' : '$n mensagens restantes';
+// v1.9 · paridade web: os textos pt de padrão (constantes, para o construtor).
+String _syncFailedCountPt(int n) => n == 1 ? '1 com erro' : '$n com erro';
+String _syncedAtPt(String time) => 'Sincronizado às $time';
+String _syncedOnPt(String date) => 'Sincronizado em $date';

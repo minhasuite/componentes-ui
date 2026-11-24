@@ -11,6 +11,8 @@ import '../ss_badge.dart';
 import '../ss_nav_bar.dart';
 import '../ss_strings.dart';
 import '../version.dart';
+import '../v19/paridade_web/hide_on_scroll.dart';
+import '../v19/paridade_web/side_search.dart';
 
 /// Uma linha do [SsSideMenu].
 class SsSideMenuItem {
@@ -79,7 +81,13 @@ class SsSideMenu extends StatelessWidget {
     this.leading,
     this.footer,
     this.version,
+    this.search,
   });
+
+  /// v1.9: a linha "Buscar" no topo do menu, que abre o [showSsCommandPalette] com as telas, as ações e os
+  /// registros do app ([SsSideMenuSearch.records]); no [SsSideMenuHost] (e no [SsNavScaffold]) o Ctrl+K
+  /// abre a mesma busca. Par do Ctrl+K do `Ss::AppShellComponent`.
+  final SsSideMenuSearch? search;
 
   /// Nome do app (fonte de exibição, no cartão da marca).
   final String? title;
@@ -109,6 +117,7 @@ class SsSideMenu extends StatelessWidget {
     leading: leading,
     footer: footer,
     version: version,
+    search: search,
     sections: [...first, ...sections],
   );
 
@@ -120,6 +129,27 @@ class SsSideMenu extends StatelessWidget {
     final pad = MediaQuery.paddingOf(context);
     var row = 0;
     final children = <Widget>[];
+    final busca = search;
+    if (busca != null) {
+      children.add(
+        _Cascade(
+          progress: progress,
+          index: row++,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
+            child: Builder(
+              builder: (context) => SsSideSearchRow(
+                search: busca,
+                onOpen: () {
+                  final host = SsSideMenuHost.maybeOf(context);
+                  host != null ? host.openSearch() : busca.open(context);
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     for (final s in sections) {
       if (s.title != null) {
         children.add(
@@ -759,7 +789,20 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
         child: host,
       );
     }
+    // v1.9: Ctrl+K (⌘K) abre a busca do menu, com ele aberto ou fechado.
+    final search = widget.menu is SsSideMenu ? (widget.menu as SsSideMenu).search : null;
+    if (search != null && search.shortcut) {
+      host = SsSearchShortcut(enabled: true, onShortcut: () => openSearch(), child: host);
+    }
     return host;
+  }
+
+  /// v1.9: fecha o menu e abre a paleta da busca do [SsSideMenu] (`search:`), se houver.
+  Future<void> openSearch() async {
+    final search = widget.menu is SsSideMenu ? (widget.menu as SsSideMenu).search : null;
+    if (search == null) return;
+    if (_open) close();
+    await search.open(context);
   }
 }
 
@@ -855,7 +898,13 @@ class SsNavScaffold extends StatefulWidget {
     this.peek = true,
     this.floatingActionButton,
     this.debugHintAt,
+    this.hideNavOnScroll = false,
   });
+
+  /// v1.9: a barra de abas some ao rolar o corpo para baixo e volta ao rolar para cima (ou no topo, ou ao
+  /// trocar de aba); enquanto ela está escondida o corpo ganha a altura dela. `navBar.hideOnScroll: true`
+  /// vale o mesmo. Com leitor de tela ligado não some; com "reduzir movimento" some sem animar.
+  final bool hideNavOnScroll;
 
   /// Botão flutuante de todas as abas (fica acima da barra).
   final Widget? floatingActionButton;
@@ -881,13 +930,35 @@ class SsNavScaffold extends StatefulWidget {
   State<SsNavScaffold> createState() => _SsNavScaffoldState();
 }
 
-class _SsNavScaffoldState extends State<SsNavScaffold> {
+class _SsNavScaffoldState extends State<SsNavScaffold> with SingleTickerProviderStateMixin {
   final _menu = GlobalKey<SsSideMenuHostState>();
   bool _menuOpen = false;
+  late final _hide = SsScrollHide(this);
+
+  bool get _hides => widget.hideNavOnScroll || widget.navBar.hideOnScroll;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hide.configure(context);
+  }
+
+  @override
+  void didUpdateWidget(SsNavScaffold old) {
+    super.didUpdateWidget(old);
+    if (old.navBar.currentIndex != widget.navBar.currentIndex || !_hides) _hide.show();
+  }
+
+  @override
+  void dispose() {
+    _hide.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final nav = widget.navBar;
+    final hides = _hides;
     final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
     // Teclado aberto: o Scaffold já encolhe o corpo até o teclado e a barra
     // fica atrás dele. Reservar a faixa da barra deixava um vão vazio entre o
@@ -900,20 +971,33 @@ class _SsNavScaffoldState extends State<SsNavScaffold> {
           // A MediaQuery que o Scaffold dá ao corpo (sem teclado), com o rodapé
           // trocado pela faixa do círculo.
           final mq = MediaQuery.of(context);
-          return Padding(
-            padding: EdgeInsets.only(bottom: keyboard ? 0 : SsNavBar.barHeight + safeBottom),
+          Widget corpo(double v) => Padding(
+            padding: EdgeInsets.only(bottom: keyboard ? 0 : (SsNavBar.barHeight + safeBottom) * v),
             child: MediaQuery(
               data: mq.copyWith(
-                padding: mq.padding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise),
-                viewPadding: mq.viewPadding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise),
+                // v1.9: com a barra escondida, o rodapé volta a ser o do sistema.
+                padding: mq.padding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise * v + safeBottom * (1 - v)),
+                viewPadding: mq.viewPadding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise * v + safeBottom * (1 - v)),
               ),
               child: widget.body,
+            ),
+          );
+          if (!hides) return corpo(1);
+          return NotificationListener<ScrollNotification>(
+            onNotification: _hide.handle,
+            child: AnimatedBuilder(
+              animation: _hide.visibility,
+              builder: (_, _) => corpo(Curves.easeOut.transform(_hide.visibility.value.clamp(0.0, 1.0))),
             ),
           );
         },
       ),
       floatingActionButton: widget.floatingActionButton,
-      bottomNavigationBar: nav,
+      bottomNavigationBar: hides
+          ? SsNavHideScope(
+              child: SsHideOnScrollBox(visibility: _hide.visibility, child: nav),
+            )
+          : nav,
     );
     final menu = widget.sideMenu;
     if (menu != null) {

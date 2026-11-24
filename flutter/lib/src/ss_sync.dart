@@ -12,22 +12,62 @@ enum SsSyncState { synced, pending, sending, failed, offline }
 /// Pílula "pontinho + texto curto" para a AppBar ou uma linha: "Tudo salvo",
 /// "3 a enviar", "Enviando…" (pulsa), "Sem conexão" e, em erro, "Falhou ·
 /// Tentar de novo". Com [onTap], é tocável (abrir a fila, tentar de novo).
+///
+/// v1.9 (o completo do minhas-vendas-app): [resolve] tira o estado da fila (enviando > com erro > sem
+/// conexão > pendente > tudo salvo); [failedCount] troca o "Falhou" por "2 com erro"; [lastSyncedAt]
+/// vai na dica e no leitor de tela ("Sincronizado às 14:32", ou "em 12/11" se não foi hoje). A tela da
+/// fila (quando foi, o erro, "Sincronizar agora") é o [SsSyncPanel]. Par do `Ss::SyncStatusComponent`.
 class SsSyncStatus extends StatelessWidget {
-  const SsSyncStatus({super.key, required this.state, this.pendingCount = 0, this.onTap});
+  const SsSyncStatus({
+    super.key,
+    required this.state,
+    this.pendingCount = 0,
+    this.onTap,
+    this.failedCount = 0,
+    this.lastSyncedAt,
+  });
 
   final SsSyncState state;
   final int pendingCount;
   final VoidCallback? onTap;
 
+  /// v1.9: itens que o servidor recusou ("2 com erro" no lugar do "Falhou · Tentar de novo").
+  final int failedCount;
+
+  /// v1.9: quando foi a última sincronização (dica e leitor de tela).
+  final DateTime? lastSyncedAt;
+
+  /// v1.9: o estado a partir da fila, a regra do minhas-vendas-app (a mesma do
+  /// `Ss::SyncStatusComponent.resolve`): enviando > com erro > sem conexão > pendente > tudo salvo.
+  static SsSyncState resolve({bool syncing = false, int failed = 0, bool offline = false, int pending = 0}) {
+    if (syncing) return SsSyncState.sending;
+    if (failed > 0) return SsSyncState.failed;
+    if (offline) return SsSyncState.offline;
+    if (pending > 0) return SsSyncState.pending;
+    return SsSyncState.synced;
+  }
+
+  /// v1.9: "Sincronizado às 14:32" (hoje), "Sincronizado em 12/11" ou "Nunca sincronizado" (nulo).
+  static String lastSyncedLabel(DateTime? at, [SsStrings? strings, DateTime? now]) {
+    final t = strings ?? SsStrings.pt;
+    if (at == null) return t.syncNever;
+    final n = now ?? DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    if (at.year == n.year && at.month == n.month && at.day == n.day) {
+      return t.syncedAt('${two(at.hour)}:${two(at.minute)}');
+    }
+    return t.syncedOn(t.formatDayMonth(at));
+  }
+
   /// Texto da pílula (público para teste e leitor de tela). Sem [strings],
   /// em português.
-  static String label(SsSyncState s, int n, [SsStrings? strings]) {
+  static String label(SsSyncState s, int n, [SsStrings? strings, int failed = 0]) {
     final t = strings ?? SsStrings.pt;
     return switch (s) {
       SsSyncState.synced => t.syncAllSaved,
       SsSyncState.pending => t.syncPending(n),
       SsSyncState.sending => t.syncSending,
-      SsSyncState.failed => t.syncFailed,
+      SsSyncState.failed => failed > 0 ? t.syncFailedCount(failed) : t.syncFailed,
       SsSyncState.offline => n > 0 ? t.syncOfflinePending(n) : t.offline,
     };
   }
@@ -36,11 +76,13 @@ class SsSyncStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final (cor, texto) = _cores(c, state);
-    final t = label(state, pendingCount, SsStrings.of(context));
-    return Semantics(
+    final strings = SsStrings.of(context);
+    final t = label(state, pendingCount, strings, failedCount);
+    final quando = lastSyncedAt == null ? null : lastSyncedLabel(lastSyncedAt, strings);
+    Widget pilula = Semantics(
       liveRegion: true,
       button: onTap != null,
-      label: t,
+      label: quando == null ? t : '$t, $quando',
       child: ExcludeSemantics(
         child: Material(
           color: state == SsSyncState.failed ? AppColors.dangerSoft : c.field,
@@ -72,6 +114,8 @@ class SsSyncStatus extends StatelessWidget {
         ),
       ),
     );
+    if (quando != null) pilula = Tooltip(message: quando, excludeFromSemantics: true, child: pilula);
+    return pilula;
   }
 }
 

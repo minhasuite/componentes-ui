@@ -762,3 +762,58 @@ pt-BR:
       undo: Desfazer
       close: Fechar aviso
       error: Não deu para concluir. Tente de novo.
+    # v1.9 · paridade web
+    swipe_confirm:
+      hint: Arraste até o fim para confirmar
+      done: Pronto
+      loading: Confirmando…
+    hold_confirm:
+      hint: Segure para confirmar
+      done: Confirmado
+    morph_button:
+      loading: '%{label}: carregando'
+      done: '%{label}: concluído'
+      failed: '%{label}: falhou'
+    carousel:
+      roledescription: carrossel
+      slide: item
+      item_of: Item %{n} de %{total}
+      of: '%{n} de %{total}'
+      prev: Anterior
+      next: Próximo
+    story_ring:
+      news:
+        one: 1 novidade
+        other: '%{count} novidades'
+      add: Adicionar
+    heat_calendar:
+      label: Constância
+      nothing: nada
+      less: menos
+      more: mais
+    date_strip:
+      label: Dias de %{month}
+      open_calendar: 'Mês: %{month}. Abrir calendário'
+      today: hoje
+      events:
+        one: 1 evento
+        other: '%{count} eventos'
+    split_slider:
+      legend: Divisão
+      total: Total %{amount}
+      missing: Falta %{amount}
+      over: Sobra %{amount}
+    sync_status:
+      synced: Tudo salvo
+      pending:
+        one: 1 a enviar
+        other: '%{count} a enviar'
+      sending: Enviando…
+      failed: Falhou · Tentar de novo
+      failed_count:
+        one: 1 com erro
+        other: '%{count} com erro'
+      offline: Sem conexão
+      offline_pending: 'Sem conexão · %{count} a enviar'
+      last_today: Sincronizado às %{time}
+      last_day: Sincronizado em %{date}
