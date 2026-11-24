@@ -123,3 +123,7 @@ export 'src/v19/transicoes/celebration.dart';
 // v1.9 · paridade_app: gantt, tour, assistente, período, código, etiquetas, histórico, depoimento,
 // pessoa, mosaico, novidades, esqueleto por forma, lista + detalhe e a casca adaptável.
 export 'src/v19/paridade_app/paridade_app.dart';
+// v1.9 · produto: central de notificações, assistente com IA e formas de capturar.
+export 'src/v19/produto/assistant_view.dart';
+export 'src/v19/produto/capture_hub.dart';
+export 'src/v19/produto/notification_center.dart';

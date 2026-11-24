@@ -40,6 +40,23 @@ es:
       open: Abrir menú
       search: Buscar…
       tenant: Empresa
+    # v1.9 · produto
+    assistant:
+      conversations: "Conversaciones"
+      new: "Nueva conversación"
+      delete: "Borrar conversación"
+      delete_confirm: "¿Borrar esta conversación?"
+      no_conversations: "Aún no hay conversaciones"
+      untitled: "Conversación"
+      empty_title: "¿Cómo puedo ayudarte?"
+      thinking: "Respondiendo"
+      failed: "No se pudo responder ahora."
+      shortcuts: "Sugerencias"
+      exhausted: "Mensajes del mes agotados"
+      quota: "Mensajes este mes"
+      quota_of: "%{used} de %{limit}"
+      paid_only: "Solo en planes de pago"
+      see_plans: "Ver planes"
     audit_trail:
       empty: vacío
       label: Historial de cambios
@@ -76,6 +93,28 @@ es:
       loading: Cargando imagen
       offline: Cámara sin conexión
       retry: Reintentar
+    # v1.9 · produto
+    capture_hub:
+      label: "Formas de agregar"
+      recommended: "Recomendado"
+      unavailable: "No disponible"
+      send: "Enviar"
+      drop_hint: "Arrastra, pega (Ctrl+V) o haz clic para elegir"
+      camera:
+        title: "Tomar foto"
+        text: "Usa la cámara del dispositivo"
+      gallery:
+        title: "De la galería"
+        text: "Elige una foto ya tomada"
+      paste:
+        title: "Pegar texto"
+        text: "Pega el texto que copiaste"
+      barcode:
+        title: "Código de barras"
+        text: "Apunta al código"
+      file:
+        title: "Subir archivo"
+        text: "PDF, XML o imagen"
     chart:
       marker:
         deploy: despliegue
@@ -389,6 +428,22 @@ es:
     notice_card:
       dismiss: Descartar
       unread: no leído
+    # v1.9 · produto
+    notification_center:
+      title: "Notificaciones"
+      empty: "Sin notificaciones"
+      empty_text: "Los avisos de la app aparecen aquí."
+      today: "Hoy"
+      yesterday: "Ayer"
+      day_pattern: "%{weekday}, %{day} de %{month}"
+      all_read: "Todo leído"
+      unread_one: "1 no leída"
+      unread_other: "%{count} no leídas"
+      unread: "no leída"
+      read_all: "Marcar todas como leídas"
+      mark_read: "Marcar como leída"
+      archive: "Archivar"
+      load_more: "Cargar más"
     number:
       delimiter: "."
       separator: ","

@@ -40,6 +40,23 @@ en:
       open: Open menu
       search: Search…
       tenant: Company
+    # v1.9 · produto
+    assistant:
+      conversations: "Conversations"
+      new: "New conversation"
+      delete: "Delete conversation"
+      delete_confirm: "Delete this conversation?"
+      no_conversations: "No conversations yet"
+      untitled: "Conversation"
+      empty_title: "How can I help?"
+      thinking: "Answering"
+      failed: "Couldn't answer right now."
+      shortcuts: "Suggestions"
+      exhausted: "This month's messages are used up"
+      quota: "Messages this month"
+      quota_of: "%{used} of %{limit}"
+      paid_only: "Paid plans only"
+      see_plans: "See plans"
     audit_trail:
       empty: empty
       label: Change history
@@ -76,6 +93,28 @@ en:
       loading: Loading image
       offline: Camera offline
       retry: Try again
+    # v1.9 · produto
+    capture_hub:
+      label: "Ways to add"
+      recommended: "Recommended"
+      unavailable: "Unavailable"
+      send: "Send"
+      drop_hint: "Drag, paste (Ctrl+V) or click to choose"
+      camera:
+        title: "Take a photo"
+        text: "Use the device's camera"
+      gallery:
+        title: "From gallery"
+        text: "Pick a photo you already took"
+      paste:
+        title: "Paste text"
+        text: "Paste the text you copied"
+      barcode:
+        title: "Barcode"
+        text: "Point at the code"
+      file:
+        title: "Upload a file"
+        text: "PDF, XML or image"
     chart:
       marker:
         deploy: deploy
@@ -389,6 +428,22 @@ en:
     notice_card:
       dismiss: Dismiss
       unread: unread
+    # v1.9 · produto
+    notification_center:
+      title: "Notifications"
+      empty: "No notifications"
+      empty_text: "App alerts show up here."
+      today: "Today"
+      yesterday: "Yesterday"
+      day_pattern: "%{weekday}, %{month} %{day}"
+      all_read: "All read"
+      unread_one: "1 unread"
+      unread_other: "%{count} unread"
+      unread: "unread"
+      read_all: "Mark all as read"
+      mark_read: "Mark as read"
+      archive: "Archive"
+      load_more: "Load more"
     number:
       delimiter: ","
       separator: "."

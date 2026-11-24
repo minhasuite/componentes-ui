@@ -1,0 +1,52 @@
+<%# titulo: Central, assistente e captura (v1.9) | grupo: Retorno | ordem: 49 %>
+<%# v1.9 · produto: NotificationCenterComponent, AssistantComponent (sobre o ChatComponent) e CaptureHubComponent. %>
+<% agora = Time.current %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Central de notificações", subtitle: "Por dia, lida/não lida, marcar todas, ler e arquivar (passe o mouse), Carregar mais") %>
+    <%= render Ss::NotificationCenterComponent.new(id: "vit-avisos", now: agora, read_all_href: "#", items: [
+          { id: 1, title: "Orçamento aprovado", text: "Mercado Bom Preço aprovou o orçamento 1042.", at: agora - 30.minutes, unread: true,
+            icon: "check-circle", tone: :success, href: "#", read_href: "#", archive_href: "#" },
+          { id: 2, title: "Aprovação pendente", text: "Desconto de 12% no pedido 881 espera a sua alçada.", at: agora - 3.hours, unread: true,
+            icon: "clock", tone: :warn, href: "#", read_href: "#", archive_href: "#" },
+          { id: 3, title: "Resumo do dia", text: "8 pedidos, R$ 12.480,00 vendidos.", at: agora - 1.day, icon: "sun", href: "#", archive_href: "#" },
+          { id: 4, title: "Estoque baixo", text: "Arroz 5 kg abaixo do mínimo.", at: agora - 5.days, icon: "archive", tone: :danger, href: "#" }]) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Assistente com IA", subtitle: "Conversas ao lado (≥ 840px), atalhos no topo, ação sugerida, respondendo e cota") %>
+    <%= render Ss::AssistantComponent.new(id: "vit-asst", url: "#", current_conversation_id: 1, new_conversation_href: "#",
+          conversations: [{ id: 1, title: "Treino de 4 dias", subtitle: "há 2 min", href: "#", delete_href: "#" },
+                          { id: 2, title: "Platô no supino", subtitle: "ontem", href: "#", delete_href: "#" }],
+          shortcuts: [{ label: "Resumo da semana", icon: "chart-bar" }, { label: "Estou estagnado?" }, { label: "O que treinar hoje?" }],
+          quota: { used: 7, limit: 10 },
+          messages: [{ from: :me, text: "Monte um treino de 4 dias para hipertrofia", time: "14:02" },
+                     { from: :ai, text: "Posso montar 4 dias (A/B/C/D) com foco em peito e costas. Quer que eu monte?", time: "14:02",
+                       action: { title: "Montar este treino", description: "4 dias · 45 min · academia", icon: "sparkles",
+                                 confirm_url: "#", cancel_url: "#", confirm_label: "Montar treino", cancel_label: "Agora não" } },
+                     { from: :me, text: "E o cardio?", time: "14:04" },
+                     { status: :pending }]) %>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="ss-card ss-card-pad grid gap-3">
+      <%= render Ss::CardHeaderComponent.new(title: "Assistente vazio", subtitle: "Atalhos centrados") %>
+      <%= render Ss::AssistantComponent.new(id: "vit-asst-vazio", url: "#", empty_text: "Pergunte sobre o seu treino ou peça uma análise.",
+            shortcuts: [{ label: "Resumo da semana" }, { label: "Metas" }]) %>
+    </section>
+    <section class="ss-card ss-card-pad grid gap-3">
+      <%= render Ss::CardHeaderComponent.new(title: "Fora do plano", subtitle: "Cartão do plano no lugar da conversa") %>
+      <%= render Ss::AssistantComponent.new(id: "vit-asst-lock", url: "#",
+            locked: { feature: "Assistente com IA", text: "Converse com a IA sobre o seu treino. Faz parte dos planos Pro e Max.", href: "#" }) %>
+    </section>
+  </div>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Formas de capturar", subtitle: "Destaque, grupos, indisponível com motivo; arrastar, colar (Ctrl+V) e escolher arquivo") %>
+    <%= render Ss::CaptureHubComponent.new(id: "vit-cap", upload: { url: "#", name: "arquivos[]", accept: "image/*,.pdf,.xml" }, paste: { url: "#", name: "texto" },
+          options: [{ kind: :camera, title: "Foto do cupom", description: "Cupom fiscal ou print do pedido. Comprido? Tire em partes.", highlighted: true },
+                    { kind: :paste, group: "Compra" }, { kind: :file, group: "Compra", description: "XML da NF-e" },
+                    { kind: :barcode, group: "Produto", href: "#" },
+                    { kind: :gallery, group: "Produto", disabled_reason: "No plano Pro ou Max", disabled_href: "#" }]) %>
+  </section>
+</div>

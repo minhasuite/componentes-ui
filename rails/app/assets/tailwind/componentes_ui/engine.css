@@ -82,6 +82,8 @@
 @import "./v19_transicoes.css";
 /* v1.9 · paridade_app: o "Salvar e continuar depois" do wizard (par do SsWizard.onSaveForLater). */
 @import "./v19_paridade_app.css";
+/* v1.9 · produto: central de notificações, assistente com IA e formas de capturar. */
+@import "./v19_produto.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
