@@ -1,0 +1,18 @@
+<%# titulo: Diálogo e folha | grupo: Retorno e estados | ordem: 40 %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::DialogComponent", "O <dialog> genérico: cabeçalho com ícone, título e subtítulo, corpo livre ou num turbo-frame, rodapé de ações. Folha de baixo no celular, caixa no centro no desktop. Envio que deu certo fecha. Par: showSsSheet.",
+           uso: 'render Ss::DialogComponent.new(id: "novo", title: "Novo lançamento", frame_id: "dialogo") · link_to "Novo", new_path, data: { turbo_frame: "dialogo" }' do %>
+    <div class="ss-card ss-card-pad" style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button type="button" class="ss-btn ss-btn-primary" data-ss-dialog-open="vt-dialogo"><%= ss_icon("plus", size: :xs) %>Novo lançamento</button>
+    </div>
+    <%= render(Ss::DialogComponent.new(id: "vt-dialogo", title: "Novo lançamento", subtitle: "Despesa no cartão", icon: ss_icon("credit-card", size: nil))) do |d| %>
+      <% d.with_footer do %><button type="button" class="ss-btn ss-btn-ghost" data-action="ss-dialog#close">Cancelar</button><button type="button" class="ss-btn ss-btn-primary" data-action="ss-dialog#close">Salvar</button><% end %>
+      <div style="display:grid;gap:.75rem">
+        <%= render Ss::MoneyInputComponent.new(name: "valor_cents", label: "Valor", expression: true, signed: false) %>
+        <div class="ss-field"><label for="vt-desc">Descrição</label><input id="vt-desc" class="ss-input" placeholder="Mercado"></div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

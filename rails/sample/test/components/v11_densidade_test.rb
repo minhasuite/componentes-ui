@@ -87,6 +87,6 @@ class V11DensidadeTest < ComponentTest
     page = Capybara.string(html)
     %w[compact standard comfortable].each { |d| assert page.has_css?("section[data-ss-density=#{d}] .ss-btn") }
     assert page.has_css?(".ss-density-picker", count: 2)
-    assert_includes VitrineController::GRUPOS, "Densidade (v0.11)"
+    assert_includes VitrineController::GRUPOS, VitrineController.paginas.find { _1[:slug] == "densidade" }[:grupo]
   end
 end

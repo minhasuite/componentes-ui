@@ -163,6 +163,6 @@ class V103WebTest < ComponentTest
     assert page.has_css?(".ss-subnav-wrap.is-tabs")
     assert page.has_css?("label.ss-chip input[type=checkbox][checked]")
     assert page.has_css?("turbo-frame.ss-live.contents")
-    assert_includes VitrineController::GRUPOS, "Tela (v0.10.3)"
+    assert_includes VitrineController::GRUPOS, VitrineController.paginas.find { _1[:slug] == "tela_v103" }[:grupo]
   end
 end

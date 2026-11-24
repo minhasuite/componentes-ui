@@ -1,0 +1,26 @@
+<%# titulo: Dinheiro com conta e seção de formulário | grupo: Formulários e entrada | ordem: 25 | tambem: Comércio e finanças %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::MoneyInputComponent(expression:, signed:)", "Com expression: true aceita conta (45+12,50, 3×19,90): embaixo sai o resultado, o hidden recebe os centavos e, ao sair, o texto vira o valor. signed: false trava o sinal. No servidor, ComponentesUi::AmountExpression. Par: SsMoneyField(expression:, signed:, formats:).",
+           uso: 'render Ss::MoneyInputComponent.new(name: "t[amount_cents]", label: "Valor", expression: true, signed: false, currency: "USD")' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <%= render Ss::MoneyInputComponent.new(name: "a", label: "Valor (com conta)", expression: true, signed: false, help: "Ex.: 45+12,50") %>
+      <%= render Ss::MoneyInputComponent.new(name: "b", label: "Saldo inicial (aceita negativo)", value_cents: -12050) %>
+      <%= render Ss::MoneyInputComponent.new(name: "c", label: "Em dólar", currency: "USD", value_cents: 9990) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::FormSectionComponent", "Título, ajuda e os campos num <fieldset>, com divisória acima e grade de colunas (vira uma no celular). Par: SsFieldGroup.",
+           uso: 'render(Ss::FormSectionComponent.new(title: "Recorrência", help: "…", divider: true, columns: 2)) { campos }' do %>
+    <form class="ss-card ss-card-pad" style="display:grid;gap:1rem" onsubmit="return false">
+      <%= render(Ss::FormSectionComponent.new(title: "Detalhes", icon: ss_icon("document-text", size: nil))) do %>
+        <div class="ss-field"><label for="vt-fs1">Descrição</label><input id="vt-fs1" class="ss-input" value="Aluguel"></div>
+      <% end %>
+      <%= render(Ss::FormSectionComponent.new(title: "Recorrência", help: "Repete todo mês até a data final.", divider: true, columns: 2)) do %>
+        <div class="ss-field"><label for="vt-fs2">Dia</label><input id="vt-fs2" class="ss-input" value="5"></div>
+        <div class="ss-field"><label for="vt-fs3">Até</label><input id="vt-fs3" type="date" class="ss-input"></div>
+      <% end %>
+    </form>
+  <% end %>
+</div>

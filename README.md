@@ -264,6 +264,16 @@ Crepúsculo e Neon pop no Rails passaram a usar os accents do Flutter (antes div
   com o código de uso. `rails/sample/bin/vitrine` sobe em http://localhost:3900
   (`PORTA=` muda). O CSS da gem não entra no watch: mudou um `v09_*.css`, rode
   `bin/rails tailwindcss:build`. Testes dos componentes: `bin/rails test` dentro de `sample`.
+- **Por categoria de uso, iguais nos dois lados** (v1.9): Novidades · Fundação · Navegação e
+  moldura · Ações e botões · Formulários e entrada · Listas e tabelas · Dados e gráficos · Cards e
+  painéis · Retorno e estados · Movimento e transições · Conversa, IA e avisos · Tempo e agenda ·
+  Casa e automação · Comércio e finanças · Mídia e captura · Telas montadas (mesmos nomes, ícones
+  `ss_icon`/`SsIcons.named` e ordem). App: `flutter/example/lib/categorias.dart` (mapa slug →
+  categoria, reserva por palavra; `flutter/test/categorias_test.dart` falha com peça sem categoria).
+  Web: `VitrineController::CATEGORIAS`; a 1ª linha da página leva `grupo:` e, se mistura assuntos,
+  `tambem: A; B`; `versao: 1.9` põe em Novidades (`rails/sample/test/vitrine_test.rb` falha com
+  grupo fora do menu e abre todas as páginas). Novidades no app: as peças dos `comV19*` do
+  catálogo e as marcadas "(v1.9" na descrição.
 
 ### Movimento (mola do menu do app em tudo)
 

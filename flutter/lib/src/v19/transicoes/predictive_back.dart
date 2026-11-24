@@ -48,10 +48,8 @@ class _SsBackGestureListenerState extends State<SsBackGestureListener>
   bool _meu = false;
 
   // Desistiu (sem mover a rota): o desenho volta ao lugar sozinho.
-  late final AnimationController _volta = AnimationController(
-    vsync: this,
-    duration: SsMotion.short,
-  )..addListener(_aoVoltar);
+  late final AnimationController _volta = AnimationController(vsync: this, duration: SsMotion.short)
+    ..addListener(_aoVoltar);
   double _de = 0;
 
   void _aoVoltar() {

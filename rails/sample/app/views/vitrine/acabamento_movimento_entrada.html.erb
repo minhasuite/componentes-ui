@@ -1,4 +1,4 @@
-<%# titulo: Movimento: entrada, números e camadas | grupo: Acabamento | ordem: 21 %>
+<%# titulo: Movimento: entrada, números e camadas | grupo: Movimento e transições | ordem: 30 %>
 <%# Playground do movimento (lote B): role a página devagar — cada bloco anima quando ~25% dele aparece.
     "Repetir" toca a entrada de novo (evento ss:replay). Com menos movimento no sistema, nada anima. %>
 <% repetir = ->(rotulo = "Repetir") { tag.button(rotulo, type: "button", class: "ss-btn ss-btn-ghost ss-btn-sm", onclick: "this.closest('.vt-demo').dispatchEvent(new CustomEvent('ss:replay'))") } %>

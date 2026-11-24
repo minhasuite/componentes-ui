@@ -31,3 +31,23 @@
 .vt-dens-col { display: grid; gap: var(--ss-gap); min-width: 0; }
 .vt-dens-col > h3 { font-size: 15px; font-weight: 800; }
 .vt-dens-col > h3 code { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* Início da demo (demo.minhasuite.com): apresentação, app, produtos e a grade das categorias. */
+.vt-inicio { display: grid; gap: 1.5rem; max-width: 72rem; }
+.vt-inicio-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; align-items: stretch; }
+.vt-inicio-topo > .ss-card { display: grid; gap: .75rem; align-content: start; }
+.vt-inicio h2 { font-size: 1.25rem; font-weight: 800; line-height: 1.25; }
+.vt-inicio p { color: var(--ink-2); line-height: 1.5; }
+.vt-inicio .vt-nota { color: var(--muted); font-size: 13px; }
+.vt-acoes { display: flex; flex-wrap: wrap; gap: .5rem; }
+.vt-produtos { display: flex; flex-wrap: wrap; gap: .5rem; }
+.vt-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: .75rem; }
+@media (max-width: 560px) { .vt-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vt-cat { display: grid; gap: .5rem; align-content: start; padding: 1rem; text-decoration: none; color: var(--ink); min-width: 0; }
+.vt-cat:hover { border-color: var(--accent); }
+.vt-cat:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.vt-cat strong { font-size: 15px; font-weight: 800; line-height: 1.25; }
+.vt-cat .vt-cat-desc { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.vt-cat .vt-cat-n { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.vt-cat.is-novo { background: var(--accent-soft); }
+@media (max-width: 560px) { .vt-cat .vt-cat-desc, .vt-cat .vt-cat-pag { display: none; } }

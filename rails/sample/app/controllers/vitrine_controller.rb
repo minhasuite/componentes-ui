@@ -1,10 +1,39 @@
-# Vitrine: uma página por grupo de componentes, em app/views/vitrine/<slug>.html.erb.
-# A 1ª linha de cada página diz título, grupo e ordem:
-#   <%# titulo: Tabelas | grupo: Dados | ordem: 10 %>
+# Vitrine: uma página por assunto, em app/views/vitrine/<slug>.html.erb, organizada pelas
+# categorias de uso (as mesmas, com os mesmos nomes, ícones e ordem, da vitrine do app:
+# flutter/example/lib/categorias.dart). A 1ª linha de cada página diz título, categoria e ordem:
+#   <%# titulo: Tabela de dados | grupo: Listas e tabelas | ordem: 10 %>
+# e, opcionais:
+#   tambem: Comércio e finanças; Tempo e agenda   (a página mistura assuntos: aparece também lá)
+#   versao: 1.9                                   (peça da onda atual: aparece também em Novidades)
+# Grupo fora de GRUPOS faz o test/vitrine_test.rb falhar (nenhuma página fica fora do menu).
 class VitrineController < ApplicationController
-  GRUPOS = ["Início", "Fundação", "Layout", "Formulários", "Dados", "Retorno", "Cards", "Acabamento", "Casa e automação", "Tela (v0.10.2)", "Tela (v0.10.3)", "Densidade (v0.11)", "Cards e casa (v0.12)", "Catálogo"].freeze
+  # A onda cujas páginas entram em "Novidades".
+  NOVIDADES = "1.9".freeze
 
-  helper_method :paginas, :pagina_atual
+  # nome, ícone (ss_icon) e para que serve; na ordem do menu.
+  CATEGORIAS = [
+    ["Novidades (v#{NOVIDADES})", "sparkles", "O que chegou nesta versão."],
+    ["Fundação", "color-swatch", "Tema, cores, paletas, tipografia, densidade, aparência e ícones."],
+    ["Navegação e moldura", "template", "Barras, abas, menus, cabeçalhos e a casca da tela."],
+    ["Ações e botões", "cursor-click", "Botões, menus de ação, confirmar e seleção."],
+    ["Formulários e entrada", "pencil-alt", "Campos, escolhas, sliders e passo a passo."],
+    ["Listas e tabelas", "view-list", "Itens, linhas, tabelas, quadros e históricos."],
+    ["Dados e gráficos", "chart-bar", "Indicadores, gráficos, anéis e barras."],
+    ["Cards e painéis", "collection", "Cards, heróis, mosaicos e painéis."],
+    ["Retorno e estados", "badge-check", "Aviso, vazio, carregando, erro, offline, sincronização, diálogos e folhas."],
+    ["Movimento e transições", "lightning-bolt", "A mola da suíte, entradas, números que rolam e transições de tela."],
+    ["Conversa, IA e avisos", "chat-alt-2", "Chat, assistente, notificações, dicas e ajuda."],
+    ["Tempo e agenda", "calendar", "Datas, horas, calendário, agenda e cronograma."],
+    ["Casa e automação", "home", "Aparelhos, clima, energia, câmeras e controles."],
+    ["Comércio e finanças", "shopping-bag", "Dinheiro, preço, oferta, carteira, ingresso e plano."],
+    ["Mídia e captura", "photograph", "Foto, câmera, galeria, carrossel e anexos."],
+    ["Telas montadas", "device-mobile", "Telas inteiras feitas só com peças da gem."]
+  ].map { |nome, icone, descricao| { nome:, icone:, descricao: }.freeze }.freeze
+
+  GRUPO_NOVIDADES = CATEGORIAS.first[:nome]
+  GRUPOS = ["Início", *CATEGORIAS.map { _1[:nome] }].freeze
+
+  helper_method :paginas, :pagina_atual, :menu, :contagem
 
   def show
     @pagina = params[:pagina].to_s
@@ -15,18 +44,40 @@ class VitrineController < ApplicationController
     render @pagina, layout: (params[:tela].present? ? "tela" : "application")
   end
 
-  private
-
-  def pagina_atual = @pagina
-
-  def paginas
-    @paginas ||= Dir[Rails.root.join("app/views/vitrine/*.html.erb")].filter_map do |f|
+  # Todas as páginas (uma vez cada), na ordem do grupo principal.
+  def self.paginas
+    Dir[Rails.root.join("app/views/vitrine/*.html.erb")].filter_map do |f|
       slug = File.basename(f, ".html.erb")
       next if slug.start_with?("_")
 
       meta = File.open(f, &:gets).to_s[/<%#(.*)%>/, 1].to_s
       h = meta.split("|").to_h { |kv| kv.split(":", 2).map(&:strip) }
-      { slug:, titulo: h["titulo"] || slug.humanize, grupo: h["grupo"] || "Início", ordem: h["ordem"].to_i }
+      grupo = h["grupo"] || "Início"
+      tambem = h["tambem"].to_s.split(";").map(&:strip).reject(&:empty?)
+      tambem << GRUPO_NOVIDADES if h["versao"] == NOVIDADES
+      componentes = File.read(f).scan(/Ss::(\w+)Component\b/).flatten.uniq
+      { slug:, titulo: h["titulo"] || slug.humanize, grupo:, grupos: [grupo, *tambem].uniq,
+        ordem: h["ordem"].to_i, componentes: }
     end.sort_by { |p| [GRUPOS.index(p[:grupo]) || 99, p[:ordem], p[:titulo]] }
+  end
+
+  private
+
+  def pagina_atual = @pagina
+
+  def paginas = @paginas ||= self.class.paginas
+
+  # [[grupo, [páginas]]] na ordem de GRUPOS: a página aparece em cada grupo dela.
+  def menu
+    @menu ||= GRUPOS.filter_map do |g|
+      ps = paginas.select { _1[:grupos].include?(g) }.sort_by { |p| [p[:grupo] == g ? 0 : 1, p[:ordem], p[:titulo]] }
+      [g, ps] if ps.any?
+    end
+  end
+
+  # Páginas e componentes Ss::* distintos de uma categoria.
+  def contagem(grupo)
+    ps = menu.to_h[grupo] || []
+    { paginas: ps.size, componentes: ps.flat_map { _1[:componentes] }.uniq.size }
   end
 end

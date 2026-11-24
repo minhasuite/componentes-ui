@@ -1,0 +1,11 @@
+<%# titulo: Confete | grupo: Movimento e transições | ordem: 60 %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::ConfettiComponent", "Confete em canvas nas cores da marca e das séries, ~2,6 s, nada com reduzir movimento. Só em conquista. key: não repete no mesmo navegador. Par: showSsConfetti.",
+           uso: 'render Ss::ConfettiComponent.new(key: "meta-#{meta.id}") · render(Ss::ConfettiComponent.new(on: :click)) { botão com data-action="ss-confetti#burst" }' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render(Ss::ConfettiComponent.new(on: :click)) do %><button type="button" class="ss-btn ss-btn-primary" data-action="ss-confetti#burst"><%= ss_icon("sparkles", size: :xs) %>Comemorar</button><% end %>
+    </div>
+  <% end %>
+</div>

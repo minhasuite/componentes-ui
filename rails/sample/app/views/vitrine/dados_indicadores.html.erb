@@ -1,4 +1,4 @@
-<%# titulo: Indicadores e gráficos | grupo: Dados | ordem: 20 %>
+<%# titulo: Indicadores, área e rosca | grupo: Dados e gráficos | ordem: 10 %>
 <% brl = ->(v) { "R$ " + number_with_precision(v, precision: 2, delimiter: ".", separator: ",") } %>
 <%= demo "Ss::KpiStripComponent", "3 a 5 números lado a lado; a variação é colorida pelo sentido (good:), não pelo sinal.",
       uso: 'render Ss::KpiStripComponent.new(items: [{ label:, value:, money: true, delta: "+12%", good: true, hint:, spark: [...] }])' do %>

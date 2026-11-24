@@ -1,7 +1,52 @@
 <%# titulo: Início | grupo: Início | ordem: 0 %>
-<div class="ss-card ss-card-pad" style="max-width:720px">
-  <p class="ss-kicker">componentes_ui · v<%= ComponentesUi::VERSION %></p>
-  <h2 style="font-size:1.4rem;margin:6px 0 10px">Vitrine dos componentes web da suíte</h2>
-  <p style="color:var(--ink-2)">Cada página do menu mostra um grupo de componentes ao vivo, com o código de uso.
-    O botão no topo troca entre claro e escuro (e as paletas, na Fundação). O catálogo antigo (classes .ss-* da v0.8) está no fim do menu.</p>
+<%# A entrada de demo.minhasuite.com: o que é, a vitrine do app (/app/ e o APK) e as categorias, as mesmas do app. %>
+<% produtos = [["Meu Financeiro", "financeiro"], ["Meu Personal", "personal"], ["Meu Cultivo", "cultivo"],
+               ["Minhas Compras", "compras"], ["Minhas Viagens", "viagens"], ["Minhas Vendas", "vendas"],
+               ["Meu Gestor", "gestor"]] %>
+<div class="vt-inicio">
+  <div class="vt-inicio-topo">
+    <section class="ss-card ss-card-pad">
+      <p class="ss-kicker">Lista Clara · componentes_ui v<%= ComponentesUi::VERSION %></p>
+      <h2>Os componentes de todos os produtos da MinhaSuite</h2>
+      <p>A MinhaSuite é um conjunto de produtos para a vida pessoal e para a empresa, com web e app.
+        Todos usam o mesmo design system, o <strong>Lista Clara</strong>: as mesmas cores, letras, movimento e peças,
+        no Rails (esta vitrine) e no Flutter (a do app).</p>
+      <p>Cada categoria do menu mostra as peças ao vivo, com o código de uso. No topo dá para trocar tema, paleta,
+        densidade e idioma.</p>
+      <div class="vt-produtos" aria-label="Produtos da suíte">
+        <% produtos.each do |nome, caminho| %>
+          <%= render Ss::ButtonComponent.new(label: nome, variant: :chip, href: "https://www.minhasuite.com/#{caminho}/") %>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="ss-card ss-card-pad">
+      <p class="ss-kicker">A vitrine do app</p>
+      <h2>Os mesmos componentes no Flutter</h2>
+      <p>As mesmas categorias, com cada estado das peças em claro, escuro e OLED, e telas montadas.</p>
+      <div class="vt-acoes">
+        <%= render Ss::ButtonComponent.new(label: "Ver a vitrine do app", icon: "device-mobile", href: "/app/", data: { turbo: false }) %>
+        <%= render Ss::ButtonComponent.new(label: "Baixar o APK", icon: "download", variant: :outline, href: "/componentes-demo.apk", data: { turbo: false }) %>
+      </div>
+      <p class="vt-nota">O APK se instala fora da Play (permita "instalar apps desconhecidos" no navegador). Android 8 ou mais novo.</p>
+      <p class="vt-nota">Código: <a href="https://github.com/minhasuite/componentes-ui">github.com/minhasuite/componentes-ui</a></p>
+    </section>
+  </div>
+
+  <section aria-labelledby="vt-cats-titulo" class="grid gap-3">
+    <h2 id="vt-cats-titulo">Categorias</h2>
+    <div class="vt-cats">
+      <% VitrineController::CATEGORIAS.each do |cat| %>
+        <% ps = menu.to_h[cat[:nome]] || [] %>
+        <% next if ps.empty? %>
+        <% n = contagem(cat[:nome]) %>
+        <a class="ss-card vt-cat<%= " is-novo" if cat[:nome] == VitrineController::GRUPO_NOVIDADES %>" href="<%= vitrine_path(ps.first[:slug]) %>">
+          <span class="ss-icon-tile is-accent"><%= ss_icon(cat[:icone]) %></span>
+          <strong><%= cat[:nome] %></strong>
+          <span class="vt-cat-desc"><%= cat[:descricao] %></span>
+          <span class="vt-cat-n"><span class="vt-cat-pag"><%= pluralize(n[:paginas], "página", plural: "páginas") %> · </span><%= pluralize(n[:componentes], "componente", plural: "componentes") %></span>
+        </a>
+      <% end %>
+    </div>
+  </section>
 </div>

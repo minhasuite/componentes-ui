@@ -1,109 +1,62 @@
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Paletas da vitrine (nome → marca), as do pacote.
-const paletas = SsBrand.paletas;
+String? _guardado;
 
-/// Tema da vitrine: claro/escuro e paleta.
-class Aparencia extends ChangeNotifier {
-  ThemeMode modo = ThemeMode.light;
-  String paleta = SsBrand.paletas.keys.first;
-  bool oled = false;
+/// A aparência da vitrine é a mesma peça dos apps (v1.3): tema, preto total, cores e
+/// densidade. Guarda só na memória (a vitrine abre sempre no claro, violeta, padrão).
+final aparencia = SsAppearanceController(
+  brand: SsBrand.violeta,
+  initial: const SsAppearance(themeMode: ThemeMode.light),
+  read: () async => _guardado,
+  write: (v) async => _guardado = v,
+);
 
-  /// v0.11: densidade (compacta, padrão, confortável) do tema todo.
-  SsDensity densidade = SsDensity.standard;
-  final _cache = <String, ThemeData>{};
+/// Abre o [SsAppearancePanel] numa folha.
+Future<void> abrirAparencia(BuildContext context) => showSsSheet<void>(
+  context,
+  title: 'Aparência',
+  subtitle: 'Tema, preto total, cores e densidade.',
+  icon: Icons.palette_outlined,
+  child: SsAppearancePanel(controller: aparencia),
+);
 
-  ThemeData tema(Brightness b) => _cache.putIfAbsent(
-    '$paleta/$b/$oled/${densidade.name}',
-    () => AppTheme.build(b, brand: paletas[paleta] ?? SsBrand.violeta, oled: oled, density: densidade),
-  );
-
-  /// 'claro', 'escuro' ou 'oled'.
-  String get fundo => modo == ThemeMode.light ? 'claro' : (oled ? 'oled' : 'escuro');
-
-  void setFundo(String f) {
-    oled = f == 'oled';
-    modo = f == 'claro' ? ThemeMode.light : ThemeMode.dark;
-    notifyListeners();
-  }
-
-  void setModo(ThemeMode m) {
-    modo = m;
-    notifyListeners();
-  }
-
-  void setDensidade(SsDensity d) {
-    densidade = d;
-    notifyListeners();
-  }
-
-  void setPaleta(String p) {
-    paleta = p;
-    notifyListeners();
-  }
-}
-
-class AparenciaScope extends InheritedNotifier<Aparencia> {
-  const AparenciaScope({super.key, required Aparencia aparencia, required super.child}) : super(notifier: aparencia);
-
-  static Aparencia of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<AparenciaScope>()!.notifier!;
-
-  /// Leva o escopo para uma rota empurrada (a rota nasce fora da árvore da home):
-  /// passe o context de quem empurra, não o do builder da rota.
-  static Widget copy(BuildContext context, Widget child) => AparenciaScope(aparencia: of(context), child: child);
-}
-
-/// Claro/escuro, densidade (v0.11) e paletas.
+/// Atalhos de aparência: claro/escuro, densidade em ciclo e o painel completo.
 class AparenciaBar extends StatelessWidget {
-  const AparenciaBar({super.key, this.compacta = false});
-  final bool compacta;
+  const AparenciaBar({super.key, this.densidade = true});
+
+  /// Mostra o atalho da densidade (nas barras das páginas fica só no painel, para o título caber).
+  final bool densidade;
 
   @override
-  Widget build(BuildContext context) {
-    final a = AparenciaScope.of(context);
-    if (compacta) {
-      final escuro = a.modo == ThemeMode.dark;
-      // Densidade em ciclo (compacta → padrão → confortável) e claro/escuro.
-      final i = SsDensity.values.indexOf(a.densidade);
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: aparencia,
+    builder: (context, _) {
+      final v = aparencia.value;
+      final escuro = Theme.of(context).brightness == Brightness.dark;
+      final i = SsDensity.values.indexOf(v.density);
       final proxima = SsDensity.values[(i + 1) % SsDensity.values.length];
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            tooltip: 'Densidade: ${a.densidade.name}',
-            icon: Icon(
-              a.densidade.isCompact
+          if (densidade)
+            SsIconButton(
+              icon: v.density.isCompact
                   ? Icons.density_small_rounded
-                  : (a.densidade.isComfortable ? Icons.density_large_rounded : Icons.density_medium_rounded),
+                  : (v.density.isComfortable ? Icons.density_large_rounded : Icons.density_medium_rounded),
+              tooltip: 'Densidade: ${_densidade(v.density)}',
+              onPressed: () => aparencia.set(v.copyWith(density: proxima)),
             ),
-            onPressed: () => a.setDensidade(proxima),
-          ),
-          IconButton(
+          SsIconButton(
+            icon: escuro ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             tooltip: escuro ? 'Claro' : 'Escuro',
-            icon: Icon(escuro ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
-            onPressed: () => a.setModo(escuro ? ThemeMode.light : ThemeMode.dark),
+            onPressed: () => aparencia.set(v.copyWith(themeMode: escuro ? ThemeMode.light : ThemeMode.dark)),
           ),
+          SsIconButton(icon: Icons.palette_outlined, tooltip: 'Aparência', onPressed: () => abrirAparencia(context)),
         ],
       );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 10,
-      children: [
-        SsSegmented<String>(
-          segments: const [('claro', 'Claro'), ('escuro', 'Escuro'), ('oled', 'OLED')],
-          value: a.fundo,
-          onChanged: a.setFundo,
-        ),
-        SsDensityPicker(value: a.densidade, onChanged: a.setDensidade),
-        if (paletas.length > 1)
-          SsPalettePicker(
-            value: paletas[a.paleta] ?? SsBrand.violeta,
-            onChanged: (p) => a.setPaleta(p.nome),
-            padding: EdgeInsets.zero,
-          ),
-      ],
-    );
-  }
+    },
+  );
 }
+
+String _densidade(SsDensity d) => d.isCompact ? 'compacta' : (d.isComfortable ? 'confortável' : 'padrão');

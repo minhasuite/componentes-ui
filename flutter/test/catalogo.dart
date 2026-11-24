@@ -141,16 +141,19 @@ final catalogo = comV19Produto(
               comV28(
                 comV27Graficos(
                   comV27(
-                    comV26(comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))))))),
+                    comV26(
+                      comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+                    ),
                   ),
                 ),
+              ),
             ),
           ),
         ),
       ),
     ),
   ),
-));
+);
 
 final _catalogo = comV08(<Componente>[
   Componente(

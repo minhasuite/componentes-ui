@@ -1,4 +1,4 @@
-<%# titulo: Arquivos, edição e passos | grupo: Formulários | ordem: 40 %>
+<%# titulo: Arquivos, edição no lugar e passo a passo | grupo: Formulários e entrada | ordem: 40 | tambem: Mídia e captura | versao: 1.9 %>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 2rem">
 <%= demo "Ss::FileDropComponent", "Arraste e solte ou clique: prévia da imagem, tamanho e remover. Com direct_upload_url: (Active Storage), a barra de cada arquivo segue os eventos direct-upload:*.",
@@ -17,7 +17,7 @@
 <% end %>
 </div>
 
-<%= demo "Ss::WizardComponent", "Passos com progresso; Avançar valida os campos do passo (validação nativa); Voltar não perde nada. Com draft_key: guarda o rascunho no localStorage e restaura ao voltar. v1.9 (pares do SsWizard): with_summary vira o passo final Revisão e save_later_label: põe "Salvar e continuar depois" (submit sem validação, name=save_later).",
+<%= demo "Ss::WizardComponent", "Passos com progresso; Avançar valida os campos do passo (validação nativa); Voltar não perde nada. Com draft_key: guarda o rascunho no localStorage e restaura ao voltar. v1.9 (pares do SsWizard): with_summary vira o passo final Revisão e save_later_label: põe “Salvar e continuar depois” (submit sem validação, name=save_later).",
       uso: 'render Ss::WizardComponent.new(draft_key: "novo-cliente", save_later_label: true) { |w| w.with_step(title: "Dados") { … }; w.with_summary { … } }' do %>
   <form class="ss-card ss-card-pad" style="max-width:640px" action="<%= vitrine_path("formularios_fluxo") %>" method="post" data-turbo="false">
     <%= hidden_field_tag :authenticity_token, form_authenticity_token %>

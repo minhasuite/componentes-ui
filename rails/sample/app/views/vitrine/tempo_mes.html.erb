@@ -1,0 +1,13 @@
+<%# titulo: Troca de mês | grupo: Tempo e agenda | ordem: 40 %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::MonthSwitcherComponent", "‹ Outubro 2026 ›: link para o mês vizinho (sem JS para funcionar); o título fora do mês atual volta para ele; min:/max: travam as setas; ← → com o foco trocam. Par: SsMonthSwitcher.",
+           uso: 'render Ss::MonthSwitcherComponent.new(month: @mes, param: :mes, frame: "lancamentos")' do %>
+    <% mes = Ss::MonthSwitcherComponent.parse(params[:mes]) || Date.today.beginning_of_month %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.5rem">
+      <%= render Ss::MonthSwitcherComponent.new(month: mes, param: :mes, max: Date.today.next_month) %>
+      <p class="ss-note" style="justify-content:center">Mês na URL: <span class="num"><%= mes.strftime("%Y-%m") %></span></p>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,21 @@
+<%# titulo: Chat com o assistente | grupo: Conversa, IA e avisos | ordem: 10 %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::ChatComponent + Ss::ChatActionComponent", "Lista de mensagens (role=log), o pensando e o campo (Enter envia, Shift+Enter quebra linha). O cartão de ação mostra o que o assistente propõe com Confirmar/Cancelar; a resposta troca o cartão pelo resultado. Par: SsChatBubble, SsThinking, SsChatInput e SsChatActionCard.",
+           uso: 'render(Ss::ChatComponent.new(id: "ia", url: mensagens_path)) { |c| c.with_message(from: :me, text: "…") } · render Ss::ChatActionComponent.new(title:, rows:, confirm_url:, cancel_url:)' do %>
+    <div class="ss-card ss-card-pad">
+      <%= render(Ss::ChatComponent.new(id: "vt-chat", url: "#", placeholder: "Pergunte ou peça um lançamento", style: "--ss-chat-h:26rem")) do |chat| %>
+        <% chat.with_message(from: :me, text: "Gastei 45 no mercado com o Nubank", time: "14:05") %>
+        <% chat.with_message(from: :ai) do %>
+          <p>Posso lançar assim?</p>
+          <%= render Ss::ChatActionComponent.new(id: "vt-acao", title: "Lançar despesa", icon: ss_icon("credit-card", size: nil),
+                rows: [["Valor", "R$ 45,00"], ["Cartão", "Nubank"], ["Categoria", "Mercado"], ["Data", "Hoje"]], confirm_url: "#", cancel_url: "#") %>
+        <% end %>
+        <% chat.with_message(from: :ai) do %>
+          <%= render Ss::ChatActionComponent.new(title: "Lançar receita", rows: [["Valor", "R$ 5.200,00"]], state: :confirmed, result: "Lançado em Conta corrente") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

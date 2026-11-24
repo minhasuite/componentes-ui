@@ -1,4 +1,4 @@
-<%# titulo: Seções, mosaico, coluna lateral, área e foto | grupo: Painéis (v0.13) | ordem: 10 %>
+<%# titulo: Seções, mosaico, coluna lateral, área e foto | grupo: Cards e painéis | ordem: 40 | tambem: Navegação e moldura %>
 <%# v0.13: pares Flutter no README (SsSection(icon:), SsSectionHeader(icon:), SsMasonry, SsAsideLayout, SsMosaicTile(facts:), SsPhotoCard, SsBrand.fromColors). %>
 <% ico = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="#{d}"/></svg>).html_safe } %>
 <% bulb = ico.("M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z") %>
@@ -21,7 +21,7 @@
     <%= render Ss::SectionHeaderComponent.new(title: "Sem ícone nem ação") %>
   <% end %>
 
-  <%= demo "Ss::MosaicTileComponent", "Bloco de área: gradiente da marca com o matiz deslocado (variant: 0 a 4) ou foto com véu; ícone em cima, título e pílulas de resumo (facts:) ou a linha em versalete (caption:). Com url: é link (sobe no hover). Pílula com tone: (ok, warn, danger, info) e url:/title: próprios (v0.20.3; o bloco vira link esticado)."
+  <%= demo "Ss::MosaicTileComponent", "Bloco de área: gradiente da marca com o matiz deslocado (variant: 0 a 4) ou foto com véu; ícone em cima, título e pílulas de resumo (facts:) ou a linha em versalete (caption:). Com url: é link (sobe no hover). Pílula com tone: (ok, warn, danger, info) e url:/title: próprios (v0.20.3; o bloco vira link esticado).",
            uso: 'render Ss::MosaicTileComponent.new(title: "Sala", icon: svg, url: area_path(a), variant: 1, facts: [{ label: "2 ligados", icon: bulb }])' do %>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <%= render Ss::MosaicTileComponent.new(title: "Sala", icon: sofa, url: "#", facts: [{ label: "2 ligados", icon: bulb }, { label: "87 W", icon: bolt, num: true }]) %>
@@ -56,7 +56,7 @@
   <% end %>
 
   <%= demo "ss_avatar(ring:, status: \"muted\") e ss_brand_style", "Avatar com anel da marca (em casa) e ponto apagado (fora); um trecho pintado com outra marca a partir de duas cores (o SsBrand.fromColors do Flutter).",
-           uso: 'ss_avatar("Ana", ring: true, status: "success") · <div style="<%= ss_brand_style("#0284c7", "#14b8a6") %>">' do %>
+           uso: 'ss_avatar("Ana", ring: true, status: "success") · tag.div(style: ss_brand_style("#0284c7", "#14b8a6")) { … }' do %>
     <div style="display:flex;gap:16px;align-items:center">
       <%= ss_avatar("Ana Souza", size: 40, status: "success", ring: true) %>
       <%= ss_avatar("Bruno Lima", size: 40, status: "muted") %>

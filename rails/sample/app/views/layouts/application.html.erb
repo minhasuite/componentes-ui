@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>" <%= tag.attributes(ss_density_attrs) %>>
   <head>
-    <title><%= content_for(:title) || "Lista Clara · vitrine" %></title>
+    <title><%= content_for(:title) || "Componentes da Suíte · Lista Clara" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="view-transition" content="same-origin">
     <%= csrf_meta_tags %>
@@ -18,7 +18,8 @@
   </head>
   <body>
     <%# A moldura da vitrine é o próprio Ss::AppShellComponent, com o menu gerado das páginas. %>
-    <% nav = paginas.group_by { _1[:grupo] }.map do |grupo, ps|
+    <%# Menu pelas categorias de uso (VitrineController::CATEGORIAS); a página que mistura assuntos aparece em cada um. %>
+    <% nav = menu.map do |grupo, ps|
          { title: grupo, items: ps.map { |p| { label: p[:titulo], href: vitrine_path(p[:slug]), current: p[:slug] == pagina_atual } } }
        end %>
     <%# v0.24: ?empresas=1 ou 2 mostra a troca de empresa (com 1, só o nome parado; nome longo com reticências). %>
@@ -44,7 +45,7 @@
       <%= yield %>
       <%# Busca de páginas (Ctrl+K): a paleta da gem; a confirmação global serve todo data-turbo-confirm. %>
       <%= render Ss::CommandPaletteComponent.new(id: "vitrine-busca", placeholder: "Buscar componente…",
-            groups: paginas.group_by { _1[:grupo] }.map { |grupo, ps| { title: grupo, items: ps.map { |p| { label: p[:titulo], url: vitrine_path(p[:slug]), hint: grupo } } } }) %>
+            groups: paginas.group_by { _1[:grupo] }.map { |grupo, ps| { title: grupo, items: ps.map { |p| { label: p[:titulo], url: vitrine_path(p[:slug]), subtitle: p[:componentes].join(", ").presence, hint: grupo } } } }) %>
       <%= render Ss::ConfirmDialogComponent.new(id: "vitrine-confirmar") %>
     <% end %>
   </body>

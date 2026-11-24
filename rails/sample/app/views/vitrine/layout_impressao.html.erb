@@ -1,4 +1,4 @@
-<%# titulo: Impressão (A4) | grupo: Layout | ordem: 5 %>
+<%# titulo: Impressão (A4) | grupo: Telas montadas | ordem: 40 %>
 <%= demo "Ss::PrintLayoutComponent", "Recibo, pedido ou relatório em folha A4: cabeçalho com marca, partes, tabela, totais, observação e rodapé. Imprimir (Ctrl+P) sai só a folha, em preto, sem a moldura.",
          uso: 'render Ss::PrintLayoutComponent.new(title: "Pedido", number:, date:, company: { name:, lines: [] }, customer: { name:, lines: [] }, columns: [["Item"], ["Qtd", :r]], rows: [...], totals: [[label, valor, :strong]]) { |p| p.with_notes { … }; p.with_footer { … } }' do %>
   <p class="ss-no-print" style="margin-bottom:14px"><button class="ss-btn ss-btn-outline" onclick="print()">Imprimir</button></p>

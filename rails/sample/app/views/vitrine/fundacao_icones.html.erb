@@ -1,0 +1,20 @@
+<%# titulo: Ícones (ss_icon) | grupo: Fundação | ordem: 20 %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "ss_icon · Ss::IconComponent", "SVG inline do conjunto da gem (Heroicons v1, MIT, #{ss_icon_names.size} ícones) na cor do texto. Aceita o nome da v2 (magnifying-glass → search); o que não existe vira o ponto de interrogação. Par: SsIcons.named.",
+           uso: 'ss_icon("credit-card") · ss_icon("star", variant: :solid, size: :xs) · render Ss::IconComponent.new(name: "banknotes", size: :lg)' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:.75rem">
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;color:var(--ink-2)">
+        <% %w[credit-card banknotes office-building chart-pie arrow-trending-up arrow-trending-down calendar-days magnifying-glass funnel bell-alert eye-slash cog-6-tooth sparkles globe-alt bolt gift].each do |n| %>
+          <span title="<%= n %>"><%= ss_icon(n, size: :md) %></span>
+        <% end %>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center">
+        <%= ss_icon("star", variant: :solid, size: :xs, css: "text-warn") %><%= ss_icon("check-circle", variant: :solid, css: "text-success") %>
+        <%= render Ss::IconComponent.new(name: "x-circle", variant: :solid, size: :lg, css: "text-danger", title: "Erro") %>
+        <%= ss_icon("nao-existe") %>
+      </div>
+    </div>
+  <% end %>
+</div>

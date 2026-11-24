@@ -1,0 +1,27 @@
+<%# titulo: Barras e linha de progresso | grupo: Dados e gráficos | ordem: 25 | tambem: Comércio e finanças %>
+<%# v0.15 (fase 0 do meu-financeiro); saiu da antiga página financeiro_v015. Pares Flutter no README. %>
+<% money = ->(v) { ss_money(v) } %>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1.5rem;align-items:start">
+  <%= demo "Ss::BarChartComponent", "Barras agrupadas ou empilhadas, com negativos (a linha do zero separa) e linha combinada por cima. SVG do servidor, legenda, dica por grupo e tabela para leitor de tela. Par: SsBarChart.",
+           uso: 'render Ss::BarChartComponent.new(title:, labels:, series: [{ name:, values:, tone: :success }], line: { name:, values: }, stacked: true, format: ->(v) { ss_money(v) })' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1.25rem">
+      <%= render Ss::BarChartComponent.new(title: "Receitas × despesas", show_title: true, stacked: true, active: 5, format: ->(v) { ss_money(v, precision: 0) },
+            labels: %w[jun jul ago set out nov],
+            series: [{ name: "Receitas", values: [5200, 4800, 5100, 5300, 4900, 5600], tone: :success }, { name: "Despesas", values: [-4100, -5200, -3900, -4700, -5000, -4300], tone: :danger }],
+            line: { name: "Saldo", values: [1100, -400, 1200, 600, -100, 1300] }) %>
+      <%= render Ss::BarChartComponent.new(title: "Por cartão", show_title: true, height: 200, format: ->(v) { ss_money(v, precision: 0) }, labels: %w[ago set out nov],
+            series: [{ name: "Nubank", values: [1200, 980, 1430, 1100] }, { name: "Inter", values: [600, 720, 410, 830] }, { name: "C6", values: [300, 0, 250, 190] }]) %>
+    </div>
+  <% end %>
+
+  <%= demo "Ss::ProgressRowComponent", "Rótulo, gasto de limite, % e a barra no tom do estado: limite (até 80% na marca, aviso até 100%, estouro em vermelho) ou meta (100% é verde). Par: SsProgressRow.",
+           uso: 'render Ss::ProgressRowComponent.new(label: "Mercado", value: 720, limit: 1000, format: ->(v) { ss_money(v) })' do %>
+    <div class="ss-card ss-card-pad" style="display:grid;gap:1rem">
+      <%= render Ss::ProgressRowComponent.new(label: "Mercado", value: 520, limit: 1000, format: money, icon: ss_icon("shopping-cart", size: nil)) %>
+      <%= render Ss::ProgressRowComponent.new(label: "Lazer", value: 870, limit: 1000, format: money, icon: ss_icon("film", size: nil)) %>
+      <%= render Ss::ProgressRowComponent.new(label: "Restaurantes", value: 1240, limit: 1000, format: money, icon: ss_icon("cake", size: nil), href: "#") %>
+      <%= render Ss::ProgressRowComponent.new(label: "Reserva de emergência", value: 6000, limit: 6000, kind: :goal, format: money, icon: ss_icon("shield-check", size: nil)) %>
+    </div>
+  <% end %>
+</div>
