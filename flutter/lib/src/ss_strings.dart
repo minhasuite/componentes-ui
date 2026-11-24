@@ -435,6 +435,41 @@ class SsStrings {
     required this.termsOfUse,
     required this.privacyPolicy,
     required this.opensExternal,
+    // v1.9 · produto (SsNotificationCenter, SsAssistantView, SsCaptureHub)
+    this.notifMarkAllRead = 'Marcar todas como lidas',
+    this.notifMarkRead = 'Marcar como lida',
+    this.notifArchive = 'Arquivar',
+    this.notifArchived = 'Notificação arquivada',
+    this.notifEmptyTitle = 'Nenhuma notificação',
+    this.notifEmptyText = 'Os avisos do app aparecem aqui.',
+    this.notifUnread = 'não lida',
+    this.notifEnd = 'Sem mais notificações',
+    this.notifUnreadCount = _v19NotifUnreadCount,
+    this.assistantConversations = 'Conversas',
+    this.assistantNew = 'Nova conversa',
+    this.assistantDelete = 'Apagar conversa',
+    this.assistantDeleteConfirm = 'Apagar esta conversa?',
+    this.assistantDeleteText = 'As mensagens dela somem e não dá para desfazer.',
+    this.assistantNoConversations = 'Nenhuma conversa ainda',
+    this.assistantUntitled = 'Conversa',
+    this.assistantCurrent = 'Aberta',
+    this.assistantEmptyTitle = 'Como posso ajudar?',
+    this.assistantFailed = 'Não deu para responder agora.',
+    this.assistantShortcuts = 'Sugestões',
+    this.assistantExhausted = 'Mensagens do mês esgotadas',
+    this.assistantRemaining = _v19AssistantRemaining,
+    this.captureCamera = 'Tirar foto',
+    this.captureCameraHint = 'Use a câmera do aparelho',
+    this.captureGallery = 'Da galeria',
+    this.captureGalleryHint = 'Escolha uma foto já tirada',
+    this.capturePaste = 'Colar texto',
+    this.capturePasteHint = 'Cole o texto que você copiou',
+    this.captureBarcode = 'Código de barras',
+    this.captureBarcodeHint = 'Aponte para o código',
+    this.captureFile = 'Enviar arquivo',
+    this.captureFileHint = 'PDF, XML ou imagem',
+    this.captureRecommended = 'Recomendado',
+    this.captureUnavailable = 'Indisponível',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1116,6 +1151,43 @@ class SsStrings {
   /// v0.20: dica de link que sai do app ([SsTextLink] com external).
   final String opensExternal;
 
+  // v1.9 · produto: central de notificações ([SsNotificationCenter]), assistente ([SsAssistantView]) e
+  // formas de capturar ([SsCaptureHub]). Com valor padrão (pt) no construtor.
+  final String notifMarkAllRead;
+  final String notifMarkRead;
+  final String notifArchive;
+  final String notifArchived;
+  final String notifEmptyTitle;
+  final String notifEmptyText;
+  final String notifUnread;
+  final String notifEnd;
+  final String Function(int n) notifUnreadCount;
+  final String assistantConversations;
+  final String assistantNew;
+  final String assistantDelete;
+  final String assistantDeleteConfirm;
+  final String assistantDeleteText;
+  final String assistantNoConversations;
+  final String assistantUntitled;
+  final String assistantCurrent;
+  final String assistantEmptyTitle;
+  final String assistantFailed;
+  final String assistantShortcuts;
+  final String assistantExhausted;
+  final String Function(int n) assistantRemaining;
+  final String captureCamera;
+  final String captureCameraHint;
+  final String captureGallery;
+  final String captureGalleryHint;
+  final String capturePaste;
+  final String capturePasteHint;
+  final String captureBarcode;
+  final String captureBarcodeHint;
+  final String captureFile;
+  final String captureFileHint;
+  final String captureRecommended;
+  final String captureUnavailable;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1557,6 +1629,41 @@ class SsStrings {
     termsOfUse: 'Termos de uso',
     privacyPolicy: 'Política de privacidade',
     opensExternal: 'abre fora do app',
+    // v1.9 · produto
+    notifMarkAllRead: 'Marcar todas como lidas',
+    notifMarkRead: 'Marcar como lida',
+    notifArchive: 'Arquivar',
+    notifArchived: 'Notificação arquivada',
+    notifEmptyTitle: 'Nenhuma notificação',
+    notifEmptyText: 'Os avisos do app aparecem aqui.',
+    notifUnread: 'não lida',
+    notifEnd: 'Sem mais notificações',
+    notifUnreadCount: (n) => n == 1 ? '1 não lida' : '$n não lidas',
+    assistantConversations: 'Conversas',
+    assistantNew: 'Nova conversa',
+    assistantDelete: 'Apagar conversa',
+    assistantDeleteConfirm: 'Apagar esta conversa?',
+    assistantDeleteText: 'As mensagens dela somem e não dá para desfazer.',
+    assistantNoConversations: 'Nenhuma conversa ainda',
+    assistantUntitled: 'Conversa',
+    assistantCurrent: 'Aberta',
+    assistantEmptyTitle: 'Como posso ajudar?',
+    assistantFailed: 'Não deu para responder agora.',
+    assistantShortcuts: 'Sugestões',
+    assistantExhausted: 'Mensagens do mês esgotadas',
+    assistantRemaining: (n) => n == 1 ? '1 mensagem restante' : '$n mensagens restantes',
+    captureCamera: 'Tirar foto',
+    captureCameraHint: 'Use a câmera do aparelho',
+    captureGallery: 'Da galeria',
+    captureGalleryHint: 'Escolha uma foto já tirada',
+    capturePaste: 'Colar texto',
+    capturePasteHint: 'Cole o texto que você copiou',
+    captureBarcode: 'Código de barras',
+    captureBarcodeHint: 'Aponte para o código',
+    captureFile: 'Enviar arquivo',
+    captureFileHint: 'PDF, XML ou imagem',
+    captureRecommended: 'Recomendado',
+    captureUnavailable: 'Indisponível',
   );
 
   /// Inglês.
@@ -1986,6 +2093,41 @@ class SsStrings {
     termsOfUse: 'Terms of Use',
     privacyPolicy: 'Privacy Policy',
     opensExternal: 'opens outside the app',
+    // v1.9 · produto
+    notifMarkAllRead: 'Mark all as read',
+    notifMarkRead: 'Mark as read',
+    notifArchive: 'Archive',
+    notifArchived: 'Notification archived',
+    notifEmptyTitle: 'No notifications',
+    notifEmptyText: 'App alerts show up here.',
+    notifUnread: 'unread',
+    notifEnd: 'No more notifications',
+    notifUnreadCount: (n) => '$n unread',
+    assistantConversations: 'Conversations',
+    assistantNew: 'New conversation',
+    assistantDelete: 'Delete conversation',
+    assistantDeleteConfirm: 'Delete this conversation?',
+    assistantDeleteText: "Its messages are removed and this can't be undone.",
+    assistantNoConversations: 'No conversations yet',
+    assistantUntitled: 'Conversation',
+    assistantCurrent: 'Open',
+    assistantEmptyTitle: 'How can I help?',
+    assistantFailed: "Couldn't answer right now.",
+    assistantShortcuts: 'Suggestions',
+    assistantExhausted: "This month's messages are used up",
+    assistantRemaining: (n) => n == 1 ? '1 message left' : '$n messages left',
+    captureCamera: 'Take a photo',
+    captureCameraHint: "Use the device's camera",
+    captureGallery: 'From gallery',
+    captureGalleryHint: 'Pick a photo you already took',
+    capturePaste: 'Paste text',
+    capturePasteHint: 'Paste the text you copied',
+    captureBarcode: 'Barcode',
+    captureBarcodeHint: 'Point at the code',
+    captureFile: 'Upload a file',
+    captureFileHint: 'PDF, XML or image',
+    captureRecommended: 'Recommended',
+    captureUnavailable: 'Unavailable',
   );
 
   /// Espanhol.
@@ -2415,6 +2557,41 @@ class SsStrings {
     termsOfUse: 'Términos de uso',
     privacyPolicy: 'Política de privacidad',
     opensExternal: 'se abre fuera de la app',
+    // v1.9 · produto
+    notifMarkAllRead: 'Marcar todas como leídas',
+    notifMarkRead: 'Marcar como leída',
+    notifArchive: 'Archivar',
+    notifArchived: 'Notificación archivada',
+    notifEmptyTitle: 'Sin notificaciones',
+    notifEmptyText: 'Los avisos de la app aparecen aquí.',
+    notifUnread: 'no leída',
+    notifEnd: 'No hay más notificaciones',
+    notifUnreadCount: (n) => n == 1 ? '1 no leída' : '$n no leídas',
+    assistantConversations: 'Conversaciones',
+    assistantNew: 'Nueva conversación',
+    assistantDelete: 'Borrar conversación',
+    assistantDeleteConfirm: '¿Borrar esta conversación?',
+    assistantDeleteText: 'Sus mensajes se borran y no se puede deshacer.',
+    assistantNoConversations: 'Aún no hay conversaciones',
+    assistantUntitled: 'Conversación',
+    assistantCurrent: 'Abierta',
+    assistantEmptyTitle: '¿Cómo puedo ayudarte?',
+    assistantFailed: 'No se pudo responder ahora.',
+    assistantShortcuts: 'Sugerencias',
+    assistantExhausted: 'Mensajes del mes agotados',
+    assistantRemaining: (n) => n == 1 ? 'Queda 1 mensaje' : 'Quedan $n mensajes',
+    captureCamera: 'Tomar foto',
+    captureCameraHint: 'Usa la cámara del dispositivo',
+    captureGallery: 'De la galería',
+    captureGalleryHint: 'Elige una foto ya tomada',
+    capturePaste: 'Pegar texto',
+    capturePasteHint: 'Pega el texto que copiaste',
+    captureBarcode: 'Código de barras',
+    captureBarcodeHint: 'Apunta al código',
+    captureFile: 'Subir archivo',
+    captureFileHint: 'PDF, XML o imagen',
+    captureRecommended: 'Recomendado',
+    captureUnavailable: 'No disponible',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2831,6 +3008,41 @@ class SsStrings {
     'termsOfUse': termsOfUse,
     'privacyPolicy': privacyPolicy,
     'opensExternal': opensExternal,
+    // v1.9 · produto
+    'notifMarkAllRead': notifMarkAllRead,
+    'notifMarkRead': notifMarkRead,
+    'notifArchive': notifArchive,
+    'notifArchived': notifArchived,
+    'notifEmptyTitle': notifEmptyTitle,
+    'notifEmptyText': notifEmptyText,
+    'notifUnread': notifUnread,
+    'notifEnd': notifEnd,
+    'notifUnreadCount': notifUnreadCount(3),
+    'assistantConversations': assistantConversations,
+    'assistantNew': assistantNew,
+    'assistantDelete': assistantDelete,
+    'assistantDeleteConfirm': assistantDeleteConfirm,
+    'assistantDeleteText': assistantDeleteText,
+    'assistantNoConversations': assistantNoConversations,
+    'assistantUntitled': assistantUntitled,
+    'assistantCurrent': assistantCurrent,
+    'assistantEmptyTitle': assistantEmptyTitle,
+    'assistantFailed': assistantFailed,
+    'assistantShortcuts': assistantShortcuts,
+    'assistantExhausted': assistantExhausted,
+    'assistantRemaining': assistantRemaining(3),
+    'captureCamera': captureCamera,
+    'captureCameraHint': captureCameraHint,
+    'captureGallery': captureGallery,
+    'captureGalleryHint': captureGalleryHint,
+    'capturePaste': capturePaste,
+    'capturePasteHint': capturePasteHint,
+    'captureBarcode': captureBarcode,
+    'captureBarcodeHint': captureBarcodeHint,
+    'captureFile': captureFile,
+    'captureFileHint': captureFileHint,
+    'captureRecommended': captureRecommended,
+    'captureUnavailable': captureUnavailable,
   };
 
   /// Os idiomas prontos.
@@ -3282,6 +3494,41 @@ class SsStrings {
     String? termsOfUse,
     String? privacyPolicy,
     String? opensExternal,
+    // v1.9 · produto
+    String? notifMarkAllRead,
+    String? notifMarkRead,
+    String? notifArchive,
+    String? notifArchived,
+    String? notifEmptyTitle,
+    String? notifEmptyText,
+    String? notifUnread,
+    String? notifEnd,
+    String Function(int n)? notifUnreadCount,
+    String? assistantConversations,
+    String? assistantNew,
+    String? assistantDelete,
+    String? assistantDeleteConfirm,
+    String? assistantDeleteText,
+    String? assistantNoConversations,
+    String? assistantUntitled,
+    String? assistantCurrent,
+    String? assistantEmptyTitle,
+    String? assistantFailed,
+    String? assistantShortcuts,
+    String? assistantExhausted,
+    String Function(int n)? assistantRemaining,
+    String? captureCamera,
+    String? captureCameraHint,
+    String? captureGallery,
+    String? captureGalleryHint,
+    String? capturePaste,
+    String? capturePasteHint,
+    String? captureBarcode,
+    String? captureBarcodeHint,
+    String? captureFile,
+    String? captureFileHint,
+    String? captureRecommended,
+    String? captureUnavailable,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3695,6 +3942,41 @@ class SsStrings {
     termsOfUse: termsOfUse ?? this.termsOfUse,
     privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     opensExternal: opensExternal ?? this.opensExternal,
+    // v1.9 · produto
+    notifMarkAllRead: notifMarkAllRead ?? this.notifMarkAllRead,
+    notifMarkRead: notifMarkRead ?? this.notifMarkRead,
+    notifArchive: notifArchive ?? this.notifArchive,
+    notifArchived: notifArchived ?? this.notifArchived,
+    notifEmptyTitle: notifEmptyTitle ?? this.notifEmptyTitle,
+    notifEmptyText: notifEmptyText ?? this.notifEmptyText,
+    notifUnread: notifUnread ?? this.notifUnread,
+    notifEnd: notifEnd ?? this.notifEnd,
+    notifUnreadCount: notifUnreadCount ?? this.notifUnreadCount,
+    assistantConversations: assistantConversations ?? this.assistantConversations,
+    assistantNew: assistantNew ?? this.assistantNew,
+    assistantDelete: assistantDelete ?? this.assistantDelete,
+    assistantDeleteConfirm: assistantDeleteConfirm ?? this.assistantDeleteConfirm,
+    assistantDeleteText: assistantDeleteText ?? this.assistantDeleteText,
+    assistantNoConversations: assistantNoConversations ?? this.assistantNoConversations,
+    assistantUntitled: assistantUntitled ?? this.assistantUntitled,
+    assistantCurrent: assistantCurrent ?? this.assistantCurrent,
+    assistantEmptyTitle: assistantEmptyTitle ?? this.assistantEmptyTitle,
+    assistantFailed: assistantFailed ?? this.assistantFailed,
+    assistantShortcuts: assistantShortcuts ?? this.assistantShortcuts,
+    assistantExhausted: assistantExhausted ?? this.assistantExhausted,
+    assistantRemaining: assistantRemaining ?? this.assistantRemaining,
+    captureCamera: captureCamera ?? this.captureCamera,
+    captureCameraHint: captureCameraHint ?? this.captureCameraHint,
+    captureGallery: captureGallery ?? this.captureGallery,
+    captureGalleryHint: captureGalleryHint ?? this.captureGalleryHint,
+    capturePaste: capturePaste ?? this.capturePaste,
+    capturePasteHint: capturePasteHint ?? this.capturePasteHint,
+    captureBarcode: captureBarcode ?? this.captureBarcode,
+    captureBarcodeHint: captureBarcodeHint ?? this.captureBarcodeHint,
+    captureFile: captureFile ?? this.captureFile,
+    captureFileHint: captureFileHint ?? this.captureFileHint,
+    captureRecommended: captureRecommended ?? this.captureRecommended,
+    captureUnavailable: captureUnavailable ?? this.captureUnavailable,
   );
 }
 
@@ -3931,3 +4213,7 @@ class SsFormatsScope extends InheritedWidget {
   @override
   bool updateShouldNotify(SsFormatsScope old) => old.formats != formats;
 }
+
+// v1.9 · produto: padrões (pt) das funções de texto (constantes, para o construtor).
+String _v19NotifUnreadCount(int n) => n == 1 ? '1 não lida' : '$n não lidas';
+String _v19AssistantRemaining(int n) => n == 1 ? '1 mensagem restante' : '$n mensagens restantes';
