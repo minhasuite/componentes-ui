@@ -13,6 +13,7 @@ import '../motion_view.dart';
 import '../skeleton.dart';
 import '../ss_badge.dart';
 import '../ss_strings.dart';
+import '../v19/transicoes/chart_transition.dart';
 import 'dados_formato.dart';
 import 'dados_state_bands.dart';
 
@@ -197,7 +198,40 @@ class _Eixo {
   final double lo, hi, step;
 }
 
-class _SsTimeChartState extends State<SsTimeChart> {
+class _SsTimeChartState extends State<SsTimeChart> with SingleTickerProviderStateMixin, SsChartTransition<SsTimeChart> {
+  // v1.9: troca de dados animada (mesmos instantes: cada leitura vai do valor anterior ao novo).
+  @override
+  List<List<double>> chartValues(SsTimeChart w) => [
+    for (final s in w.series) [for (final p in s.points) p.v ?? double.nan],
+  ];
+
+  List<SsTimeSeries> get _desenho {
+    if (!chartTransitioning) return widget.series;
+    final m = chartShown;
+    return [
+      for (var i = 0; i < widget.series.length; i++)
+        if (i < m.length && m[i].length == widget.series[i].points.length)
+          SsTimeSeries(
+            name: widget.series[i].name,
+            unit: widget.series[i].unit,
+            color: widget.series[i].color,
+            mode: widget.series[i].mode,
+            decimals: widget.series[i].decimals,
+            points: [
+              for (var k = 0; k < m[i].length; k++)
+                SsTimePoint(
+                  widget.series[i].points[k].t,
+                  m[i][k].isNaN ? null : m[i][k],
+                  min: widget.series[i].points[k].min,
+                  max: widget.series[i].points[k].max,
+                ),
+            ],
+          )
+        else
+          widget.series[i],
+    ];
+  }
+
   SsStrings get _s => SsStrings.of(context);
   final _ocultas = <int>{};
   late DateTime? _cursor = widget.initialCursor;
@@ -437,7 +471,7 @@ class _SsTimeChartState extends State<SsTimeChart> {
                                   builder: (_, t, _) => CustomPaint(
                                     size: Size(w, widget.height),
                                     painter: _TimePainter(
-                                      series: widget.series,
+                                      series: _desenho,
                                       cores: cores,
                                       ocultas: _ocultas,
                                       modo: _modo,

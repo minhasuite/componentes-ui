@@ -9,6 +9,7 @@ import '../app_theme.dart';
 import '../format.dart';
 import '../motion_view.dart';
 import '../ss_line_chart.dart' show SsSeries, SsChartEmpty;
+import '../v19/transicoes/chart_transition.dart';
 import '../v27/chart_markers.dart';
 import '../ss_strings.dart';
 
@@ -139,7 +140,11 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
   return (lo < 0 ? lo - pad : 0, topo);
 }
 
-class _SsBarChartState extends State<SsBarChart> {
+class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateMixin, SsChartTransition<SsBarChart> {
+  // v1.9: troca de dados animada (cada barra vai da altura anterior à nova; a linha junto).
+  @override
+  List<List<double>> chartValues(SsBarChart w) => [for (final s in w.series) s.values, w.line?.values ?? const []];
+
   int? _sel;
   SsFormats _formats = SsFormats.brl;
 
@@ -174,10 +179,16 @@ class _SsBarChartState extends State<SsBarChart> {
     final topo = ssMarkerRows(marcas) * ssMarkerLine;
     final corLinha = widget.line?.color ?? c.ink;
     final corProj = widget.projection?.color ?? widget.line?.color ?? c.muted;
+    final mostra = chartShown;
+    final barras = [
+      for (var i = 0; i < widget.series.length; i++)
+        i < mostra.length ? SsSeries(mostra[i], colors: widget.series[i].colors) : widget.series[i],
+    ];
+    final linha = widget.line == null ? null : SsSeries(mostra.last, color: widget.line!.color);
     final (lo, hi) = ssBarRange(
-      widget.series,
+      barras,
       _n,
-      line: widget.line,
+      line: linha,
       stacked: widget.stacked,
       projection: widget.projection,
       projectionFrom: widget.projectionFrom,
@@ -217,12 +228,12 @@ class _SsBarChartState extends State<SsBarChart> {
                       curve: Curves.easeOutBack,
                       builder: (_, t, _) => CustomPaint(
                         painter: _BarPainter(
-                          series: [for (var i = 0; i < widget.series.length; i++) (widget.series[i].values, cores[i])],
+                          series: [for (var i = 0; i < barras.length; i++) (barras[i].values, cores[i])],
                           valueColors: [for (final x in widget.series) x.colors],
                           markers: marcas,
                           markerTop: topo,
                           markerColors: {for (final k in SsChartMarkerKind.values) k: ssMarkerColor(context, k)},
-                          line: widget.line == null ? null : (widget.line!.values, corLinha),
+                          line: linha == null ? null : (linha.values, corLinha),
                           projection: widget.projection == null
                               ? null
                               : (widget.projection!.values, corProj, widget.projectionFrom),

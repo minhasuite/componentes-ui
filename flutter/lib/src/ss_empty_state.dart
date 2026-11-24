@@ -4,6 +4,7 @@ import 'app_theme.dart';
 import 'illustrations.dart';
 import 'ss_button.dart';
 import 'ss_card.dart';
+import 'v19/transicoes/illustrations.dart';
 
 /// Estado vazio padronizado (ilustração animada + título + subtítulo + ação
 /// opcional), dentro de um SsCard. Substitui as ~4 variantes espalhadas.
@@ -12,6 +13,7 @@ class SsEmptyState extends StatelessWidget {
     super.key,
     this.icon = Icons.inbox_outlined,
     this.art,
+    this.illustration,
     required this.title,
     this.subtitle,
     this.actionLabel,
@@ -27,6 +29,10 @@ class SsEmptyState extends StatelessWidget {
 
   /// Arte própria do produto no lugar da ilustração com [icon].
   final Widget? art;
+
+  /// v1.9: ilustração pronta (vazio, sem conexão, sem resultado, tudo feito,
+  /// erro), par do `illustration:` do web; no lugar da de [icon].
+  final SsIllustration? illustration;
   final String title;
   final String? subtitle;
   final String? actionLabel;
@@ -38,7 +44,10 @@ class SsEmptyState extends StatelessWidget {
     final corpo = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        art ?? EmptyIllustration(icon: icon, size: compact ? 72 : 112),
+        art ??
+            (illustration != null
+                ? SsIllustrationArt(illustration!, size: compact ? 80 : 120)
+                : EmptyIllustration(icon: icon, size: compact ? 72 : 112)),
         const SizedBox(height: 14),
         Text(
           title,

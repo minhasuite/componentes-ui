@@ -110,3 +110,10 @@ export 'src/version.dart';
 export 'src/v130/appearance.dart';
 // v1.5.2: sino de avisos (era a v0.25 do branch onda7).
 export 'src/v25/bell.dart';
+// v1.9 · transições: lista → detalhe, voltar preditivo, troca de dados nos gráficos,
+// ilustrações dos estados vazios e a regra de comemoração.
+export 'src/v19/transicoes/open_container.dart';
+export 'src/v19/transicoes/predictive_back.dart';
+export 'src/v19/transicoes/chart_transition.dart';
+export 'src/v19/transicoes/illustrations.dart';
+export 'src/v19/transicoes/celebration.dart';

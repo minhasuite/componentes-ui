@@ -435,6 +435,10 @@ class SsStrings {
     required this.termsOfUse,
     required this.privacyPolicy,
     required this.opensExternal,
+    // v1.9 · transições
+    this.celebrateGoal = 'Meta batida!',
+    this.celebrateStreak = 'Sequência mantida!',
+    this.celebrateFirstUse = 'Primeiro passo dado!',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1116,6 +1120,11 @@ class SsStrings {
   /// v0.20: dica de link que sai do app ([SsTextLink] com external).
   final String opensExternal;
 
+  /// v1.9 · transições: o que o leitor de tela anuncia na comemoração ([SsCelebrate] com kind).
+  final String celebrateGoal;
+  final String celebrateStreak;
+  final String celebrateFirstUse;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1557,6 +1566,10 @@ class SsStrings {
     termsOfUse: 'Termos de uso',
     privacyPolicy: 'Política de privacidade',
     opensExternal: 'abre fora do app',
+    // v1.9 · transições
+    celebrateGoal: 'Meta batida!',
+    celebrateStreak: 'Sequência mantida!',
+    celebrateFirstUse: 'Primeiro passo dado!',
   );
 
   /// Inglês.
@@ -1986,6 +1999,10 @@ class SsStrings {
     termsOfUse: 'Terms of Use',
     privacyPolicy: 'Privacy Policy',
     opensExternal: 'opens outside the app',
+    // v1.9 · transições
+    celebrateGoal: 'Goal reached!',
+    celebrateStreak: 'Streak kept!',
+    celebrateFirstUse: 'First step done!',
   );
 
   /// Espanhol.
@@ -2415,6 +2432,10 @@ class SsStrings {
     termsOfUse: 'Términos de uso',
     privacyPolicy: 'Política de privacidad',
     opensExternal: 'se abre fuera de la app',
+    // v1.9 · transições
+    celebrateGoal: '¡Meta alcanzada!',
+    celebrateStreak: '¡Racha mantenida!',
+    celebrateFirstUse: '¡Primer paso dado!',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2831,6 +2852,10 @@ class SsStrings {
     'termsOfUse': termsOfUse,
     'privacyPolicy': privacyPolicy,
     'opensExternal': opensExternal,
+    // v1.9 · transições
+    'celebrateGoal': celebrateGoal,
+    'celebrateStreak': celebrateStreak,
+    'celebrateFirstUse': celebrateFirstUse,
   };
 
   /// Os idiomas prontos.
@@ -3282,6 +3307,10 @@ class SsStrings {
     String? termsOfUse,
     String? privacyPolicy,
     String? opensExternal,
+    // v1.9 · transições
+    String? celebrateGoal,
+    String? celebrateStreak,
+    String? celebrateFirstUse,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3695,6 +3724,10 @@ class SsStrings {
     termsOfUse: termsOfUse ?? this.termsOfUse,
     privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     opensExternal: opensExternal ?? this.opensExternal,
+    // v1.9 · transições
+    celebrateGoal: celebrateGoal ?? this.celebrateGoal,
+    celebrateStreak: celebrateStreak ?? this.celebrateStreak,
+    celebrateFirstUse: celebrateFirstUse ?? this.celebrateFirstUse,
   );
 }
 

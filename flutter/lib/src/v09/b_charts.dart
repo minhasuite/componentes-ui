@@ -9,6 +9,7 @@ import '../format.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_strings.dart';
+import '../v19/transicoes/chart_transition.dart';
 
 /// Curva suave por Catmull-Rom em cúbicas (a mesma do SsLineChart).
 Path _curva(List<Offset> pts) {
@@ -67,7 +68,11 @@ const _aTop = 40.0;
 const _aBottom = 30.0;
 const _aSide = 12.0;
 
-class _SsAreaChartState extends State<SsAreaChart> {
+class _SsAreaChartState extends State<SsAreaChart> with SingleTickerProviderStateMixin, SsChartTransition<SsAreaChart> {
+  // v1.9: troca de dados animada.
+  @override
+  List<List<double>> chartValues(SsAreaChart w) => [w.values];
+
   late int _sel = widget.active ?? widget.values.length - 1;
 
   @override
@@ -129,7 +134,7 @@ class _SsAreaChartState extends State<SsAreaChart> {
                 builder: (context, t, _) => CustomPaint(
                   size: Size(w, widget.height),
                   painter: _AreaPainter(
-                    values: widget.values,
+                    values: chartShown.first,
                     labels: widget.labels,
                     sel: temSel ? _sel : null,
                     t: t,
@@ -335,7 +340,14 @@ class SsExplodedDonut extends StatefulWidget {
   State<SsExplodedDonut> createState() => _SsExplodedDonutState();
 }
 
-class _SsExplodedDonutState extends State<SsExplodedDonut> {
+class _SsExplodedDonutState extends State<SsExplodedDonut>
+    with SingleTickerProviderStateMixin, SsChartTransition<SsExplodedDonut> {
+  // v1.9: troca de dados animada (as fatias crescem e encolhem até o novo tamanho).
+  @override
+  List<List<double>> chartValues(SsExplodedDonut w) => [
+    [for (final s in w.slices) math.max(0, s.value).toDouble()],
+  ];
+
   late int? _sel = widget.selected;
   int? _prev;
 
@@ -402,7 +414,7 @@ class _SsExplodedDonutState extends State<SsExplodedDonut> {
                   curve: SsMotion.spring,
                   builder: (context, k, _) => CustomPaint(
                     painter: _DonutPainter(
-                      values: [for (final s in widget.slices) math.max(0, s.value).toDouble()],
+                      values: chartShown.first,
                       colors: cores,
                       sel: sel,
                       prev: _prev,
@@ -527,7 +539,8 @@ class _DonutPainter extends CustomPainter {
     const minT = 12.0;
     final maxT = size.shortestSide * .16;
     final gap = values.where((v) => v > 0).length > 1 ? .035 : 0.0;
-    var a = -math.pi / 2;
+    // v1.9: gira um quarto de volta enquanto varre ao entrar.
+    var a = -math.pi / 2 - (1 - t) * math.pi / 2;
     for (var i = 0; i < values.length; i++) {
       final sweep = values[i] / total * 2 * math.pi * t;
       if (sweep <= 0) continue;

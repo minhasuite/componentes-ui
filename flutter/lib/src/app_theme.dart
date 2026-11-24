@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'density.dart';
+import 'v19/transicoes/predictive_back.dart';
 
 part 'paletas.g.dart';
 
@@ -685,7 +686,8 @@ class AppTheme {
       // zoom padrão do Material 3, que ficava "grosseiro" entre as views.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          // v1.9: no Android 14+, o gesto de voltar encolhe a página e mostra a anterior (voltar preditivo).
+          TargetPlatform.android: SsPredictiveBackPageTransitionsBuilder(),
           TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
         },
       ),

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'motion.dart';
+import 'v19/transicoes/predictive_back.dart';
 
 /// Builder do [SsInView]: [t] vai de 0 a 1 (com a curva; a mola passa de 1)
 /// quando o filho entra na tela.
@@ -376,14 +377,18 @@ class SsRouteScale extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = ModalRoute.of(context)?.animation;
     if (a == null || reduceMotion(context)) return child;
-    return AnimatedBuilder(
-      animation: a,
-      child: child,
-      builder: (_, child) {
-        final volta = a.status == AnimationStatus.reverse;
-        final t = volta ? Curves.easeIn.transform(a.value) : SsMotion.bounce.transform(a.value);
-        return Transform.scale(scale: from + (1 - from) * t, alignment: alignment, child: child);
-      },
+    // v1.9: o gesto de voltar do Android 14+ encolhe o cartão antes de fechar.
+    return SsPredictiveBackScope(
+      style: SsPredictiveBackStyle.dialog,
+      child: AnimatedBuilder(
+        animation: a,
+        child: child,
+        builder: (_, child) {
+          final volta = a.status == AnimationStatus.reverse;
+          final t = volta ? Curves.easeIn.transform(a.value) : SsMotion.bounce.transform(a.value);
+          return Transform.scale(scale: from + (1 - from) * t, alignment: alignment, child: child);
+        },
+      ),
     );
   }
 }
