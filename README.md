@@ -644,6 +644,14 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
 
+## v1.8.3: chat sem `required` no campo
+
+Achado da gravação das aulas do meu-gestor (23/11/2026): o balão "Preencha este campo." voltou no `Ss::ChatComponent`
+ao parar o mouse no campo vazio. O `novalidate` da v1.4.1 barra o balão do envio, mas o Chrome mostra a mensagem de
+validação ao passar o mouse em todo campo `required` inválido, com ou sem `novalidate`. O textarea troca `required`
+por `aria-required="true"` (o leitor de tela continua sabendo); o envio vazio segue barrado pelo `ss-chat`. Nada quebra
+na API; teste de produto que procurava `textarea[required]` no chat passa a procurar `[aria-required=true]`.
+
 ## v1.8.2: tempo relativo sem quebrar o número da unidade e ranking em 2 linhas
 
 Achados das telas de "Pediram e não tinha" (minhas-vendas e meu-gestor, 22–23/11/2026):
@@ -2136,6 +2144,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.8.3` (24/11/2026): seção "v1.8.3". Chat sem `required` no campo (só `aria-required`): some o balão nativo ao parar o mouse. Nada quebra na API.
 - `v1.8.2` (23/11/2026): seção "v1.8.2". Tempo relativo com U+00A0 entre número e unidade (Flutter e Rails) e nome do ranking em até 2 linhas. Nada quebra na API; teste que compara o texto com espaço comum precisa do U+00A0.
 - `v1.7.1` (19/11/2026): seção "v1.7.1". Botão do Google (GIS) sem a caixa branca do iframe no tema escuro. Só web, só CSS. Nada quebra.
 - `v1.7.0` (19/11/2026): seção "v1.7.0". Tela de entrada "Cartaz + papel": `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split, word:, facts:, icon:)` ↔ `SsAuthLayout.cartaz(...)` (`SsAuthCartaz`, `SsCartazLayout`, `SsCartazColors`); `--brand-deep/--brand-from/--brand-to` no `paletas.css` e no `brand_css`; o `gerar.py` confere o contraste do cartaz. Nada quebra na API.

@@ -173,7 +173,7 @@ class V15WebTest < ComponentTest
     assert_selector ".ss-bubble.is-me small", text: "14:05"
     assert_selector ".ss-bubble.is-ai p", count: 2
     assert_selector ".ss-thinking[hidden][role=status][aria-label=Pensando]", visible: :all
-    assert_selector "form.ss-chat-form[action='/ia/mensagens'][method=post] textarea[name=message][required][placeholder=Pergunte]"
+    assert_selector "form.ss-chat-form[action='/ia/mensagens'][method=post] textarea[name=message][aria-required=true][placeholder=Pergunte]"
     assert_selector "button.ss-chat-send[aria-label=Enviar]"
     assert_equal "ia-messages", Ss::ChatComponent.messages_id("ia")
     render_inline(Ss::ChatComponent.new(id: "v", url: "/m", thinking: true)) { |c| c.with_empty { "Pergunte sobre seus gastos" } }

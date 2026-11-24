@@ -10,7 +10,9 @@ class V141WebTest < ComponentTest
   test "ChatComponent: o formulário tem novalidate (sem o balão 'Preencha este campo.' ao parar o mouse no campo vazio)" do
     render_inline(Ss::ChatComponent.new(id: "c", url: "/ia", label: "Conversa"))
     assert_selector "form.ss-chat-form[novalidate]"
-    assert_selector "form.ss-chat-form textarea[required]" # continua dizendo ao leitor de tela que é obrigatório
+    # v1.8.3: sem `required` (com ele o Chrome mostra o balão ao parar o mouse mesmo com novalidate); aria-required diz ao leitor de tela
+    assert_no_selector "form.ss-chat-form textarea[required]"
+    assert_selector "form.ss-chat-form textarea[aria-required=true]"
     assert_includes js("ss_chat"), "if (!text) { e.preventDefault(); return }" # e o envio vazio continua barrado
   end
 
