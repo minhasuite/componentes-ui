@@ -51,7 +51,7 @@ class SsWalletCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final label = this.label ?? SsStrings.of(context).totalBalance;
-    final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 160);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.short;
     final radius = BorderRadius.circular(AppRadius.cardActive);
     const muted = AppColors.onDarkSoft;
     final card = AspectRatio(
@@ -522,7 +522,7 @@ class SsDuoStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 380);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.long;
     final grad = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

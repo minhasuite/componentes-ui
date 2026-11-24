@@ -58,7 +58,7 @@ html:root[data-ss-contrast="high"], [data-ss-contrast="high"]:not(:root) {
   .ss-rating { --star: color-mix(in oklab, #f5a524 65%, var(--warn)); display: inline-flex; gap: .1rem; margin: 0; padding: 0; border: 0; }
   .ss-rating input { position: absolute; width: 1px; height: 1px; opacity: 0; }
   .ss-rating label { display: grid; place-items: center; min-width: 2.25rem; min-height: 2.75rem; cursor: pointer; color: var(--line); border-radius: 10px;
-                     transition: color .15s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                     transition: color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-rating label svg { width: var(--star-size, 1.2rem); height: var(--star-size, 1.2rem); fill: currentColor; }
   .ss-rating label:has(~ input:checked), .ss-rating input:checked + label { color: var(--star); }
   .ss-rating:hover label { color: var(--line); }

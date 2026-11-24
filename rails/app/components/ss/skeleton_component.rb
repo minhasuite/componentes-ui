@@ -1,6 +1,7 @@
 module Ss
   # Esqueleto de carregamento com brilho que passa: shape :line, :table, :card, :list.
-  # Com frame: vira o recheio de um <turbo-frame loading="lazy"> que busca o conteúdo.
+  # Com frame: vira o recheio de um <turbo-frame loading="lazy"> que busca o conteúdo (v1.9: e o conteúdo
+  # entra com crossfade e subida curta, pelo controller ss-skeleton).
   #   render Ss::SkeletonComponent.new(shape: :table, rows: 5)
   #   render Ss::SkeletonComponent.new(shape: :list, frame: { id: "ultimos", src: ultimos_path })
   class SkeletonComponent < BaseComponent
@@ -20,7 +21,8 @@ module Ss
       end
       return body unless @frame
 
-      tag.turbo_frame(body, id: @frame[:id], src: @frame[:src], loading: @frame.fetch(:loading, "lazy"))
+      # v1.9: o ss-skeleton troca o esqueleto pelo conteúdo com crossfade e subida curta.
+      tag.turbo_frame(body, id: @frame[:id], src: @frame[:src], loading: @frame.fetch(:loading, "lazy"), data: { controller: "ss-skeleton" })
     end
 
     private

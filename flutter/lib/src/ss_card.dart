@@ -85,7 +85,7 @@ class SsCard extends StatelessWidget {
         ? Border.all(color: c.accentBright, width: 2)
         : (outline != null ? Border.all(color: outline!, width: 2) : null);
     final content = AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
+      duration: SsMotion.short,
       curve: Curves.easeOut,
       padding: stripe != null ? EdgeInsets.zero : pad,
       // A faixa fica por dentro do raio: recorta o conteúdo (a sombra fica de fora).

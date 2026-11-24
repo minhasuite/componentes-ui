@@ -41,8 +41,8 @@ class SsOfflineBanner extends StatefulWidget {
 class _SsOfflineBannerState extends State<SsOfflineBanner> with SingleTickerProviderStateMixin {
   late final _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 380),
-    reverseDuration: const Duration(milliseconds: 220),
+    duration: SsMotion.long,
+    reverseDuration: SsMotion.short,
     value: widget.offline ? 1 : 0,
   );
   late final _altura = CurvedAnimation(parent: _c, curve: Curves.easeOutBack, reverseCurve: Curves.easeInCubic);

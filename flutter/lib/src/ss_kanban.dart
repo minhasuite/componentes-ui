@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'density.dart';
+import 'motion.dart' show SsMotion;
 import 'motion_view.dart';
 import 'ss_strings.dart';
 
@@ -137,7 +138,7 @@ class _SsKanbanState<T extends Object> extends State<SsKanban<T>> {
       onLeave: (_) => _sai(col.id, n),
       onAcceptWithDetails: (d) => _solta(d.data, col.id, n),
       builder: (context, _, _) => AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: SsMotion.short,
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: destacada ? c.accentSoft : c.field,

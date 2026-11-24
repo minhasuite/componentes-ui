@@ -28,7 +28,7 @@
   .ss-device-toggle-form { display: contents; }
   .ss-device-toggle { z-index: 2; flex: none; padding: 0; border: 0; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
                       box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 30%, var(--line));
-                      transition: background .3s ease, color .3s ease, box-shadow .3s ease, scale var(--ss-dur-indicator, .3s) var(--ss-bounce); }
+                      transition: background var(--ss-dur-medium) ease, color var(--ss-dur-medium) ease, box-shadow var(--ss-dur-medium) ease, scale var(--ss-dur-indicator, var(--ss-dur-medium)) var(--ss-bounce); }
   /* Desligado: claro, contorno na cor do aparelho, ícone em tinta; ligado: cheio na cor (regra do .is-on). */
   .ss-device:not(.is-on) .ss-device-toggle { background: var(--surface); color: var(--ink-2); }
   .ss-device-toggle:hover:not(:disabled) { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tone) 60%, var(--line)); }
@@ -73,7 +73,7 @@
   .ss-kpi-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .45rem; font-size: .74rem; color: var(--muted); }
   .ss-kpi-card-spark { margin: .5rem calc(var(--ss-card-pad) * -1) calc(var(--ss-card-pad) * -.9); }
   .ss-kpi-card-spark .ss-spark { display: block; width: 100%; height: 36px; }
-  .ss-kpi-card.is-link { cursor: pointer; transition: box-shadow .2s, translate .2s; }
+  .ss-kpi-card.is-link { cursor: pointer; transition: box-shadow var(--ss-dur-short), translate var(--ss-dur-short); }
   .ss-kpi-card.is-link:hover { box-shadow: var(--shadow-hover); }
   .ss-kpi-card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
   .ss-kpi-card-link:focus-visible { outline: 0; }

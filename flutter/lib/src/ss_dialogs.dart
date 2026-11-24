@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'app_theme.dart';
 import 'density.dart';
+import 'motion.dart' show SsHaptics;
 import 'motion_view.dart';
 import 'ss_button.dart';
 import 'ss_list.dart';
@@ -139,7 +140,13 @@ class _SsConfirmDialogState extends State<SsConfirmDialog> {
           confirmLabel: widget.confirmLabel ?? SsStrings.of(context).confirm,
           cancelLabel: widget.cancelLabel ?? SsStrings.of(context).cancel,
           danger: widget.danger,
-          onConfirm: liberado ? () => Navigator.pop(context, true) : null,
+          onConfirm: liberado
+              ? () {
+                  // v1.9: o mapa de vibração (perigosa = atenção; o resto = deu certo).
+                  widget.danger ? SsHaptics.warning() : SsHaptics.success();
+                  Navigator.pop(context, true);
+                }
+              : null,
           onCancel: () => Navigator.pop(context, false),
         ),
       ],

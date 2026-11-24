@@ -55,7 +55,7 @@
   .ss-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: 1.25rem; }
   .ss-product { position: relative; display: flex; flex-direction: column; margin-top: 4rem; padding: 0 1.1rem 1.1rem; border-radius: var(--r-card); background: var(--surface);
                 box-shadow: var(--shadow-card); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); text-align: center;
-                transition: box-shadow .25s ease, translate .45s var(--ss-bounce);
+                transition: box-shadow var(--ss-dur-medium) ease, translate .45s var(--ss-bounce);
                 animation: ss-iv-rise .7s var(--ss-bounce) backwards; animation-delay: calc(var(--ss-iv-i, 0) * 80ms); }
   .ss-product:hover { box-shadow: var(--shadow-hover); translate: 0 -3px; }
   /* A imagem pula com a mola da suíte no hover (e volta com ela). */
@@ -74,7 +74,7 @@
   .ss-product-foot .ss-amount { font-size: 1.25rem; }
   .ss-product-foot form { display: contents; }
   .ss-product-btn { position: relative; z-index: 1; display: grid; place-items: center; width: calc(var(--ss-control-h) + .1rem); height: calc(var(--ss-control-h) + .1rem); flex: none; border: 0; border-radius: calc(var(--r-field) + 2px); cursor: pointer;
-                    background: var(--accent); color: var(--surface); box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent); transition: transform .15s, background .2s; }
+                    background: var(--accent); color: var(--surface); box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent); transition: transform var(--ss-dur-short), background var(--ss-dur-short); }
   .ss-product-btn:hover { background: var(--accent-hover); }
   .ss-product-btn:active { transform: scale(.92); }
   .ss-product-btn svg { width: 1.2rem; height: 1.2rem; }
@@ -150,7 +150,7 @@
   .ss-qrcard { display: grid; gap: calc(var(--ss-gap) * 1.13); max-width: 22rem; padding: var(--ss-card-pad); text-align: center; }
   .ss-qrcard-head h3 { font-size: .95rem; font-weight: 800; color: var(--muted); }
   .ss-qrcard-head .ss-amount { display: block; margin-top: .2rem; font-size: 1.8rem; }
-  .ss-qrcard > .ss-qr-box { width: min(13rem, 100%); justify-self: center; transition: opacity .3s; }
+  .ss-qrcard > .ss-qr-box { width: min(13rem, 100%); justify-self: center; transition: opacity var(--ss-dur-medium); }
   .ss-qrcard-timer { font-size: .84rem; color: var(--muted); }
   .ss-qrcard-timer b { color: var(--ink); font-weight: 500; }
   .ss-qrcard-expired { display: none; color: var(--danger); font-weight: 700; }
@@ -183,7 +183,7 @@
   .ss-ai-sources { font-size: .82rem; }
   .ss-ai-sources > summary { display: inline-flex; align-items: center; gap: .35rem; list-style: none; cursor: pointer; color: var(--accent); font-weight: 700; }
   .ss-ai-sources > summary::-webkit-details-marker { display: none; }
-  .ss-ai-sources > summary::after { content: ""; width: .85rem; height: .85rem; background: currentColor; mask: var(--ss-i-chev) center / contain no-repeat; transition: rotate .2s; }
+  .ss-ai-sources > summary::after { content: ""; width: .85rem; height: .85rem; background: currentColor; mask: var(--ss-i-chev) center / contain no-repeat; transition: rotate var(--ss-dur-short); }
   .ss-ai-sources[open] > summary::after { rotate: 180deg; }
   .ss-ai-sources > summary small { color: var(--muted); font-weight: 500; }
   .ss-ai-sources ul { display: grid; gap: .35rem; margin: .5rem 0 0; padding: .6rem .75rem; list-style: none; border-radius: 12px; background: var(--field); animation: ss-fade .2s ease; }

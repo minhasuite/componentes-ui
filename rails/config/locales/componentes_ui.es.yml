@@ -692,3 +692,8 @@ es:
       text: 'Al continuar, aceptas los %{terms} y la %{privacy}.'
       terms: Términos de uso
       privacy: Política de privacidad
+    # v1.9 · movimento
+    undoable_removal:
+      undo: Deshacer
+      close: Cerrar aviso
+      error: No se pudo completar. Inténtalo de nuevo.

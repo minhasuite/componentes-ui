@@ -341,7 +341,7 @@ class _Tab extends StatelessWidget {
             // O ícone do item atual está no círculo: o lugar dele na barra fica vazio.
             AnimatedOpacity(
               opacity: selected ? 0 : 1,
-              duration: const Duration(milliseconds: 200),
+              duration: SsMotion.short,
               child: SsNavItem.withBadge(Icon(item.icon, color: c.muted, size: 24), item.badge),
             ),
             const SizedBox(height: 3),
@@ -349,7 +349,7 @@ class _Tab extends StatelessWidget {
             // v0.25.1: o AnimatedDefaultTextStyle troca o estilo herdado inteiro; sem a família do
             // tema o rótulo caía na fonte do sistema (e em caixinhas nas capturas de teste).
             AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
+              duration: SsMotion.short,
               style: TextStyle(
                 fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
                 fontFamilyFallback: Theme.of(context).textTheme.bodyMedium?.fontFamilyFallback,

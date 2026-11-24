@@ -64,7 +64,7 @@ class SsSwipeAction extends StatefulWidget {
 
 class _SsSwipeActionState extends State<SsSwipeAction> with TickerProviderStateMixin {
   late final _dx = AnimationController.unbounded(vsync: this);
-  late final _size = AnimationController(vsync: this, value: 1, duration: const Duration(milliseconds: 240));
+  late final _size = AnimationController(vsync: this, value: 1, duration: SsMotion.medium);
   double _raw = 0;
   double _width = 1;
   bool _armed = false;
@@ -132,7 +132,7 @@ class _SsSwipeActionState extends State<SsSwipeAction> with TickerProviderStateM
       _dx.value = sign * _width;
       _size.value = 0;
     } else {
-      await _dx.animateTo(sign * _width, duration: const Duration(milliseconds: 160), curve: Curves.easeIn);
+      await _dx.animateTo(sign * _width, duration: SsMotion.short, curve: Curves.easeIn);
       await _size.animateTo(0, curve: Curves.easeInOut);
     }
     if (!mounted) return;
@@ -216,7 +216,7 @@ class _SsSwipeActionState extends State<SsSwipeAction> with TickerProviderStateM
                   TweenAnimationBuilder<double>(
                     key: ValueKey(_armed),
                     tween: Tween(begin: _armed && !reduce ? 1.35 : 1, end: 1),
-                    duration: reduce ? Duration.zero : const Duration(milliseconds: 260),
+                    duration: reduce ? Duration.zero : SsMotion.medium,
                     curve: Curves.easeOutBack,
                     builder: (_, pop, _) => Transform.scale(
                       scale: (.7 + .3 * progress) * pop,

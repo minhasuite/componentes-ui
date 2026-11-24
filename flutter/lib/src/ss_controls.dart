@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'density.dart';
@@ -84,12 +83,12 @@ class SsSegmented<T> extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
                         if (k == i || disabled.contains(segments[k].$1)) return;
-                        HapticFeedback.selectionClick();
+                        SsHaptics.selection();
                         onChanged(segments[k].$1);
                       },
                       child: Center(
                         child: AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 200),
+                          duration: SsMotion.short,
                           style: TextStyle(
                             fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
                             color: k == i
@@ -172,7 +171,7 @@ class SsFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
-    final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 220);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.short;
     final cor = color;
     final cheio = swatch && cor != null;
     // Texto sobre a cor cheia: escuro em cor clara, branco em cor escura.
@@ -531,7 +530,7 @@ class _SsSearchFieldState extends State<SsSearchField> {
     final d = SsDensity.of(context);
     final on = _focus.hasFocus;
     final caixa = AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
+      duration: SsMotion.short,
       // Padrão 48 (campo de 52 menos 4: a busca é mais baixa que o campo).
       height: d.fieldHeight - 4,
       decoration: BoxDecoration(

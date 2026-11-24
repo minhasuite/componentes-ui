@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { haptic } from "componentes_ui/controllers/ss_haptics_controller"
 
 // Ss::ConfirmDialogComponent: a caixa de confirmação da suíte. Com global (padrão) vira o
 // confirm do Turbo: todo data-turbo-confirm abre esta caixa e o envio espera a resposta
@@ -71,7 +72,12 @@ export default class extends Controller {
   }
 
   // close do <dialog>: OK (value=ok), Voltar, Esc ou clique fora.
-  closed() { this.settle(this.element.returnValue === "ok") }
+  closed() {
+    const ok = this.element.returnValue === "ok"
+    // v1.9: confirmou; perigosa ou de aviso = atenção, o resto = deu certo (ss_haptics).
+    if (ok && this.resolver) haptic(this.element.classList.contains("is-danger") || this.element.classList.contains("is-warn") ? "warning" : "success")
+    this.settle(ok)
+  }
 
   backdrop(event) {
     if (event.target === this.element) this.element.close("cancel")

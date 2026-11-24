@@ -4,6 +4,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:material_ui/material_ui.dart';
 
 import '../app_theme.dart';
+import '../motion.dart' show SsMotion;
 import '../ss_strings.dart';
 
 /// Modo privacidade: com [hidden], todo [SsAmount] abaixo vira "R$ •••" (o
@@ -76,9 +77,7 @@ class SsPrivacyToggle extends StatelessWidget {
       isSelected: hidden,
       onPressed: () => onChanged(!hidden),
       icon: AnimatedSwitcher(
-        duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false
-            ? Duration.zero
-            : const Duration(milliseconds: 200),
+        duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false ? Duration.zero : SsMotion.short,
         transitionBuilder: (child, a) => ScaleTransition(scale: a, child: child),
         child: Icon(
           hidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,

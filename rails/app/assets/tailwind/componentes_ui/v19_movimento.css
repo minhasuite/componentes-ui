@@ -1,0 +1,35 @@
+/* v1.9 · movimento (par do SsMotion do Flutter; tabela em docs/v19/movimento.md).
+   Tokens únicos de duração, curva e distância: os componentes usam estes (as durações soltas viraram
+   var(--ss-dur-*)). --ss-dur-fast/base e --ss-spring continuam (os mesmos valores). */
+:root {
+  --ss-dur-short: .18s;
+  --ss-dur-medium: .28s;
+  --ss-dur-long: .4s;
+  --ss-ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --ss-ease-enter: cubic-bezier(.33, 1, .68, 1);
+  --ss-ease-exit: cubic-bezier(.32, 0, .67, 0);
+  --ss-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --ss-dist-small: 4px;
+  --ss-dist-medium: 12px;
+  --ss-dist-large: 24px;
+}
+
+@layer components {
+  /* Erro do campo sem salto no meio do clique: com o ss-validate ligado (data-ss-validate-ready), a
+     mensagem só aparece quando ele marca (.is-invalid), depois do clique, e não no :user-invalid do
+     navegador ao sair do campo. A ajuda fica até lá. */
+  form[data-ss-validate-ready] .ss-field:not(.is-invalid) .ss-field-error { display: none; }
+  form[data-ss-validate-ready] .ss-field:not(.is-invalid) .ss-field-help { display: block; }
+
+  /* Skeleton que vira conteúdo (ss-skeleton no turbo-frame; .ss-skel-in serve solto num Turbo Stream). */
+  .ss-skel-in { animation: ss-skel-in var(--ss-dur-medium) var(--ss-ease-enter) both; }
+  turbo-frame.is-ss-revealing { position: relative; display: block; }
+  .ss-skel-ghost { position: absolute; z-index: 1; pointer-events: none; margin: 0;
+                   animation: ss-skel-ghost var(--ss-dur-medium) var(--ss-ease-exit) forwards; }
+
+  /* Remoção com desfazer (ss-undoable): a altura e a opacidade vêm do controller; aqui o que não anima. */
+  .is-removing { pointer-events: none; }
+}
+
+@keyframes ss-skel-in { from { opacity: 0; transform: translateY(var(--ss-dist-medium)); } }
+@keyframes ss-skel-ghost { to { opacity: 0; } }

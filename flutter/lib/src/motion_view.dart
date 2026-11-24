@@ -346,7 +346,7 @@ class SsOverlayMotion {
           curve: sheetCurve,
           duration: SsMotion.indicator,
           reverseCurve: Curves.easeInCubic,
-          reverseDuration: const Duration(milliseconds: 220),
+          reverseDuration: SsMotion.short,
         );
 
   /// Diálogo: o fundo e o cartão aparecem na primeira metade; a escala do
@@ -355,9 +355,9 @@ class SsOverlayMotion {
       ? AnimationStyle.noAnimation
       : AnimationStyle(
           curve: const Interval(0, .45, curve: Curves.easeOut),
-          duration: const Duration(milliseconds: 380),
+          duration: SsMotion.long,
           reverseCurve: Curves.easeIn,
-          reverseDuration: const Duration(milliseconds: 160),
+          reverseDuration: SsMotion.short,
         );
 }
 

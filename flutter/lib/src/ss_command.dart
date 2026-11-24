@@ -37,7 +37,7 @@ Future<void> showSsCommandPalette(
     barrierDismissible: true,
     barrierLabel: SsStrings.of(context).close,
     barrierColor: Colors.black.withValues(alpha: .45),
-    transitionDuration: rapido ? Duration.zero : const Duration(milliseconds: 280),
+    transitionDuration: rapido ? Duration.zero : SsMotion.medium,
     pageBuilder: (ctx, _, _) => SafeArea(
       child: Align(
         alignment: Alignment.topCenter,

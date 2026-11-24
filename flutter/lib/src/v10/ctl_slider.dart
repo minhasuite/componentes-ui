@@ -163,7 +163,8 @@ class _SsSliderState extends State<SsSlider> {
     final n = _snap(v);
     _ultimo = n;
     if (n != widget.value && widget.onChanged != null) {
-      SsHaptics.tick();
+      // v1.9: bater no mínimo ou no máximo vibra diferente do passo.
+      (n <= widget.min || n >= widget.max) ? SsHaptics.limit() : SsHaptics.selection();
       widget.onChanged!(n);
     }
     if (end) widget.onChangeEnd?.call(n);

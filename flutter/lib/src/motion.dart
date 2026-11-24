@@ -154,14 +154,56 @@ class SsCountUp extends StatelessWidget {
   );
 }
 
-/// A "mesma mola em todo lugar": curva e tempos do movimento da suíte.
-/// `AnimatedFoo(duration: SsMotion.base, curve: SsMotion.spring)`.
+/// A "mesma mola em todo lugar": os tokens de movimento da suíte (v1.9: a
+/// tabela única, a mesma do CSS da gem; ver `docs/v19/movimento.md`).
+///
+/// | token | valor | CSS | para quê |
+/// |---|---|---|---|
+/// | [short] | 180 ms | `--ss-dur-short` | cor, opacidade, ícone que troca |
+/// | [medium] | 280 ms | `--ss-dur-medium` | tamanho, entrada de conteúdo, painel |
+/// | [long] | 400 ms | `--ss-dur-long` | cascata, tela, o que anda longe |
+/// | [standard] | `Cubic(.2, 0, 0, 1)` | `--ss-ease-standard` | de um estado a outro |
+/// | [enter] | easeOutCubic | `--ss-ease-enter` | o que chega (desacelera) |
+/// | [exit] | easeInCubic | `--ss-ease-exit` | o que sai (acelera) |
+/// | [spring] | easeOutBack | `--ss-ease-spring` | passa do ponto e volta |
+/// | [bounce] | mola | `--ss-bounce` | indicador, folha, toque que volta |
+/// | [distSmall]/[distMedium]/[distLarge] | 4/12/24 px | `--ss-dist-*` | quanto sobe ou desliza |
+///
+/// `AnimatedFoo(duration: SsMotion.medium, curve: SsMotion.standard)`.
 class SsMotion {
   const SsMotion._();
+
+  /// Curta: cor, opacidade, ícone que troca, realce.
+  static const short = Duration(milliseconds: 180);
+
+  /// Média: tamanho, conteúdo que entra, painel que abre.
+  static const medium = Duration(milliseconds: 280);
+
+  /// Longa: cascata, troca de tela, o que anda uma distância grande.
+  static const long = Duration(milliseconds: 400);
+
+  /// De um estado a outro, no lugar (o "padrão" do Material 3).
+  static const Curve standard = Cubic(.2, 0, 0, 1);
+
+  /// O que chega: sai rápido e desacelera.
+  static const Curve enter = Curves.easeOutCubic;
+
+  /// O que sai: começa devagar e acelera para fora.
+  static const Curve exit = Curves.easeInCubic;
+
+  /// Passa um pouco do ponto e volta (curva pronta; a mola de verdade é [bounce]).
   static const Curve spring = Curves.easeOutBack;
-  static const fast = Duration(milliseconds: 180);
-  static const base = Duration(milliseconds: 280);
-  static const slow = Duration(milliseconds: 400);
+
+  /// Distâncias do movimento: o empurrãozinho (4), a subida de quem entra (12) e o
+  /// deslize (24).
+  static const double distSmall = 4;
+  static const double distMedium = 12;
+  static const double distLarge = 24;
+
+  /// Nomes antigos (v0.5), iguais a [short], [medium] e [long].
+  static const fast = short;
+  static const base = medium;
+  static const slow = long;
 
   /// Atraso entre itens de uma lista que entra em cascata.
   static const stagger = Duration(milliseconds: 40);
@@ -219,10 +261,10 @@ class SsReveal extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: Duration(milliseconds: total),
-      curve: Interval(delay / total, 1, curve: Curves.easeOutCubic),
+      curve: Interval(delay / total, 1, curve: SsMotion.enter),
       builder: (_, t, child) => Opacity(
         opacity: t,
-        child: Transform.translate(offset: Offset(0, (1 - t) * 12), child: child),
+        child: Transform.translate(offset: Offset(0, (1 - t) * SsMotion.distMedium), child: child),
       ),
       child: child,
     );
@@ -360,25 +402,52 @@ class _ConfettiPainter extends CustomPainter {
   bool shouldRepaint(_ConfettiPainter old) => old.t != t;
 }
 
-/// Vibração por contexto, para todo app usar a mesma: [tick] ao escolher,
-/// [threshold] ao cruzar um limite (deslize), [success] ao concluir,
-/// [error] ao falhar.
+/// Vibração por contexto, para todo app usar a mesma (v1.9: o mapa único,
+/// igual ao `ss_haptics` do web; ver `docs/v19/movimento.md`):
+///
+/// | método | sente | onde a suíte usa |
+/// |---|---|---|
+/// | [selection] | clique de seleção | chave, segmentado, chip, paleta |
+/// | [limit] | batida leve | slider que chega no mínimo ou no máximo |
+/// | [success] | dois toques leves | confirmação, tarefa concluída |
+/// | [warning] | toque médio | confirmação de ação perigosa, remoção com desfazer |
+/// | [error] | toque forte | aviso de erro ([showSsToast] com o tom de erro) |
+///
+/// [enabled] falso desliga tudo (preferência do app ou teste).
 class SsHaptics {
   const SsHaptics._();
-  static Future<void> tick() => HapticFeedback.selectionClick();
 
-  /// Toque leve (v0.10.3): começar a gravar, abrir um menu, um passo pequeno.
-  static Future<void> light() => HapticFeedback.lightImpact();
-  static Future<void> threshold() => HapticFeedback.mediumImpact();
+  /// Liga e desliga todas as vibrações do pacote (preferência "Vibração" do app).
+  static bool enabled = true;
 
-  /// Dois toques leves (o "deu certo").
+  /// Escolheu uma opção (chave, segmentado, chip).
+  static Future<void> selection() => enabled ? HapticFeedback.selectionClick() : Future.value();
+
+  /// Bateu no limite (mínimo ou máximo do slider, fim da lista de opções).
+  static Future<void> limit() => enabled ? HapticFeedback.lightImpact() : Future.value();
+
+  /// Deu certo: dois toques leves.
   static Future<void> success() async {
+    if (!enabled) return;
     await HapticFeedback.lightImpact();
     await Future<void>.delayed(const Duration(milliseconds: 90));
     await HapticFeedback.lightImpact();
   }
 
-  static Future<void> error() => HapticFeedback.heavyImpact();
+  /// Atenção: ação perigosa confirmada, item removido com desfazer.
+  static Future<void> warning() => enabled ? HapticFeedback.mediumImpact() : Future.value();
+
+  /// Falhou.
+  static Future<void> error() => enabled ? HapticFeedback.heavyImpact() : Future.value();
+
+  /// O mesmo que [selection] (nome da v0.5).
+  static Future<void> tick() => selection();
+
+  /// Toque leve (v0.10.3): começar a gravar, abrir um menu, um passo pequeno.
+  static Future<void> light() => enabled ? HapticFeedback.lightImpact() : Future.value();
+
+  /// Cruzou um limite arrastando (deslize que vai disparar, toque longo).
+  static Future<void> threshold() => enabled ? HapticFeedback.mediumImpact() : Future.value();
 }
 
 /// Indicador que desliza com mola entre itens (pílula do segmented, traço das

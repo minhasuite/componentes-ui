@@ -67,10 +67,10 @@
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 90%, transparent), color-mix(in srgb, var(--field) 80%, transparent));
     border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); color: var(--ink-2); font: 700 .72rem var(--font-sans);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 6px 16px -10px rgba(20, 22, 40, .3);
-    transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease, border-color .2s ease; }
+    transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short) ease, border-color var(--ss-dur-short) ease; }
   [data-theme="dark"] .ss-swatch { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 16px -10px rgba(0, 0, 0, .6); }
   button.ss-swatch:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
-  button.ss-swatch:active { transform: scale(.95); transition: transform 80ms ease-out, box-shadow .2s ease, border-color .2s ease; }
+  button.ss-swatch:active { transform: scale(.95); transition: transform 80ms ease-out, box-shadow var(--ss-dur-short) ease, border-color var(--ss-dur-short) ease; }
   .ss-swatch[aria-pressed="true"], .ss-swatch:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring), inset 0 1px 0 rgba(255, 255, 255, .5); color: var(--accent); }
   .ss-swatch { --sw1: color-mix(in oklab, var(--accent) 60%, #000); --sw2: var(--accent); --sw3: color-mix(in oklab, var(--accent) 60%, #fff); --sw4: color-mix(in oklab, var(--accent) 22%, #fff); }
   .ss-swatch-dots { display: flex; padding-right: .5rem; }
@@ -115,18 +115,18 @@
   /* ── Movimento: toque ──
      Aperta rápido (80 ms) e volta com a mola ao soltar: a transição do estado de destino
      vale, então o :active encurta e a regra base devolve com --ss-bounce. */
-  :is(a.ss-card, .ss-card-link):not(:disabled) { transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  :is(a.ss-card, .ss-card-link):active { scale: .98; transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease, scale 80ms ease-out; }
+  :is(a.ss-card, .ss-card-link):not(:disabled) { transition: transform var(--ss-dur-medium) cubic-bezier(.2, .8, .2, 1), box-shadow var(--ss-dur-medium) ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+  :is(a.ss-card, .ss-card-link):active { scale: .98; transition: transform var(--ss-dur-medium) cubic-bezier(.2, .8, .2, 1), box-shadow var(--ss-dur-medium) ease, scale 80ms ease-out; }
   /* Visões salvas da barra de filtros: o sublinhado (::after) vira o .ss-ind is-line que desliza. */
   .ss-fb-views[data-ss-ind] > .ss-fb-view::after { content: none; }
   .ss-fb-views > .ss-ind { --ind-out: -.6rem; }
-  .ss-fb-view { transition: color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-fb-view:active { scale: .95; transition: color .2s, scale 80ms ease-out; }
+  .ss-fb-view { transition: color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-fb-view:active { scale: .95; transition: color var(--ss-dur-short), scale 80ms ease-out; }
   /* Paginação (quando a tabela liga o ss-indicator no .ss-dt-pager): a pílula da página desliza. */
   .ss-dt-pager[data-ss-ind] > a[aria-current="page"] { background: none; color: var(--surface); }
   .ss-dt-pager > :not(.ss-ind) { position: relative; z-index: 1; }
   .ss-dt-pager > .ss-ind { background: var(--accent); --ind-r: 10px; }
-  .ss-dt-pager > a { transition: scale var(--ss-dur-indicator) var(--ss-bounce), color .2s; }
+  .ss-dt-pager > a { transition: scale var(--ss-dur-indicator) var(--ss-bounce), color var(--ss-dur-short); }
   .ss-dt-pager > a:active { scale: .9; transition: scale 80ms ease-out; }
 }
 

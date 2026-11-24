@@ -694,3 +694,8 @@ pt-BR:
       text: 'Ao continuar, você concorda com os %{terms} e a %{privacy}.'
       terms: Termos de uso
       privacy: Política de privacidade
+    # v1.9 · movimento
+    undoable_removal:
+      undo: Desfazer
+      close: Fechar aviso
+      error: Não deu para concluir. Tente de novo.

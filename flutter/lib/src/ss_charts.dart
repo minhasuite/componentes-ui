@@ -291,7 +291,7 @@ class _SsPillBarsState extends State<SsPillBars> {
                       children: [
                         AnimatedOpacity(
                           opacity: mostrar == i ? 1 : 0,
-                          duration: const Duration(milliseconds: 150),
+                          duration: SsMotion.short,
                           child: Text(
                             widget.format?.call(widget.values[i]) ?? '',
                             maxLines: 1,
@@ -307,7 +307,7 @@ class _SsPillBarsState extends State<SsPillBars> {
                                 ? .04
                                 : math.max(.04, widget.values[i] / hi * _sobe(anim.value, i).clamp(0.0, 1.05)),
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
+                              duration: SsMotion.short,
                               width: 14,
                               decoration: BoxDecoration(
                                 color: i == destaque || i == _sel ? c.accent : c.accent.withValues(alpha: .22),
