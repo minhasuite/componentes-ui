@@ -246,7 +246,7 @@ class _SsProportionBarState extends State<SsProportionBar> {
                           child: GestureDetector(
                             onTap: () => _toca(i),
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
+                              duration: SsMotion.short,
                               margin: EdgeInsets.only(right: i == partes.length - 1 ? 0 : 2),
                               color: tom(i),
                             ),

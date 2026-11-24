@@ -33,7 +33,7 @@
 .ss-popover[data-placement="bottom-end"] { transform-origin: right top; }
 .ss-popover[data-placement="top-start"] { transform-origin: left bottom; translate: 0 4px; }
 .ss-popover:popover-open { opacity: 1; scale: 1; translate: 0 0;
-                           transition: opacity .18s ease, scale .46s var(--ss-bounce), translate .46s var(--ss-bounce), display .46s allow-discrete, overlay .46s allow-discrete; }
+                           transition: opacity var(--ss-dur-short) ease, scale .46s var(--ss-bounce), translate .46s var(--ss-bounce), display .46s allow-discrete, overlay .46s allow-discrete; }
 @starting-style { .ss-popover:popover-open { opacity: 0; scale: .9; translate: 0 -4px; } }
 @supports not (transition-behavior: allow-discrete) {
   .ss-popover:popover-open { animation: ss-popover-in .46s var(--ss-bounce); }
@@ -146,7 +146,7 @@
   .ss-tooltip-host[data-placement="bottom"] .ss-tooltip { bottom: auto; top: calc(100% + 8px); translate: -50% -4px; transform-origin: 50% 0; }
   .ss-tooltip-host[data-placement="bottom"] .ss-tooltip::after { top: auto; bottom: 100%; translate: -50% 4px; }
   .ss-tooltip-host:is(:hover, :focus-within):not(.is-dismissed) .ss-tooltip { opacity: 1; visibility: visible; translate: -50% 0; scale: 1; transition-delay: .25s;
-    transition-duration: .16s, .42s, .42s, .16s; transition-timing-function: ease, var(--ss-bounce), var(--ss-bounce), ease; }
+    transition-duration: var(--ss-dur-short), .42s, .42s, var(--ss-dur-short); transition-timing-function: ease, var(--ss-bounce), var(--ss-bounce), ease; }
   .ss-tooltip-host:focus-within:not(.is-dismissed) .ss-tooltip { transition-delay: 0s; }
 
   /* ── Tour (Ss::TourComponent) ── */

@@ -14,7 +14,7 @@
 
   /* Prefixo/sufixo: <div class="ss-affix"><span class="ss-affix-pre">R$</span><input class="ss-input"><span class="ss-affix-suf">/mês</span></div> */
   .ss-affix { display: flex; align-items: center; min-height: var(--ss-field-h); border-radius: var(--r-field); background: var(--surface);
-              border: 1px solid var(--line); transition: border-color .2s ease, box-shadow .2s ease; }
+              border: 1px solid var(--line); transition: border-color var(--ss-dur-short) ease, box-shadow var(--ss-dur-short) ease; }
   .ss-affix:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-affix:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
   .ss-affix > .ss-input { flex: 1; min-width: 0; border: 0; background: transparent; box-shadow: none !important; }
@@ -61,15 +61,15 @@
      quando as datas não batem com nenhum. O botão marcado fica neutro por baixo dele. */
   .ss-date-chips[data-ss-ind] > [aria-pressed="true"] { background: var(--surface); border-color: transparent; }
   .ss-date-chips > .ss-ind { --ind-r: 999px; box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--accent) 70%, transparent); background: color-mix(in oklab, var(--accent) 10%, transparent); }
-  .ss-date-chips > button { transition: background .2s, border-color .2s, color .2s, transform var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-date-chips > button:active { transform: scale(.94); transition: background .2s, border-color .2s, transform 80ms ease-out; }
+  .ss-date-chips > button { transition: background var(--ss-dur-short), border-color var(--ss-dur-short), color var(--ss-dur-short), transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-date-chips > button:active { transform: scale(.94); transition: background var(--ss-dur-short), border-color var(--ss-dur-short), transform 80ms ease-out; }
 
   /* ── Divisão (soma 100%) ── */
   .ss-allot { display: grid; gap: .35rem; border: 0; padding: 0; margin: 0; min-width: 0; }
   .ss-allot > *:not(legend) { --c: oklch(from var(--accent) l c calc(h + var(--i, 0) * 47)); }
   .ss-allot-bar { display: flex; height: .75rem; margin-bottom: .5rem; border-radius: 999px; overflow: hidden; background: var(--field); gap: 2px; }
   .ss-allot-bar i { --c: oklch(from var(--accent) l c calc(h + var(--i, 0) * 47)); display: block; height: 100%; background: var(--c);
-                    transition: width .25s cubic-bezier(.2, .8, .2, 1); }
+                    transition: width var(--ss-dur-medium) cubic-bezier(.2, .8, .2, 1); }
   .ss-allot-row { display: grid; grid-template-columns: minmax(6rem, 9rem) 1fr minmax(5.5rem, auto); align-items: center; gap: .85rem; }
   .ss-allot-row label { display: flex; align-items: center; gap: .5rem; font-weight: 700; font-size: .88rem; }
   .ss-allot-row .ss-range { --range-c: var(--c); }
@@ -88,9 +88,9 @@
   .ss-range::-moz-range-progress { height: .5rem; border-radius: 999px; background: var(--range-c); }
   .ss-range::-webkit-slider-thumb { -webkit-appearance: none; width: 1.5rem; height: 1.5rem; margin-top: -.5rem; border-radius: 50%; background: #fff;
     border: 3px solid var(--range-c); box-shadow: 0 2px 6px rgba(20, 22, 40, .25);
-    transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s; }
+    transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short); }
   .ss-range::-moz-range-thumb { width: 1.5rem; height: 1.5rem; box-sizing: border-box; border-radius: 50%; background: #fff; border: 3px solid var(--range-c);
-    box-shadow: 0 2px 6px rgba(20, 22, 40, .25); transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s; }
+    box-shadow: 0 2px 6px rgba(20, 22, 40, .25); transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short); }
   .ss-range:hover::-webkit-slider-thumb { transform: scale(1.08); }
   /* Arrastando: cresce com a mola e ganha um halo na cor do trilho. */
   .ss-range:is(:active, [data-dragging])::-webkit-slider-thumb { transform: scale(1.28);
@@ -114,7 +114,7 @@
   /* ── Arquivos ── */
   .ss-file-drop-zone { display: grid; justify-items: center; gap: .3rem; padding: calc(var(--ss-card-pad) * 1.2) var(--ss-pad-x); text-align: center; cursor: pointer;
                        border: 2px dashed color-mix(in srgb, var(--muted) 35%, var(--line)); border-radius: 18px; background: var(--surface);
-                       transition: border-color .2s, background-color .2s, transform .2s; }
+                       transition: border-color var(--ss-dur-short), background-color var(--ss-dur-short), transform var(--ss-dur-short); }
   .ss-file-drop-zone svg { box-sizing: content-box; width: 1.4rem; height: 1.4rem; padding: .7rem; border-radius: 14px; color: var(--accent); background: var(--accent-soft); margin-bottom: .25rem; }
   .ss-file-drop-zone strong { font-size: .92rem; color: var(--ink); }
   .ss-file-drop-zone small { font-size: .75rem; color: var(--muted); }
@@ -130,7 +130,7 @@
   .ss-file-main { display: grid; gap: .15rem; flex: 1; min-width: 0; }
   .ss-file-main b { font-size: .86rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-file-main small { font-size: .72rem; color: var(--muted); }
-  .ss-file-progress { height: 4px; margin-top: .2rem; opacity: 0; transition: opacity .2s; }
+  .ss-file-progress { height: 4px; margin-top: .2rem; opacity: 0; transition: opacity var(--ss-dur-short); }
   .ss-file.is-uploading .ss-file-progress, .ss-file.is-done .ss-file-progress { opacity: 1; }
   .ss-file.is-done .ss-progress-bar { background: var(--success); }
   .ss-file.is-error { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
@@ -145,7 +145,7 @@
   .ss-inline-edit-view { display: inline-flex; align-items: center; gap: .4rem; margin: -.2rem -.45rem; padding: .2rem .45rem;
                          border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; text-align: left; cursor: text;
                          text-decoration: underline dashed 1px color-mix(in srgb, var(--muted) 55%, transparent); text-underline-offset: 4px; }
-  .ss-inline-edit-view svg { width: .95rem; height: .95rem; flex: none; color: var(--muted); opacity: 0; transition: opacity .15s; }
+  .ss-inline-edit-view svg { width: .95rem; height: .95rem; flex: none; color: var(--muted); opacity: 0; transition: opacity var(--ss-dur-short); }
   .ss-inline-edit-view:hover, .ss-inline-edit-view:focus-visible { background: var(--field); }
   .ss-inline-edit-view:hover svg, .ss-inline-edit-view:focus-visible svg { opacity: 1; }
   .ss-inline-edit-form { display: grid; gap: .2rem; min-width: 12rem; }
@@ -164,7 +164,7 @@
                                      transition: background-size var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-wizard-steps li > span { position: relative; z-index: 1; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--field);
                                box-shadow: inset 0 0 0 1px var(--line); font-size: .8rem; font-weight: 500;
-                               transition: background .25s, color .25s, box-shadow .25s, transform var(--ss-dur-indicator) var(--ss-bounce); }
+                               transition: background var(--ss-dur-medium), color var(--ss-dur-medium), box-shadow var(--ss-dur-medium), transform var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-wizard-steps b { font-weight: 700; }
   .ss-wizard-steps li[aria-current="step"] { color: var(--ink); }
   .ss-wizard-steps li[aria-current="step"] > span { background: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--ring); transform: scale(1.06); }
@@ -211,7 +211,7 @@
   .ss-otp-boxes { display: flex; gap: .5rem; }
   .ss-otp-boxes input { width: calc(var(--ss-control-h) + .5rem); height: calc(var(--ss-control-h) + 1rem); padding: 0; text-align: center; font-size: calc(1.4rem * var(--ss-font-scale)); font-weight: 500; color: var(--ink);
                         border-radius: var(--r-field); border: 1px solid var(--line); background: var(--surface); caret-color: var(--accent);
-                        transition: border-color .15s, box-shadow .15s, transform .15s var(--ss-spring); }
+                        transition: border-color var(--ss-dur-short), box-shadow var(--ss-dur-short), transform var(--ss-dur-short) var(--ss-spring); }
   .ss-otp-boxes input:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-otp-boxes input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); transform: translateY(-1px); }
   .ss-otp-boxes input::placeholder { color: color-mix(in srgb, var(--muted) 45%, transparent); }
@@ -228,7 +228,7 @@
   .ss-swatch-picker-item { position: relative; margin-left: -.45rem; cursor: pointer; border-radius: 50%; }
   .ss-swatch-picker-dot { display: block; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--c);
                           box-shadow: 0 0 0 3px var(--surface), 0 4px 10px -4px color-mix(in srgb, var(--c) 70%, #000);
-                          transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s; }
+                          transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short); }
   .ss-swatch-picker-item:hover { z-index: 2; }
   .ss-swatch-picker-item:hover .ss-swatch-picker-dot { transform: translateY(-3px); }
   .ss-swatch-picker-item:has(:checked) { z-index: 3; }
@@ -244,7 +244,7 @@
 
   /* ── Etiquetas ── */
   .ss-tags-box { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; min-height: var(--ss-field-h); padding: .3rem .45rem; cursor: text;
-                 border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); transition: border-color .2s, box-shadow .2s; }
+                 border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); transition: border-color var(--ss-dur-short), box-shadow var(--ss-dur-short); }
   .ss-tags-box:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-tags-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
   .ss-tags-list { display: contents; }
@@ -256,8 +256,8 @@
   .ss-tag button { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 0; border-radius: 50%; background: none;
                    color: inherit; font-size: 1rem; line-height: 1; cursor: pointer; }
   .ss-tag button:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
-  .ss-tag button { transition: background-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-tag button:active { scale: .8; transition: background-color .2s, scale 80ms ease-out; }
+  .ss-tag button { transition: background-color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-tag button:active { scale: .8; transition: background-color var(--ss-dur-short), scale 80ms ease-out; }
   .ss-tags-box input { flex: 1; min-width: 8rem; height: calc(var(--ss-chip-h) - .1rem); padding: 0 .35rem; border: 0; outline: 0; background: none; color: var(--ink); font-size: calc(.9rem * var(--ss-font-scale)); }
   .ss-tags-box input::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); }
 
@@ -265,16 +265,16 @@
   .ss-option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--ss-gap); }
   .ss-option-card { position: relative; display: flex; align-items: flex-start; gap: calc(var(--ss-gap) * 1.13); padding: calc(var(--ss-card-pad) * .8) 2.75rem calc(var(--ss-card-pad) * .8) calc(var(--ss-card-pad) * .8); cursor: pointer;
                     border-radius: calc(var(--r-field) + 4px); background: var(--surface); border: 1.5px solid var(--line);
-                    transition: border-color .2s, box-shadow .2s, background-color .2s, transform var(--ss-dur-indicator) var(--ss-bounce); }
+                    transition: border-color var(--ss-dur-short), box-shadow var(--ss-dur-short), background-color var(--ss-dur-short), transform var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-option-card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
-  .ss-option-card:active { transform: scale(.98); transition: border-color .2s, box-shadow .2s, background-color .2s, transform 80ms ease-out; }
+  .ss-option-card:active { transform: scale(.98); transition: border-color var(--ss-dur-short), box-shadow var(--ss-dur-short), background-color var(--ss-dur-short), transform 80ms ease-out; }
   /* Anel de selecionado: vem de fora (maior e transparente) e trava no card com a mola. */
   .ss-option-card::after { content: ""; position: absolute; inset: -1.5px; border-radius: inherit; pointer-events: none; border: 2px solid var(--accent);
-                           opacity: 0; scale: 1.05; transition: opacity .12s, scale .2s ease-in; }
-  .ss-option-card:has(:checked)::after { opacity: 1; scale: 1; transition: opacity .15s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                           opacity: 0; scale: 1.05; transition: opacity .12s, scale var(--ss-dur-short) ease-in; }
+  .ss-option-card:has(:checked)::after { opacity: 1; scale: 1; transition: opacity var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-option-card > input { position: absolute; top: calc(var(--ss-card-pad) * .8); right: 1rem; width: 1.15rem; height: 1.15rem; margin: 0; accent-color: var(--accent); }
   .ss-option-card-icon { display: grid; place-items: center; width: var(--ss-icon-tile); height: var(--ss-icon-tile); flex: none; border-radius: var(--r-field); background: var(--field); color: var(--ink-2);
-                         transition: background .2s, color .2s, scale .2s ease; }
+                         transition: background var(--ss-dur-short), color var(--ss-dur-short), scale var(--ss-dur-short) ease; }
   .ss-option-card-icon svg { width: calc(var(--ss-icon-tile) * .5); height: calc(var(--ss-icon-tile) * .5); }
   .ss-option-card-body { display: grid; gap: .2rem; }
   .ss-option-card-body strong { font-size: calc(.92rem * var(--ss-font-scale)); font-weight: 800; color: var(--ink); }

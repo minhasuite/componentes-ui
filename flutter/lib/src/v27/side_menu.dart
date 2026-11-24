@@ -588,7 +588,7 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
     if (reduceMotion(context)) {
       _c.value = 0;
     } else {
-      _c.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+      _c.animateTo(0, duration: SsMotion.medium, curve: Curves.easeOutCubic);
     }
   }
 

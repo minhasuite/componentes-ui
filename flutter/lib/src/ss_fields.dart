@@ -427,7 +427,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
         focusedErrorBorder: borda(c.danger),
       ),
     );
-    final dur = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 180);
+    final dur = reduceMotion(context) ? Duration.zero : SsMotion.short;
     // Compacto: a caixa desenha 44 e o toque continua com 48 (por fora de tudo).
     return SsTapTarget(
       minSize: Size(0, d.minTarget),
@@ -1355,7 +1355,7 @@ class SsSwitchRow extends StatelessWidget {
         onTap: onChanged == null
             ? null
             : () {
-                SsHaptics.tick();
+                SsHaptics.selection();
                 onChanged!(!value);
               },
         child: Padding(
@@ -1463,7 +1463,7 @@ class _SsSwitchState extends State<SsSwitch> with SingleTickerProviderStateMixin
   }
 
   void _alterna() {
-    SsHaptics.tick();
+    SsHaptics.selection();
     widget.onChanged!(!widget.value);
   }
 

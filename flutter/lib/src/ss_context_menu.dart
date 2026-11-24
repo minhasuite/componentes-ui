@@ -47,7 +47,7 @@ class SsContextMenuState extends State<SsContextMenu> {
       PageRouteBuilder<void>(
         opaque: false,
         transitionDuration: rapido ? Duration.zero : SsMotion.indicator,
-        reverseTransitionDuration: rapido ? Duration.zero : const Duration(milliseconds: 180),
+        reverseTransitionDuration: rapido ? Duration.zero : SsMotion.short,
         pageBuilder: (context, a, _) => _Menu(
           rect: rect,
           tela: navBox.size,

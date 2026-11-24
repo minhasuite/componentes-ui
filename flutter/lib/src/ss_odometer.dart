@@ -154,11 +154,7 @@ class _CasaState extends State<_Casa> with TickerProviderStateMixin {
   late final _roll = AnimationController(vsync: this, duration: _giro, value: 1);
   static const _giro = Duration(milliseconds: 560);
   Curve _curva = SsMotion.bounce;
-  late final _fade = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 280),
-    value: widget.fadeIn ? 0 : 1,
-  );
+  late final _fade = AnimationController(vsync: this, duration: SsMotion.medium, value: widget.fadeIn ? 0 : 1);
   late double _from = (_digito(widget.char) ?? 0).toDouble();
   late double _to = _from;
 

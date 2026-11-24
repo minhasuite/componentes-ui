@@ -22,8 +22,12 @@ class SsAppearance {
     this.density = SsDensity.standard,
   });
 
-  /// Slug de uma das paletas prontas ([SsPaleta.slug]); nulo = cor do app.
+  /// Slug de uma das paletas prontas ([SsPaleta.slug]); nulo = cor do app; [sistema] = as cores
+  /// do sistema (Material You, v1.9).
   final String? paleta;
+
+  /// Valor de [paleta] para "Cores do sistema" (o JSON guarda `"paleta": "sistema"`).
+  static const sistema = 'sistema';
   final ThemeMode themeMode;
 
   /// Preto total no tema escuro.
@@ -52,7 +56,7 @@ class SsAppearance {
       final m = jsonDecode(texto) as Map<String, dynamic>;
       final slug = m['paleta'] as String?;
       return SsAppearance(
-        paleta: slug != null && SsPaleta.porSlug(slug) != null ? slug : null,
+        paleta: slug != null && (slug == sistema || SsPaleta.porSlug(slug) != null) ? slug : null,
         themeMode: ThemeMode.values.firstWhere((t) => t.name == m['tema'], orElse: () => ThemeMode.system),
         oled: m['oled'] == true,
         density: SsDensity.values.firstWhere((d) => d.name == m['densidade'], orElse: () => SsDensity.standard),
@@ -100,7 +104,11 @@ class SsAppearanceController extends ChangeNotifier {
     required this.write,
     SsAppearance initial = const SsAppearance(),
     this.highContrast = false,
-  }) : _value = initial;
+    Color? systemColor,
+  }) : _value = initial,
+       // Com setter próprio (systemColor =), o campo é privado.
+       // ignore: prefer_initializing_formals
+       _systemColor = systemColor;
 
   /// A cor do app (a 1ª opção das cores, e a usada sem paleta escolhida).
   final SsBrand brand;
@@ -116,8 +124,38 @@ class SsAppearanceController extends ChangeNotifier {
   SsAppearance _value;
   SsAppearance get value => _value;
 
-  /// A marca em uso: a da paleta escolhida ou a do app.
-  SsBrand get effectiveBrand => (_value.paleta == null ? null : SsPaleta.porSlug(_value.paleta!))?.brand ?? brand;
+  Color? _systemColor;
+  SsBrand? _systemBrand;
+
+  /// v1.9: a cor do sistema (Material You, Android 12+), que o app lê e passa, por exemplo com o
+  /// `dynamic_color` (o pacote não depende dele). Com ela, as cores ganham a opção "Cores do
+  /// sistema"; nula (iOS, Android antigo, web), a opção não aparece e quem tinha escolhido fica
+  /// com a cor do app. Trocar (o papel de parede mudou) avisa e refaz o tema.
+  Color? get systemColor => _systemColor;
+  set systemColor(Color? cor) {
+    if (cor == _systemColor) return;
+    _systemColor = cor;
+    _systemBrand = null;
+    notifyListeners();
+  }
+
+  /// A marca montada da [systemColor] ([SsBrand.fromColors]), com o accent escurecido até o texto
+  /// branco passar 4,5:1 (a cor do sistema pode ser clara demais).
+  SsBrand? get systemBrand {
+    final cor = _systemColor;
+    if (cor == null) return null;
+    return _systemBrand ??= SsBrand.fromColors(
+      ssUntilContrast(cor.withValues(alpha: 1), AppColors.scrim, const [AppColors.surfaceLight], 4.5),
+    );
+  }
+
+  /// A marca em uso: a da paleta escolhida, a do sistema ou a do app.
+  SsBrand get effectiveBrand {
+    final p = _value.paleta;
+    if (p == null) return brand;
+    if (p == SsAppearance.sistema) return systemBrand ?? brand;
+    return SsPaleta.porSlug(p)?.brand ?? brand;
+  }
 
   /// Lê o valor guardado (chame uma vez, no início).
   Future<void> load() async {
@@ -138,7 +176,8 @@ class SsAppearanceController extends ChangeNotifier {
   /// O tema para o brilho dado, com a paleta, o preto total e a densidade escolhidos.
   ThemeData theme(Brightness brightness) {
     final oled = brightness == Brightness.dark && _value.oled;
-    final chave = '${brightness.name}/${_value.paleta ?? '-'}/$oled/${_value.density.name}/$highContrast';
+    final sistema = _value.paleta == SsAppearance.sistema ? '#${_systemColor?.toARGB32() ?? '-'}' : '';
+    final chave = '${brightness.name}/${_value.paleta ?? '-'}$sistema/$oled/${_value.density.name}/$highContrast';
     return _temas.putIfAbsent(
       chave,
       () => AppTheme.build(
@@ -153,7 +192,8 @@ class SsAppearanceController extends ChangeNotifier {
 }
 
 /// A seção de Aparência das configurações, igual em todos os apps: tema (claro, escuro ou do
-/// sistema), preto total no escuro, cores (a do app primeiro, depois as paletas da suíte) e
+/// sistema), preto total no escuro, cores (a do app primeiro, as do sistema quando o app passa
+/// [SsAppearanceController.systemColor], depois as paletas da suíte) e
 /// densidade. Muda na hora (o [controller] avisa o `MaterialApp`).
 class SsAppearancePanel extends StatelessWidget {
   const SsAppearancePanel({super.key, required this.controller, this.density = true, this.paletas = SsPaleta.todas});
@@ -174,6 +214,7 @@ class SsAppearancePanel extends StatelessWidget {
       builder: (context, _) {
         final v = controller.value;
         final doApp = SsPaleta(slug: '', nome: s.appearanceAppColor, familia: '', brand: controller.brand);
+        final doSistema = controller.systemBrand;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -204,7 +245,12 @@ class SsAppearancePanel extends StatelessWidget {
             const SizedBox(height: 8),
             SsPalettePicker(
               value: controller.effectiveBrand,
-              paletas: [doApp, ...paletas.where((p) => p.brand != controller.brand)],
+              paletas: [
+                doApp,
+                if (doSistema != null)
+                  SsPaleta(slug: SsAppearance.sistema, nome: s.appearanceSystemColors, familia: '', brand: doSistema),
+                ...paletas.where((p) => p.brand != controller.brand),
+              ],
               padding: EdgeInsets.zero,
               onChanged: (p) =>
                   controller.set(p.slug.isEmpty ? v.copyWith(clearPaleta: true) : v.copyWith(paleta: p.slug)),

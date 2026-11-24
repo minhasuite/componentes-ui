@@ -10,18 +10,18 @@
     appearance: none; margin: 0; width: 1.15rem; height: 1.15rem; flex-shrink: 0; display: inline-grid; place-content: center;
     vertical-align: middle; cursor: pointer; background: var(--surface); border-radius: 6px;
     border: 1.5px solid color-mix(in srgb, var(--muted) 60%, var(--line));
-    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, scale var(--ss-dur-indicator) var(--ss-bounce);
+    transition: background-color var(--ss-dur-short) ease, border-color var(--ss-dur-short) ease, box-shadow var(--ss-dur-short) ease, scale var(--ss-dur-indicator) var(--ss-bounce);
   }
   :where(.ss-inputs) :where(input[type="radio"]):not(.sr-only, .ss-sr) { border-radius: 999px; }
   :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
   :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):checked { background: var(--accent-solid); border-color: var(--accent-solid); }
   :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr)::before {
-    content: ""; width: .7rem; height: .7rem; background: #fff; scale: 0; transition: scale .18s var(--ss-bounce);
+    content: ""; width: .7rem; height: .7rem; background: #fff; scale: 0; transition: scale var(--ss-dur-short) var(--ss-bounce);
     clip-path: polygon(14% 44%, 0 59%, 40% 100%, 100% 23%, 86% 9%, 40% 70%);
   }
   :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr):indeterminate { background: var(--accent-solid); border-color: var(--accent-solid); }
   :where(.ss-inputs) :where(input[type="checkbox"]):not(.sr-only, .ss-sr):indeterminate::before { clip-path: inset(40% 10% 40% 10% round 2px); scale: 1; }
-  :where(.ss-inputs) :where(input[type="radio"]):not(.sr-only, .ss-sr)::before { content: ""; width: .45rem; height: .45rem; border-radius: 999px; background: #fff; scale: 0; transition: scale .18s var(--ss-bounce); }
+  :where(.ss-inputs) :where(input[type="radio"]):not(.sr-only, .ss-sr)::before { content: ""; width: .45rem; height: .45rem; border-radius: 999px; background: #fff; scale: 0; transition: scale var(--ss-dur-short) var(--ss-bounce); }
   :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):checked::before { scale: 1; }
   :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):not(.sr-only, .ss-sr):active:not(:disabled) { scale: .88; }
   :where(.ss-inputs) :where(input[type="checkbox"], input[type="radio"]):disabled { opacity: .5; cursor: not-allowed; }
@@ -56,7 +56,7 @@
   /* ── Linhas de lista num card: ícone, texto, valor e controles na mesma linha ── */
   .ss-rows { list-style: none; margin: 0; padding: 0; }
   .ss-rows > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ss-gap) calc(var(--ss-gap) * 1.33); padding: calc(var(--ss-row-py) * 1.2) calc(var(--ss-pad-x) * 1.1); border-bottom: 1px solid var(--line);
-                  transition: background-color .15s ease; }
+                  transition: background-color var(--ss-dur-short) ease; }
   .ss-rows > li:last-child { border-bottom: 0; }
   .ss-rows > li:hover { background: color-mix(in srgb, var(--accent) 3%, transparent); }
   .ss-rows.is-compact > li { padding: calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .9); }
@@ -65,7 +65,7 @@
   .ss-btn-group { display: inline-flex; align-items: center; border-radius: var(--r-field); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; background: var(--surface); }
   .ss-btn-group form { display: contents; }
   .ss-btn-group :is(button, a) { display: grid; place-items: center; width: var(--ss-control-h); height: calc(var(--ss-control-h) - .25rem); border: 0; background: none; color: var(--ink-2); cursor: pointer;
-                                  text-decoration: none; transition: background-color .15s ease, color .15s ease; }
+                                  text-decoration: none; transition: background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease; }
   .ss-btn-group :is(button, a) + :is(button, a), .ss-btn-group form + form button { box-shadow: inset 1px 0 0 var(--line); }
   .ss-btn-group :is(button, a):hover { background: var(--accent-soft); color: var(--accent); }
   .ss-btn-group :is(button, a):active { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
@@ -75,7 +75,7 @@
   /* ── Botão só de ícone (alvo de 40, dica no title/aria-label) ── */
   .ss-icon-btn { display: inline-grid; place-items: center; flex: none; width: var(--ss-control-h); height: var(--ss-control-h); padding: 0; border: 0; border-radius: var(--r-field); background: transparent;
                  color: var(--muted); cursor: pointer; text-decoration: none; position: relative;
-                 transition: background-color .15s ease, color .15s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                 transition: background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-icon-btn svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); }
   .ss-icon-btn:hover { background: var(--field); color: var(--accent); }
   .ss-icon-btn:active:not(:disabled) { scale: .9; transition-duration: .08s; }
@@ -144,7 +144,7 @@
             display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: calc(var(--ss-control-h) + 1rem); min-width: calc(var(--ss-control-h) + 1rem); padding: 0 calc(var(--ss-pad-x) * 1.25);
             border: 0; border-radius: 999px; background: var(--accent-solid); color: #fff; font-weight: 800; font-size: calc(.9rem * var(--ss-font-scale)); text-decoration: none; cursor: pointer;
             box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent-solid) 80%, transparent);
-            transition: scale var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease; }
+            transition: scale var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short) ease; }
   .ss-fab svg { width: calc(var(--ss-icon) * 1.33); height: calc(var(--ss-icon) * 1.33); }
   .ss-fab.is-icon { padding: 0; width: calc(var(--ss-control-h) + 1rem); }
   .ss-fab.is-static { position: static; }
@@ -169,14 +169,14 @@
                                    box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--success) 80%, transparent); }
 
   /* ── Linha de lista com seta: a seta anda um pouco no hover ── */
-  .ss-go > svg:last-child { flex: none; width: 1.1rem; height: 1.1rem; transition: translate .2s ease, color .2s ease; }
+  .ss-go > svg:last-child { flex: none; width: 1.1rem; height: 1.1rem; transition: translate var(--ss-dur-short) ease, color var(--ss-dur-short) ease; }
   .ss-go:hover > svg:last-child { translate: 3px 0; color: var(--accent); }
 
   /* ── <details> de mostrar/esconder: chevron da suíte no lugar do triângulo ── */
   .ss-summary { display: flex; align-items: center; gap: .5rem; cursor: pointer; border-radius: 10px; list-style: none; }
   .ss-summary::-webkit-details-marker { display: none; }
   .ss-summary::before { content: ""; width: 1rem; height: 1rem; flex-shrink: 0; align-self: center; background: currentColor; opacity: .55; rotate: -90deg;
-                        transition: rotate .2s cubic-bezier(.2, .8, .2, 1), opacity .15s, color .15s;
+                        transition: rotate var(--ss-dur-short) cubic-bezier(.2, .8, .2, 1), opacity var(--ss-dur-short), color var(--ss-dur-short);
                         -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") center / contain no-repeat;
                         mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") center / contain no-repeat; }
   details[open] > .ss-summary::before { rotate: 0deg; }
@@ -212,7 +212,7 @@
 
   /* ── Lista de arrastar para ordenar (Ss::SortableListComponent, ss-sortable) ── */
   .ss-sortable { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ss-sortable-gap, calc(var(--ss-gap) * .67)); }
-  .ss-sortable-item { position: relative; display: flex; align-items: center; gap: .5rem; transition: translate .25s var(--ss-bounce), box-shadow .2s ease, opacity .2s ease; }
+  .ss-sortable-item { position: relative; display: flex; align-items: center; gap: .5rem; transition: translate var(--ss-dur-medium) var(--ss-bounce), box-shadow var(--ss-dur-short) ease, opacity var(--ss-dur-short) ease; }
   .ss-sortable-item > .ss-sortable-main { flex: 1; min-width: 0; }
   .ss-sortable-handle { display: grid; place-items: center; flex: none; width: var(--ss-control-h-sm); height: var(--ss-control-h); border: 0; border-radius: calc(var(--r-field) - 2px); background: none; color: var(--muted);
                         cursor: grab; touch-action: none; }
@@ -225,7 +225,7 @@
 
   /* ── Pular para o conteúdo: primeiro Tab da página ── */
   .ss-skip { position: fixed; left: 50%; top: -4rem; z-index: 90; translate: -50% 0; white-space: nowrap; padding: .6rem 1rem; border-radius: 12px;
-             background: var(--accent-solid); color: #fff; font-weight: 700; text-decoration: none; transition: top .15s ease; }
+             background: var(--accent-solid); color: #fff; font-weight: 700; text-decoration: none; transition: top var(--ss-dur-short) ease; }
   .ss-skip:focus { top: .5rem; }
 
   /* ── Agenda em lista: coluna da hora que cresce (--ss-agl-tw do componente), fim embaixo e dia todo ── */
@@ -241,7 +241,7 @@
 
 /* ── Atalhos de seção: a atual preenchida; no celular vira menu (atual + grade). Fora das
    camadas, como o .ss-subnav da engine (senão o display e o fundo dele ganham). ── */
-.ss-subnav a { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+.ss-subnav a { transition: background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease, border-color var(--ss-dur-short) ease; }
 .ss-subnav a[aria-current="page"], .ss-subnav a[aria-current="page"]:hover { background: var(--accent-soft); color: var(--accent); font-weight: 700;
                                                                              border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .ss-subnav-menu { margin-bottom: 1rem; }
@@ -251,7 +251,7 @@
 .ss-subnav-current > svg { width: 1rem; height: 1rem; flex: none; }
 .ss-subnav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ss-subnav-count { font-size: .75rem; font-weight: 600; color: var(--muted); }
-.ss-subnav-chevron { transition: rotate .2s ease; color: var(--ink-2); }
+.ss-subnav-chevron { transition: rotate var(--ss-dur-short) ease; color: var(--ink-2); }
 .ss-subnav-menu[open] .ss-subnav-chevron { rotate: 180deg; }
 .ss-subnav-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
 .ss-subnav-grid a { display: flex; align-items: center; gap: .45rem; min-width: 0; padding: calc(var(--ss-row-py) * .8) calc(var(--ss-pad-x) * .7); border-radius: var(--r-field); font-size: calc(.85rem * var(--ss-font-scale)); font-weight: 600;

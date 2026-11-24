@@ -53,9 +53,9 @@ turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * {
 @layer components {
   /* ── Etiqueta: o × também como link (remover por GET/Turbo). ── */
   .ss-tag > a { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; color: inherit; font-size: 1rem; line-height: 1;
-                text-decoration: none; transition: background-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                text-decoration: none; transition: background-color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-tag > a:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
-  .ss-tag > a:active { scale: .8; transition: background-color .2s, scale 80ms ease-out; }
+  .ss-tag > a:active { scale: .8; transition: background-color var(--ss-dur-short), scale 80ms ease-out; }
   .ss-tag > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   /* ── Card de opção: compacto (lista longa) e vertical (ícone em cima, tiles estreitos). ── */
@@ -98,11 +98,11 @@ turbo-frame.ss-live:is(.contents, .is-contents, [style*="contents"])[busy] > * {
   .ss-checklist li:has(> label > input[type="checkbox"]) { padding: 0; }
   .ss-checklist li:has(> label > input[type="checkbox"])::before { content: none; }
   .ss-checklist li > label:has(> input[type="checkbox"]) { flex: 1; display: flex; align-items: center; gap: var(--ss-gap); min-height: max(var(--ss-target), 2.5rem); padding: calc(var(--ss-pad-y) * 1) .5rem;
-    border-radius: var(--r-field); cursor: pointer; transition: background-color .15s, color .2s; }
+    border-radius: var(--r-field); cursor: pointer; transition: background-color var(--ss-dur-short), color var(--ss-dur-short); }
   .ss-checklist li > label:has(> input[type="checkbox"]):hover { background: var(--field); }
   .ss-checklist li > label > input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: none; box-sizing: border-box; width: 1.4rem; height: 1.4rem; margin: 0;
     border-radius: 50%; border: 2px solid var(--line); background: var(--surface); cursor: pointer;
-    transition: background-color .2s, border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+    transition: background-color var(--ss-dur-short), border-color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-checklist li > label > input[type="checkbox"]:checked { border-color: var(--success); background: var(--success) var(--ss-i-check-w) center / 65% no-repeat; }
   .ss-checklist li > label > input[type="checkbox"]:active { scale: .85; }
   .ss-checklist li > label > input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

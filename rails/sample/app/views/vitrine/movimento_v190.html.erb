@@ -1,0 +1,54 @@
+<%# titulo: Movimento e vibração (v1.9) | grupo: Acabamento | ordem: 90 %>
+<%# v1.9 · movimento: tokens --ss-dur/ease/dist, erro do campo sem salto, skeleton que vira conteúdo, remoção com desfazer e o mapa de vibração. %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Tokens de movimento", subtitle: "A mesma tabela do SsMotion: passe o mouse nas barras") %>
+    <div class="grid gap-2" style="max-width: 28rem">
+      <% [["short", "--ss-dur-short", "--ss-ease-standard"], ["medium", "--ss-dur-medium", "--ss-ease-enter"], ["long", "--ss-dur-long", "--ss-ease-spring"]].each do |nome, dur, ease| %>
+        <div class="ss-v19-token" style="--d: var(<%= dur %>); --e: var(<%= ease %>)">
+          <span class="num"><%= nome %> · <%= dur %> · <%= ease %></span><i></i>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Erro do campo sem salto", subtitle: "Digite um e-mail inválido e clique direto no botão: o clique vale e a mensagem aparece depois") %>
+    <%= ss_form_with url: vitrine_path("movimento_v190"), method: :post, html: { style: "max-width: 24rem" } do |f| %>
+      <%= f.ss_email_field :email, label: "E-mail", required: true, placeholder: "voce@exemplo.com" %>
+      <button type="button" class="ss-btn ss-btn-ghost" data-controller="ss-haptics" data-action="click->ss-haptics#play"
+              data-ss-haptics-kind-param="success">Botão logo abaixo</button>
+    <% end %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Skeleton que vira conteúdo", subtitle: "O frame troca o esqueleto pelo conteúdo com crossfade e subida curta") %>
+    <% if params[:parte] == "lista" %>
+      <turbo-frame id="v19-skel">
+        <ul class="grid gap-2" style="list-style: none; padding: 0; margin: 0">
+          <% ["Arroz 5 kg", "Feijão 1 kg", "Café 500 g"].each do |item| %><li class="ss-card ss-card-pad"><%= item %></li><% end %>
+        </ul>
+      </turbo-frame>
+    <% else %>
+      <%= render Ss::SkeletonComponent.new(shape: :list, rows: 3, frame: { id: "v19-skel", src: vitrine_path("movimento_v190", parte: "lista") }) %>
+    <% end %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Remover com desfazer", subtitle: "O item sai encolhendo; o Desfazer do aviso o traz de volta no mesmo lugar") %>
+    <ul class="grid gap-2" style="list-style: none; padding: 0; margin: 0; max-width: 28rem">
+      <% ["Arroz 5 kg", "Feijão 1 kg", "Café 500 g"].each do |item| %>
+        <%= render Ss::UndoableRemovalComponent.new(message: "#{item} removido", tag: :li, css: "ss-card ss-card-pad flex items-center justify-between gap-3") do %>
+          <span><%= item %></span>
+          <%= button_to "Remover", vitrine_path("movimento_v190"), method: :post, class: "ss-btn ss-btn-ghost ss-btn-sm",
+                        form: { data: Ss::UndoableRemovalComponent::FORM_DATA } %>
+        <% end %>
+      <% end %>
+    </ul>
+  </section>
+</div>
+<style>
+  .ss-v19-token { display: grid; gap: .25rem; font-size: .78rem; color: var(--muted); }
+  .ss-v19-token i { display: block; height: .5rem; width: 20%; border-radius: 999px; background: var(--accent); transition: width var(--d) var(--e); }
+  .ss-v19-token:hover i { width: 100%; }
+</style>

@@ -305,6 +305,8 @@ void _mostrar(
   );
   _fecharAtual = fechar;
   overlay.insert(entry);
+  // v1.9: aviso de erro vibra (o mapa do SsHaptics).
+  if (tone == AppColors.danger) SsHaptics.error();
 }
 
 /// Entrada com mola de baixo, saída ao fim de [duration] e arrasto para
@@ -376,7 +378,7 @@ class _EntradaState extends State<_Entrada> with TickerProviderStateMixin {
       _saindo = true;
       _para = lado ? Offset(_drag.dx.sign * w, _drag.dy) : Offset(_drag.dx, 160);
       _curva = Curves.easeIn;
-      _solta.duration = const Duration(milliseconds: 220);
+      _solta.duration = SsMotion.short;
       _solta.forward(from: 0).whenComplete(() {
         if (mounted) widget.onDone();
       });

@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../density.dart';
 import '../format.dart';
 import '../motion_view.dart';
+import '../motion.dart' show SsMotion;
 import '../ss_strings.dart';
 import 'privacy.dart';
 
@@ -130,7 +131,7 @@ class SsProgressRow extends StatelessWidget {
                   builder: (_, v, _) => FractionallySizedBox(
                     widthFactor: v.clamp(0.0, 1.0),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
+                      duration: SsMotion.medium,
                       decoration: BoxDecoration(color: cor, borderRadius: BorderRadius.circular(AppRadius.pill)),
                     ),
                   ),

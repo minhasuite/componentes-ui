@@ -319,7 +319,7 @@ class _SsStepperState extends State<SsStepper> {
               scale: .9,
               child: AnimatedOpacity(
                 opacity: on ? 1 : (enabled ? .4 : .2),
-                duration: const Duration(milliseconds: 150),
+                duration: SsMotion.short,
                 child: Container(
                   width: lado,
                   height: lado,

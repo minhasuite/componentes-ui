@@ -40,21 +40,21 @@
                --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
                --sw-on: var(--tone, var(--accent));
                background: radial-gradient(circle at calc(var(--ss-switch-h) / 2) 50%, var(--sw-on) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
-               transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
+               transition: --ss-pour var(--ss-dur-medium) cubic-bezier(.5, 0, .75, 0); }
   /* Alvo de toque maior que o desenho (44 px de altura). */
   .ss-switch::selection { background: none; }
   .ss-switch > .ss-switch-hit { position: absolute; inset: min(-8px, calc((var(--ss-switch-h) - var(--ss-target)) / 2)) -4px; }
   .ss-switch[aria-pressed="true"] { --ss-pour: calc(var(--ss-switch-w) - 6px); --sw-halo: color-mix(in srgb, var(--sw-on) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
   .ss-switch::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); border-radius: 999px; background: #fff;
                        box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
-                       transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
+                       transition: left var(--ss-dur-short) cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale var(--ss-dur-short) ease; }
   .ss-switch[aria-pressed="true"]::before { left: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); right: 3px; transform-origin: 100% 50%;
-                                            transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; }
+                                            transition: right var(--ss-dur-short) cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale var(--ss-dur-short) ease; }
   .ss-switch::after { content: ""; position: absolute; z-index: 2; top: 50%; left: calc(var(--ss-switch-w) - var(--ss-switch-h) / 2); width: calc(var(--ss-switch-h) * .43); height: calc(var(--ss-switch-h) * .43); margin: calc(var(--ss-switch-h) * -.215) 0 0 calc(var(--ss-switch-h) * -.215); pointer-events: none;
                       background: var(--sw-on); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
                       transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
   .ss-switch[aria-pressed="true"]::after { opacity: 1; scale: 1; rotate: 0deg;
-                                           transition: opacity .12s ease-out .2s, scale .42s var(--ss-bounce) .2s, rotate .42s var(--ss-bounce) .2s; }
+                                           transition: opacity .12s ease-out var(--ss-dur-short), scale .42s var(--ss-bounce) var(--ss-dur-short), rotate .42s var(--ss-bounce) var(--ss-dur-short); }
   .ss-switch:active:not(:disabled)::before { scale: .92; }
   .ss-switch[data-ss-anim="on"]::before { animation: ss-sw-on .54s linear, ss-sw-halo .6s ease-out; }
   .ss-switch[data-ss-anim="off"]::before { animation: ss-sw-off .54s linear, ss-sw-halo .6s ease-out; }
@@ -69,11 +69,11 @@
      <div class="ss-device [is-on] [is-wide]" data-status="ready|unavailable|pending|error|locked" style="--tone:…"> */
   .ss-device { --tone: var(--accent); position: relative; display: grid; gap: calc(var(--ss-gap) * .9); padding: calc(var(--ss-card-pad) * .7); border-radius: var(--r-card); background: var(--ss-card-bg, var(--surface));
                border: 1px solid var(--ss-card-border, var(--line)); -webkit-backdrop-filter: var(--ss-card-filter, none); backdrop-filter: var(--ss-card-filter, none); box-shadow: var(--shadow-card); min-width: 0;
-               transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease, opacity .3s ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
+               transition: background-color var(--ss-dur-medium) ease, border-color var(--ss-dur-medium) ease, box-shadow var(--ss-dur-medium) ease, opacity var(--ss-dur-medium) ease, scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-device-main { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ico . end" "text text text"; align-items: start; row-gap: calc(var(--ss-gap) * .9); min-width: 0; }
   .ss-device.is-wide .ss-device-main { grid-template-areas: "ico text end"; align-items: center; column-gap: var(--ss-gap); }
   .ss-device-ico { grid-area: ico; position: relative; display: grid; place-items: center; width: calc(var(--ss-icon-tile) + .25rem); height: calc(var(--ss-icon-tile) + .25rem); border-radius: calc(var(--r-field) + 2px);
-                   background: var(--field); color: var(--ink-2); transition: background .3s ease, color .3s ease, box-shadow .3s ease; }
+                   background: var(--field); color: var(--ink-2); transition: background var(--ss-dur-medium) ease, color var(--ss-dur-medium) ease, box-shadow var(--ss-dur-medium) ease; }
   .ss-device-ico svg { width: calc(var(--ss-icon-tile) * .54); height: calc(var(--ss-icon-tile) * .54); }
   .ss-device-text { grid-area: text; display: block; min-width: 0; color: inherit; text-decoration: none; }
   .ss-device-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
@@ -125,7 +125,7 @@
   .ss-range-bubble { position: absolute; bottom: calc(100% - .1rem); left: calc(.75rem + (100% - 1.5rem) * var(--pn, .5)); z-index: 3;
                      translate: -50% 0; scale: 0; transform-origin: 50% 100%; pointer-events: none; padding: .2rem .5rem; border-radius: 9px;
                      background: var(--ink); color: var(--surface); font: 500 .78rem var(--font-mono); white-space: nowrap;
-                     box-shadow: 0 6px 14px -6px rgba(20, 22, 40, .45); transition: scale .3s var(--ss-bounce); }
+                     box-shadow: 0 6px 14px -6px rgba(20, 22, 40, .45); transition: scale var(--ss-dur-medium) var(--ss-bounce); }
   .ss-range-bubble::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% -1px; border: 5px solid transparent; border-top-color: var(--ink); }
   .ss-range-field:has(.ss-range:is([data-dragging], :focus-visible)) .ss-range-bubble { scale: 1; }
   /* Fill: barra grossa, a parte cheia é o valor; rótulo, ícone e valor escritos dentro. */
@@ -167,11 +167,11 @@
   .ss-thermo-dial svg { width: 100%; height: 100%; overflow: visible; }
   .ss-thermo-track { fill: none; stroke: color-mix(in srgb, var(--muted) 18%, var(--field)); stroke-width: 13; stroke-linecap: round; }
   .ss-thermo-bar { fill: none; stroke: var(--thermo-c); stroke-width: 13; stroke-linecap: round;
-                   stroke-dasharray: calc(var(--f) * 100px) 200px; transition: stroke-dasharray var(--ss-dur-indicator) var(--ss-bounce), stroke .3s ease; }
+                   stroke-dasharray: calc(var(--f) * 100px) 200px; transition: stroke-dasharray var(--ss-dur-indicator) var(--ss-bounce), stroke var(--ss-dur-medium) ease; }
   .ss-thermo-knob, .ss-thermo-cur { transform-box: view-box; transform-origin: 100px 100px; }
   .ss-thermo-knob { transform: rotate(calc(135deg + var(--f) * 270deg)); transition: transform var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-thermo-knob circle:first-child { fill: var(--surface); filter: drop-shadow(0 2px 3px rgba(20, 22, 40, .3)); }
-  .ss-thermo-knob circle:last-child { fill: var(--thermo-c); transition: fill .3s ease; }
+  .ss-thermo-knob circle:last-child { fill: var(--thermo-c); transition: fill var(--ss-dur-medium) ease; }
   .ss-thermo-cur { transform: rotate(calc(135deg + var(--cf) * 270deg)); }
   .ss-thermo-cur line { stroke: var(--ink-2); stroke-width: 3; stroke-linecap: round; }
   .ss-thermo[data-dragging] :is(.ss-thermo-bar, .ss-thermo-knob) { transition: none; }
@@ -179,7 +179,7 @@
   .ss-thermo-legend { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
   .ss-thermo[data-hvac="heating"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-heat) 70%, var(--ink)); }
   .ss-thermo[data-hvac="cooling"] .ss-thermo-legend { color: color-mix(in srgb, var(--thermo-cool) 75%, var(--ink)); }
-  .ss-thermo-value { display: block; margin-top: .2rem; font: 500 calc(var(--ss-thermo-size) * .19)/1 var(--font-mono); letter-spacing: -.02em; color: var(--ink); transition: opacity .2s ease, scale .3s var(--ss-bounce); }
+  .ss-thermo-value { display: block; margin-top: .2rem; font: 500 calc(var(--ss-thermo-size) * .19)/1 var(--font-mono); letter-spacing: -.02em; color: var(--ink); transition: opacity var(--ss-dur-short) ease, scale var(--ss-dur-medium) var(--ss-bounce); }
   .ss-thermo-now { margin-top: .4rem; font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 600; color: var(--ink-2); }
   .ss-thermo[data-mode="off"] :is(.ss-thermo-bar, .ss-thermo-knob) { opacity: 0; }
   .ss-thermo[data-mode="off"] .ss-thermo-value { opacity: .45; }
@@ -190,7 +190,7 @@
                                                            border-right-color: transparent; animation: ss-spin .8s linear infinite; }
   .ss-thermo-steps { display: flex; gap: calc(var(--ss-thermo-size) * .29); margin-top: -.4rem; }
   .ss-thermo-steps button { display: grid; place-items: center; width: var(--ss-thermo-step); height: var(--ss-thermo-step); border-radius: 50%; border: 1px solid var(--line); background: var(--field);
-                            color: var(--ink); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .2s; }
+                            color: var(--ink); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color var(--ss-dur-short); }
   .ss-thermo-steps button svg { width: calc(var(--ss-thermo-step) * .43); height: calc(var(--ss-thermo-step) * .43); }
   .ss-thermo-steps button:hover:not(:disabled) { background: color-mix(in srgb, var(--thermo-c) 10%, var(--field)); }
   .ss-thermo-steps button:active:not(:disabled) { scale: .88; transition: scale 80ms ease-out; }
@@ -199,7 +199,7 @@
   .ss-thermo-modes { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--ss-gap) * .67); margin: .3rem 0 0; padding: 0; border: 0; min-width: 0; }
   .ss-thermo-mode { --mc: var(--accent); position: relative; display: inline-flex; align-items: center; gap: .35rem; min-height: var(--ss-control-h); padding: 0 calc(var(--ss-pad-x) * .9); border-radius: 999px;
                     border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: calc(.82rem * var(--ss-font-scale)); cursor: pointer;
-                    transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                    transition: background-color var(--ss-dur-short), border-color var(--ss-dur-short), color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-thermo-mode[data-value="heat"] { --mc: var(--thermo-heat); }
   .ss-thermo-mode[data-value="cool"] { --mc: var(--thermo-cool); }
   .ss-thermo-mode[data-value="off"] { --mc: var(--muted); }
@@ -217,7 +217,7 @@
   .ss-keypad-title { text-align: center; font-weight: 700; font-size: 1rem; color: var(--ink); }
   .ss-keypad-dots { display: flex; justify-content: center; align-items: center; gap: .85rem; height: 1.8rem; }
   .ss-keypad-dots i { width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 45%, transparent); scale: .75;
-                      transition: background-color .15s, border-color .15s, scale .45s var(--ss-bounce); }
+                      transition: background-color var(--ss-dur-short), border-color var(--ss-dur-short), scale .45s var(--ss-bounce); }
   .ss-keypad-dots i.is-on { background: var(--accent); border-color: var(--accent); scale: 1; }
   .ss-keypad-dots b { min-width: 1rem; text-align: center; font: 500 1.4rem var(--font-mono); color: var(--accent); }
   .ss-keypad[data-state="error"] .ss-keypad-dots i.is-on { background: var(--danger); border-color: var(--danger); }
@@ -233,7 +233,7 @@
                                                         border: 2px solid var(--accent); border-right-color: transparent; animation: ss-spin .8s linear infinite; }
   .ss-keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--ss-gap) * .73); }
   .ss-keypad-grid button { display: grid; place-items: center; height: var(--ss-keypad-key); border: 0; border-radius: calc(var(--r-field) + 4px); background: var(--field); color: var(--ink);
-                           font: 500 calc(var(--ss-keypad-key) * .38) var(--font-mono); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color .15s; }
+                           font: 500 calc(var(--ss-keypad-key) * .38) var(--font-mono); cursor: pointer; transition: scale var(--ss-dur-indicator) var(--ss-bounce), background-color var(--ss-dur-short); }
   .ss-keypad-grid button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 8%, var(--field)); }
   .ss-keypad-grid button:active:not(:disabled), .ss-keypad-grid button[data-pressed] { scale: .9; transition: scale 80ms ease-out; }
   .ss-keypad-grid button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -259,7 +259,7 @@
   .ss-weekday-day input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
   .ss-weekday-day span { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: var(--field);
                          color: var(--ink-2); font-weight: 800; font-size: calc(.88rem * var(--ss-font-scale)); scale: .92; pointer-events: none;
-                         transition: background-color .18s, border-color .18s, color .18s, scale .45s var(--ss-bounce), box-shadow .2s; }
+                         transition: background-color var(--ss-dur-short), border-color var(--ss-dur-short), color var(--ss-dur-short), scale .45s var(--ss-bounce), box-shadow var(--ss-dur-short); }
   .ss-weekday-day:has(:checked) span { background: var(--accent); border-color: var(--accent); color: #fff; scale: 1;
                                        box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
   .ss-weekday-day:hover:not(:has(:disabled)) span { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
@@ -268,7 +268,7 @@
   .ss-weekday-shortcuts { display: flex; flex-wrap: wrap; gap: .45rem; }
   .ss-weekday-shortcuts[hidden] { display: none; }
   .ss-weekday-shortcuts button { min-height: calc(var(--ss-control-h-sm) + .25rem); padding: 0 calc(var(--ss-pad-x) * .85); border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-                                 font-weight: 700; font-size: calc(.78rem * var(--ss-font-scale)); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+                                 font-weight: 700; font-size: calc(.78rem * var(--ss-font-scale)); cursor: pointer; transition: background-color var(--ss-dur-short), border-color var(--ss-dur-short), color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   .ss-weekday-shortcuts button[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent); }
   .ss-weekday-shortcuts button:active { scale: .94; transition: scale 80ms ease-out; }
   .ss-weekday-shortcuts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

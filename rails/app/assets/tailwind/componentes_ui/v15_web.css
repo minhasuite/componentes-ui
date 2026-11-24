@@ -15,7 +15,7 @@
   /* Seletor de mês ‹ Outubro 2026 › (Ss::MonthSwitcherComponent ↔ SsMonthSwitcher). */
   .ss-month-switcher { display: flex; align-items: center; gap: .25rem; min-width: 0; }
   .ss-month-switcher-arrow { flex: none; display: grid; place-items: center; width: max(var(--ss-control-h), 2.5rem); height: max(var(--ss-control-h), 2.5rem);
-    border-radius: 999px; color: var(--ink-2); text-decoration: none; transition: background .15s, color .15s; }
+    border-radius: 999px; color: var(--ink-2); text-decoration: none; transition: background var(--ss-dur-short), color var(--ss-dur-short); }
   .ss-month-switcher-arrow svg { width: 1.25rem; height: 1.25rem; }
   a.ss-month-switcher-arrow:hover { background: var(--accent-soft); color: var(--accent); }
   .ss-month-switcher-arrow[aria-disabled="true"] { opacity: .35; cursor: not-allowed; }
@@ -57,7 +57,7 @@
 
   /* Linha de progresso (Ss::ProgressRowComponent ↔ SsProgressRow). */
   .ss-progress-row { display: grid; gap: .4rem; min-width: 0; color: inherit; text-decoration: none; }
-  .ss-progress-row.is-link { border-radius: var(--r-field); padding: .35rem .5rem; margin: -.35rem -.5rem; transition: background .15s; }
+  .ss-progress-row.is-link { border-radius: var(--r-field); padding: .35rem .5rem; margin: -.35rem -.5rem; transition: background var(--ss-dur-short); }
   .ss-progress-row.is-link:hover { background: var(--field); }
   .ss-progress-row-head, .ss-progress-row-foot { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; min-width: 0; }
   .ss-progress-row-head { align-items: center; }
@@ -139,7 +139,7 @@
 .ss-dialog-panel-x { flex: none; width: 2.25rem; padding: 0; justify-content: center; }
 .ss-dialog-panel-x svg { width: 1.1rem; height: 1.1rem; }
 .ss-dialog-panel-body { flex: 1; min-height: 0; overflow: auto; padding: 0 var(--ss-card-pad) var(--ss-card-pad); }
-.ss-dialog-panel[aria-busy="true"] .ss-dialog-panel-body { opacity: .55; pointer-events: none; transition: opacity .2s; }
+.ss-dialog-panel[aria-busy="true"] .ss-dialog-panel-body { opacity: .55; pointer-events: none; transition: opacity var(--ss-dur-short); }
 .ss-dialog-panel-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; padding: calc(var(--ss-card-pad) * .75) var(--ss-card-pad);
   border-top: 1px solid var(--line); }
 

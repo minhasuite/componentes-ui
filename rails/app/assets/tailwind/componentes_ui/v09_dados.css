@@ -31,7 +31,7 @@
   .ss-dt[data-density="compact"] .ss-table td { padding-block: .4rem; }
   .ss-dt[data-density="compact"] .ss-table th { padding-block: .5rem; }
   .ss-dt .ss-sort { gap: .3rem; }
-  .ss-dt-arrow { width: .85rem; height: .85rem; opacity: .35; transition: opacity .15s, rotate .2s; }
+  .ss-dt-arrow { width: .85rem; height: .85rem; opacity: .35; transition: opacity var(--ss-dur-short), rotate var(--ss-dur-short); }
   .ss-dt [aria-sort="ascending"] .ss-dt-arrow, .ss-dt [aria-sort="descending"] .ss-dt-arrow { opacity: 1; color: var(--accent); }
   .ss-dt [aria-sort="ascending"] .ss-dt-arrow path { d: path("M8 14l4-4 4 4"); }
   .ss-dt [aria-sort="descending"] .ss-dt-arrow path { d: path("M8 10l4 4 4-4"); }
@@ -41,7 +41,7 @@
   .ss-dt tr.is-selected > td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
   .ss-dt-toggle { display: grid; place-items: center; width: calc(var(--ss-control-h-sm) - .1rem); height: calc(var(--ss-control-h-sm) - .1rem); border: 0; border-radius: calc(var(--r-field) - 3px); background: none; color: var(--muted); cursor: pointer; }
   .ss-dt-toggle:hover { background: var(--field); color: var(--ink); }
-  .ss-dt-toggle svg { width: 1rem; height: 1rem; transition: rotate .2s var(--ss-spring); }
+  .ss-dt-toggle svg { width: 1rem; height: 1rem; transition: rotate var(--ss-dur-short) var(--ss-spring); }
   .ss-dt-toggle[aria-expanded="true"] svg { rotate: 90deg; color: var(--accent); }
   .ss-dt-detail > td { background: var(--field); padding: .9rem 1.1rem 1rem 3.5rem !important; animation: ss-fade .2s ease both; }
   .ss-dt-detail[hidden] { display: none; }
@@ -142,11 +142,11 @@
   .ss-area-ytext { font: 500 12px var(--font-mono); fill: var(--muted); }
   .ss-area-xtext { font: 700 12.5px var(--font-sans); fill: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   .ss-area-xtext.is-active { fill: var(--ink); font-weight: 800; }
-  .ss-area-cursor { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 4; opacity: .7; transition: x1 .15s, x2 .15s; }
-  .ss-area-dot { fill: var(--surface); stroke: var(--accent); stroke-width: 3.5; transition: cx .15s, cy .15s; }
+  .ss-area-cursor { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 4; opacity: .7; transition: x1 var(--ss-dur-short), x2 var(--ss-dur-short); }
+  .ss-area-dot { fill: var(--surface); stroke: var(--accent); stroke-width: 3.5; transition: cx var(--ss-dur-short), cy var(--ss-dur-short); }
   .ss-area-pill { position: absolute; translate: -50% calc(-100% - 14px); padding: .25rem .6rem; border-radius: 999px; background: var(--accent); color: var(--surface);
                   font-size: .78rem; font-weight: 500; white-space: nowrap; pointer-events: none; box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent);
-                  transition: left .15s, top .15s; transform-origin: 50% 100%; animation: ss-iv-pop .5s var(--ss-bounce) .95s backwards; }
+                  transition: left var(--ss-dur-short), top var(--ss-dur-short); transform-origin: 50% 100%; animation: ss-iv-pop .5s var(--ss-bounce) .95s backwards; }
   .ss-area-pill::after { content: ""; position: absolute; left: 50%; bottom: -4px; width: 8px; height: 8px; translate: -50% 0; rotate: 45deg; background: inherit; border-radius: 2px; }
 
   /* ── Rosca (Ss::DonutChartComponent) ── */
@@ -155,7 +155,7 @@
   .ss-donut svg { width: 100%; height: 100%; overflow: visible; }
   /* Entrada: cada fatia varre a partir do próprio início, em cascata (parece um traço só);
      o total e a legenda pulam com mola depois. */
-  .ss-donut-slice { fill: none; transition: opacity .2s, stroke-width .3s var(--ss-bounce);
+  .ss-donut-slice { fill: none; transition: opacity var(--ss-dur-short), stroke-width var(--ss-dur-medium) var(--ss-bounce);
                     animation: ss-donut-sweep .55s cubic-bezier(.3, .7, .3, 1) backwards; animation-delay: calc(var(--i) * 110ms); }
   .ss-donut-center { animation: ss-iv-pop .55s var(--ss-bounce) .3s backwards; }
   .ss-donut-legend li { animation: ss-iv-pop .45s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 60ms + .35s); }
@@ -165,7 +165,7 @@
   .ss-donut-center small { font-size: .72rem; font-weight: 600; color: var(--muted); }
   .ss-donut-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem .4rem; list-style: none; margin: 0; padding: 0; }
   .ss-donut-legend button { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .6rem; border: 0; border-radius: 999px; background: none;
-                            color: var(--ink-2); font: 600 .8rem var(--font-sans); cursor: pointer; transition: background .15s, opacity .15s; }
+                            color: var(--ink-2); font: 600 .8rem var(--font-sans); cursor: pointer; transition: background var(--ss-dur-short), opacity var(--ss-dur-short); }
   .ss-donut-legend button::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
   .ss-donut-legend b { font: 500 .74rem var(--font-mono); color: var(--muted); }
   .ss-donut-legend button:hover, .ss-donut-legend button.is-active { background: var(--field); }
@@ -196,7 +196,7 @@
   .ss-agenda-event[data-tone="info"] { --tone: var(--ss-info); }
   .ss-agenda-in { display: flex; flex-direction: column; gap: .1rem; height: 100%; overflow: hidden; padding: .4rem .6rem; border-radius: 12px; text-decoration: none;
                   background: color-mix(in oklab, var(--tone) 16%, var(--surface)); color: var(--ink); border-left: 4px solid var(--tone);
-                  animation: ss-rise .35s cubic-bezier(.2, .8, .2, 1) backwards; transition: box-shadow .2s, translate .2s; }
+                  animation: ss-rise .35s cubic-bezier(.2, .8, .2, 1) backwards; transition: box-shadow var(--ss-dur-short), translate var(--ss-dur-short); }
   a.ss-agenda-in:hover { box-shadow: var(--shadow-hover); translate: 0 -1px; }
   .ss-agenda-in b { font-size: .84rem; font-weight: 800; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ss-agenda-in small { font-size: .72rem; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -257,7 +257,7 @@
   .ss-tree-row { display: flex; align-items: center; gap: .5rem; min-height: 2.4rem; padding: .25rem .6rem; border-radius: 10px; cursor: pointer; color: var(--ink); text-decoration: none; }
   .ss-tree-row:hover { background: var(--field); }
   .ss-tree-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-  summary.ss-tree-row::before { content: ""; width: .9rem; height: .9rem; flex: none; background: var(--muted); mask: var(--ss-i-chev) center / contain no-repeat; rotate: -90deg; transition: rotate .2s var(--ss-spring); }
+  summary.ss-tree-row::before { content: ""; width: .9rem; height: .9rem; flex: none; background: var(--muted); mask: var(--ss-i-chev) center / contain no-repeat; rotate: -90deg; transition: rotate var(--ss-dur-short) var(--ss-spring); }
   details[open] > summary.ss-tree-row::before { rotate: 0deg; }
   .ss-tree-row.is-leaf::before { content: ""; width: .9rem; flex: none; height: 6px; background: radial-gradient(circle, var(--line) 3px, transparent 3.5px) center / 6px 6px no-repeat; }
   .ss-tree-label { flex: 1; min-width: 0; font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

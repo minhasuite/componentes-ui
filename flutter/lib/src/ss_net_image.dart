@@ -119,7 +119,7 @@ class SsNetImage extends StatelessWidget {
 
   Widget _foto(BuildContext context, double? width, double? height) {
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final fade = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 220);
+    final fade = reduceMotion(context) ? Duration.zero : SsMotion.short;
     return Semantics(
       image: name != null,
       label: name,

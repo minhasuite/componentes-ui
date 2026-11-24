@@ -181,7 +181,7 @@ class SsMonthGrid extends StatelessWidget {
             SsPop(
               active: eSel && !fora,
               child: AnimatedContainer(
-                duration: reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 180),
+                duration: reduceMotion(context) ? Duration.zero : SsMotion.short,
                 width: 34,
                 height: 34,
                 alignment: Alignment.center,

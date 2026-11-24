@@ -84,7 +84,7 @@ class SsOverflowMenu extends StatelessWidget {
       // Abre rápido; as linhas descem em cascata com mola (SsRouteStagger).
       popUpAnimationStyle: reduceMotion(context)
           ? AnimationStyle.noAnimation
-          : AnimationStyle(curve: Curves.easeOutCubic, duration: const Duration(milliseconds: 300)),
+          : AnimationStyle(curve: Curves.easeOutCubic, duration: SsMotion.medium),
       onSelected: (i) => items[i].onTap(),
       child: child,
       itemBuilder: (_) => [

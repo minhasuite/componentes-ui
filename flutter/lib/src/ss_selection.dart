@@ -118,7 +118,7 @@ class SsSelectable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    final d = reduceMotion(context) ? Duration.zero : const Duration(milliseconds: 300);
+    final d = reduceMotion(context) ? Duration.zero : SsMotion.medium;
     return Semantics(
       selected: selecting ? selected : null,
       child: GestureDetector(

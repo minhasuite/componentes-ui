@@ -18,7 +18,7 @@
     .ss-repeater.is-compact .ss-repeater-cell.is-inline > * { flex: 1 1 0; order: 1; }
     .ss-repeater.is-compact .ss-repeater-more { order: 2; display: inline-flex; align-items: center; justify-content: flex-start; gap: .3rem; flex: 0 0 100%; width: auto;
       min-height: 2.75rem; padding: 0 .15rem; color: var(--accent); font-size: calc(.8rem * var(--ss-font-scale)); font-weight: 700; }
-    .ss-repeater.is-compact .ss-repeater-more svg { transition: rotate .2s; }
+    .ss-repeater.is-compact .ss-repeater-more svg { transition: rotate var(--ss-dur-short); }
     .ss-repeater.is-compact .ss-repeater-row.is-open .ss-repeater-more svg { rotate: 180deg; }
     .ss-repeater.is-compact .ss-repeater-cell.is-detail > * { order: 3; }
     /* Fechado, o detalhe some, menos o que tem erro (o vendedor precisa ver o que corrigir). */

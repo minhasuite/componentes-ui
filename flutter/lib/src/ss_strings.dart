@@ -435,6 +435,8 @@ class SsStrings {
     required this.termsOfUse,
     required this.privacyPolicy,
     required this.opensExternal,
+    // v1.9 · movimento
+    this.appearanceSystemColors = 'Cores do sistema',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1116,6 +1118,10 @@ class SsStrings {
   /// v0.20: dica de link que sai do app ([SsTextLink] com external).
   final String opensExternal;
 
+  // v1.9 · movimento
+  /// Opção "Cores do sistema" (Material You) do [SsAppearancePanel].
+  final String appearanceSystemColors;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1557,6 +1563,8 @@ class SsStrings {
     termsOfUse: 'Termos de uso',
     privacyPolicy: 'Política de privacidade',
     opensExternal: 'abre fora do app',
+    // v1.9 · movimento
+    appearanceSystemColors: 'Cores do sistema',
   );
 
   /// Inglês.
@@ -1986,6 +1994,8 @@ class SsStrings {
     termsOfUse: 'Terms of Use',
     privacyPolicy: 'Privacy Policy',
     opensExternal: 'opens outside the app',
+    // v1.9 · movimento
+    appearanceSystemColors: 'System colors',
   );
 
   /// Espanhol.
@@ -2415,6 +2425,8 @@ class SsStrings {
     termsOfUse: 'Términos de uso',
     privacyPolicy: 'Política de privacidad',
     opensExternal: 'se abre fuera de la app',
+    // v1.9 · movimento
+    appearanceSystemColors: 'Colores del sistema',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2831,6 +2843,8 @@ class SsStrings {
     'termsOfUse': termsOfUse,
     'privacyPolicy': privacyPolicy,
     'opensExternal': opensExternal,
+    // v1.9 · movimento
+    'appearanceSystemColors': appearanceSystemColors,
   };
 
   /// Os idiomas prontos.
@@ -3282,6 +3296,8 @@ class SsStrings {
     String? termsOfUse,
     String? privacyPolicy,
     String? opensExternal,
+    // v1.9 · movimento
+    String? appearanceSystemColors,
   }) => SsStrings(
     locale: locale ?? this.locale,
     offlineError: offlineError ?? this.offlineError,
@@ -3695,6 +3711,8 @@ class SsStrings {
     termsOfUse: termsOfUse ?? this.termsOfUse,
     privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     opensExternal: opensExternal ?? this.opensExternal,
+    // v1.9 · movimento
+    appearanceSystemColors: appearanceSystemColors ?? this.appearanceSystemColors,
   );
 }
 

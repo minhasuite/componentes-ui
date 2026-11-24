@@ -692,3 +692,8 @@ en:
       text: 'By continuing, you agree to the %{terms} and the %{privacy}.'
       terms: Terms of Use
       privacy: Privacy Policy
+    # v1.9 · movimento
+    undoable_removal:
+      undo: Undo
+      close: Close notice
+      error: Could not finish. Try again.

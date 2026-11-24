@@ -12,6 +12,7 @@ import 'skeleton.dart';
 import 'ss_aurora.dart';
 import 'ss_error_view.dart';
 import 'ss_strings.dart';
+import 'v19/movimento/skeleton_switch.dart';
 
 String _mensagem(
   BuildContext context,
@@ -69,22 +70,35 @@ class SsAsyncBody<T> extends StatelessWidget {
   /// Texto do erro; sem ele, uma mensagem genérica.
   final String Function(Object error)? errorMessage;
 
+  // v1.9: do skeleton (ou do erro) para o conteúdo com crossfade e subida curta
+  // ([SsSkeletonSwitch]); revalidar com o dado na tela não anima.
   @override
   Widget build(BuildContext context) {
+    final (Object estado, Widget corpo) = _corpo(context);
+    return SsSkeletonSwitch(stateKey: estado, child: corpo);
+  }
+
+  (Object, Widget) _corpo(BuildContext context) {
     if (value.hasValue) {
       final v = value.requireValue;
       final vazio = empty != null && (isEmpty?.call(v) ?? false);
-      return Stack(
-        children: [
-          Positioned.fill(child: vazio ? empty! : data(v)),
-          if (value.isLoading && showRefreshing) _fio(),
-        ],
+      return (
+        vazio ? 'vazio' : 'dado',
+        Stack(
+          children: [
+            Positioned.fill(child: vazio ? empty! : data(v)),
+            if (value.isLoading && showRefreshing) _fio(),
+          ],
+        ),
       );
     }
     if (value.hasError) {
-      return SsErrorView(message: _mensagem(context, value.error!, isOffline, errorMessage), onRetry: onRetry);
+      return (
+        'erro',
+        SsErrorView(message: _mensagem(context, value.error!, isOffline, errorMessage), onRetry: onRetry),
+      );
     }
-    return loading ?? const SkeletonList();
+    return ('carregando', loading ?? const SkeletonList());
   }
 }
 
@@ -426,7 +440,10 @@ class _SsPagedListState<T> extends State<SsPagedList<T>> {
                   : SsLoadMore(hasMore: widget.hasMore, loading: _carregando, onLoadMore: _mais)),
       ),
     );
-    if (widget.onRefresh != null) lista = SsPullToRefresh(onRefresh: widget.onRefresh!, child: lista);
+    // v1.9: a lista já rola (o NotificationListener por fora esconde isso do tipo): sem
+    // `scrollable: true` o SsPullToRefresh a embrulhava num SingleChildScrollView e a
+    // ListView ficava sem altura ("Vertical viewport was given unbounded height").
+    if (widget.onRefresh != null) lista = SsPullToRefresh(onRefresh: widget.onRefresh!, scrollable: true, child: lista);
     return lista;
   }
 }

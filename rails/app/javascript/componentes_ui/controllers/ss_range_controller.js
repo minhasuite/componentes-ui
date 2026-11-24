@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { ssLang } from "componentes_ui/controllers/ss_intl"
+import { haptic } from "componentes_ui/controllers/ss_haptics_controller"
 
 // Formato estilo sprintf (%s, %d, %.Nf, %%) com o decimal do idioma da página (v0.10.1),
 // igual ao RangeComponent#text: "%.1f °C" → "21,5 °C" em pt. Sem separador de milhar.
@@ -52,6 +53,10 @@ export default class extends Controller {
     const i = this.inputTarget
     const min = Number(i.min || 0), max = Number(i.max || 100)
     const v = Number(i.value)
+    // v1.9: bateu no mínimo ou no máximo (vindo de dentro): a vibração de limite (ss_haptics).
+    const borda = v <= min || v >= max
+    if (borda && this.lastValue != null && this.lastValue !== v) haptic("limit")
+    this.lastValue = v
     const p = max === min ? 0 : ((v - min) * 100) / (max - min)
     const text = ssRangeText(this.formatValue, i.value)
     i.style.setProperty("--p", `${p}%`)

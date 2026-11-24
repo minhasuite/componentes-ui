@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { haptic } from "componentes_ui/controllers/ss_haptics_controller"
 
 // Aviso da pilha (Ss::ToastComponent): some sozinho, pausa com o mouse/foco,
 // fecha no ×. O anel do .ss-toast-timer pausa junto (animation-play-state).
@@ -34,6 +35,8 @@ export default class extends Controller {
     this.stack = this.element.parentElement
     lastTop.set(this.element, this.element.getBoundingClientRect().top)
     reflow(this.stack, this.element)
+    // v1.9: aviso de erro vibra (ss_haptics; só em toque, e só se o app não desligou).
+    if (this.element.classList.contains("is-bad")) haptic("error")
     this.onDown = (e) => this.down(e)
     this.element.addEventListener("pointerdown", this.onDown)
     if (this.stickyValue) return
@@ -82,6 +85,8 @@ export default class extends Controller {
 
   remove() {
     if (!this.element.isConnected) return
+    // v1.9: avisa quem abriu o aviso (o ss-undoable confirma a remoção quando ele some).
+    this.element.dispatchEvent(new CustomEvent("ss-toast:closed", { bubbles: true }))
     const stack = this.stack
     this.element.remove()
     reflow(stack)

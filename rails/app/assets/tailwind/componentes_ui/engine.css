@@ -76,6 +76,8 @@
 @import "./v170_cartaz_web.css";
 /* v1.8.0: cartão de conquista (Ss::AchievementCardComponent). */
 @import "./v180_conquista_web.css";
+/* v1.9 · movimento: tokens únicos (--ss-dur-*, --ss-ease-*, --ss-dist-*), erro do campo sem salto, skeleton que vira conteúdo e remoção com desfazer. */
+@import "./v19_movimento.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -170,16 +172,16 @@
   .ss-card { background: var(--ss-card-bg, var(--surface)); border-radius: var(--r-card); box-shadow: var(--shadow-card);
              border: 1px solid var(--ss-card-border, color-mix(in srgb, var(--line) 70%, transparent));
              -webkit-backdrop-filter: var(--ss-card-filter, none); backdrop-filter: var(--ss-card-filter, none); }
-  a.ss-card, .ss-card-link { transition: transform .45s var(--ss-bounce), box-shadow .25s ease; }
+  a.ss-card, .ss-card-link { transition: transform .45s var(--ss-bounce), box-shadow var(--ss-dur-medium) ease; }
   a.ss-card:hover, .ss-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
   .ss-card-pad { padding: var(--ss-card-pad); }
 
   .ss-btn { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: var(--ss-control-h);
             padding: 0 var(--ss-pad-x); border-radius: var(--r-field); font-weight: 600; font-size: calc(.875rem * var(--ss-font-scale)); border: 0;
             cursor: pointer; text-decoration: none; white-space: nowrap; position: relative; overflow: hidden;
-            transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow .2s ease, background-color .2s ease, color .2s ease; }
+            transition: transform var(--ss-dur-indicator) var(--ss-bounce), box-shadow var(--ss-dur-short) ease, background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease; }
   /* Toque: aperta em 80 ms e, ao soltar, volta com a mola (a transição da regra base). */
-  .ss-btn:active:not(:disabled) { transform: scale(.96); transition: transform 80ms ease-out, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
+  .ss-btn:active:not(:disabled) { transform: scale(.96); transition: transform 80ms ease-out, box-shadow var(--ss-dur-short) ease, background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease; }
   .ss-btn:disabled { opacity: .5; cursor: not-allowed; }
   .ss-btn svg { width: var(--ss-icon); height: var(--ss-icon); flex-shrink: 0; }
   /* Primário: o gradiente-assinatura com um brilho que passa no hover. */
@@ -201,7 +203,7 @@
   .ss-label { display: block; font-size: calc(.75rem * var(--ss-font-scale)); font-weight: 600; color: var(--muted); margin-bottom: .35rem; }
   .ss-input { width: 100%; min-height: var(--ss-field-h); padding: var(--ss-pad-y) calc(var(--ss-pad-x) * .85); border-radius: var(--r-field);
               background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: calc(.9rem * var(--ss-font-scale));
-              transition: border-color .2s ease, box-shadow .2s ease; }
+              transition: border-color var(--ss-dur-short) ease, box-shadow var(--ss-dur-short) ease; }
   .ss-input::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); }
   .ss-input:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
   .ss-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
@@ -223,12 +225,12 @@
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]) {
     appearance: none; -webkit-appearance: none; flex: none; display: inline-grid; place-items: center; margin: 0; cursor: pointer;
     box-sizing: border-box; border: 2px solid color-mix(in srgb, var(--muted) 55%, var(--line)); border-radius: 6px; background: var(--surface);
-    transition: border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
+    transition: border-color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
   :is(.ss-check, .ss-option-card) > input[type="radio"] { border-radius: 50%; }
   .ss-check > input:is([type="checkbox"], [type="radio"]) { position: relative; }
   :is(.ss-check, .ss-option-card) > input[type="checkbox"] { --ss-fill: -4%; /* abaixo de 0: nem o fio da borda do círculo aparece */
     background: radial-gradient(circle, var(--accent-solid) var(--ss-fill), var(--surface) calc(var(--ss-fill) + .6px)) border-box;
-    transition: border-color .2s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .16s ease-in .06s; }
+    transition: border-color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill var(--ss-dur-short) ease-in .06s; }
   :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked { --ss-fill: 100%;
     transition: border-color .12s, scale var(--ss-dur-indicator) var(--ss-bounce), --ss-fill .46s var(--ss-bounce) 80ms; }
   /* Partículas: 8 pontinhos num anel de raio 22 px; parados e invisíveis até a troca. */
@@ -241,7 +243,7 @@
   :is(.ss-check, .ss-option-card) > input[type="checkbox"]::after {
     content: ""; position: absolute; inset: 1px; background: #fff; mask: var(--ss-i-check) center / contain no-repeat;
     clip-path: inset(0 100% 0 0); transition: clip-path .1s ease-in; }
-  :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked::after { clip-path: inset(0 0 0 0); transition: clip-path .24s cubic-bezier(.4, 0, .2, 1) .2s; }
+  :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked::after { clip-path: inset(0 0 0 0); transition: clip-path var(--ss-dur-medium) cubic-bezier(.4, 0, .2, 1) var(--ss-dur-short); }
   /* Rádio: o ponto (::before) e a ondinha (::after). */
   :is(.ss-check, .ss-option-card) > input[type="radio"]::before {
     content: ""; position: absolute; inset: 3px; border-radius: inherit; background: var(--accent); scale: 0; transition: scale .14s ease-in; }
@@ -252,7 +254,7 @@
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):checked { border-color: var(--accent); }
   /* Caixa marcada: preenchida com o accent sólido (o ✓ branco passa 4,5:1 também no escuro). */
   :is(.ss-check, .ss-option-card) > input[type="checkbox"]:checked { border-color: var(--accent-solid); }
-  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):active { scale: .86; transition: scale 80ms ease-out, border-color .2s; }
+  :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):active { scale: .86; transition: scale 80ms ease-out, border-color var(--ss-dur-short); }
   :is(.ss-check, .ss-option-card) > input:is([type="checkbox"], [type="radio"]):disabled { opacity: .5; cursor: not-allowed; }
   /* A troca feita pela pessoa (uma vez). */
   :is(.ss-check, .ss-option-card) > input[type="checkbox"][data-ss-anim="on"] { animation: ss-chk-on .54s ease-out; }
@@ -270,7 +272,7 @@
                  letter-spacing: .06em; padding: calc(var(--ss-row-py) * .95) calc(var(--ss-pad-x) * .9); border-bottom: 1px solid var(--line); background: var(--head); white-space: nowrap; }
   .ss-table td { padding: var(--ss-row-py) calc(var(--ss-pad-x) * .9); border-bottom: 1px solid var(--line); vertical-align: middle; }
   .ss-table tr:last-child td { border-bottom: 0; }
-  .ss-table tbody tr { transition: background-color .15s ease; }
+  .ss-table tbody tr { transition: background-color var(--ss-dur-short) ease; }
   .ss-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
   .ss-table .r { text-align: right; }
   .ss-card > .ss-table:first-child thead th:first-child, .ss-card > .ss-table:first-child th:first-child { border-top-left-radius: var(--r-card); }
@@ -294,7 +296,7 @@
   .ss-side { background: var(--side); color: var(--side-ink); }
   .ss-nav a { position: relative; display: flex; align-items: center; gap: var(--ss-gap); padding: calc(var(--ss-pad-y) * 1) .75rem; border-radius: .75rem;
               font-weight: 500; font-size: calc(.875rem * var(--ss-font-scale)); color: color-mix(in srgb, var(--side-ink) 72%, transparent); text-decoration: none;
-              transition: background-color .2s ease, color .2s ease; }
+              transition: background-color var(--ss-dur-short) ease, color var(--ss-dur-short) ease; }
   .ss-nav a svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: color-mix(in srgb, var(--side-ink) 50%, transparent); }
   .ss-nav a:hover { background: rgba(255, 255, 255, .08); color: var(--side-ink); }
   .ss-nav a[aria-current="page"] { color: #fff; font-weight: 700;
@@ -310,7 +312,7 @@
   .ss-nav summary { list-style: none; }
   .ss-nav summary:hover { color: color-mix(in srgb, var(--side-ink) 85%, transparent); }
   .ss-nav summary svg { width: .9rem; height: .9rem; }
-  .ss-nav summary .ss-chev { margin-left: auto; transition: transform .2s ease; }
+  .ss-nav summary .ss-chev { margin-left: auto; transition: transform var(--ss-dur-short) ease; }
   .ss-nav details[open] > summary .ss-chev { transform: rotate(90deg); }
   .ss-side-scroll::-webkit-scrollbar { width: 4px; }
   .ss-side-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .15); border-radius: 2px; }
@@ -350,9 +352,9 @@
   .ss-grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .ss-chip { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--ss-chip-h); padding: 0 calc(var(--ss-pad-x) * .75); border-radius: 999px; font-size: calc(.82rem * var(--ss-font-scale));
              font-weight: 700; background: var(--surface); color: var(--ink-2); box-shadow: var(--shadow-card); text-decoration: none;
-             white-space: nowrap; border: 1px solid transparent; transition: transform var(--ss-dur-indicator) var(--ss-bounce), border-color .15s, background-color .2s, color .2s; }
+             white-space: nowrap; border: 1px solid transparent; transition: transform var(--ss-dur-indicator) var(--ss-bounce), border-color var(--ss-dur-short), background-color var(--ss-dur-short), color var(--ss-dur-short); }
   .ss-chip:hover { border-color: var(--accent); color: var(--accent); }
-  .ss-chip:active { transform: scale(.94); transition: transform 80ms ease-out, border-color .15s; }
+  .ss-chip:active { transform: scale(.94); transition: transform 80ms ease-out, border-color var(--ss-dur-short); }
   .ss-chip[aria-current="true"] { background-image: var(--grad); color: #fff; /* --grad garante 4,5:1 com branco (paletas/gerar.py); --accent no escuro é claro demais */ }
   /* Marcado com foco (acabou de ser clicado/teclado): estala uma vez. No load não toca. */
   .ss-chip[aria-current="true"]:focus:not(:active) { animation: ss-press-pop .38s ease-out; }
@@ -372,15 +374,15 @@
   /* Chat da IA: FAB + painel lateral. .ss-scrim = fundo escuro do painel e do menu no celular. */
   .ss-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; display: inline-flex; align-items: center; gap: .55rem;
             padding: .85rem 1.15rem; border-radius: 999px; background: var(--grad); color: #fff; font-weight: 800; border: 0;
-            cursor: pointer; box-shadow: 0 12px 30px -8px rgba(90, 69, 232, .6); transition: transform .2s; }
+            cursor: pointer; box-shadow: 0 12px 30px -8px rgba(90, 69, 232, .6); transition: transform var(--ss-dur-short); }
   .ss-fab:hover { transform: translateY(-2px) scale(1.03); }
   .ss-fab::before { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 rgba(123, 92, 255, .5);
                     animation: ss-pulse 2.6s infinite; }
   .ss-drawer { position: fixed; inset: 0 0 0 auto; z-index: 50; width: min(100vw, 460px); display: flex; flex-direction: column;
                background: var(--page); box-shadow: -20px 0 50px -20px rgba(20, 22, 40, .35); transform: translateX(105%);
-               transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+               transition: transform var(--ss-dur-medium) cubic-bezier(.2, .8, .2, 1); }
   .ss-drawer[data-open] { transform: none; }
-  .ss-scrim { position: fixed; inset: 0; z-index: 45; background: rgba(14, 13, 22, .35); opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .ss-scrim { position: fixed; inset: 0; z-index: 45; background: rgba(14, 13, 22, .35); opacity: 0; pointer-events: none; transition: opacity var(--ss-dur-medium); }
   .ss-scrim[data-open] { opacity: 1; pointer-events: auto; }
   .ss-bubble-me { margin-left: auto; max-width: 85%; background: var(--accent); color: #fff; padding: .7rem 1rem;
                   border-radius: 18px 18px 4px 18px; white-space: pre-line; }
@@ -413,11 +415,11 @@
 /* Diálogo e folha com mola: entram crescendo de .92 (a folha sobe) e saem rápido. Com
    @starting-style + allow-discrete a saída anima no close(); sem suporte, só a entrada. */
 dialog:is(.ss-dialog, .ss-sheet) { opacity: 0; scale: .92;
-  transition: opacity .16s ease, scale .16s cubic-bezier(.4, 0, 1, 1), translate .16s cubic-bezier(.4, 0, 1, 1), display .16s allow-discrete, overlay .16s allow-discrete; }
+  transition: opacity var(--ss-dur-short) ease, scale var(--ss-dur-short) cubic-bezier(.4, 0, 1, 1), translate var(--ss-dur-short) cubic-bezier(.4, 0, 1, 1), display var(--ss-dur-short) allow-discrete, overlay var(--ss-dur-short) allow-discrete; }
 dialog:is(.ss-dialog, .ss-sheet)[open] { opacity: 1; scale: 1; translate: 0 0;
-  transition: opacity .2s ease, scale .5s var(--ss-bounce), translate .5s var(--ss-bounce), display .5s allow-discrete, overlay .5s allow-discrete; }
+  transition: opacity var(--ss-dur-short) ease, scale .5s var(--ss-bounce), translate .5s var(--ss-bounce), display .5s allow-discrete, overlay .5s allow-discrete; }
 @starting-style { dialog:is(.ss-dialog, .ss-sheet)[open] { opacity: 0; scale: .92; } }
-dialog:is(.ss-dialog, .ss-sheet)::backdrop { opacity: 0; transition: opacity .2s ease, display .2s allow-discrete, overlay .2s allow-discrete; }
+dialog:is(.ss-dialog, .ss-sheet)::backdrop { opacity: 0; transition: opacity var(--ss-dur-short) ease, display var(--ss-dur-short) allow-discrete, overlay var(--ss-dur-short) allow-discrete; }
 dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { opacity: 1; }
 @starting-style { dialog:is(.ss-dialog, .ss-sheet)[open]::backdrop { opacity: 0; } }
 @supports not (transition-behavior: allow-discrete) {
@@ -554,8 +556,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-bars { display: flex; align-items: flex-end; gap: .25rem; height: 132px; }
   .ss-bar { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .35rem; cursor: default; }
   .ss-bar i { width: 14px; min-height: 6px; height: calc(var(--v) * (100% - 2.6rem)); border-radius: 999px; background: color-mix(in oklab, var(--accent) 22%, transparent);
-              transform-origin: bottom; animation: ss-grow .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 45ms); transition: background .2s; }
-  .ss-bar b { font: 500 .62rem var(--font-mono); color: var(--ink); opacity: 0; transition: opacity .15s; white-space: nowrap; }
+              transform-origin: bottom; animation: ss-grow .7s var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * 45ms); transition: background var(--ss-dur-short); }
+  .ss-bar b { font: 500 .62rem var(--font-mono); color: var(--ink); opacity: 0; transition: opacity var(--ss-dur-short); white-space: nowrap; }
   .ss-bar span { font-size: .62rem; font-weight: 600; color: var(--muted); }
   .ss-bar.is-today i, .ss-bar:hover i { background: var(--accent); }
   .ss-bar.is-today span { color: var(--ink); font-weight: 800; }
@@ -577,8 +579,8 @@ th.r .ss-sort { flex-direction: row-reverse; }
   .ss-seg[data-ss-ind]::before { content: none; }
   .ss-seg > .ss-ind { position: absolute; display: block; z-index: 0; --ind-r: 999px; background: var(--surface); box-shadow: 0 1px 3px rgba(20, 22, 40, .12); }
   [data-theme="dark"] .ss-seg > .ss-ind { background: color-mix(in oklab, var(--field) 88%, #fff); }
-  .ss-seg > :not(.ss-ind) { z-index: 1; transition: color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-seg > :active:not(.ss-ind) { scale: .94; transition: scale 80ms ease-out, color .2s; }
+  .ss-seg > :not(.ss-ind) { z-index: 1; transition: color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-seg > :active:not(.ss-ind) { scale: .94; transition: scale 80ms ease-out, color var(--ss-dur-short); }
   .ss-seg > * { position: relative; display: grid; place-items: center; border: 0; background: none; cursor: pointer; text-decoration: none;
                 font-size: .82rem; font-weight: 600; color: var(--muted); }
   .ss-seg > [aria-pressed="true"], .ss-seg > [aria-current="true"] { color: var(--accent); font-weight: 800; }
@@ -586,11 +588,11 @@ th.r .ss-sort { flex-direction: row-reverse; }
   /* Filtro em pílula: aria-pressed="true" marca (✓ entra crescendo); <small> = contador. */
   .ss-fchip { display: inline-flex; align-items: center; height: var(--ss-chip-h); padding: 0 calc(var(--ss-pad-x) * .8); border-radius: 999px; border: 1px solid var(--line);
               background: var(--surface); color: var(--ink-2); font-size: calc(.82rem * var(--ss-font-scale)); font-weight: 700; white-space: nowrap; cursor: pointer;
-              text-decoration: none; transition: background .2s, border-color .2s, transform var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-fchip:active { transform: scale(.94); transition: background .2s, border-color .2s, transform 80ms ease-out; }
+              text-decoration: none; transition: background var(--ss-dur-short), border-color var(--ss-dur-short), transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-fchip:active { transform: scale(.94); transition: background var(--ss-dur-short), border-color var(--ss-dur-short), transform 80ms ease-out; }
   /* Acabou de marcar (com foco, ao soltar): estala uma vez; no load não toca. */
   .ss-fchip[aria-pressed="true"]:focus:not(:active) { animation: ss-press-pop .38s ease-out; }
-  .ss-fchip::before { content: ""; width: 0; height: 1rem; margin-right: 0; background: currentColor; transition: width .22s cubic-bezier(.34, 1.56, .64, 1), margin .22s;
+  .ss-fchip::before { content: ""; width: 0; height: 1rem; margin-right: 0; background: currentColor; transition: width var(--ss-dur-short) cubic-bezier(.34, 1.56, .64, 1), margin var(--ss-dur-short);
                       mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
   .ss-fchip[aria-pressed="true"] { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 35%, transparent); color: var(--accent); }
   .ss-fchip[aria-pressed="true"]::before { width: 1rem; margin-right: .3rem; }
@@ -600,7 +602,7 @@ th.r .ss-sort { flex-direction: row-reverse; }
 
   /* Busca afundada: <label class="ss-search"><svg/><input type="search"></label>. */
   .ss-search { display: flex; align-items: center; gap: .5rem; height: calc(var(--ss-control-h) + .25rem); padding: 0 calc(var(--ss-pad-x) * .9); border-radius: calc(var(--r-field) + 2px); background: var(--field);
-               border: 2px solid transparent; color: var(--muted); transition: background .18s, border-color .18s, box-shadow .18s; }
+               border: 2px solid transparent; color: var(--muted); transition: background var(--ss-dur-short), border-color var(--ss-dur-short), box-shadow var(--ss-dur-short); }
   .ss-search svg { width: calc(var(--ss-icon) * 1.15); height: calc(var(--ss-icon) * 1.15); flex: none; }
   .ss-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font-weight: 600; font-size: calc(.95rem * var(--ss-font-scale)); }
   .ss-search:focus-within { background: var(--surface); border-color: color-mix(in oklab, var(--accent) 45%, transparent);
@@ -775,7 +777,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   /* Atalhos de data: botões com aria-pressed + <label>Outra…<input type="date" required></label>. */
   .ss-date-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
   .ss-date-chips > * { display: inline-flex; align-items: center; gap: .35rem; height: calc(var(--ss-chip-h) + 2px); padding: 0 calc(var(--ss-pad-x) * .85); border-radius: 999px; border: 1px solid var(--line);
-                       background: var(--surface); color: var(--ink-2); font: 700 .82rem var(--font-sans); cursor: pointer; transition: background .2s, border-color .2s, transform .12s; }
+                       background: var(--surface); color: var(--ink-2); font: 700 .82rem var(--font-sans); cursor: pointer; transition: background var(--ss-dur-short), border-color var(--ss-dur-short), transform .12s; }
   .ss-date-chips > :active { transform: scale(.97); }
   .ss-date-chips > [aria-pressed="true"], .ss-date-chips > label:has(input:valid) {
     background: color-mix(in oklab, var(--accent) 12%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 40%, transparent); color: var(--accent); }
@@ -784,7 +786,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
 
   /* Escolha em tile: <label class="ss-choice"><span>Rótulo</span><select>…</select></label>. */
   .ss-choice { position: relative; display: grid; gap: .1rem; padding: calc(var(--ss-pad-y) * 1.1) 2.6rem calc(var(--ss-pad-y) * 1.2) calc(var(--ss-pad-x) * .9); border-radius: calc(var(--r-field) + 2px); background: var(--surface);
-               border: 1px solid var(--line); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+               border: 1px solid var(--line); cursor: pointer; transition: border-color var(--ss-dur-short), box-shadow var(--ss-dur-short); }
   .ss-choice::after { content: ""; position: absolute; right: .9rem; top: 50%; width: 1rem; height: 1rem; translate: 0 -50%; background: var(--muted);
                       mask: var(--ss-i-chev) center / contain no-repeat; pointer-events: none; }
   .ss-choice > span { font-size: .72rem; font-weight: 700; color: var(--muted); }
@@ -801,7 +803,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-switch-row input { appearance: none; position: relative; isolation: isolate; flex: none; width: var(--ss-switch-w); height: var(--ss-switch-h); margin: 0; border-radius: 999px; cursor: pointer;
                          --sw-off: color-mix(in srgb, var(--muted) 35%, var(--field)); --sw-halo: color-mix(in srgb, var(--muted) 45%, transparent);
                          background: radial-gradient(circle at calc(var(--ss-switch-h) / 2) 50%, var(--accent-solid) var(--ss-pour), var(--sw-off) calc(var(--ss-pour) + .6px));
-                         transition: --ss-pour .3s cubic-bezier(.5, 0, .75, 0); }
+                         transition: --ss-pour var(--ss-dur-medium) cubic-bezier(.5, 0, .75, 0); }
   .ss-switch-row input:checked { --ss-pour: calc(var(--ss-switch-w) - 6px); --sw-halo: color-mix(in srgb, var(--accent) 45%, transparent); transition: --ss-pour .44s cubic-bezier(.3, .7, .4, 1); }
   /* Bolinha presa pelas bordas: a da frente corre (rápida) e a de trás vem depois com a mola;
      no caminho ela estica como uma gota e, ao pousar, achata e assenta. Na troca feita pela
@@ -809,14 +811,14 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
      (.82 × 1,12) no fim e volta com --ss-bounce; um halo na cor sai da bolinha e some. */
   .ss-switch-row input::before { content: ""; position: absolute; z-index: 1; top: 3px; bottom: 3px; left: 3px; right: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); border-radius: 999px; background: #fff;
                                  box-shadow: 0 1px 3px rgba(20, 22, 40, .3); transform-origin: 0 50%;
-                                 transition: left .2s cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale .2s ease; }
-  .ss-switch-row input:checked::before { left: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); right: 3px; transition: right .2s cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale .2s ease; transform-origin: 100% 50%; }
+                                 transition: left var(--ss-dur-short) cubic-bezier(.3, .7, .4, 1), right .42s var(--ss-bounce) .05s, scale var(--ss-dur-short) ease; }
+  .ss-switch-row input:checked::before { left: calc(var(--ss-switch-w) - var(--ss-switch-h) + 3px); right: 3px; transition: right var(--ss-dur-short) cubic-bezier(.3, .7, .4, 1), left .42s var(--ss-bounce) .05s, scale var(--ss-dur-short) ease; transform-origin: 100% 50%; }
   /* ✓ miúdo na bolinha quando ligada: gira (−90° → 0) e estala; desligada, nada. */
   .ss-switch-row input::after { content: ""; position: absolute; z-index: 2; top: 50%; left: calc(var(--ss-switch-w) - var(--ss-switch-h) / 2); width: calc(var(--ss-switch-h) * .43); height: calc(var(--ss-switch-h) * .43); margin: calc(var(--ss-switch-h) * -.215) 0 0 calc(var(--ss-switch-h) * -.215); pointer-events: none;
                                 background: var(--accent); mask: var(--ss-i-check) center / contain no-repeat; opacity: 0; scale: .3; rotate: -90deg;
                                 transition: opacity .1s ease-in, scale .12s ease-in, rotate .12s ease-in; }
   .ss-switch-row input:checked::after { opacity: 1; scale: 1; rotate: 0deg;
-                                        transition: opacity .12s ease-out .2s, scale .42s var(--ss-bounce) .2s, rotate .42s var(--ss-bounce) .2s; }
+                                        transition: opacity .12s ease-out var(--ss-dur-short), scale .42s var(--ss-bounce) var(--ss-dur-short), rotate .42s var(--ss-bounce) var(--ss-dur-short); }
   .ss-switch-row input:active::before { scale: .92; }
   .ss-switch-row input[data-ss-anim="on"]::before { animation: ss-sw-on .54s linear, ss-sw-halo .6s ease-out; }
   .ss-switch-row input[data-ss-anim="off"]::before { animation: ss-sw-off .54s linear, ss-sw-halo .6s ease-out; }
@@ -873,7 +875,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; text-align: center; }
   .ss-month > span { padding: .3rem 0; font-size: .68rem; font-weight: 800; text-transform: uppercase; color: var(--muted); }
   .ss-month > :is(button, a, div) { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: var(--ss-control-h); border: 0; border-radius: var(--r-field);
-                                    background: none; color: var(--ink); font: 500 .85rem var(--font-mono); cursor: pointer; text-decoration: none; transition: background .15s; }
+                                    background: none; color: var(--ink); font: 500 .85rem var(--font-mono); cursor: pointer; text-decoration: none; transition: background var(--ss-dur-short); }
   .ss-month > :is(button, a):hover { background: var(--field); }
   .ss-month > .is-out { color: color-mix(in srgb, var(--muted) 55%, transparent); }
   .ss-month > .is-today { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); font-weight: 700; }
@@ -970,7 +972,7 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-onboarding p { color: var(--muted); }
   .ss-onboarding .ss-dots { display: flex; gap: .35rem; margin: .5rem 0; }
   .ss-onboarding .ss-dots > * { width: .5rem; height: .5rem; margin: 0; border-radius: 999px; background: var(--line); animation: none;
-                                transition: width .3s var(--ss-spring), background .3s; }
+                                transition: width var(--ss-dur-medium) var(--ss-spring), background var(--ss-dur-medium); }
   .ss-onboarding .ss-dots > :is([aria-current="true"], [aria-current="step"]) { width: 1.5rem; background: var(--accent); }
 
   /* Primeiros passos: <ol class="ss-checklist"><li class="is-done">…</li>… */
@@ -1035,8 +1037,8 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
   .ss-menu { position: relative; display: inline-block; }
   .ss-menu > summary { display: grid; place-items: center; width: var(--ss-control-h); height: var(--ss-control-h); border-radius: var(--r-field); list-style: none; cursor: pointer;
                        color: var(--muted); font-size: 1.25rem; font-weight: 800; line-height: 1;
-                       transition: background-color .2s, color .2s, scale var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-menu > summary:active { scale: .9; transition: background-color .2s, color .2s, scale 80ms ease-out; }
+                       transition: background-color var(--ss-dur-short), color var(--ss-dur-short), scale var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-menu > summary:active { scale: .9; transition: background-color var(--ss-dur-short), color var(--ss-dur-short), scale 80ms ease-out; }
   .ss-menu > summary::-webkit-details-marker { display: none; }
   .ss-menu > summary:hover, .ss-menu[open] > summary { background: var(--field); color: var(--ink); }
   .ss-menu > :not(summary) { position: absolute; right: 0; margin-top: .25rem; z-index: 40; min-width: 12rem; padding: .35rem; border-radius: calc(var(--r-field) + 2px);
@@ -1091,8 +1093,8 @@ dialog.ss-sheet:not([open]) { translate: 0 24px; }
                   background: var(--accent-soft); animation: ss-fade .2s ease both; }
 
   /* Botão de ação com estado: .ss-btn.ss-action-btn + .is-loading (girando) / .is-done (✓ verde). */
-  .ss-action-btn { vertical-align: middle; transition: background-color .25s, color .25s, box-shadow .25s, transform var(--ss-dur-indicator) var(--ss-bounce); }
-  .ss-action-btn:active:not(:disabled) { transition: background-color .25s, color .25s, box-shadow .25s, transform 80ms ease-out; }
+  .ss-action-btn { vertical-align: middle; transition: background-color var(--ss-dur-medium), color var(--ss-dur-medium), box-shadow var(--ss-dur-medium), transform var(--ss-dur-indicator) var(--ss-bounce); }
+  .ss-action-btn:active:not(:disabled) { transition: background-color var(--ss-dur-medium), color var(--ss-dur-medium), box-shadow var(--ss-dur-medium), transform 80ms ease-out; }
   .ss-action-btn.is-loading { pointer-events: none; }
   .ss-action-btn.is-loading > * { visibility: hidden; }
   .ss-action-btn.is-loading { color: transparent; }

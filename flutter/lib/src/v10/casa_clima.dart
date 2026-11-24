@@ -570,7 +570,7 @@ class _SsClockState extends State<SsClock> {
                     padding: EdgeInsets.only(left: widget.size * .14),
                     child: AnimatedOpacity(
                       opacity: aceso ? 1 : .2,
-                      duration: rm ? Duration.zero : const Duration(milliseconds: 240),
+                      duration: rm ? Duration.zero : SsMotion.medium,
                       child: Container(
                         width: widget.size * .14,
                         height: widget.size * .14,

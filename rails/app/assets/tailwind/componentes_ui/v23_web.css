@@ -114,7 +114,7 @@
 @layer components {
   /* :where = especificidade zero: qualquer classe que o botão também tenha (da gem ou do produto) vence. */
   :where(.ss-btn-bare) { display: block; width: 100%; padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit;
-                 cursor: pointer; border-radius: var(--ss-card-radius, 1rem); transition: scale var(--ss-dur-indicator, .2s) var(--ss-bounce, ease); }
+                 cursor: pointer; border-radius: var(--ss-card-radius, 1rem); transition: scale var(--ss-dur-indicator, var(--ss-dur-short)) var(--ss-bounce, ease); }
   :where(.ss-btn-bare):active { scale: .98; }
   :where(.ss-btn-bare):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   :where(.ss-btn-bare):disabled { cursor: default; opacity: .55; }
