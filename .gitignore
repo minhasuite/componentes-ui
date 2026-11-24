@@ -14,3 +14,8 @@ flutter/example/*.iml
 rails/sample/config/master.key
 
 __pycache__/
+
+# chave da demo (vem do vault/secrets)
+flutter/example/android/key.properties
+flutter/example/android/app/*.jks
+demo/out/

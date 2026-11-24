@@ -1,0 +1,18 @@
+# Demonstração da suíte em demo.minhasuite.com: a vitrine Rails (componentes ao vivo, gem desta árvore)
+# na raiz, a vitrine Flutter compilada para web em /app/ e o APK em /componentes-demo.apk.
+# O Flutter web e o APK chegam prontos em demo/out/ (o workflow demo.yml compila antes do docker build).
+FROM docker.io/library/ruby:3.3-slim
+RUN apt-get update -qq && apt-get install -y --no-install-recommends build-essential curl git libyaml-dev \
+    && rm -rf /var/lib/apt/lists/*
+ENV RAILS_ENV=production BUNDLE_WITHOUT="development:test" RAILS_LOG_TO_STDOUT=1 RAILS_SERVE_STATIC_FILES=1
+WORKDIR /w
+COPY rails/ /w/rails/
+COPY paletas/ /w/paletas/
+WORKDIR /w/rails/sample
+RUN bundle install --jobs 4 && SECRET_KEY_BASE_DUMMY=1 bin/rails tailwindcss:build assets:precompile
+COPY demo/out/app/ /w/rails/sample/public/app/
+COPY demo/out/componentes-demo.apk /w/rails/sample/public/componentes-demo.apk
+ARG GIT_SHA=dev
+ENV GIT_SHA=$GIT_SHA
+EXPOSE 3000
+CMD ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]

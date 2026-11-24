@@ -1,4 +1,4 @@
-package com.example.vitrine
+package com.minhasuite.componentes
 
 import io.flutter.embedding.android.FlutterActivity
 
