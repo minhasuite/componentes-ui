@@ -1,0 +1,267 @@
+/* v1.9 · paridade web: os pares Rails das peças que só existiam no Flutter (deslizar e segurar para confirmar,
+   carrossel, anel de novidades, odômetro, botão que vira carregando, estouro, constância, anel grande, anéis,
+   faixa de dias, divisão em centavos) e a pílula de sincronização. Só tokens; reduzir movimento desliga. */
+@layer components {
+  /* ── Deslizar para confirmar (Ss::SwipeToConfirmComponent) ─────────── */
+  .ss-swipe-confirm { --p: 0; --h: calc(var(--ss-control-h, 2.75rem) + 8px); --t: calc(var(--h) - 8px);
+                      display: block; height: var(--h); padding: 4px; border-radius: 999px; background: var(--field);
+                      user-select: none; -webkit-user-select: none; transition: background-color var(--ss-dur-base, .25s) ease; }
+  .ss-swipe-track { position: relative; height: 100%; }
+  .ss-swipe-trail { position: absolute; inset-block: 0; left: 0; width: calc(var(--t) + (100% - var(--t)) * var(--p));
+                    border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .ss-swipe-label, .ss-swipe-done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                                    padding-inline: calc(var(--t) + 8px); font-weight: 800; font-size: calc(.95rem * var(--ss-font-scale, 1));
+                                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  .ss-swipe-label { color: var(--ink-2); opacity: clamp(0, 1 - var(--p) * 1.4, 1); }
+  .ss-swipe-done { color: #fff; opacity: 0; }
+  .ss-swipe-thumb { position: absolute; top: 0; left: calc((100% - var(--t)) * var(--p)); width: var(--t); height: var(--t);
+                    display: grid; place-items: center; border: 0; border-radius: 50%; padding: 0; color: #fff;
+                    background: var(--accent); box-shadow: var(--glow, 0 6px 16px -6px var(--accent)); cursor: grab; touch-action: none; }
+  .ss-swipe-thumb:active { cursor: grabbing; }
+  .ss-swipe-thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .ss-swipe-thumb > svg { width: 1.5rem; height: 1.5rem; }
+  .ss-swipe-spin, .ss-swipe-ok { display: none; }
+  .ss-swipe-spin { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 2.4px solid rgba(255, 255, 255, .35); border-top-color: #fff;
+                   animation: ss-swipe-spin .8s linear infinite; }
+  .ss-swipe-confirm.is-settling .ss-swipe-thumb { transition: left var(--ss-dur-indicator, .45s) var(--ss-bounce); }
+  .ss-swipe-confirm.is-settling .ss-swipe-trail { transition: width var(--ss-dur-indicator, .45s) var(--ss-bounce); }
+  .ss-swipe-confirm.is-settling .ss-swipe-label { transition: opacity .2s ease; }
+  .ss-swipe-confirm.is-armed .ss-swipe-thumb > svg { scale: 1.15; transition: scale .15s var(--ss-bounce); }
+  .ss-swipe-confirm[data-state="loading"] .ss-swipe-ico, .ss-swipe-confirm[data-state="done"] .ss-swipe-ico { display: none; }
+  .ss-swipe-confirm[data-state="loading"] .ss-swipe-spin { display: block; }
+  .ss-swipe-confirm[data-state="done"] { background: var(--success); }
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-trail, .ss-swipe-confirm[data-state="done"] .ss-swipe-label { opacity: 0; }
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-done { opacity: 1; }
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-thumb { background: #fff; color: var(--success); box-shadow: none; cursor: default; }
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-ok { display: block; width: 1.6rem; height: 1.6rem; }
+  .ss-swipe-confirm.is-disabled .ss-swipe-thumb, .ss-swipe-thumb:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; }
+  .ss-swipe-confirm.is-disabled .ss-swipe-label { color: var(--muted); }
+  @keyframes ss-swipe-spin { to { rotate: 1turn; } }
+
+  /* ── Segurar para confirmar (Ss::HoldToConfirmComponent) ──────────── */
+  .ss-hold-form { display: block; }
+  .ss-hold-confirm { --p: 0; --c: var(--accent); position: relative; display: block; width: 100%; min-height: max(var(--ss-control-h, 2.75rem), 44px);
+                     padding: 0; border: 0; border-radius: 999px; overflow: hidden; cursor: pointer; font: inherit;
+                     background: var(--accent-soft); color: var(--accent); user-select: none; -webkit-user-select: none; touch-action: manipulation;
+                     transition: scale var(--ss-dur-fast, .15s) ease; }
+  .ss-hold-confirm.is-danger { --c: var(--danger); background: var(--danger-soft); color: var(--danger); }
+  .ss-hold-confirm:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
+  .ss-hold-confirm.is-holding { scale: .98; }
+  .ss-hold-confirm:disabled { cursor: not-allowed; color: var(--muted); background: var(--field); }
+  .ss-hold-base, .ss-hold-fill { position: absolute; inset: 0; display: flex; }
+  .ss-hold-fill { background: var(--c); color: #fff; clip-path: inset(0 calc(100% - var(--p) * 100%) 0 0); }
+  .ss-hold-row { display: flex; align-items: center; justify-content: center; gap: calc(var(--ss-gap, .75rem) - .25rem); width: 100%;
+                 padding-inline: calc(var(--ss-pad-x, 1rem) + 4px); font-weight: 800; font-size: calc(.95rem * var(--ss-font-scale, 1)); min-width: 0; }
+  .ss-hold-row svg { width: 1.25rem; height: 1.25rem; flex: none; }
+  .ss-hold-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-hold-ok, .ss-hold-d { display: none; }
+  .ss-hold-confirm[data-state="done"] .ss-hold-fill { background: var(--success); clip-path: none; }
+  .ss-hold-confirm[data-state="done"] .ss-hold-ico, .ss-hold-confirm[data-state="done"] .ss-hold-l { display: none; }
+  .ss-hold-confirm[data-state="done"] .ss-hold-ok, .ss-hold-confirm[data-state="done"] .ss-hold-d { display: inline; }
+
+  /* ── Botão que vira carregando (Ss::MorphButtonComponent) ─────────── */
+  .ss-morph-wrap { display: flex; justify-content: center; width: 100%; }
+  .ss-morph-wrap.is-inline { display: inline-flex; width: auto; }
+  .ss-morph { --v: 0; position: relative; display: inline-grid; place-items: center; width: 100%; height: max(var(--ss-control-h, 2.75rem), 44px);
+              padding: 0 var(--ss-pad-x, 1rem); border: 0; border-radius: 999px; overflow: hidden; cursor: pointer; font: inherit;
+              font-weight: 800; color: #fff; background: var(--accent); box-shadow: var(--glow, none);
+              transition: width var(--ss-dur-base, .25s) cubic-bezier(.65, 0, .35, 1), background-color var(--ss-dur-base, .25s) ease, box-shadow .2s ease; }
+  .ss-morph-wrap.is-inline .ss-morph { width: auto; }
+  .ss-morph:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .ss-morph:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; }
+  .ss-morph > * { grid-area: 1 / 1; }
+  .ss-morph-idle { display: inline-flex; align-items: center; gap: calc(var(--ss-gap, .75rem) - .25rem); white-space: nowrap; overflow: hidden; }
+  .ss-morph-idle svg { width: 1.25rem; height: 1.25rem; flex: none; }
+  .ss-morph-ring, .ss-morph-ok, .ss-morph-err { width: 1.6rem; height: 1.6rem; opacity: 0; scale: .6; transition: opacity .2s ease, scale .25s var(--ss-bounce); }
+  .ss-morph-ring circle { fill: none; stroke-width: 3; stroke-linecap: round; }
+  .ss-morph-ring .track { stroke: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .ss-morph-ring .bar { stroke: var(--accent); stroke-dasharray: 28 100; transform-origin: 12px 12px; animation: ss-morph-spin .9s linear infinite; }
+  .ss-morph.is-determinate .ss-morph-ring .bar { animation: none; rotate: -90deg; stroke-dasharray: calc(var(--v) * 100) 100; transition: stroke-dasharray .2s ease; }
+  .ss-morph:not([data-state="idle"]) { width: max(var(--ss-control-h, 2.75rem), 44px); padding: 0; box-shadow: none; cursor: default; }
+  .ss-morph-wrap.is-inline .ss-morph[data-state="idle"] { width: var(--ss-morph-w, auto); }
+  .ss-morph:not([data-state="idle"]) .ss-morph-idle { opacity: 0; }
+  .ss-morph[data-state="running"] { background: var(--accent-soft); }
+  .ss-morph[data-state="running"] .ss-morph-ring, .ss-morph[data-state="ok"] .ss-morph-ok, .ss-morph[data-state="error"] .ss-morph-err { opacity: 1; scale: 1; }
+  .ss-morph[data-state="ok"] { background: var(--success); }
+  .ss-morph[data-state="error"] { background: var(--danger); }
+  @keyframes ss-morph-spin { to { rotate: 1turn; } }
+
+  /* ── Carrossel (Ss::SnapCarouselComponent) ─────────────────────────── */
+  .ss-carousel { --ss-carousel-h: 220px; --ss-carousel-peek: 78%; display: grid; gap: .75rem; min-width: 0; }
+  .ss-carousel-track { display: flex; height: var(--ss-carousel-h); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+                       padding-inline: calc((100% - var(--ss-carousel-peek)) / 2); scrollbar-width: none; border-radius: var(--r-card, 1rem); }
+  .ss-carousel-track::-webkit-scrollbar { display: none; }
+  .ss-carousel-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-carousel-slide { --d: 0; flex: 0 0 var(--ss-carousel-peek); padding-inline: 6px; scroll-snap-align: center; scroll-snap-stop: always;
+                       min-width: 0; height: 100%; transform: scale(calc(1 - .1 * var(--d))); opacity: calc(1 - .35 * var(--d));
+                       transition: transform .12s linear, opacity .12s linear; }
+  .ss-carousel-slide > * { height: 100%; }
+  .ss-carousel-foot { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+  .ss-carousel-arrow:disabled { opacity: .35; pointer-events: none; }
+  .ss-carousel-dots { display: inline-flex; gap: 6px; align-items: center; }
+  .ss-carousel-dots i { width: 7px; height: 7px; border-radius: 999px; background: var(--muted); opacity: .45;
+                        transition: width var(--ss-dur-indicator, .45s) var(--ss-bounce), background-color .2s ease, opacity .2s ease; }
+  .ss-carousel-dots i[data-current] { width: 20px; background: var(--accent); opacity: 1; }
+  .ss-carousel-count { padding: .3rem .75rem; border-radius: 999px; background: var(--field); color: var(--ink-2); font-size: .78rem; }
+
+  /* ── Anel de novidades (Ss::StoryRingComponent) ────────────────────── */
+  .ss-story { --s: 64px; position: relative; display: inline-flex; flex-direction: column; align-items: center; width: calc(var(--s) + 4px); }
+  .ss-story-main { display: flex; flex-direction: column; align-items: center; gap: 6px; color: inherit; text-decoration: none; border-radius: 1rem; }
+  a.ss-story-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  a.ss-story-main:active .ss-story-ring { scale: .96; }
+  .ss-story-ring { position: relative; display: grid; place-items: center; width: var(--s); height: var(--s); transition: scale .15s ease; }
+  .ss-story-svg { position: absolute; inset: 0; width: 100%; height: 100%; rotate: -90deg; overflow: visible; }
+  .ss-story-svg circle { fill: none; stroke-linecap: round; stroke-dasharray: var(--len) calc(100 - var(--len)); stroke-dashoffset: var(--off);
+                         animation: ss-story-draw .5s cubic-bezier(.2, .7, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+  .ss-story-svg .is-new { stroke-width: 5; }
+  .ss-story-svg .is-seen { stroke: var(--muted); opacity: .55; stroke-width: 2; }
+  .ss-story.ss-iv:not([data-in-view]) .ss-story-svg circle { animation: none; stroke-dasharray: 0 100; }
+  .ss-story-face { position: relative; display: grid; }
+  .ss-story-caption { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .75rem; font-weight: 600; color: var(--muted); }
+  .ss-story.has-news .ss-story-caption { color: var(--ink); font-weight: 700; }
+  .ss-story-add { position: absolute; right: -4px; top: calc(var(--s) - var(--s) * .34 - 2px); display: grid; place-items: center;
+                  width: max(calc(var(--s) * .34), 24px); height: max(calc(var(--s) * .34), 24px); border-radius: 50%; color: #fff;
+                  background: var(--accent); border: 2px solid var(--page, var(--surface)); }
+  .ss-story-add::before { content: ""; position: absolute; inset: -10px; } /* toque de 44 px */
+  .ss-story-add svg { width: 62%; height: 62%; }
+  .ss-story-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @keyframes ss-story-draw { from { stroke-dasharray: 0 100; } }
+
+  /* ── Odômetro (Ss::OdometerComponent) ─────────────────────────────── */
+  .ss-odo { --ss-odo-size: 2rem; display: inline-flex; font-size: var(--ss-odo-size); line-height: 1; color: var(--ink); }
+  .ss-odo-n { display: inline-flex; align-items: baseline; font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+              letter-spacing: -.03em; white-space: pre; }
+  .ss-odo-cents { display: inline-flex; font-size: .58em; opacity: .55; letter-spacing: 0; }
+  .ss-odo-col { display: inline-block; height: 1em; overflow: hidden; vertical-align: baseline; }
+  .ss-odo-reel { display: block; width: 1ch; line-height: 1em; word-break: break-all; white-space: normal; text-align: center;
+                 translate: 0 calc(var(--pos, 10) * -1em); }
+  .ss-odo.is-rolling .ss-odo-reel { transition: translate .56s var(--ss-bounce); transition-delay: calc(var(--k, 0) * 35ms); }
+  .ss-odo.is-rolling .ss-odo-col.is-new { animation: ss-odo-in .28s ease backwards; }
+  @keyframes ss-odo-in { from { opacity: 0; } }
+
+  /* ── Estouro (Ss::BurstComponent) ──────────────────────────────────── */
+  .ss-burst { --c: var(--accent); position: relative; display: inline-flex; }
+  .ss-burst[data-tone="success"] { --c: var(--success); }
+  .ss-burst[data-tone="warn"] { --c: var(--warn); }
+  .ss-burst[data-tone="danger"] { --c: var(--danger); }
+  .ss-burst-fx { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+  .ss-burst-fx i { position: absolute; left: -1px; top: 0; width: 2px; height: var(--len); border-radius: 2px; background: var(--c);
+                   transform-origin: 1px 0; rotate: calc(var(--a) + 180deg); translate: 0 0;
+                   animation: ss-burst .45s cubic-bezier(.2, .7, .3, 1) forwards; }
+  @keyframes ss-burst {
+    from { transform: rotate(0deg) translateY(var(--r)); opacity: 1; }
+    to { transform: rotate(0deg) translateY(calc(var(--r) + var(--dist))); opacity: 0; }
+  }
+
+  /* ── Constância (Ss::HeatCalendarComponent) ───────────────────────── */
+  .ss-heatcal { --cell: 14px; display: grid; gap: .5rem; margin: 0; min-width: 0; }
+  .ss-heatcal.is-month { --cell: 28px; }
+  .ss-heatcal-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--cell)); grid-auto-columns: var(--cell); gap: 3px;
+                     overflow-x: auto; padding: 2px; }
+  .ss-heatcal-day { width: var(--cell); height: var(--cell); padding: 0; border: 0; border-radius: calc(var(--cell) / 4); cursor: pointer;
+                    background: var(--field); }
+  .ss-heatcal-day[data-level="1"], .ss-heatcal-legend i[data-level="1"] { background: color-mix(in oklab, var(--accent) 28%, var(--field)); }
+  .ss-heatcal-day[data-level="2"], .ss-heatcal-legend i[data-level="2"] { background: color-mix(in oklab, var(--accent) 50%, var(--field)); }
+  .ss-heatcal-day[data-level="3"], .ss-heatcal-legend i[data-level="3"] { background: color-mix(in oklab, var(--accent) 74%, var(--field)); }
+  .ss-heatcal-day[data-level="4"], .ss-heatcal-legend i[data-level="4"] { background: var(--accent); }
+  .ss-heatcal-day[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .ss-heatcal-day:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ss-heatcal-foot { display: flex; align-items: center; gap: .75rem; min-height: 1.25rem; }
+  .ss-heatcal-out { flex: 1; margin: 0; font-size: .78rem; color: var(--ink-2); }
+  .ss-heatcal-legend { display: inline-flex; align-items: center; gap: 3px; font-size: .7rem; font-weight: 600; color: var(--muted); }
+  .ss-heatcal-legend i { width: 10px; height: 10px; border-radius: 2.5px; background: var(--field); }
+  .ss-heatcal-legend span:last-child { margin-left: 2px; }
+
+  /* ── Anel grande (Ss::BigRingComponent) ───────────────────────────── */
+  .ss-bigring { --s: 200px; --c: var(--accent); position: relative; display: inline-grid; place-items: center; width: var(--s); height: var(--s); margin: 0; }
+  .ss-bigring[data-tone="success"] { --c: var(--success); }
+  .ss-bigring[data-tone="warn"] { --c: var(--warn); }
+  .ss-bigring[data-tone="danger"] { --c: var(--danger); }
+  .ss-bigring > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ss-bigring-tick { stroke: var(--muted); opacity: .5; stroke-width: 1.3; stroke-linecap: round; }
+  .ss-bigring-tick.is-big { stroke-width: 2; }
+  .ss-bigring-tick.is-on { stroke: var(--c); opacity: 1; animation: ss-bigring-tick .2s ease backwards; animation-delay: var(--t, 0ms); }
+  .ss-bigring-track, .ss-bigring-arc { fill: none; stroke-width: 5; stroke-linecap: round; }
+  .ss-bigring-track { stroke: var(--field); }
+  .ss-bigring-arc { stroke: var(--c); stroke-dasharray: var(--v) 100; transform-origin: 100px 100px; rotate: -90deg;
+                    animation: ss-bigring-arc .9s cubic-bezier(.2, .7, .2, 1) backwards; }
+  .ss-bigring-knob { fill: var(--c); transform-origin: 100px 100px; rotate: var(--deg); animation: ss-bigring-knob .9s cubic-bezier(.2, .7, .2, 1) backwards; }
+  .ss-bigring.ss-iv:not([data-in-view]) :is(.ss-bigring-tick.is-on, .ss-bigring-arc, .ss-bigring-knob) { animation: none; }
+  .ss-bigring.ss-iv:not([data-in-view]) .ss-bigring-tick.is-on { stroke: var(--muted); opacity: .5; }
+  .ss-bigring.ss-iv:not([data-in-view]) .ss-bigring-arc { stroke-dasharray: 0 100; }
+  .ss-bigring.ss-iv:not([data-in-view]) .ss-bigring-knob { rotate: 0deg; }
+  .ss-bigring-center { position: relative; display: grid; justify-items: center; gap: 6px; }
+  .ss-bigring-n { font-family: var(--font-mono); font-size: calc(var(--s) * .24); font-weight: 400; line-height: 1; color: var(--ink); }
+  .ss-bigring-n small { font-size: .46em; color: var(--muted); }
+  .ss-bigring-cap { font-size: .82rem; font-weight: 600; color: var(--muted); }
+  @keyframes ss-bigring-arc { from { stroke-dasharray: 0 100; } }
+  @keyframes ss-bigring-knob { from { rotate: 0deg; } }
+  @keyframes ss-bigring-tick { from { stroke: var(--muted); opacity: .5; } }
+
+  /* ── Anéis (Ss::RingsComponent) ────────────────────────────────────── */
+  .ss-rings-c.ss-iv:not([data-in-view]) .fill { animation: none; stroke-dasharray: 0 100px; }
+
+  /* ── Faixa de dias (Ss::DateStripComponent) ───────────────────────── */
+  .ss-date-strip { --w: 3.5rem; --gap: .5rem; display: grid; gap: .5rem; min-width: 0; }
+  .ss-date-strip-head { position: relative; display: flex; justify-content: center; }
+  .ss-date-strip-month { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 .75rem; border: 0; border-radius: .75rem;
+                         background: none; cursor: pointer; color: var(--ink); font: inherit; font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; }
+  .ss-date-strip-month svg { width: 1.4rem; height: 1.4rem; color: var(--accent); }
+  .ss-date-strip-month:hover { background: var(--field); }
+  .ss-date-strip-month:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-date-strip-picker { position: absolute; left: 50%; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .ss-date-strip-days { --i: 0; position: relative; display: flex; gap: var(--gap); padding: 4px 1rem; overflow-x: auto; scrollbar-width: none;
+                        scroll-snap-type: x proximity; }
+  .ss-date-strip-days::-webkit-scrollbar { display: none; }
+  .ss-date-strip-pill { position: absolute; top: 4px; left: calc(1rem + var(--i) * (var(--w) + var(--gap))); width: var(--w); height: 5.5rem;
+                        border-radius: 999px; background: var(--accent-solid, var(--accent)); box-shadow: var(--glow, none);
+                        transition: left var(--ss-dur-indicator, .45s) var(--ss-bounce); }
+  .ss-date-strip-day { position: relative; flex: 0 0 var(--w); height: 5.5rem; display: grid; justify-items: center; align-content: center; gap: 4px;
+                       border-radius: 999px; color: var(--ink-2); text-decoration: none; scroll-snap-align: center; }
+  .ss-date-strip-day small { font-size: .72rem; font-weight: 700; text-transform: lowercase; color: var(--muted); }
+  .ss-date-strip-day b { font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+  .ss-date-strip-day[data-today] b { color: var(--accent); }
+  .ss-date-strip-day:hover { background: var(--field); }
+  .ss-date-strip-day[aria-current] { background: none; }
+  .ss-date-strip-day[aria-current] :is(small, b) { color: #fff; }
+  .ss-date-strip-day:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-date-strip-dots { display: flex; gap: 3px; height: 6px; }
+  .ss-date-strip-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .ss-date-strip-dots i[data-tone="success"] { background: var(--success); }
+  .ss-date-strip-dots i[data-tone="warn"] { background: var(--warn); }
+  .ss-date-strip-dots i[data-tone="danger"] { background: var(--danger); }
+  .ss-date-strip-dots i[data-tone="muted"] { background: var(--muted); }
+  .ss-date-strip-day[aria-current] .ss-date-strip-dots i { background: #fff; }
+
+  /* ── Divisão em centavos (Ss::SplitSliderComponent) ───────────────── */
+  .ss-split-slider { display: grid; gap: .9rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+  .ss-split-slider-row { --c: var(--accent); display: grid; gap: .35rem; }
+  .ss-split-slider-head { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+  .ss-split-slider-head label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: var(--ink); }
+  .ss-split-slider-head output { font-family: var(--font-mono); color: var(--ink); }
+  .ss-split-slider-range { --p: 0%; --marks: 8; width: 100%; height: 44px; margin: 0; background: transparent; appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .ss-split-slider-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px;
+    background: linear-gradient(var(--c), var(--c)) 0 / var(--p) 100% no-repeat,
+                radial-gradient(circle, color-mix(in srgb, var(--muted) 60%, transparent) 1.2px, transparent 1.6px) 0 50% / calc(100% / var(--marks)) 100% repeat-x,
+                var(--field); }
+  .ss-split-slider-range::-moz-range-track { height: 8px; border-radius: 999px; background:
+                radial-gradient(circle, color-mix(in srgb, var(--muted) 60%, transparent) 1.2px, transparent 1.6px) 0 50% / calc(100% / var(--marks)) 100% repeat-x, var(--field); }
+  .ss-split-slider-range::-moz-range-progress { height: 8px; border-radius: 999px; background: var(--c); }
+  .ss-split-slider-range::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -9px; border-radius: 50%;
+                                                 background: var(--surface); border: 3px solid var(--c); box-shadow: var(--shadow-card, none); }
+  .ss-split-slider-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 3px solid var(--c); }
+  .ss-split-slider-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 999px; }
+  .ss-split-slider-foot { margin: 0; font-size: .82rem; color: var(--ink-2); }
+
+  /* ── Sincronização (Ss::SyncStatusComponent) ──────────────────────── */
+  a.ss-sync-link { min-height: 2.25rem; padding: 0 .65rem; border-radius: 999px; background: var(--field); text-decoration: none; }
+  a.ss-sync-link[data-state="failed"] { background: var(--danger-soft); }
+  a.ss-sync-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-swipe-confirm *, .ss-hold-confirm, .ss-morph, .ss-morph *, .ss-carousel-slide, .ss-carousel-dots i, .ss-story-svg circle,
+  .ss-odo-reel, .ss-odo-col, .ss-burst-fx, .ss-bigring *, .ss-date-strip-pill { transition: none !important; animation: none !important; }
+  .ss-carousel-slide { transform: none; opacity: 1; }
+  .ss-swipe-spin, .ss-morph-ring .bar { animation: none !important; }
+}

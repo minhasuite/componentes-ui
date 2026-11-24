@@ -435,6 +435,12 @@ class SsStrings {
     required this.termsOfUse,
     required this.privacyPolicy,
     required this.opensExternal,
+    // v1.9 · paridade web
+    this.syncFailedCount = _syncFailedCountPt,
+    this.syncedAt = _syncedAtPt,
+    this.syncedOn = _syncedOnPt,
+    this.syncNever = 'Nunca sincronizado',
+    this.syncNow = 'Sincronizar agora',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1116,6 +1122,19 @@ class SsStrings {
   /// v0.20: dica de link que sai do app ([SsTextLink] com external).
   final String opensExternal;
 
+  // v1.9 · paridade web (SsSyncStatus, SsSyncPanel)
+
+  /// "2 com erro" (o SsSyncStatus em falha com `failedCount`).
+  final String Function(int n) syncFailedCount;
+
+  /// "Sincronizado às 14:32" (hoje).
+  final String Function(String time) syncedAt;
+
+  /// "Sincronizado em 12/11" (outro dia).
+  final String Function(String date) syncedOn;
+  final String syncNever;
+  final String syncNow;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1557,6 +1576,12 @@ class SsStrings {
     termsOfUse: 'Termos de uso',
     privacyPolicy: 'Política de privacidade',
     opensExternal: 'abre fora do app',
+    // v1.9 · paridade web
+    syncFailedCount: _syncFailedCountPt,
+    syncedAt: _syncedAtPt,
+    syncedOn: _syncedOnPt,
+    syncNever: 'Nunca sincronizado',
+    syncNow: 'Sincronizar agora',
   );
 
   /// Inglês.
@@ -1986,6 +2011,12 @@ class SsStrings {
     termsOfUse: 'Terms of Use',
     privacyPolicy: 'Privacy Policy',
     opensExternal: 'opens outside the app',
+    // v1.9 · paridade web
+    syncFailedCount: (n) => n == 1 ? '1 with errors' : '$n with errors',
+    syncedAt: (time) => 'Synced at $time',
+    syncedOn: (date) => 'Synced on $date',
+    syncNever: 'Never synced',
+    syncNow: 'Sync now',
   );
 
   /// Espanhol.
@@ -2415,6 +2446,12 @@ class SsStrings {
     termsOfUse: 'Términos de uso',
     privacyPolicy: 'Política de privacidad',
     opensExternal: 'se abre fuera de la app',
+    // v1.9 · paridade web
+    syncFailedCount: (n) => n == 1 ? '1 con error' : '$n con error',
+    syncedAt: (time) => 'Sincronizado a las $time',
+    syncedOn: (date) => 'Sincronizado el $date',
+    syncNever: 'Nunca sincronizado',
+    syncNow: 'Sincronizar ahora',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -2831,6 +2868,12 @@ class SsStrings {
     'termsOfUse': termsOfUse,
     'privacyPolicy': privacyPolicy,
     'opensExternal': opensExternal,
+    // v1.9 · paridade web
+    'syncFailedCount': syncFailedCount(2),
+    'syncedAt': syncedAt('14:32'),
+    'syncedOn': syncedOn('12/11'),
+    'syncNever': syncNever,
+    'syncNow': syncNow,
   };
 
   /// Os idiomas prontos.
@@ -3931,3 +3974,8 @@ class SsFormatsScope extends InheritedWidget {
   @override
   bool updateShouldNotify(SsFormatsScope old) => old.formats != formats;
 }
+
+// v1.9 · paridade web: os textos pt de padrão (constantes, para o construtor).
+String _syncFailedCountPt(int n) => n == 1 ? '1 com erro' : '$n com erro';
+String _syncedAtPt(String time) => 'Sincronizado às $time';
+String _syncedOnPt(String date) => 'Sincronizado em $date';

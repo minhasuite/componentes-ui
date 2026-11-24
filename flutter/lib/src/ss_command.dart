@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -30,6 +32,7 @@ Future<void> showSsCommandPalette(
   List<SsCommand> recent = const [],
   String? hint,
   String initialQuery = '',
+  Future<List<SsCommand>> Function(String query)? search,
 }) {
   final rapido = reduceMotion(context);
   return showGeneralDialog<void>(
@@ -50,6 +53,7 @@ Future<void> showSsCommandPalette(
               recent: recent,
               hint: hint,
               initialQuery: initialQuery,
+              search: search,
               onSelected: (cmd) {
                 Navigator.of(ctx).pop();
                 cmd.onRun();
@@ -82,7 +86,13 @@ class SsCommandPalette extends StatefulWidget {
     this.recent = const [],
     this.hint,
     this.initialQuery = '',
+    this.search,
   });
+
+  /// v1.9: registros do servidor (clientes, pedidos) para o texto digitado, 250 ms depois da última tecla;
+  /// entram depois das telas e ações, com o grupo de cada um. Enquanto busca, uma barra fina corre embaixo
+  /// do campo. Erro conta como nada achado. O par do `src:` do `Ss::CommandPaletteComponent`.
+  final Future<List<SsCommand>> Function(String query)? search;
 
   final List<SsCommand> commands;
   final List<SsCommand> recent;
@@ -114,10 +124,62 @@ String _fold(String s) => s.split('').map((ch) {
 class _SsCommandPaletteState extends State<SsCommandPalette> {
   late final _ctrl = TextEditingController(text: widget.initialQuery);
 
+  // v1.9: o que veio do [SsCommandPalette.search] e para qual texto.
+  List<SsCommand> _remote = const [];
+  String _remoteFor = '';
+  bool _busy = false;
+  Timer? _debounce;
+  int _token = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialQuery.trim().isNotEmpty) _schedule();
+  }
+
   @override
   void dispose() {
+    _debounce?.cancel();
     _ctrl.dispose();
     super.dispose();
+  }
+
+  void _changed() {
+    setState(() {});
+    _schedule();
+  }
+
+  void _schedule() {
+    final f = widget.search;
+    if (f == null) return;
+    _debounce?.cancel();
+    final q = _ctrl.text.trim();
+    if (q.isEmpty) {
+      _token++;
+      if (_busy || _remote.isNotEmpty) {
+        setState(() {
+          _busy = false;
+          _remote = const [];
+        });
+      }
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 250), () async {
+      final t = ++_token;
+      setState(() => _busy = true);
+      List<SsCommand> r;
+      try {
+        r = await f(q);
+      } catch (_) {
+        r = const [];
+      }
+      if (!mounted || t != _token) return;
+      setState(() {
+        _remote = r;
+        _remoteFor = q;
+        _busy = false;
+      });
+    });
   }
 
   List<String> get _termos => _fold(_ctrl.text).split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
@@ -133,7 +195,8 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
       if (!termos.every(tudo.contains)) continue;
       (termos.every(rotulo.contains) ? noRotulo : soChave).add(c);
     }
-    return [...noRotulo, ...soChave];
+    final remotos = _remoteFor == _ctrl.text.trim() ? _remote : const <SsCommand>[];
+    return [...noRotulo, ...soChave, ...remotos];
   }
 
   @override
@@ -187,7 +250,7 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
                     child: TextField(
                       controller: _ctrl,
                       autofocus: true,
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (_) => _changed(),
                       onSubmitted: (_) {
                         if (buscando && lista.isNotEmpty) widget.onSelected(lista.first);
                       },
@@ -209,14 +272,23 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
                     IconButton(
                       tooltip: SsStrings.of(context).clear,
                       icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
-                      onPressed: () => setState(_ctrl.clear),
+                      onPressed: () {
+                        _ctrl.clear();
+                        _changed();
+                      },
                     ),
                 ],
               ),
             ),
-            Divider(height: 1, color: c.line),
+            if (_busy)
+              Semantics(
+                label: SsStrings.of(context).loading,
+                child: LinearProgressIndicator(minHeight: 1, color: c.accent, backgroundColor: c.line),
+              )
+            else
+              Divider(height: 1, color: c.line),
             Flexible(
-              child: lista.isEmpty
+              child: lista.isEmpty && !_busy
                   ? Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(

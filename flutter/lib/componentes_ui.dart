@@ -110,3 +110,6 @@ export 'src/version.dart';
 export 'src/v130/appearance.dart';
 // v1.5.2: sino de avisos (era a v0.25 do branch onda7).
 export 'src/v25/bell.dart';
+// v1.9 · paridade web: a busca do menu lateral (SsSideMenu(search:)) e o cartão da fila de sincronização.
+export 'src/v19/paridade_web/side_search.dart' show SsSideMenuSearch;
+export 'src/v19/paridade_web/sync_panel.dart';

@@ -692,3 +692,58 @@ es:
       text: 'Al continuar, aceptas los %{terms} y la %{privacy}.'
       terms: Términos de uso
       privacy: Política de privacidad
+    # v1.9 · paridade web
+    swipe_confirm:
+      hint: Desliza hasta el final para confirmar
+      done: Listo
+      loading: Confirmando…
+    hold_confirm:
+      hint: Mantén pulsado para confirmar
+      done: Confirmado
+    morph_button:
+      loading: '%{label}: cargando'
+      done: '%{label}: completado'
+      failed: '%{label}: falló'
+    carousel:
+      roledescription: carrusel
+      slide: elemento
+      item_of: Elemento %{n} de %{total}
+      of: '%{n} de %{total}'
+      prev: Anterior
+      next: Siguiente
+    story_ring:
+      news:
+        one: 1 novedad
+        other: '%{count} novedades'
+      add: Añadir
+    heat_calendar:
+      label: Constancia
+      nothing: nada
+      less: menos
+      more: más
+    date_strip:
+      label: Días de %{month}
+      open_calendar: 'Mes: %{month}. Abrir calendario'
+      today: hoy
+      events:
+        one: 1 evento
+        other: '%{count} eventos'
+    split_slider:
+      legend: División
+      total: Total %{amount}
+      missing: Faltan %{amount}
+      over: Sobran %{amount}
+    sync_status:
+      synced: Todo guardado
+      pending:
+        one: 1 por enviar
+        other: '%{count} por enviar'
+      sending: Enviando…
+      failed: Falló · Intentar de nuevo
+      failed_count:
+        one: 1 con error
+        other: '%{count} con error'
+      offline: Sin conexión
+      offline_pending: 'Sin conexión · %{count} por enviar'
+      last_today: Sincronizado a las %{time}
+      last_day: Sincronizado el %{date}

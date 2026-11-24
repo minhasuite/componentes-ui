@@ -1,0 +1,73 @@
+<%# titulo: Paridade web (v1.9) | grupo: Acabamento | ordem: 90 %>
+<%# v1.9: os pares Rails das peças que só existiam no Flutter (paridade.yml na raiz do repo). %>
+<% hoje = Date.current %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Confirmar sem clique sem querer", subtitle: "Deslizar até o fim e segurar até encher") %>
+    <%= render Ss::SwipeToConfirmComponent.new(label: "Deslize para pagar R$ 120,00", id: "vit-swipe") %>
+    <%= render Ss::SwipeToConfirmComponent.new(label: "Pago", done: true, done_label: "Pago") %>
+    <%= render Ss::HoldToConfirmComponent.new(label: "Segure para transferir") %>
+    <%= render Ss::HoldToConfirmComponent.new(label: "Segure para excluir", danger: true) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Botão que mostra o resultado", subtitle: "Carregando, ✓ ou ✗ (o evento ss-morph:run decide aqui)") %>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <%= render Ss::MorphButtonComponent.new(label: "Salvar (dá certo)", icon: "check", type: :button, data: { vit_morph: "ok" }) %>
+      <%= render Ss::MorphButtonComponent.new(label: "Enviar (falha)", type: :button, data: { vit_morph: "erro" }) %>
+    </div>
+    <script>
+      document.addEventListener("ss-morph:run", (e) => {
+        const ok = e.target.dataset.vitMorph === "ok"
+        e.detail.waitUntil(new Promise((res, rej) => setTimeout(ok ? res : rej, 1200)))
+      })
+    </script>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Carrossel e anéis de novidade") %>
+    <%= render(Ss::SnapCarouselComponent.new(label: "Ofertas", height: 160)) do |c| %>
+      <% %w[Arroz Feijão Café Leite Pão].each do |p| %>
+        <% c.with_slide do %><div class="ss-card ss-card-pad h-full grid place-items-center"><strong><%= p %></strong></div><% end %>
+      <% end %>
+    <% end %>
+    <div class="flex gap-4 flex-wrap">
+      <%= render Ss::StoryRingComponent.new(name: "Você", segments: 0, caption: "Você", add_href: "#") %>
+      <%= render Ss::StoryRingComponent.new(name: "Ana Souza", segments: 3, seen: 1, caption: "Ana", href: "#") %>
+      <%= render Ss::StoryRingComponent.new(name: "Bruno Lima", segments: 5, seen: 0, caption: "Bruno", href: "#") %>
+      <%= render Ss::StoryRingComponent.new(name: "Carla Dias", segments: 2, seen: 2, caption: "Carla", href: "#") %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Números", subtitle: "Odômetro (troque o valor), estouro, anel grande e anéis") %>
+    <div class="flex items-center gap-4 flex-wrap">
+      <%= render Ss::OdometerComponent.new(text: ss_money(1234.56), id: "vit-odo") %>
+      <button type="button" class="ss-btn ss-btn-ghost" onclick="const o=document.getElementById('vit-odo');const v=Math.round(Math.random()*500000)/100;o.dataset.ssOdometerTextValue=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)">Trocar valor</button>
+      <%= render(Ss::BurstComponent.new(on: :change, tone: :success)) do %><label class="ss-check"><input type="checkbox"> Feito</label><% end %>
+    </div>
+    <div class="flex items-center gap-6 flex-wrap">
+      <%= render Ss::BigRingComponent.new(value: 0.72, caption: "da meta", size: 180) %>
+      <%= render Ss::RingsComponent.new(rings: [{ value: 0.8, label: "Calorias" }, { value: 0.55, label: "Exercício" }, { value: 0.3, label: "Em pé" }], center: "80%") %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Datas", subtitle: "Constância e faixa de dias") %>
+    <%= render Ss::HeatCalendarComponent.new(values: (0..120).to_h { |i| [hoje - i, (i * 7 % 5)] }, weeks: 18) %>
+    <%= render Ss::DateStripComponent.new(selected: hoje, url: "?dia=%{date}", markers: { hoje + 2 => [:accent], hoje + 5 => [:success, :danger] }) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Dividir e sincronizar") %>
+    <%= render Ss::SplitSliderComponent.new(name: "divisao", total: 75_086,
+          entries: [{ key: "eu", name: "Eu", cents: 25_000 }, { key: "ana", name: "Ana", cents: 25_043 }, { key: "bia", name: "Bia", cents: 25_043 }]) %>
+    <%= render Ss::SplitSliderComponent.new(name: "livre", total: 10_000, locked: false,
+          entries: [{ key: "a", name: "Aluguel", cents: 6_000 }, { key: "b", name: "Luz", cents: 2_000 }]) %>
+    <div class="flex gap-3 flex-wrap">
+      <% [[:synced, 0, 0], [:pending, 3, 0], [:sending, 2, 0], [:failed, 0, 2], [:offline, 1, 0]].each do |(st, n, f)| %>
+        <%= render Ss::SyncStatusComponent.new(state: st, pending_count: n, failed_count: f, last_synced_at: Time.current) %>
+      <% end %>
+    </div>
+  </section>
+</div>

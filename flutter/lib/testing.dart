@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 export 'src/v100/fonts.dart' show ssPreloadFonts;
+// v1.9: a auditoria de acessibilidade para os testes de tela dos apps.
+export 'src/v19/paridade_web/a11y_audit.dart';
 
 /// Finders que entendem o `material_ui` (Flutter 3.50).
 extension SsFinders on CommonFinders {

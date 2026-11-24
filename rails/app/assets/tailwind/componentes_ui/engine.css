@@ -76,6 +76,8 @@
 @import "./v170_cartaz_web.css";
 /* v1.8.0: cartão de conquista (Ss::AchievementCardComponent). */
 @import "./v180_conquista_web.css";
+/* v1.9 · paridade web: os pares Rails das peças que só existiam no Flutter (paridade.yml na raiz). */
+@import "./v19_paridade_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

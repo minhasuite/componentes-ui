@@ -692,3 +692,58 @@ en:
       text: 'By continuing, you agree to the %{terms} and the %{privacy}.'
       terms: Terms of Use
       privacy: Privacy Policy
+    # v1.9 · paridade web
+    swipe_confirm:
+      hint: Slide to the end to confirm
+      done: Done
+      loading: Confirming…
+    hold_confirm:
+      hint: Hold to confirm
+      done: Confirmed
+    morph_button:
+      loading: '%{label}: loading'
+      done: '%{label}: done'
+      failed: '%{label}: failed'
+    carousel:
+      roledescription: carousel
+      slide: slide
+      item_of: Item %{n} of %{total}
+      of: '%{n} of %{total}'
+      prev: Previous
+      next: Next
+    story_ring:
+      news:
+        one: 1 update
+        other: '%{count} updates'
+      add: Add
+    heat_calendar:
+      label: Consistency
+      nothing: nothing
+      less: less
+      more: more
+    date_strip:
+      label: Days of %{month}
+      open_calendar: 'Month: %{month}. Open calendar'
+      today: today
+      events:
+        one: 1 event
+        other: '%{count} events'
+    split_slider:
+      legend: Split
+      total: Total %{amount}
+      missing: '%{amount} left'
+      over: '%{amount} over'
+    sync_status:
+      synced: All saved
+      pending:
+        one: 1 to send
+        other: '%{count} to send'
+      sending: Sending…
+      failed: Failed · Try again
+      failed_count:
+        one: 1 with errors
+        other: '%{count} with errors'
+      offline: No connection
+      offline_pending: 'No connection · %{count} to send'
+      last_today: Synced at %{time}
+      last_day: Synced on %{date}
