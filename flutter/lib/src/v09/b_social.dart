@@ -10,6 +10,7 @@ import '../motion_view.dart';
 import '../ss_aurora.dart';
 import '../ss_list.dart';
 import '../ss_strings.dart';
+import '../v19/transicoes/celebration.dart';
 
 // ---------------------------------------------------------------------------
 // SsPeoplePicker
@@ -651,11 +652,23 @@ class _CurvaClipper extends CustomClipper<Path> {
 /// Comemora uma conquista: quando [achieved] passa de falso para verdadeiro,
 /// solta o confete da suíte (`showSsConfetti`), vibra o "deu certo" e dá um
 /// pulo de escala no [child]. Com menos movimento, só vibra.
+///
+/// v1.9: com [kind] (meta, sequência, primeiro uso) vale a regra da suíte:
+/// no máximo uma comemoração por sessão por tipo ([SsCelebrationGate]; troque
+/// com [gate]) e o leitor de tela anuncia ("Meta batida!"). [SsCelebrationKind.streak]
+/// não solta confete: dá o pulo e o estouro ([SsBurst]) em volta do [child].
+/// Sem [kind], como antes (comemora toda vez).
 class SsCelebrate extends StatefulWidget {
-  const SsCelebrate({super.key, required this.achieved, required this.child});
+  const SsCelebrate({super.key, required this.achieved, required this.child, this.kind, this.gate});
 
   final bool achieved;
   final Widget child;
+
+  /// v1.9: o tipo (liga a regra de uma por sessão).
+  final SsCelebrationKind? kind;
+
+  /// v1.9: padrão [SsCelebrationGate.instance].
+  final SsCelebrationGate? gate;
 
   @override
   State<SsCelebrate> createState() => _SsCelebrateState();
@@ -668,14 +681,22 @@ class _SsCelebrateState extends State<SsCelebrate> with SingleTickerProviderStat
   void didUpdateWidget(SsCelebrate old) {
     super.didUpdateWidget(old);
     if (widget.achieved && !old.achieved) {
+      final kind = widget.kind;
+      if (kind != null && !(widget.gate ?? SsCelebrationGate.instance).claim(kind)) return;
       SsHaptics.success();
       if (!reduceMotion(context)) _c.forward(from: 0);
+      if (kind != null) setState(() => _vezes++);
       // O confete entra no overlay: fora do build.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) showSsConfetti(context);
+        if (!mounted) return;
+        if (kind != null) ssAnnounceCelebration(context, kind);
+        if (kind != SsCelebrationKind.streak) showSsConfetti(context);
       });
     }
   }
+
+  // Gatilho do estouro da sequência.
+  int _vezes = 0;
 
   @override
   void dispose() {
@@ -684,15 +705,19 @@ class _SsCelebrateState extends State<SsCelebrate> with SingleTickerProviderStat
   }
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _c,
-    builder: (_, child) {
-      // Sobe até 1,08 e volta com mola.
-      final s = 1 + .08 * math.sin(_c.value * math.pi) * (1 - _c.value * .3);
-      return Transform.scale(scale: s, child: child);
-    },
-    child: widget.child,
-  );
+  Widget build(BuildContext context) {
+    final pulo = AnimatedBuilder(
+      animation: _c,
+      builder: (_, child) {
+        // Sobe até 1,08 e volta com mola.
+        final s = 1 + .08 * math.sin(_c.value * math.pi) * (1 - _c.value * .3);
+        return Transform.scale(scale: s, child: child);
+      },
+      child: widget.child,
+    );
+    if (widget.kind != SsCelebrationKind.streak) return pulo;
+    return SsBurst(trigger: _vezes, count: 10, distance: 18, child: pulo);
+  }
 }
 
 // ---------------------------------------------------------------------------

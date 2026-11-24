@@ -7,6 +7,7 @@ import 'app_theme.dart';
 import 'format.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
+import 'v19/transicoes/chart_transition.dart';
 import 'v27/chart_markers.dart';
 
 /// Uma série do [SsLineChart]: os valores (um por rótulo), o nome que vai no
@@ -88,7 +89,11 @@ const _side = 4.0;
 const _top = 16.0;
 const _bottom = 22.0;
 
-class _SsLineChartState extends State<SsLineChart> {
+class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStateMixin, SsChartTransition<SsLineChart> {
+  // v1.9: troca de dados animada (cada ponto vai do valor anterior ao novo).
+  @override
+  List<List<double>> chartValues(SsLineChart w) => [for (final s in w.series) s.values];
+
   int? _sel;
 
   int get _n => widget.labels.length;
@@ -115,11 +120,16 @@ class _SsLineChartState extends State<SsLineChart> {
     final marcas = ssResolveMarkers(widget.markers, widget.labels);
     final topo = ssMarkerRows(marcas) * ssMarkerLine;
     final paleta = c.series;
+    final mostra = chartShown;
     final series = [
       for (var i = 0; i < widget.series.length; i++)
-        (widget.series[i].values, widget.series[i].color ?? paleta[i % paleta.length], widget.series[i].dashed),
+        (
+          i < mostra.length ? mostra[i] : widget.series[i].values,
+          widget.series[i].color ?? paleta[i % paleta.length],
+          widget.series[i].dashed,
+        ),
     ];
-    final todos = [for (final s in widget.series) ...s.values, ?widget.target];
+    final todos = [for (final (v, _, _) in series) ...v, ?widget.target];
     var lo = todos.isEmpty ? 0.0 : todos.reduce(math.min);
     var hi = todos.isEmpty ? 1.0 : todos.reduce(math.max);
     if (widget.max != null) {

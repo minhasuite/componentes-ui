@@ -1,0 +1,65 @@
+<%# titulo: Transições (v1.9) | grupo: Movimento | ordem: 49 %>
+<%# v1.9: lista → detalhe (View Transitions com Turbo), gráficos animados, rolagem só com CSS, vazios ilustrados e comemoração. %>
+<% pedidos = [[1042, "Mercado Bom Preço", "R$ 318,40"], [1043, "Padaria Central", "R$ 96,10"], [1044, "Casa & Cia", "R$ 1.204,00"]] %>
+<% aberto = pedidos.find { |(n, _, _)| n.to_s == params[:pedido].to_s } %>
+<% if aberto %>
+  <%= render Ss::PageComponent.new(title: "Pedido #{aberto[0]}", subtitle: "#{aberto[1]} · #{aberto[2]}", back: vitrine_path("pecas_v19_transicoes"),
+                                   view_transition: "pedido-#{aberto[0]}", shrink: true) do %>
+    <section class="ss-card ss-card-pad grid gap-3">
+      <p>O card da lista virou este cabeçalho (o mesmo <code>view-transition-name</code>). Volte e veja o caminho inverso.</p>
+      <% 12.times do |i| %><p class="ss-scroll-reveal text-sm" style="color: var(--muted)">Item <%= i + 1 %> do pedido: aparece ao entrar na tela.</p><% end %>
+    </section>
+  <% end %>
+<% else %>
+  <%= render Ss::PageComponent.new(title: "Transições", subtitle: "Toque num pedido; role para o cabeçalho encolher", shrink: true) do %>
+    <div class="grid gap-6">
+      <section class="grid gap-3">
+        <%= render Ss::CardHeaderComponent.new(title: "Lista → detalhe", subtitle: "View Transitions com Turbo; sem suporte, corte normal") %>
+        <% pedidos.each do |(n, loja, valor)| %>
+          <%= link_to vitrine_path("pecas_v19_transicoes", pedido: n), class: "ss-card ss-card-pad flex items-center justify-between gap-3", **ss_view_transition_attrs("pedido-#{n}") do %>
+            <span><b>Pedido <%= n %></b><br><small style="color: var(--muted)"><%= loja %></small></span><b class="num"><%= valor %></b>
+          <% end %>
+        <% end %>
+      </section>
+
+      <section class="ss-card ss-card-pad grid gap-4">
+        <%= render Ss::CardHeaderComponent.new(title: "Gráficos", subtitle: "A linha se desenha, as barras crescem e a rosca gira ao entrar") %>
+        <div class="grid gap-4 md:grid-cols-3">
+          <%= render Ss::LineChartComponent.new(title: "Vendas", show_title: true, labels: %w[seg ter qua qui sex], series: [{ name: "Vendas", values: [12, 18, 9, 24, 20] }]) %>
+          <%= render Ss::BarChartComponent.new(title: "Pedidos", show_title: true, labels: %w[seg ter qua qui], series: [{ name: "Pedidos", values: [8, 14, 11, 19] }]) %>
+          <%= render Ss::DonutChartComponent.new(title: "Para onde foi", center: "R$ 980", center_label: "novembro",
+                slices: [{ label: "Mercado", value: 420 }, { label: "Casa", value: 260 }, { label: "Lazer", value: 160 }]) %>
+        </div>
+      </section>
+
+      <section class="grid gap-3">
+        <%= render Ss::CardHeaderComponent.new(title: "Números que aparecem ao rolar", subtitle: ".ss-scroll-stagger (animation-timeline: view())") %>
+        <div class="ss-scroll-stagger grid gap-3 md:grid-cols-3">
+          <% [["Recebido", "R$ 12.480"], ["A receber", "R$ 3.210"], ["Atrasado", "R$ 480"]].each do |(rotulo, valor)| %>
+            <div class="ss-card ss-card-pad"><small style="color: var(--muted)"><%= rotulo %></small><div class="ss-figure num"><%= valor %></div></div>
+          <% end %>
+        </div>
+      </section>
+
+      <section class="grid gap-3">
+        <%= render Ss::CardHeaderComponent.new(title: "Estados vazios ilustrados", subtitle: "EmptyStateComponent(illustration:)") %>
+        <div class="grid gap-3 md:grid-cols-3">
+          <%= render Ss::EmptyStateComponent.new(illustration: :empty, title: "Nenhum pedido ainda", text: "O primeiro aparece aqui.", compact: true) %>
+          <%= render Ss::EmptyStateComponent.new(illustration: :offline, title: "Sem conexão", text: "Mostramos o que já estava salvo.", compact: true) %>
+          <%= render Ss::EmptyStateComponent.new(illustration: :no_results, title: "Nada com “xyz”", text: "Confira a grafia ou tire filtros.", compact: true) %>
+          <%= render Ss::EmptyStateComponent.new(illustration: :all_done, title: "Tudo em dia", text: "Nenhuma tarefa para hoje.", compact: true) %>
+          <%= render Ss::EmptyStateComponent.new(illustration: :error, title: "Não deu para carregar", text: "Tente de novo em instantes.", compact: true) %>
+        </div>
+      </section>
+
+      <section class="ss-card ss-card-pad grid gap-3">
+        <%= render Ss::CardHeaderComponent.new(title: "Comemoração", subtitle: "Uma por sessão por tipo (sessionStorage)") %>
+        <div class="flex flex-wrap gap-3">
+          <%= render(Ss::CelebrateComponent.new(kind: :goal, on: :click)) do %><button type="button" class="ss-btn ss-btn-primary" data-action="ss-celebrate#celebrate">Bater a meta</button><% end %>
+          <%= render(Ss::CelebrateComponent.new(kind: :streak, on: :click, tag_name: :span)) do %><button type="button" class="ss-btn ss-btn-outline" data-action="ss-celebrate#celebrate">12 dias seguidos</button><% end %>
+          <%= render(Ss::CelebrateComponent.new(kind: :first_use, on: :click)) do %><button type="button" class="ss-btn ss-btn-ghost" data-action="ss-celebrate#celebrate">Primeiro uso</button><% end %>
+        </div>
+      </section>
+    </div>
+  <% end %>
+<% end %>

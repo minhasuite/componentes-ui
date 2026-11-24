@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'app_theme.dart';
 import 'density.dart';
 import 'motion_view.dart';
+import 'v19/transicoes/predictive_back.dart';
 
 /// Abre uma folha de baixo no padrão da suíte: alça, raio 26, área segura,
 /// sobe junto com o teclado e rola quando o conteúdo passa da tela. Sobe com
@@ -49,31 +50,34 @@ class SsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final kb = MediaQuery.viewInsetsOf(context).bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: kb),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 6),
-                width: 38,
-                height: 5,
-                decoration: BoxDecoration(color: c.muted2, borderRadius: BorderRadius.circular(AppRadius.pill)),
+    // v1.9: o gesto de voltar do Android 14+ desce e encolhe a folha antes de fechar.
+    return SsPredictiveBackScope(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: kb),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 6),
+                  width: 38,
+                  height: 5,
+                  decoration: BoxDecoration(color: c.muted2, borderRadius: BorderRadius.circular(AppRadius.pill)),
+                ),
               ),
-            ),
-            if (title != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-                child: SsSheetHeader(title!, subtitle: subtitle, icon: icon),
+              if (title != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                  child: SsSheetHeader(title!, subtitle: subtitle, icon: icon),
+                ),
+              Flexible(
+                child: SingleChildScrollView(padding: padding.add(const EdgeInsets.only(top: 8)), child: child),
               ),
-            Flexible(
-              child: SingleChildScrollView(padding: padding.add(const EdgeInsets.only(top: 8)), child: child),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

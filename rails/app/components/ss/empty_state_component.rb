@@ -8,6 +8,10 @@ module Ss
   #
   # v0.10.1: with_art { image_tag "vazio.svg", alt: "" } troca a ilustração pela do app;
   # art: false tira a ilustração (fica só título, texto e ações).
+  #
+  # v1.9: illustration: :empty, :offline, :no_results, :all_done ou :error troca a arte pela
+  # ilustração animada (a mesma do SsEmptyState(illustration:) do Flutter); :error vira role=alert.
+  #   render Ss::EmptyStateComponent.new(illustration: :all_done, title: "Tudo em dia", text: "Nenhuma tarefa para hoje.")
   class EmptyStateComponent < BaseComponent
     include InView
 
@@ -45,7 +49,81 @@ module Ss
       SVG
     }.freeze
 
-    def initialize(title:, text: nil, variant: :nada, primary: nil, secondary: nil, compact: false, art: true, **opts)
+    # v1.9 · ilustrações animadas (par do SsEmptyState(illustration: SsIllustration.*) do Flutter):
+    # entram crescendo com mola; paradas, o símbolo flutua e os brilhos piscam (só CSS, nada com
+    # prefers-reduced-motion). Cor só por token (--accent; :error em --danger).
+    ILLUSTRATIONS = {
+      empty: <<~SVG,
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <ellipse class="ss-ill-floor ss-ill-shadow" cx="80" cy="108" rx="48" ry="6"/>
+          <circle class="ss-ill-orbit" cx="80" cy="56" r="50"/>
+          <circle class="ss-ill-soft" cx="80" cy="56" r="40"/>
+          <g class="ss-ill-symbol">
+            <rect class="ss-ill-card" x="50" y="34" width="60" height="44" rx="10"/>
+            <path class="ss-ill-accent-s" d="M50 60h16l4 7h20l4-7h16"/>
+          </g>
+          <path class="ss-ill-accent ss-ill-spark" d="M124 18l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+          <path class="ss-ill-accent ss-ill-spark is-2" d="M30 40l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z"/>
+          <circle class="ss-ill-dot ss-ill-spark is-3" cx="132" cy="80" r="3"/>
+        </svg>
+      SVG
+      offline: <<~SVG,
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <ellipse class="ss-ill-floor ss-ill-shadow" cx="80" cy="108" rx="48" ry="6"/>
+          <circle class="ss-ill-orbit" cx="80" cy="56" r="50"/>
+          <circle class="ss-ill-soft" cx="80" cy="56" r="40"/>
+          <g class="ss-ill-symbol">
+            <path class="ss-ill-card" d="M58 76a14 14 0 0 1-1-28 20 20 0 0 1 38-5 15 15 0 0 1 8 33z"/>
+            <path class="ss-ill-accent-s" d="M60 34l42 46"/>
+          </g>
+          <path class="ss-ill-line ss-ill-spark is-2" d="M32 84a10 10 0 0 1 10-10M26 84a16 16 0 0 1 16-16"/>
+          <path class="ss-ill-accent ss-ill-spark" d="M124 18l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+        </svg>
+      SVG
+      no_results: <<~SVG,
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <ellipse class="ss-ill-floor ss-ill-shadow" cx="80" cy="108" rx="48" ry="6"/>
+          <circle class="ss-ill-orbit" cx="80" cy="56" r="50"/>
+          <rect class="ss-ill-card" x="36" y="28" width="56" height="62" rx="11"/>
+          <path class="ss-ill-line" d="M48 44h30M48 56h22M48 68h26"/>
+          <g class="ss-ill-symbol">
+            <circle class="ss-ill-lens" cx="102" cy="62" r="18"/>
+            <path class="ss-ill-handle" d="M115 75l13 13"/>
+            <path class="ss-ill-accent-s" d="M96 56l12 12M108 56l-12 12"/>
+          </g>
+          <path class="ss-ill-accent ss-ill-spark" d="M128 18l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+          <circle class="ss-ill-dot ss-ill-spark is-3" cx="26" cy="34" r="3.5"/>
+        </svg>
+      SVG
+      all_done: <<~SVG,
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <ellipse class="ss-ill-floor ss-ill-shadow" cx="80" cy="108" rx="48" ry="6"/>
+          <circle class="ss-ill-orbit" cx="80" cy="56" r="50"/>
+          <circle class="ss-ill-soft" cx="80" cy="56" r="40"/>
+          <g class="ss-ill-symbol">
+            <circle class="ss-ill-card" cx="80" cy="56" r="26"/>
+            <path class="ss-ill-accent-s ss-ill-check" d="M68 57l8 8 16-17" pathLength="1"/>
+          </g>
+          <path class="ss-ill-accent ss-ill-spark" d="M124 16l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+          <path class="ss-ill-accent ss-ill-spark is-2" d="M30 30l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z"/>
+          <circle class="ss-ill-dot2 ss-ill-spark is-3" cx="134" cy="78" r="3.5"/>
+        </svg>
+      SVG
+      error: <<~SVG
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <ellipse class="ss-ill-floor ss-ill-shadow" cx="80" cy="108" rx="48" ry="6"/>
+          <circle class="ss-ill-orbit is-danger" cx="80" cy="56" r="50"/>
+          <circle class="ss-ill-soft is-danger" cx="80" cy="56" r="40"/>
+          <g class="ss-ill-symbol">
+            <circle class="ss-ill-card" cx="80" cy="56" r="26"/>
+            <path class="ss-ill-danger-s" d="M80 43v16M80 68v.5"/>
+          </g>
+          <circle class="ss-ill-dot ss-ill-spark is-3" cx="30" cy="30" r="4"/>
+        </svg>
+      SVG
+    }.freeze
+
+    def initialize(title:, text: nil, variant: :nada, primary: nil, secondary: nil, compact: false, art: true, illustration: nil, **opts)
       super(**opts)
       @show_art = art != false
       @title = title
@@ -54,10 +132,12 @@ module Ss
       @primary = primary
       @secondary = secondary
       @compact = compact
+      ill = illustration&.to_sym
+      @illustration = ILLUSTRATIONS.key?(ill) ? ill : nil
     end
 
     def call
-      tag.div(**root_attrs(class: classes("ss-empty-state", ("is-compact" if @compact)), data: in_view_data(variant: @variant), role: (@variant == :erro ? "alert" : nil))) do
+      tag.div(**root_attrs(class: classes("ss-empty-state", ("is-compact" if @compact)), data: in_view_data(variant: @variant, illustration: @illustration), role: (error? ? "alert" : nil))) do
         safe_join([
           art_tag,
           tag.h3(@title),
@@ -73,8 +153,12 @@ module Ss
       return nil unless @show_art
       return tag.div(art, class: "ss-empty-art is-custom") if art?
 
+      return tag.div(ILLUSTRATIONS[@illustration].html_safe, class: "ss-empty-art is-anim", data: { illustration: @illustration }) if @illustration
+
       tag.div(ART[@variant].html_safe, class: "ss-empty-art")
     end
+
+    def error? = @illustration ? @illustration == :error : @variant == :erro
 
     def actions
       return tag.div(content, class: "ss-empty-actions") if content.present?

@@ -7,6 +7,7 @@ module Ss
     # Os helpers da gem (ss_amount, ss_sparkline, ss_avatar...) também dentro dos componentes:
     # o on_load(:action_view) da engine não chega neles.
     include ComponentesUi::Helpers
+    include ComponentesUi::TransitionHelpers # v1.9
 
     # v0.10.1: class: vale como css: (as duas somam). Antes o class: era trocado pela
     # classe do componente e sumia.

@@ -5,6 +5,11 @@ en:
       earned: "Earned"
       label: "Achievement"
       missing: "To go"
+    # v1.9 · transições: anúncio da comemoração (Ss::CelebrateComponent, par do SsCelebrate(kind:)).
+    celebrate:
+      goal: "Goal reached!"
+      streak: "Streak kept!"
+      first_use: "First step done!"
     agenda:
       all_day: All day
       label: Schedule

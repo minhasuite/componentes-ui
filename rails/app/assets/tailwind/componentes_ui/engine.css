@@ -78,6 +78,8 @@
 @import "./v180_conquista_web.css";
 /* v1.9 · movimento: tokens únicos (--ss-dur-*, --ss-ease-*, --ss-dist-*), erro do campo sem salto, skeleton que vira conteúdo e remoção com desfazer. */
 @import "./v19_movimento.css";
+/* v1.9 · transições: lista → detalhe (View Transitions), gráficos, rolagem, vazios ilustrados, comemoração. */
+@import "./v19_transicoes.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

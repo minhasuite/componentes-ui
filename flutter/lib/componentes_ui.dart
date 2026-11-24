@@ -113,3 +113,10 @@ export 'src/v25/bell.dart';
 // v1.9 · movimento: skeleton que vira conteúdo e remoção com desfazer animado.
 export 'src/v19/movimento/skeleton_switch.dart';
 export 'src/v19/movimento/undoable_removal.dart';
+// v1.9 · transições: lista → detalhe, voltar preditivo, troca de dados nos gráficos,
+// ilustrações dos estados vazios e a regra de comemoração.
+export 'src/v19/transicoes/open_container.dart';
+export 'src/v19/transicoes/predictive_back.dart';
+export 'src/v19/transicoes/chart_transition.dart';
+export 'src/v19/transicoes/illustrations.dart';
+export 'src/v19/transicoes/celebration.dart';
