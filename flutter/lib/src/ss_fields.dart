@@ -20,6 +20,9 @@ import 'ss_strings.dart';
 import 'v15/amount.dart';
 import 'v20/pecas.dart';
 import 'v1110/cupertino.dart';
+import 'v1130/speech.dart';
+import 'v1130/spoken_amount.dart';
+import 'v1130/strings.dart';
 import 'v1110/platform.dart';
 
 /// Validadores prontos para os campos `Ss*`. As mensagens saem em português;
@@ -553,9 +556,14 @@ class SsMoneyField extends StatefulWidget {
     this.onKeypad,
     this.textInputAction,
     this.onSubmitted,
+    this.onVoice,
   });
 
   final String? label;
+
+  /// v1.13.0: o microfone no campo. O app escuta (o plugin de voz é dele) e devolve o texto reconhecido (nulo =
+  /// desistiu); o campo converte com [SsSpeech.parseAmountPtBr] e mostra embaixo o que ouviu ([SsSpokenAmount]).
+  final Future<String?> Function()? onVoice;
 
   /// Valor em centavos. Com [controller], só o inicial (se o texto estiver vazio)
   /// e as trocas seguintes.
@@ -693,6 +701,58 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
 
   int? _valor() => widget.expression ? ssEvalAmount(_ctrl.text, _f) : _comSinal(_ctrl.text, _f);
 
+  // v1.13.0: o valor falado.
+  var _ouvindo = false;
+  String? _ouvido;
+  int? _ouvidoCents;
+
+  Future<void> _falar() async {
+    if (_ouvindo || widget.onVoice == null) return;
+    setState(() => _ouvindo = true);
+    String? texto;
+    try {
+      texto = await widget.onVoice!();
+    } finally {
+      if (mounted) setState(() => _ouvindo = false);
+    }
+    if (!mounted || texto == null || texto.trim().isEmpty) return;
+    var v = SsSpeech.parseAmountPtBr(texto);
+    if (v != null && v < 0 && !widget.signed) v = -v;
+    setState(() {
+      _ouvido = texto!.trim();
+      _ouvidoCents = v;
+    });
+    if (v == null) return;
+    _ctrl.text = _semRs(v, _f);
+    widget.onChanged?.call(v);
+  }
+
+  Widget? _mic(SsColors c) {
+    if (widget.onVoice == null) return null;
+    final t = SsTrustStrings.of(context);
+    return IconButton(
+      tooltip: _ouvindo ? t.voiceListening : t.voiceSpeak,
+      isSelected: _ouvindo,
+      icon: Icon(
+        _ouvindo ? Icons.graphic_eq_rounded : Icons.mic_none_rounded,
+        color: _ouvindo ? c.accentText : c.muted,
+      ),
+      onPressed: widget.enabled ? _falar : null,
+    );
+  }
+
+  Widget _comVoz(Widget campo) {
+    if (widget.onVoice == null || (!_ouvindo && _ouvido == null)) return campo;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        campo,
+        SsSpokenAmount(text: _ouvido, cents: _ouvidoCents, listening: _ouvindo, formats: widget.formats),
+      ],
+    );
+  }
+
   bool _vale(int? v) => v != null && (widget.signed || v >= 0);
 
   /// Sem conta, o texto escrito de fora vai para o formato do campo ("1234,5" → "1.234,50").
@@ -763,60 +823,71 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
     final dica = widget.hint ?? f.amount(0);
     if (widget.expression) {
       // O "= R$ 57,50" acompanha o texto, também quando ele vem de fora.
-      return ValueListenableBuilder<TextEditingValue>(
-        valueListenable: _ctrl,
-        builder: (context, valor, _) {
-          final txt = valor.text;
-          final conta = txt.trim().isEmpty ? null : ssEvalAmount(txt, f);
-          final mostra = _vale(conta) && ssIsAmountExpression(txt);
-          return SsTextField(
-            label: widget.label,
-            controller: _ctrl,
-            focusNode: _focus,
-            autofocus: widget.autofocus,
-            hint: dica.isEmpty ? null : dica,
-            prefixText: prefixo,
-            suffixText: sufixo,
-            enabled: widget.enabled,
-            readOnly: widget.keypad,
-            onTap: widget.keypad ? _abrir : null,
-            keyboardType: TextInputType.numberWithOptions(decimal: true, signed: widget.signed),
-            textInputAction: widget.textInputAction,
-            onSubmitted: widget.onSubmitted,
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
-            style: estilo,
-            helperText: mostra ? '= ${f.money(conta)}' : null,
-            suffix: widget.keypad || !widget.calculator
-                ? null
-                : IconButton(
-                    tooltip: s.calculator,
-                    icon: Icon(Icons.calculate_outlined, color: c.muted),
-                    onPressed: widget.enabled ? _abrir : null,
-                  ),
-            validator: _validador(s, f),
-            onChanged: _digitouConta,
-          );
-        },
+      return _comVoz(
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _ctrl,
+          builder: (context, valor, _) {
+            final txt = valor.text;
+            final conta = txt.trim().isEmpty ? null : ssEvalAmount(txt, f);
+            final mostra = _vale(conta) && ssIsAmountExpression(txt);
+            return SsTextField(
+              label: widget.label,
+              controller: _ctrl,
+              focusNode: _focus,
+              autofocus: widget.autofocus,
+              hint: dica.isEmpty ? null : dica,
+              prefixText: prefixo,
+              suffixText: sufixo,
+              enabled: widget.enabled,
+              readOnly: widget.keypad,
+              onTap: widget.keypad ? _abrir : null,
+              keyboardType: TextInputType.numberWithOptions(decimal: true, signed: widget.signed),
+              textInputAction: widget.textInputAction,
+              onSubmitted: widget.onSubmitted,
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
+              style: estilo,
+              helperText: mostra ? '= ${f.money(conta)}' : null,
+              suffix: widget.keypad || !widget.calculator
+                  ? _mic(c)
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ?_mic(c),
+                        IconButton(
+                          tooltip: s.calculator,
+                          icon: Icon(Icons.calculate_outlined, color: c.muted),
+                          onPressed: widget.enabled ? _abrir : null,
+                        ),
+                      ],
+                    ),
+              validator: _validador(s, f),
+              onChanged: _digitouConta,
+            );
+          },
+        ),
       );
     }
-    return SsTextField(
-      label: widget.label,
-      controller: _ctrl,
-      focusNode: _focus,
-      autofocus: widget.autofocus,
-      hint: dica.isEmpty ? null : dica,
-      prefixText: prefixo,
-      suffixText: sufixo,
-      enabled: widget.enabled,
-      readOnly: widget.keypad,
-      onTap: widget.keypad ? _abrir : null,
-      keyboardType: TextInputType.numberWithOptions(signed: widget.signed),
-      textInputAction: widget.textInputAction,
-      onSubmitted: widget.onSubmitted,
-      inputFormatters: [_CentavosFormatter(f, signed: widget.signed)],
-      style: estilo,
-      validator: _validador(s, f),
-      onChanged: (t) => widget.onChanged?.call(_comSinal(t, f)),
+    return _comVoz(
+      SsTextField(
+        label: widget.label,
+        controller: _ctrl,
+        focusNode: _focus,
+        autofocus: widget.autofocus,
+        hint: dica.isEmpty ? null : dica,
+        prefixText: prefixo,
+        suffixText: sufixo,
+        enabled: widget.enabled,
+        readOnly: widget.keypad,
+        onTap: widget.keypad ? _abrir : null,
+        keyboardType: TextInputType.numberWithOptions(signed: widget.signed),
+        textInputAction: widget.textInputAction,
+        onSubmitted: widget.onSubmitted,
+        inputFormatters: [_CentavosFormatter(f, signed: widget.signed)],
+        style: estilo,
+        suffix: _mic(c),
+        validator: _validador(s, f),
+        onChanged: (t) => widget.onChanged?.call(_comSinal(t, f)),
+      ),
     );
   }
 }

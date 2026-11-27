@@ -338,11 +338,11 @@ class V1120WebTest < ComponentTest
     refute_match(/transition[^;]*\d+m?s\b/, css.gsub(/var\([^)]*\)/, ""))
   end
 
-  test "vitrine: a página da v1.12 está em Novidades, em Comércio e em Formulários" do
-    novas = VitrineController.paginas.select { _1[:grupos].include?(VitrineController::GRUPO_NOVIDADES) }
-    assert_equal ["pecas_v1120"], novas.map { _1[:slug] }
-    assert_equal "1.12", VitrineController::NOVIDADES
-    assert_equal ["Comércio e finanças", "Formulários e entrada", VitrineController::GRUPO_NOVIDADES], novas.first[:grupos]
+  # v1.13.0: Novidades passou à v1.13; a página da v1.12 continua marcada com a versão e nas categorias dela.
+  test "vitrine: a página da v1.12 está em Comércio e em Formulários, marcada com a versão dela" do
+    pagina = VitrineController.paginas.find { _1[:slug] == "pecas_v1120" }
+    assert_includes Rails.root.join("app/views/vitrine/pecas_v1120.html.erb").read.lines.first, "versao: 1.12"
+    assert_equal ["Comércio e finanças", "Formulários e entrada"], pagina[:grupos]
   end
 
   test "idiomas: as chaves br.* iguais nos três" do

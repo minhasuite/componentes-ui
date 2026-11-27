@@ -10,6 +10,7 @@
   <% end %>
   <% if pending? %>
     <div class="ss-chat-action-btns">
+      <% if review_dialog %><button type="button" class="ss-btn ss-btn-ghost ss-chat-action-review" data-ss-dialog-open="<%= review_dialog %>"><%= ss_icon("switch-horizontal", size: :xs) %><span><%= review_label %></span></button><% end %>
       <% if cancel_url %><%= button_to cancel_label, cancel_url, method: http_method, class: "ss-btn ss-btn-ghost", form_class: "ss-chat-action-form", form: { data: { action: "submit->ss-chat-action#busy" } } %><% end %>
       <% if confirm_url %><%= button_to confirm_label, confirm_url, method: http_method, class: "ss-btn ss-btn-primary", form_class: "ss-chat-action-form", form: { data: { action: "submit->ss-chat-action#busy" } } %><% end %>
     </div>

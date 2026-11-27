@@ -1,4 +1,4 @@
-# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform; v1.12.0: o Kit Brasil): o par web de cada peça do Flutter, e vice-versa.
+# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform; v1.12.0: o Kit Brasil; v1.13.0: confiança na IA e suíte): o par web de cada peça do Flutter, e vice-versa.
 #
 # A regra da suíte é web e app com as mesmas funcionalidades; aqui fica escrito qual peça de um lado
 # responde pela do outro. Dois testes leem este arquivo e falham quando alguém cria peça num lado só:
@@ -212,7 +212,7 @@ pares:
   SsPopover: "Ss::PopoverComponent"
   SsPressable: "Ss::ButtonComponent"
   SsPriceBoard: "Ss::PriceBoardComponent"
-  SsPrivacyScope: "Ss::PrivacyToggleComponent"
+  SsPrivacyScope: ["Ss::PrivacyToggleComponent", "js:ss-privacy"]
   SsPrivacyToggle: "Ss::PrivacyToggleComponent"
   SsPrivate: "Ss::PrivacyToggleComponent"
   SsProductCard: "Ss::ProductCardComponent"
@@ -329,6 +329,17 @@ pares:
   SsSmartPaste: "Ss::SmartPasteComponent"
   SsQrImage: "helper:ss_qr_svg"
 
+  # v1.13.0 "confiança na IA e suíte": explicar o valor, prévia da ação da IA, desde a última visita, continuar no
+  # outro aparelho, a suíte, o conflito e o valor falado.
+  SsExplain: "Ss::ExplainComponent"
+  SsExplainPanel: "Ss::ExplainComponent"
+  SsAiActionPreview: "Ss::AiActionPreviewComponent"
+  SsSinceLastVisit: "Ss::SinceLastVisitComponent"
+  SsContinueOn: "Ss::ContinueOnComponent"
+  SsSuiteSwitcher: "Ss::SuiteSwitcherComponent"
+  SsConflictResolver: "Ss::ConflictResolverComponent"
+  SsSpokenAmount: "js:ss-spoken-amount"
+
 apis:
   SsHelpMenu: "Ss::HelpMenuComponent"
   SsIcons: "Ss::IconComponent"
@@ -353,6 +364,16 @@ apis:
   SsQrCode: "helper:ss_qr_svg"
   SsPasteDetector: ["helper:ss_paste_summary", "js:ss-smart-paste"]
   SsBrStrings: "helper:ss_t"
+
+  # v1.13.0: o valor falado, o estado no link e os textos.
+  SsSpeech: "helper:ss_spoken_amount"
+  SsHandoff: "helper:ss_handoff_link"
+  SsTrustStrings: "helper:ss_t"
+  SsLastVisit: "Ss::SinceLastVisitComponent"
+  showSsExplain: "Ss::ExplainComponent"
+  showSsAiActionPreview: "Ss::AiActionPreviewComponent"
+  showSsContinueOn: "Ss::ContinueOnComponent"
+  showSsSuiteSwitcher: "Ss::SuiteSwitcherComponent"
 
 so_app:
   SsAmountKeypad: "teclado numérico desenhado na tela; no web o valor é digitado no teclado físico (Ss::MoneyInputComponent)"

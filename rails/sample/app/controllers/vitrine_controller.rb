@@ -8,7 +8,7 @@
 # Grupo fora de GRUPOS faz o test/vitrine_test.rb falhar (nenhuma página fica fora do menu).
 class VitrineController < ApplicationController
   # A onda cujas páginas entram em "Novidades".
-  NOVIDADES = "1.12".freeze
+  NOVIDADES = "1.13".freeze
 
   # nome, ícone (ss_icon) e para que serve; na ordem do menu.
   CATEGORIAS = [
@@ -47,6 +47,18 @@ class VitrineController < ApplicationController
   def cnpj
     n = DEMO_CNPJ[params[:cnpj].to_s.upcase.gsub(/[^0-9A-Z]/, "")]
     n ? render(json: { name: n }) : head(:not_found)
+  end
+
+  # v1.13.0: a resposta de exemplo do "Explicar com IA" (no produto, a IA dele) e o rascunho do "Continuar no
+  # celular" (no produto, guardado com um token; aqui vai no próprio link pelo ComponentesUi::Handoff).
+  def explicar
+    sleep 0.6 unless Rails.env.test?
+    render json: { text: "Os gastos de novembro somam R$ 1.240,00, 18% acima de outubro. A maior parte veio de Mercado (R$ 512,40) e Restaurantes (R$ 268,90); sem eles, o mês ficaria dentro da média." }
+  end
+
+  def continuar
+    estado = params.to_unsafe_h.except("controller", "action", "authenticity_token").slice("demo_continuar")
+    render json: Ss::ContinueOnComponent.payload(ComponentesUi::Handoff.link("#{request.base_url}/vitrine/pecas_v1130", estado))
   end
 
   def show

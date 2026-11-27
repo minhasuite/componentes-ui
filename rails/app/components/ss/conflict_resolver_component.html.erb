@@ -1,0 +1,35 @@
+<%= form_with(url: url, method: http_method, **root_attrs(class: classes("ss-conflict"), "aria-labelledby": "#{uid}-t", data: { controller: "ss-conflict" })) do %>
+  <header class="ss-conflict-head">
+    <span class="ss-icon-tile" aria-hidden="true"><%= ss_icon("switch-horizontal", size: nil) %></span>
+    <div>
+      <h3 id="<%= uid %>-t"><%= title %></h3>
+      <p><%= t("conflict_hint") %></p>
+    </div>
+  </header>
+  <div class="ss-conflict-all">
+    <button type="button" class="ss-btn ss-btn-outline ss-btn-sm" data-action="ss-conflict#all" data-side="mine"><%= t("conflict_keep_mine") %></button>
+    <button type="button" class="ss-btn ss-btn-outline ss-btn-sm" data-action="ss-conflict#all" data-side="theirs"><%= t("conflict_keep_theirs") %></button>
+  </div>
+  <% fields.each_with_index do |f, i| %>
+    <fieldset class="ss-conflict-field">
+      <legend><%= f[:label] %></legend>
+      <div class="ss-conflict-options">
+        <label class="ss-conflict-option" data-side="mine">
+          <input type="radio" name="<%= param %>[<%= f[:key] %>]" value="mine" checked>
+          <span class="ss-conflict-side"><%= t("conflict_mine") %><% if mine_meta %> <small><%= mine_meta %></small><% end %></span>
+          <span class="ss-conflict-value"><%= show(f[:mine]) %></span>
+        </label>
+        <label class="ss-conflict-option" data-side="theirs">
+          <input type="radio" name="<%= param %>[<%= f[:key] %>]" value="theirs">
+          <span class="ss-conflict-side"><%= t("conflict_theirs") %><% if theirs_meta %> <small><%= theirs_meta %></small><% end %></span>
+          <span class="ss-conflict-value"><%= show(f[:theirs]) %></span>
+        </label>
+      </div>
+    </fieldset>
+  <% end %>
+  <% if same.positive? %><p class="ss-conflict-same"><%= same_text %></p><% end %>
+  <div class="ss-conflict-actions">
+    <% if cancel_href %><a class="ss-btn ss-btn-ghost" href="<%= cancel_href %>"><%= ss_t("chat.cancel", default: "Cancelar") %></a><% end %>
+    <button type="submit" class="ss-btn ss-btn-primary"><%= t("conflict_save") %></button>
+  </div>
+<% end %>

@@ -1,0 +1,32 @@
+<%= tag.span(**root_attrs(class: classes("ss-suite"))) do %>
+  <%= render(Ss::PopoverComponent.new(label: label, title: t("suite_title"), id: uid, placement: :bottom_end, css: "ss-suite-pop",
+        trigger: trigger, trigger_class: "ss-icon-btn ss-suite-btn")) do %>
+    <% if yours.any? %>
+      <p class="ss-suite-sub" id="<%= uid %>-yours"><%= t("suite_yours") %></p>
+      <ul class="ss-suite-list" aria-labelledby="<%= uid %>-yours">
+        <% yours.each do |p| %>
+          <li>
+            <%= content_tag(p[:current] || !p[:href] ? :span : :a, href: (p[:href] unless p[:current]), class: ["ss-suite-item", ("is-current" if p[:current])].compact.join(" "),
+                  "aria-current": (p[:current] ? "page" : nil), style: color_style(p)) do %>
+              <span class="ss-suite-icon" aria-hidden="true"><%= ss_icon((p[:icon] || "view-grid").to_s, size: nil) %></span>
+              <span class="ss-suite-text"><b><%= p[:name] %></b><small><%= used(p) %></small></span>
+              <% if p[:badge].to_i.positive? %><span class="ss-badge ss-badge-danger ss-suite-badge"><span aria-hidden="true"><%= p[:badge].to_i > 99 ? "99+" : p[:badge] %></span><span class="ss-sr"><%= badge_text(p[:badge].to_i) %></span></span><% end %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    <% if discover.any? %>
+      <p class="ss-suite-sub" id="<%= uid %>-disc"><%= t("suite_discover") %></p>
+      <ul class="ss-suite-list is-discover" aria-labelledby="<%= uid %>-disc">
+        <% discover.each do |p| %>
+          <li class="ss-suite-item" style="<%= color_style(p) %>">
+            <span class="ss-suite-icon" aria-hidden="true"><%= ss_icon((p[:icon] || "view-grid").to_s, size: nil) %></span>
+            <span class="ss-suite-text"><b><%= p[:name] %></b><% if p[:description] %><small><%= p[:description] %></small><% end %></span>
+            <% if p[:discover_href] || p[:href] %><a class="ss-btn ss-btn-outline ss-btn-sm" href="<%= p[:discover_href] || p[:href] %>" target="_blank" rel="noopener" aria-label="<%= "#{t("suite_discover_action")}: #{p[:name]}" %>"><%= t("suite_discover_action") %></a><% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+<% end %>

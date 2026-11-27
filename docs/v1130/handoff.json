@@ -1,0 +1,7 @@
+{
+  "_sobre": "v1.13.0: o estado da tela no link do Continuar no outro aparelho (SsHandoff ↔ ComponentesUi::Handoff): JSON compacto em base64url sem '='. O mesmo vetor nos dois lados.",
+  "state": {"tela": "pedidos", "filtros": {"status": "aberto", "cliente": "Loja Ação"}, "rascunho": "Pedido 12 · 3 itens"},
+  "encoded": "eyJ0ZWxhIjoicGVkaWRvcyIsImZpbHRyb3MiOnsic3RhdHVzIjoiYWJlcnRvIiwiY2xpZW50ZSI6IkxvamEgQcOnw6NvIn0sInJhc2N1bmhvIjoiUGVkaWRvIDEyIMK3IDMgaXRlbnMifQ",
+  "base": "https://vendas.exemplo.com.br/pedidos?pagina=2",
+  "link": "https://vendas.exemplo.com.br/pedidos?pagina=2&s=eyJ0ZWxhIjoicGVkaWRvcyIsImZpbHRyb3MiOnsic3RhdHVzIjoiYWJlcnRvIiwiY2xpZW50ZSI6IkxvamEgQcOnw6NvIn0sInJhc2N1bmhvIjoiUGVkaWRvIDEyIMK3IDMgaXRlbnMifQ"
+}

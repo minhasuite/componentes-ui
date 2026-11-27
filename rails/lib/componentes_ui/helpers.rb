@@ -497,6 +497,42 @@ module ComponentesUi
     # O QR Code de [text] em SVG (ComponentesUi::Qr, sem gem): <%= ss_qr_svg(pix, label: "QR Code do Pix") %>.
     def ss_qr_svg(text, label: nil, margin: 4, ecl: :m) = ComponentesUi::Qr.svg(text, label:, margin:, ecl:).html_safe
 
+    # ── v1.13.0 "confiança na IA e suíte" ─────────────────────────────
+    # O valor falado em centavos (par do SsSpeech.parseAmountPtBr): ss_spoken_amount("doze e meio") → 1250, ou nil.
+    def ss_spoken_amount(text) = ComponentesUi::Speech.parse_amount(text)
+
+    # O link do "Continuar no outro aparelho" com o estado da tela (par do SsHandoff.link):
+    #   ss_handoff_link(request.url, { filtros: params[:f], rascunho: @rascunho }) → "…?s=eyJ…"
+    def ss_handoff_link(base, state, param: "s") = ComponentesUi::Handoff.link(base, state, param:)
+
+    # A hora curta das frases da v1.13: pt "18h"/"18h30", en "6 PM"/"6:30 PM", es "18:00".
+    def ss_trust_clock(time)
+      case I18n.locale.to_s[0, 2]
+      when "en"
+        h = time.hour % 12 == 0 ? 12 : time.hour % 12
+        "#{time.min.zero? ? h : format("%d:%02d", h, time.min)} #{time.hour < 12 ? "AM" : "PM"}"
+      when "es" then format("%d:%02d", time.hour, time.min)
+      else time.min.zero? ? "#{time.hour}h" : format("%dh%02d", time.hour, time.min)
+      end
+    end
+
+    # O tempo relativo das peças da v1.13 ("há 3 dias", o mesmo timeAgo do Flutter); passa de uma semana, "dd/mm".
+    def ss_trust_ago(time, now: Time.current)
+      return nil if time.nil?
+
+      secs = now - time.to_time
+      mins = (secs / 60).floor
+      return ss_t("trust.ago_now") if mins < 1
+      return ss_t("trust.ago_minutes", n: mins) if mins < 60
+      return ss_t("trust.ago_hours", n: mins / 60) if mins < 1440
+
+      days = (secs / 86_400).floor
+      return ss_t("trust.ago_yesterday") if days == 1
+      return ss_t("trust.ago_days", n: days) if days < 7
+
+      ss_date(time.to_time, :day_month)
+    end
+
     # A frase do colar inteligente para o que o ComponentesUi::PasteDetector achou ("Isso parece um boleto de
     # R$ 123,45 com vencimento em 10/12/2026"), no idioma da página; os mesmos moldes do SsPasteDetector.summary.
     def ss_paste_summary(match)

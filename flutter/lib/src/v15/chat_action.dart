@@ -7,6 +7,7 @@ import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_button.dart';
 import '../ss_strings.dart';
+import '../v1130/strings.dart';
 
 /// Situação do [SsChatActionCard].
 enum SsChatActionState { pending, confirmed, cancelled, failed }
@@ -35,7 +36,14 @@ class SsChatActionCard extends StatelessWidget {
     this.cancelLabel,
     this.busy = false,
     this.danger = false,
+    this.onReview,
+    this.reviewLabel,
   });
+
+  /// v1.13.0: "Ver alterações" no pendente, para abrir a prévia campo a campo ([showSsAiActionPreview]) antes de
+  /// confirmar.
+  final VoidCallback? onReview;
+  final String? reviewLabel;
 
   final String title;
   final List<(String, String)> rows;
@@ -147,6 +155,16 @@ class SsChatActionCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 10),
+          if (pendente && onReview != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SsButton.ghost(
+                label: reviewLabel ?? SsTrustStrings.of(context).previewReview,
+                icon: Icons.compare_arrows_rounded,
+                small: true,
+                onPressed: busy ? null : onReview,
+              ),
+            ),
           if (pendente)
             Row(
               children: [

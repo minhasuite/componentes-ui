@@ -1,0 +1,14 @@
+<%= tag.span(**root_attrs(class: classes("ss-continue-on"), data: data)) do %>
+  <%= render(Ss::PopoverComponent.new(label: label, title: label, id: uid, placement: :bottom_end, css: "ss-continue-pop",
+        trigger: safe_join([ss_icon(icon, size: :xs), tag.span(label)]), trigger_class: "ss-btn ss-btn-ghost ss-btn-sm",
+        trigger_attrs: { "aria-label": label, data: { action: "click->ss-continue-on#refresh" } })) do %>
+    <p class="ss-continue-hint"><%= hint %></p>
+    <div class="ss-continue-qr" role="img" aria-label="<%= t("continue_qr") %>" data-ss-continue-on-target="qr"><%= ss_qr_svg(link, margin: 1) %></div>
+    <div class="ss-continue-link" data-controller="ss-copy" data-ss-copy-done-value="<%= t("continue_copied") %>">
+      <label for="<%= uid %>-link"><%= t("continue_link") %></label>
+      <input id="<%= uid %>-link" class="ss-input" readonly value="<%= link %>" data-ss-copy-target="source" data-ss-continue-on-target="link" data-action="focus->ss-copy#select">
+      <button type="button" class="ss-btn ss-btn-outline ss-btn-sm" data-action="ss-copy#copy" data-ss-copy-target="button" aria-live="polite"><%= ss_icon("duplicate", size: :xs) %><span data-ss-copy-target="label"><%= t("continue_copy") %></span></button>
+    </div>
+    <p class="ss-continue-long" data-ss-continue-on-target="note"<% unless long? %> hidden<% end %>><%= t("continue_long") %></p>
+  <% end %>
+<% end %>

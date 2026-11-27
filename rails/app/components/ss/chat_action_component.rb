@@ -12,17 +12,21 @@ module Ss
   # state: :pending (padrão, com botões), :confirmed, :cancelled, :failed. result: troca a frase do
   # estado. danger: true pinta o Confirmar de vermelho (excluir, desfazer). Enviando, os botões
   # travam (aria-busy) para não confirmar duas vezes.
+  #
+  # v1.13.0: review_dialog: "id" põe "Ver alterações" (botão fantasma que abre o <dialog> com o
+  # Ss::AiActionPreviewComponent, o antes e depois campo a campo; data-ss-dialog-open).
   class ChatActionComponent < BaseComponent
     STATES = %i[pending confirmed cancelled failed].freeze
 
     attr_reader :title, :rows, :state
 
     def initialize(title:, rows: [], id: nil, description: nil, icon: nil, confirm_url: nil, cancel_url: nil, state: :pending,
-                   result: nil, confirm_label: nil, cancel_label: nil, danger: false, http_method: :post, **rest)
+                   result: nil, confirm_label: nil, cancel_label: nil, danger: false, http_method: :post, review_dialog: nil, **rest)
       super(**rest)
       @title, @rows, @id, @description, @icon = title, rows.map { |(k, v)| [k.to_s, v] }, id, description, icon
       @confirm_url, @cancel_url, @result, @confirm_label, @cancel_label, @danger, @http_method =
         confirm_url, cancel_url, result, confirm_label, cancel_label, danger, http_method
+      @review_dialog = review_dialog
       @state = STATES.include?(state.to_s.to_sym) ? state.to_s.to_sym : :pending
     end
 
@@ -31,6 +35,8 @@ module Ss
     def icon = @icon.presence&.to_s&.html_safe
     def description = @description
     def danger? = @danger
+    def review_dialog = @review_dialog
+    def review_label = ss_t("trust.preview_review", default: "Ver alterações")
     def confirm_url = @confirm_url
     def cancel_url = @cancel_url
     def http_method = @http_method

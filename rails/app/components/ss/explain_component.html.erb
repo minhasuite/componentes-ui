@@ -1,0 +1,45 @@
+<%= tag.span(**root_attrs(class: classes("ss-explain"), data: { controller: "ss-explain", ss_explain_url_value: ai_url, ss_explain_method_value: ai_method }.compact)) do %>
+  <span class="ss-explain-target"><%= content %></span>
+  <%= render(Ss::PopoverComponent.new(label: trigger_label, title: title || t("explain_title"), id: uid, placement: :bottom_end,
+        trigger: ss_icon("question-mark-circle", size: nil), trigger_class: "ss-explain-btn", css: "ss-explain-pop")) do %>
+    <p class="ss-explain-value num"><%= value %></p>
+    <% if formula %><p class="ss-explain-formula"><%= formula %></p><% end %>
+    <% if items.any? %>
+      <p class="ss-explain-sub" id="<%= uid %>-comp"><%= t("explain_composition") %></p>
+      <ul class="ss-explain-items" aria-labelledby="<%= uid %>-comp">
+        <% items.each do |i| %>
+          <li>
+            <%= content_tag(i[:href] ? :a : :span, href: i[:href], class: "ss-explain-item") do %>
+              <span class="ss-explain-item-label"><%= i[:label] %><% if i[:hint] %><small><%= i[:hint] %></small><% end %></span>
+              <span class="num"><%= i[:value] %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <% if more || more_href %>
+        <p class="ss-explain-more">
+          <% if more %><span><%= t("explain_more", count: more) %></span><% end %>
+          <% if more_href %><a href="<%= more_href %>"><%= t("explain_see_all") %></a><% end %>
+        </p>
+      <% end %>
+    <% end %>
+    <% if ai_url %>
+      <div class="ss-explain-ai" data-ss-explain-target="ai" data-state="idle">
+        <button type="button" class="ss-btn ss-btn-outline ss-btn-sm ss-explain-ask" data-action="ss-explain#ask"><%= ss_icon("sparkles", size: :xs) %><span><%= t("explain_ask_ai") %></span></button>
+        <div class="ss-explain-thinking" role="status">
+          <span class="ss-thinking" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span><%= t("explain_thinking") %></span>
+          <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-explain#cancel"><%= ss_t("chat.cancel", default: "Cancelar") %></button>
+        </div>
+        <div class="ss-explain-answer" aria-live="polite">
+          <p data-ss-explain-target="text"></p>
+          <small><%= t("explain_ai_note") %></small>
+        </div>
+        <div class="ss-explain-error" role="alert">
+          <span><%= t("explain_ai_error") %></span>
+          <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-explain#ask"><%= t("explain_retry") %></button>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

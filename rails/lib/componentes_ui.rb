@@ -10,6 +10,10 @@ require "componentes_ui/transition_helpers"
 require "componentes_ui/br"
 require "componentes_ui/qr"
 require "componentes_ui/paste_detector"
+# v1.13.0: o valor falado em centavos (Speech) e o estado da tela no link do outro aparelho (Handoff).
+require "base64"
+require "json"
+require "componentes_ui/speech"
 
 module ComponentesUi
   # Configuração da gem (v0.10). No app, num initializer:

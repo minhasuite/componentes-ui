@@ -92,6 +92,9 @@
 @import "./v1110_web.css";
 /* v1.12.0 "Kit Brasil": Pix, nota fiscal, colar inteligente e a linha de retorno dos campos brasileiros. */
 @import "./v1120_web.css";
+/* v1.13.0 "confiança na IA e suíte": explicar o valor, prévia da IA, desde a última visita, continuar no outro aparelho,
+   apps da suíte, conflito de versões e o microfone do dinheiro. */
+@import "./v1130_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

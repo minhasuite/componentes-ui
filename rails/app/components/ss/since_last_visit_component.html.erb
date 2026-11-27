@@ -1,0 +1,25 @@
+<% if src %>
+  <%= tag.div(**root_attrs(class: classes("ss-since-host"), data: data)) %>
+<% else %>
+  <%= tag.section(**root_attrs(class: classes("ss-card", "ss-since"), role: "region", "aria-labelledby": "#{uid}-t", data: data)) do %>
+    <header class="ss-since-head">
+      <div>
+        <span class="ss-since-kicker"><%= t("since_title") %></span>
+        <h3 id="<%= uid %>-t"><%= label %></h3>
+      </div>
+      <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm ss-since-ok" data-action="ss-since#dismiss"><%= t("since_got_it") %></button>
+    </header>
+    <ul class="ss-since-items">
+      <% items.each_with_index do |i, n| %>
+        <li class="ss-since-item" data-tone="<%= tone(i) %>" style="--i:<%= n %>">
+          <% if i[:icon] %><span class="ss-icon-tile" aria-hidden="true"><%= ss_icon(i[:icon].to_s, size: nil) %></span><% end %>
+          <span class="ss-since-text">
+            <%= render Ss::OdometerComponent.new(text: i[:value].to_s, roll_in: true, css: "ss-since-n") %>
+            <span class="ss-since-label"><%= i[:label] %></span>
+          </span>
+          <% if i[:href] %><a class="ss-btn ss-btn-ghost ss-btn-sm" href="<%= i[:href] %>" aria-label="<%= "#{i[:action_label] || t("since_open")}: #{i[:value]} #{i[:label]}" %>"><%= i[:action_label] || t("since_open") %></a><% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

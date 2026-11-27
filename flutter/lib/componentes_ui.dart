@@ -148,3 +148,14 @@ export 'src/v1120/pix_card.dart';
 export 'src/v1120/qr.dart';
 export 'src/v1120/smart_paste.dart';
 export 'src/v1120/strings.dart';
+// v1.13.0 "confiança na IA e suíte": explicar o valor, prévia da ação da IA, desde a última visita, continuar no outro
+// aparelho, a suíte, o conflito, o valor falado e os textos.
+export 'src/v1130/ai_action_preview.dart';
+export 'src/v1130/conflict_resolver.dart';
+export 'src/v1130/continue_on.dart';
+export 'src/v1130/explain.dart';
+export 'src/v1130/since_last_visit.dart';
+export 'src/v1130/speech.dart';
+export 'src/v1130/spoken_amount.dart';
+export 'src/v1130/strings.dart';
+export 'src/v1130/suite_switcher.dart';

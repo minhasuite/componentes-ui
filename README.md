@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.12.0
+      ref: v1.13.0
 ```
 
 ```dart
@@ -653,6 +653,64 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.13.0: confiança na IA e suíte (explicar o valor, prévia da IA, desde a última visita, continuar no outro aparelho, a suíte, o conflito, o valor falado e o modo discreto automático)
+
+Peças que nenhum design system de mercado traz prontas, nos dois lados com o mesmo nome. Nada quebra na API: as peças
+são novas e os parâmetros que entraram em peças antigas são opcionais. O pacote só **apresenta**: os dados, a IA,
+gravar, desfazer, a lista de produtos, o reconhecimento de voz e os sensores são do produto (callback no app,
+endpoint no web).
+
+| Flutter | Rails | O que faz |
+|---|---|---|
+| `SsExplain(value:, title:, formula:, items: [SsExplainItem(label, value, subtitle:, onTap:)], more:, onMore:, onAskAi: () → Future<String>, onCancelAi:, child:)`, `SsExplainPanel(aiAnswer:)`, `showSsExplain` | `Ss::ExplainComponent(value:, title:, formula:, items: [{ label:, value:, href:, hint: }], more:, more_href:, ai_url:)` + bloco (`ss-explain`) | de onde vem o número: toque longo no app (e a ação "Ver de onde vem este valor" do leitor de tela), "?" no foco ou no hover no web; o valor, a fórmula ("Soma dos 23 lançamentos de nov"), o que compõe com link, "e mais N" e "Explicar com IA" com o `SsThinking`/`.ss-thinking` e Cancelar (a resposta que chega depois de cancelar é descartada) |
+| `SsAiActionPreview(changes: [SsAiChange(id:, title:, subtitle:, fields: [SsFieldDiff(label, before:, after:)], selected:)], onApply:, onUndo:, onAdjust:, onCancel:)`, `showSsAiActionPreview` | `Ss::AiActionPreviewComponent(changes:, apply_url:, method:, param: "changes", adjust_href:, cancel_href:)` (`ss-ai-preview`) | o antes e depois campo a campo antes de a IA aplicar: removido (vermelho, riscado), novo (verde) e alterado (âmbar), sempre com o nome escrito; marcar e desmarcar cada alteração ("2 de 3 marcadas"), Aplicar (com a contagem), Ajustar, Cancelar; depois, o aviso "N alterações aplicadas · Desfazer" (`showSsUndo` ↔ `Ss::ToastComponent(undo_url:)`) |
+| `SsChatActionCard(onReview:, reviewLabel:)` | `Ss::ChatActionComponent(review_dialog: "id")` | "Ver alterações" na ação que o assistente sugeriu: abre a prévia (folha no app, `Ss::DialogComponent` no web) |
+| `SsSinceLastVisit(since:, items: [SsSinceItem(value:, label:, icon:, tone:, onTap:, actionLabel:)], store: SsLastVisit(read:, write:), autoHide:)`, `showSsSinceLastVisit` | `Ss::SinceLastVisitComponent(since:, items:, storage_key:, auto_hide:, src:)` (`ss-since`) | "Desde ontem às 18h: 3 pedidos novos, R$ 1.240 recebidos, 1 tarefa atrasada", com os números rolando (`SsOdometer(rollIn:)` ↔ `Ss::OdometerComponent(roll_in:)`) e uma ação em cada item; some em 12 s (não com o leitor de tela ligado) ou no "Entendi" e grava a visita (armazenamento do app ↔ `localStorage["ss-last-visit"]`; com `src:`, o web busca o resumo com o `%{since}` guardado) |
+| `SsContinueOn(url:, target: SsContinueTarget.computer\|phone, onShare:)`, `showSsContinueOn`, `SsHandoff.link/encode/decode` | `Ss::ContinueOnComponent(url:, target: :phone\|:computer, state:, handoff_url:, form:)`, `ComponentesUi::Handoff`, `ss_handoff_link` (`ss-continue-on`) | "Continuar no celular" (web: QR do link profundo da tela atual) e "Continuar no computador" (app: o link e o QR); o estado (filtros, rascunho) vai no link em JSON base64url, igual nos dois lados (`docs/v1130/handoff.json`); no web, com `handoff_url:` + `form:`, o rascunho do formulário vai ao endpoint do produto, que devolve `{ url:, svg: }` (`Ss::ContinueOnComponent.payload(url)`) |
+| `SsSuiteSwitcher(products: [SsSuiteProduct(id:, name:, icon:, color:, lastUsedAt:, badge:, active:, current:, description:, onOpen:, onDiscover:)])`, `SsSuiteSwitcher.section(context, …)` (menu lateral), `showSsSuiteSwitcher` | `Ss::SuiteSwitcherComponent(products: [{ id:, name:, icon:, color:, href:, last_used_at:, badge:, active:, current:, description:, discover_href: }])` no slot novo `with_suite` do `Ss::AppShellComponent` (ao lado do avatar) | os apps que a conta usa (ícone na cor do produto, nome, "Usado há 3 dias"/"Você está aqui", selo de avisos lido como "3 avisos") e "Conhecer" os outros; o pacote não sabe quais produtos existem |
+| `SsConflictResolver(fields: [SsConflictField(key:, label:, mine:, theirs:)], onResolve: (Map<String, SsConflictSide>), mineAt:, theirsAt:, theirsBy:)`, `SsSyncPanel(conflictCount:, onResolveConflicts:)` | `Ss::ConflictResolverComponent(fields:, url:, method: :patch, param: "resolve", mine_at:, theirs_at:, theirs_by:)` (`ss-conflict`) | "Sua versão" × "Versão do servidor" campo a campo (só os diferentes; os iguais viram uma linha), "Ficar com a minha"/"Ficar com a do servidor" e "Salvar escolha"; no app abre da linha "2 registros em conflito · Resolver" do `SsSyncPanel`; no web serve ao registro velho (`lock_version`) |
+| `SsSpeech.parseAmountPtBr(texto)`, `SsMoneyField(onVoice: () → Future<String?>)`, `SsSpokenAmount` | `ComponentesUi::Speech.parse_amount`, `ss_spoken_amount`, `Ss::MoneyInputComponent(voice: true)` (`ss-spoken-amount`, `ss_speech.js`) | o valor falado em centavos: "cento e vinte e três e cinquenta" → 123,50; "mil e duzentos reais" → 1.200,00; "dois mil e quinhentos e noventa centavos" → 2.500,90; "R$ 12,50" e "doze e meio" → 12,50. Os 86 casos de `docs/v1130/fala.json` passam no Dart, no Ruby e no JS. O microfone aparece no campo; o reconhecimento é do app (no web, o `SpeechRecognition` do navegador, quando existe, ou o evento `ss-spoken-amount:text` do produto) |
+| `SsPrivacyScope(hidden:, auto: SsPrivacyAuto(signals: [SsPrivacySignal('face_down')], background:, blurSnapshot:))`, `SsPrivacyScope.autoReasonsOf` | `data-ss-privacy-auto-value="true"` no `ss-privacy` (evento `ss-privacy:auto` { reason, on }) | modo discreto automático: os valores somem enquanto um sinal do app está ligado (celular virado para baixo, tela compartilhada), com o app fora da frente (e a miniatura dos recentes desfocada) e, no web, na aba escondida (`visibilitychange`) e quando a própria página compartilha a tela (`getDisplayMedia`) |
+
+**Regras do valor falado.** Grupos de até 999 por extenso, com "mil/milhão/bilhão" multiplicando (em ordem decrescente);
+a palavra que não cabe mais no grupo começa os centavos ("doze e cinquenta", "cem e cinquenta" = 100,50); "reais"
+fecha os reais; "centavos" no fim de um número de mil ou mais separa a dezena final (abaixo de mil conta ao pé da
+letra: "noventa e nove centavos" = 0,99); "e meio" é 50 centavos, menos depois de "mil"/"milhão" ("um milhão e meio");
+"vírgula" como na escrita; algarismos soltos ou misturados ("2 mil e 500", "1,5 mil", "12.50"); "menos" no começo.
+A frase que não fecha ("mil mil", centavos acima de 99, "1234,567") dá `null`/`nil` e o campo avisa sem mexer no valor.
+
+**Textos.** pt-BR, en e es: `SsTrustStrings` (`SsTrustStrings.of(context)`) ↔ `componentes_ui.trust.*` (as mesmas
+chaves em snake_case). Acessibilidade: alvos de 48/44, rótulos do leitor de tela em toda peça (o diff é falado como
+"Categoria. Alterado. Antes: Outros. Depois: Mercado"), regiões vivas no que muda sozinho, reduzir movimento e
+durações só pelos tokens (`SsMotion` ↔ `--ss-dur-*`; o teste reprova duração solta); `ssA11yAudit` nos testes novos.
+
+**Onde cada peça entra nos produtos:**
+
+- **meu-financeiro**: `SsExplain` nos totais do mês, no saldo e nos pontos do gráfico de gastos (com o "Explicar com
+  IA" do assistente); `SsAiActionPreview` na recategorização e na conciliação que a IA sugere; `SsMoneyField(onVoice:)`
+  no lançamento rápido; `SsPrivacyScope(auto:)` no app inteiro; `SsSinceLastVisit` na abertura ("2 lançamentos do
+  cartão, 1 conta vence amanhã").
+- **minhas-vendas**: `SsSinceLastVisit` no painel ("3 pedidos novos, R$ 1.240 recebidos"); `SsConflictResolver` no
+  app de vendas externas (pedido mudado offline e no escritório), aberto do `SsSyncPanel`; `SsContinueOn` do pedido no
+  celular para o computador e do relatório do web para o celular; `SsExplain` nos KPIs do painel e na comissão.
+- **meu-gestor**: `SsExplain` nos insights e indicadores (de onde vem a meta, o ranking); `SsAiActionPreview` antes de
+  a IA mexer em fluxo, escala ou checklist; `SsSuiteSwitcher` com o minhas-vendas ao lado.
+- **minhas-compras** e **minhas-viagens**: `SsAiActionPreview` no cadastro por foto/cupom (o que a IA leu × o que já
+  estava) e `SsMoneyField(onVoice:)` no gasto da viagem.
+- **Todos os produtos**: `SsSuiteSwitcher` no menu lateral (`SsSuiteSwitcher.section`) e no web ao lado do avatar
+  (`with_suite`), com a lista que vem da API de licenças (`licencas`).
+
+`paridade.yml`: 9 pares novos (`SsExplain`, `SsExplainPanel`, `SsAiActionPreview`, `SsSinceLastVisit`, `SsContinueOn`,
+`SsSuiteSwitcher`, `SsConflictResolver`, `SsSpokenAmount` → `js:ss-spoken-amount`; `SsPrivacyScope` ganha o
+`js:ss-privacy`) e 8 apis (`SsSpeech`, `SsHandoff`, `SsTrustStrings`, `SsLastVisit` e os `showSs*`). Vitrines: Novidades
+'1.13' e as categorias "Conversa, IA e avisos", "Navegação e moldura", "Retorno e estados" e "Formulários e entrada"
+(`rails/sample/app/views/vitrine/pecas_v1130.html.erb`). Catálogo: `flutter/test/catalogo_v1130.dart` (`comV1130`) e as
+seções do `rails/catalogo/index.html` geradas por `rails/sample/script/catalogo_v1130.rb`. Testes:
+`flutter/test/v1130_test.dart` e `rails/sample/test/components/v1_13_0_web_test.rb`.
+
+**Ao subir nos produtos:** nada a trocar. Quem já usa `SsPrivacyScope` ganha o automático passando `auto:`; o
+`SsMoneyField` só mostra o microfone com `onVoice:`.
 
 ## v1.12.0: Kit Brasil (Pix, boleto, NF-e, CEP, CPF/CNPJ) e o colar inteligente
 

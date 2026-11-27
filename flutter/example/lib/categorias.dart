@@ -25,7 +25,7 @@ class Categoria {
 }
 
 /// A onda cujas peças entram em "Novidades".
-const versaoNovidades = '1.12';
+const versaoNovidades = '1.13';
 
 const novidades = Categoria('novidades', 'Novidades (v$versaoNovidades)', 'sparkles', 'O que chegou nesta versão.');
 const fundacao = Categoria(
@@ -152,6 +152,7 @@ final _porSlug = <String, Categoria>{
     'ss-side-menu', 'ss-nav-scaffold', 'ss-split', 'ss-aside-layout', 'ss-section', 'ss-section-header',
     'ss-section-icon', 'ss-fullscreen',
     'ss-side-menu-ios', 'ss-nav-bar-ios', // v1.11
+    'ss-continue-on', 'ss-suite-switcher', // v1.13
   ])
     s: navegacao,
   // Ações e botões
@@ -173,6 +174,7 @@ final _porSlug = <String, Categoria>{
     'ss-step-heading', 'ss-terms-notice', 'ss-v102-params',
     'ss-switch-ios', // v1.11
     'ss-pix-key-field', 'ss-boleto-field', 'ss-cep-field', 'ss-document-field', // v1.12
+    'ss-spoken-amount', // v1.13
   ])
     s: formularios,
   // Listas e tabelas
@@ -206,6 +208,7 @@ final _porSlug = <String, Categoria>{
     'ss-linear-loader', 'ss-highlight', 'ss-sync', 'ss-async-sliver', 'ss-spinner', 'ss-skeleton-switch',
     'ss-job-progress', 'ss-popover', // v1.10
     'ss-confirm-ios', 'ss-sheet-ios', // v1.11
+    'ss-since-last-visit', 'ss-conflict-resolver', 'ss-privacy-auto', // v1.13
     'ss-undoable-removal', 'ss-illustration', 'ss-skeleton', 'ss-badge', 'ss-status-badge', 'ss-dot',
   ])
     s: retorno,
@@ -221,6 +224,7 @@ final _porSlug = <String, Categoria>{
     'ss-pulse-avatar', 'ss-quote', 'ss-notice-card', 'ss-callout', 'ss-tip', 'ss-tooltip',
     'ss-notification-bell', 'ss-bell-dot', 'ss-notification-center', 'ss-whats-new', 'ss-tour',
     'ss-checklist-card', 'ss-help-menu',
+    'ss-explain', 'ss-ai-action-preview', // v1.13
   ])
     s: conversa,
   // Tempo e agenda

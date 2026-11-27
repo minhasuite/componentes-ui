@@ -1,0 +1,96 @@
+<%# titulo: Confiança na IA e suíte | grupo: Conversa, IA e avisos | tambem: Navegação e moldura; Retorno e estados; Formulários e entrada | ordem: 95 | versao: 1.13 %>
+<%# v1.13.0 "confiança na IA e suíte": explicar o valor, a prévia da ação da IA, desde a última visita, continuar no
+    outro aparelho, os apps da suíte, o conflito de versões, o valor falado e o modo discreto automático. Dados fictícios. %>
+<%
+  itens = [
+    { label: "Mercado Exemplo", value: ss_money(512.40), href: "#mercado", hint: "9 lançamentos" },
+    { label: "Restaurantes", value: ss_money(268.90), href: "#restaurantes", hint: "6 lançamentos" },
+    { label: "Transporte", value: ss_money(186.30), href: "#transporte", hint: "5 lançamentos" }
+  ]
+  mudancas = [
+    { id: 1, title: "Lançamento de 12/11 · Mercado Exemplo", subtitle: "R$ 89,90",
+      fields: [{ label: "Categoria", before: "Outros", after: "Mercado" }, { label: "Etiqueta", before: nil, after: "Casa" }, { label: "Conta", before: "Carteira", after: "Carteira" }] },
+    { id: 2, title: "Lançamento de 14/11 · Posto Exemplo", subtitle: "R$ 150,00",
+      fields: [{ label: "Categoria", before: "Outros", after: "Transporte" }] },
+    { id: 3, title: "Lançamento de 15/11 · Assinatura antiga", subtitle: "R$ 19,90",
+      fields: [{ label: "Recorrência", before: "Mensal", after: nil }], selected: false }
+  ]
+  produtos = [
+    { id: "vendas", name: "Minhas Vendas", icon: "shopping-bag", color: "#0f766e", href: "#vendas", current: true },
+    { id: "gestor", name: "Meu Gestor", icon: "chart-bar", color: "#5a45e8", href: "#gestor", badge: 3, last_used_at: 3.days.ago },
+    { id: "financeiro", name: "Meu Financeiro", icon: "cash", color: "#2563eb", href: "#financeiro", last_used_at: 5.hours.ago },
+    { id: "personal", name: "Meu Personal", icon: "lightning-bolt", color: "#e11d48", active: false, description: "Treinos e alunos no celular", discover_href: "https://www.minhasuite.com/" }
+  ]
+%>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "De onde vem este valor (ExplainComponent)", subtitle: "Passe o mouse ou foque o indicador: o \"?\" abre a fórmula, o que compõe o valor e \"Explicar com IA\" (resposta de exemplo do endpoint /demo/explicar).") %>
+    <div class="grid gap-4 md:grid-cols-3">
+      <%= render(Ss::ExplainComponent.new(value: ss_money(1240), title: "Gastos de novembro", formula: "Soma dos 23 lançamentos de nov",
+            items: itens, more: 20, more_href: "#todos", ai_url: "/demo/explicar")) do %>
+        <%= render Ss::KpiCardComponent.new(label: "Gastos de novembro", value: ss_money(1240), money: true) %>
+      <% end %>
+      <%= render(Ss::ExplainComponent.new(value: "18%", formula: "Gastos de nov ÷ gastos de out − 1")) do %>
+        <%= render Ss::KpiCardComponent.new(label: "Acima de outubro", value: "18%") %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Antes de aplicar (AiActionPreviewComponent)", subtitle: "O antes e depois campo a campo, com marcar e desmarcar cada alteração. No chat, \"Ver alterações\" abre a mesma prévia num diálogo.") %>
+    <div class="grid gap-4 lg:grid-cols-2 items-start">
+      <%= render Ss::AiActionPreviewComponent.new(changes: mudancas, apply_url: "#", adjust_href: "#ajustar", cancel_href: "#") %>
+      <div class="grid gap-3">
+        <%= render Ss::ChatActionComponent.new(title: "Recategorizar 3 lançamentos", icon: ss_icon("sparkles", size: nil), review_dialog: "previa-ia",
+              rows: [["Lançamentos", "3"], ["Categorias", "Mercado, Transporte"]], confirm_url: "#", cancel_url: "#") %>
+        <%= render(Ss::DialogComponent.new(id: "previa-ia", title: "Antes de aplicar", size: :lg)) do %>
+          <%= render Ss::AiActionPreviewComponent.new(changes: mudancas, apply_url: "#", title: "Recategorizar 3 lançamentos") %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Desde a última visita (SinceLastVisitComponent)", subtitle: "O cartão ao abrir: números que rolam, uma ação por item; some sozinho ou com \"Entendi\" e guarda a visita no navegador.") %>
+    <%= render Ss::SinceLastVisitComponent.new(since: 1.day.ago.change(hour: 18), auto_hide: nil, storage_key: "ss-vitrine-visit", items: [
+          { value: "3", label: "pedidos novos", icon: "shopping-bag", href: "#pedidos" },
+          { value: ss_money(1240), label: "recebidos", icon: "cash", tone: :success },
+          { value: "1", label: "tarefa atrasada", icon: "clock", tone: :warn, href: "#tarefas", action_label: "Resolver" }]) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Continuar no outro aparelho (ContinueOnComponent) e apps da suíte (SuiteSwitcherComponent)", subtitle: "O QR leva a esta tela com o estado (filtros e o rascunho do formulário, pelo /demo/continuar). A grade mostra os apps da conta, o último acesso, os avisos e os que ela ainda não usa.") %>
+    <%= ss_form_with url: "#", scope: :demo_continuar, html: { id: "demo-continuar", class: "grid gap-3 max-w-xl" } do |f| %>
+      <%= f.ss_text_field :cliente, label: "Cliente", value: "Loja Exemplo" %>
+      <%= f.ss_text_area :observacao, label: "Rascunho do pedido", value: "3 caixas de café, entrega na sexta" %>
+    <% end %>
+    <div class="flex flex-wrap gap-3 items-center">
+      <%= render Ss::ContinueOnComponent.new(url: "#{request.base_url}/vitrine/pecas_v1130", state: { filtros: { status: "aberto" } },
+            handoff_url: "/demo/continuar", form: "demo-continuar") %>
+      <%= render Ss::ContinueOnComponent.new(url: "#{request.base_url}/vitrine/pecas_v1130", target: :computer) %>
+      <%= render Ss::SuiteSwitcherComponent.new(products: produtos) %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Conflito de versões (ConflictResolverComponent)", subtitle: "O mesmo pedido mudou aqui e em outro lugar: escolha por campo ou fique com uma versão inteira.") %>
+    <%= render Ss::ConflictResolverComponent.new(url: "#", theirs_by: "Ana (desktop)", theirs_at: 20.minutes.ago, mine_at: 5.minutes.ago, cancel_href: "#", fields: [
+          { key: :quantidade, label: "Quantidade", mine: "12", theirs: "10" },
+          { key: :entrega, label: "Entrega", mine: "Sexta, 05/12", theirs: "Quinta, 04/12" },
+          { key: :observacao, label: "Observação", mine: "Deixar na portaria", theirs: nil },
+          { key: :cliente, label: "Cliente", mine: "Loja Exemplo", theirs: "Loja Exemplo" }]) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Valor falado (MoneyInputComponent(voice: true)) e modo discreto automático", subtitle: "O microfone usa o reconhecimento do navegador (Chrome e Edge). O texto vira centavos pelo ssParseAmount, igual ao ComponentesUi::Speech do servidor.") %>
+    <div class="grid gap-4 md:grid-cols-2 items-start">
+      <%= render Ss::MoneyInputComponent.new(name: "demo[valor_cents]", label: "Valor", voice: true, help: "Diga, por exemplo, \"cento e vinte e três e cinquenta\".") %>
+      <div class="grid gap-2 text-sm">
+        <% ["cento e vinte e três e cinquenta", "mil e duzentos reais", "dois mil e quinhentos e noventa centavos", "doze e meio", "R$ 12,50"].each do |frase| %>
+          <p><span class="ss-muted">“<%= frase %>”</span> → <span class="num"><%= ss_money(ss_spoken_amount(frase) / 100.0) %></span></p>
+        <% end %>
+      </div>
+    </div>
+    <p class="ss-muted">Modo discreto automático: com <code>data-ss-privacy-auto-value="true"</code> no controller <code>ss-privacy</code>, os valores se escondem quando a aba sai da frente, enquanto esta página compartilha a tela, ou pelo evento <code>ss-privacy:auto</code> do produto.</p>
+  </section>
+</div>

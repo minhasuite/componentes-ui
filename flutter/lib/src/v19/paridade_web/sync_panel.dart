@@ -7,6 +7,7 @@ import '../../ss_button.dart';
 import '../../ss_card.dart';
 import '../../ss_strings.dart';
 import '../../ss_sync.dart';
+import '../../v1130/strings.dart';
 
 /// O cartão do topo da tela da fila de envio: quando foi a última sincronização ("Sincronizado às 14:32",
 /// "Nunca sincronizado"), o erro da última tentativa (em vermelho), a pílula [SsSyncStatus] com o que falta
@@ -33,7 +34,14 @@ class SsSyncPanel extends StatelessWidget {
     this.details,
     this.onSyncNow,
     this.now,
+    this.conflictCount = 0,
+    this.onResolveConflicts,
   });
+
+  /// v1.13.0: registros que mudaram aqui e no servidor; com [onResolveConflicts], a linha "2 registros em conflito ·
+  /// Resolver", que abre o [SsConflictResolver] do app.
+  final int conflictCount;
+  final VoidCallback? onResolveConflicts;
 
   final SsSyncState state;
   final int pendingCount;
@@ -93,6 +101,25 @@ class SsSyncPanel extends StatelessWidget {
             Text(
               details!,
               style: TextStyle(color: c.muted, fontSize: d.font(AppType.meta)),
+            ),
+          ],
+          if (conflictCount > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.sync_problem_rounded, size: 18, color: c.aquecText),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    conflictCount == 1
+                        ? SsTrustStrings.of(context).conflictCountOne
+                        : SsTrustStrings.fill(SsTrustStrings.of(context).conflictCount, {'count': conflictCount}),
+                    style: TextStyle(color: c.aquecText, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
+                  ),
+                ),
+                if (onResolveConflicts != null)
+                  SsButton.text(label: SsTrustStrings.of(context).conflictResolve, onPressed: onResolveConflicts),
+              ],
             ),
           ],
           if (onSyncNow != null) ...[
