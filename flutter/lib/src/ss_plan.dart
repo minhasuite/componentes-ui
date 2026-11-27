@@ -252,9 +252,14 @@ class SsQuota extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             if (icone != null) ...[Icon(icone, size: 14, color: cor), const SizedBox(width: 4)],
-            Text(
-              frase,
-              style: TextStyle(color: texto, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+            // v1.9.1: rótulo longo ou texto grande quebra em até 2 linhas e termina em "…" (estourava).
+            Flexible(
+              child: Text(
+                frase,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: texto, fontSize: AppType.meta, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),

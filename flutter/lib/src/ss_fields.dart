@@ -1189,6 +1189,7 @@ class SsChoiceField<T> extends StatelessWidget {
           children: [
             if (label != null) ExcludeSemantics(child: SsFieldLabel(label!)),
             SsTapTarget(
+              semantics: true,
               minSize: Size(0, d.minTarget),
               child: Semantics(
                 button: true,
@@ -1690,6 +1691,7 @@ class SsTimeField extends StatelessWidget {
       children: [
         if (label != null) ExcludeSemantics(child: SsFieldLabel(label!)),
         SsTapTarget(
+          semantics: true,
           minSize: Size(0, d.minTarget),
           child: Semantics(
             button: true,

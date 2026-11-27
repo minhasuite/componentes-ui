@@ -1,5 +1,8 @@
 // v1.9 · UX transversal: a auditoria de acessibilidade que os apps rodam nos testes de tela
 // (só pelo `package:componentes_ui/testing.dart`; nunca no app).
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,6 +25,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// Desligue uma parte com `tapTargets:`, `labels:` ou `textScale: null`. O texto grande usa o
 /// `platformDispatcher.textScaleFactorTestValue` (o `MaterialApp` lê dele) e volta ao normal no fim.
 /// Com animação infinita na tela (skeleton, carregando), passe [settle] curto: o pump fica fixo nele.
+///
+/// v1.9.1: com o `FlutterError.onError` trocado pelo teste por um que não repassa ao binding (engole erro de
+/// layout, por exemplo), a falha não é lançada (o binding do `flutter_test` ficaria esperando até o tempo
+/// limite): é registrada direto no teste, que falha ao terminar com a mesma lista, e a função volta.
 Future<void> ssA11yAudit(
   WidgetTester tester, {
   bool tapTargets = true,
@@ -64,8 +71,43 @@ Future<void> ssA11yAudit(
     }
   }
   if (problemas.isNotEmpty) {
-    fail('ssA11yAudit achou ${problemas.length} problema(s):\n\n${problemas.join('\n\n')}');
+    final msg = 'ssA11yAudit achou ${problemas.length} problema(s):\n\n${problemas.join('\n\n')}';
+    if (_bindingOuve(tester)) fail(msg);
+    (debugSsA11yAuditReporter ?? _registrarNoTeste)(
+      TestFailure(
+        '$msg\n\n(O FlutterError.onError do teste não repassa ao binding: a falha foi registrada direto '
+        'no teste, sem lançar, para não travar até o tempo limite.)',
+      ),
+    );
   }
+}
+
+/// Nos testes do pacote: quem recebe a falha quando o `FlutterError.onError` do teste não repassa ao
+/// binding. Nulo: registra no teste (pela zona de fora da do binding).
+@visibleForTesting
+void Function(TestFailure falha)? debugSsA11yAuditReporter;
+
+class _Sonda {
+  const _Sonda();
+}
+
+/// O `FlutterError.onError` de agora leva o erro ao binding? Se não leva, uma falha lançada some no
+/// handler do teste e o binding do `flutter_test` espera para sempre o erro que nunca chega.
+bool _bindingOuve(WidgetTester tester) {
+  // Erro que já estava pendente: o binding termina o teste com ele (lançar não trava).
+  if (tester.takeException() case final pendente?) {
+    FlutterError.reportError(FlutterErrorDetails(exception: pendente, library: 'ssA11yAudit'));
+    return true;
+  }
+  FlutterError.reportError(const FlutterErrorDetails(exception: _Sonda(), library: 'ssA11yAudit'));
+  return tester.takeException() is _Sonda;
+}
+
+/// Marca o teste como falho pela zona de fora da do binding (a do `package:test`), como o próprio
+/// `flutter_test` faz ao fim do teste.
+void _registrarNoTeste(TestFailure falha) {
+  final zonaDoBinding = Zone.current.errorZone;
+  (zonaDoBinding.parent ?? Zone.root).handleUncaughtError(falha, StackTrace.current);
 }
 
 /// O que a [ssA11yAudit] conta como texto grande (para o app escrever o teste dele com o mesmo valor).

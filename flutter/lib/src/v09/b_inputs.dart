@@ -1180,6 +1180,7 @@ class _SsMorphButtonState extends State<SsMorphButton> {
     // Altura do botão da densidade (48 no padrão; era 52); toque nunca abaixo de 48.
     final d = SsDensity.of(context);
     return SsTapTarget(
+      semantics: true,
       minSize: Size(0, d.minTarget),
       child: Semantics(
         button: true,

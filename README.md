@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.9.0
+      ref: v1.9.1
 ```
 
 ```dart
@@ -653,6 +653,27 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.9.1: alvos de toque de 48 e a cota com texto grande
+
+Achados do `ssA11yAudit` nos apps (meu-personal-app e meu-cultivo-app, 27/11/2026). Nada quebra e o desenho é o mesmo;
+o que entra na API é opcional (`semantics:`, `handleKey:`, `itemKeys:`).
+
+- `SsTapTarget(semantics: true)`: além do toque, o nó do leitor de tela (e da auditoria) tem a área de `minSize`; a
+  semântica do filho vira um nó só. Ligado onde o filho é um alvo só: cada segmento do `SsSegmented`, cada aba do
+  `SsTabsUnderline`/`SsCountTabs`, `SsFilterChip` (e os atalhos do `SsAssistantView`), `SsButton` em todas as variantes
+  (`small`, `.text`; com isso o "Marcar todas como lidas" do `SsNotificationCenter`, o botão do `SsPlanLocked` e os do
+  `SsChatActionCard`), `SsChoiceField`/`SsTimeField`, − + do `SsStepper` e o `SsMorphButton`. O `SsButton` passa a ter 48
+  de largura de toque também (um "Ok" curto). Peça com vários tocáveis dentro (chip com ✕, a faixa inteira) fica sem.
+- Faixa de atalhos do `SsAssistantView`: 48 de altura com o chip no meio, para a rolagem não cortar o alvo.
+- `SsQuota`: o texto quebra em até 2 linhas e termina em "…" (estourava com rótulo longo e texto 1,6×).
+- `SsTour` alcança a alça do menu e as abas: `SsSideMenuHost(handleKey:)` / `SsNavScaffold(handleKey:)` e
+  `SsNavBar(itemKeys:)` (uma `GlobalKey` por aba), para usar em `SsTourStep(target:)`.
+- `ssA11yAudit` não trava mais quando o teste trocou o `FlutterError.onError` por um que não repassa ao binding (o
+  `flutter_test` esperava até o tempo limite): a falha é registrada direto no teste, que falha na hora com a lista.
+- Web, no celular (`pointer: coarse`): cada opção do `.ss-seg` e o `.ss-chip` tocável ganham a área de `--ss-target`
+  invisível em volta (o desenho não muda) e o `.ss-btn` chega a `--ss-target` de altura, como o `.ss-btn-sm` já fazia.
+- `test/v191_alvos_test.dart`: o `ssA11yAudit` nas peças interativas mais usadas, no compacto e no padrão.
 
 ## v1.9.0: movimento, transições, peças repetidas dos apps, paridade e as vitrines por categoria
 
@@ -1391,7 +1412,7 @@ comportamentos em `ss-data-table`, `ss-button`, `ss-fab`, `ss-choice-field`, `ss
   tabela ficam com 44 px de altura (eram 32–36). No computador, nada.
 - **Paleta de comandos**: o 1º Esc fecha (antes limpava o texto).
 - **Flutter**: `SsButton` vira nó próprio no leitor de tela (teste de produto que procurava o rótulo do botão junto com o texto
-  do cartão precisa olhar o botão sozinho); `SsChoiceField`/`SsDateField`/`SsTimeField` e o `SsMenuView` soltam o foco do
+  do cartão precisa olhar o botão sozinho); `SsChoiceField`/`SsChoiceField`/`SsTimeField` e o `SsMenuView` soltam o foco do
   campo de texto ao abrir a folha ou o item.
 
 ## v0.23.5: área segura do celular (`viewport-fit=cover`)

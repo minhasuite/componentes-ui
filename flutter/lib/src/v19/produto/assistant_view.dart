@@ -453,28 +453,35 @@ class _FaixaAtalhos extends StatelessWidget {
   final ValueChanged<SsAssistantShortcut>? onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: SsStrings.of(context).assistantShortcuts,
-    container: true,
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      child: Row(
-        children: [
-          for (final a in shortcuts)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: SsFilterChip(
-                a.label,
-                icon: a.icon,
-                selected: false,
-                onTap: onTap == null ? null : () => onTap!(a),
-              ),
-            ),
-        ],
+  Widget build(BuildContext context) {
+    // v1.9.1: a faixa tem a altura do alvo (48) com o chip no meio: a rolagem corta o que passa dela.
+    final d = SsDensity.of(context);
+    return Semantics(
+      label: SsStrings.of(context).assistantShortcuts,
+      container: true,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: d.minTarget),
+          child: Row(
+            children: [
+              for (final a in shortcuts)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: SsFilterChip(
+                    a.label,
+                    icon: a.icon,
+                    selected: false,
+                    onTap: onTap == null ? null : () => onTap!(a),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Lista das conversas do assistente: "Conversas" com o + (nova), cada uma com título, "há 2 h", o selo

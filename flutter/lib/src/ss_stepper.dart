@@ -303,6 +303,7 @@ class _SsStepperState extends State<SsStepper> {
   Widget _btn(SsColors c, SsDensity d, double lado, IconData icon, String label, int dir, bool on, bool enabled) =>
       // Compacto: o botão desenha 36 e o toque continua com 48.
       SsTapTarget(
+        semantics: true,
         minSize: Size(d.minTarget, d.minTarget),
         child: Semantics(
           button: true,

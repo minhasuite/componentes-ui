@@ -240,30 +240,72 @@ class _SsDensityInherited extends InheritedWidget {
 /// compacto desenhar 40 e continuar com 48 de toque. A sobra só recebe toque
 /// dentro do pai (quem desenha o controle numa linha de 48 já tem a área).
 class SsTapTarget extends SingleChildRenderObjectWidget {
-  const SsTapTarget({super.key, this.minSize = const Size(48, 48), required Widget super.child});
+  const SsTapTarget({
+    super.key,
+    this.minSize = const Size(48, 48),
+    this.semantics = false,
+    required Widget super.child,
+  });
 
   final Size minSize;
 
+  /// v1.9.1: o leitor de tela (e o `ssA11yAudit`/`androidTapTargetGuideline`) também vê a área de
+  /// [minSize], e não só o desenho: a semântica do filho vira um nó só, deste tamanho. Ligue só quando
+  /// o filho é **um** alvo (botão, chip, segmento); com vários tocáveis dentro (a faixa inteira de um
+  /// segmentado, um chip com o ✕) eles se juntariam num nó.
+  final bool semantics;
+
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderSsTapTarget(minSize);
+  RenderObject createRenderObject(BuildContext context) => _RenderSsTapTarget(minSize, semantics);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderSsTapTarget).minSize = minSize;
+    (renderObject as _RenderSsTapTarget)
+      ..minSize = minSize
+      ..semantics = semantics;
   }
 }
 
 class _RenderSsTapTarget extends RenderProxyBox {
-  _RenderSsTapTarget(this.minSize);
+  _RenderSsTapTarget(this._minSize, this._semantics);
 
-  Size minSize;
+  Size _minSize;
+  Size get minSize => _minSize;
+  set minSize(Size v) {
+    if (v == _minSize) return;
+    _minSize = v;
+    if (_semantics) markNeedsSemanticsUpdate();
+  }
+
+  bool _semantics;
+  set semantics(bool v) {
+    if (v == _semantics) return;
+    _semantics = v;
+    markNeedsSemanticsUpdate();
+  }
+
+  Rect get _area {
+    final dx = math.max(0.0, (minSize.width - size.width) / 2);
+    final dy = math.max(0.0, (minSize.height - size.height) / 2);
+    return Rect.fromLTRB(-dx, -dy, size.width + dx, size.height + dy);
+  }
+
+  @override
+  Rect get semanticBounds => _semantics ? _area : super.semanticBounds;
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    if (_semantics) {
+      config
+        ..isSemanticBoundary = true
+        ..isMergingSemanticsOfDescendants = true;
+    }
+  }
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final dx = math.max(0.0, (minSize.width - size.width) / 2);
-    final dy = math.max(0.0, (minSize.height - size.height) / 2);
-    final area = Rect.fromLTRB(-dx, -dy, size.width + dx, size.height + dy);
-    if (!area.contains(position)) return false;
+    if (!_area.contains(position)) return false;
     if (size.isEmpty) return false;
     // Ponto da sobra vai para o meio do filho no eixo em que caiu fora (a borda
     // pode ser respiro interno, que não recebe toque).

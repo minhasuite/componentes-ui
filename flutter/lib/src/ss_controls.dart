@@ -75,42 +75,47 @@ class SsSegmented<T> extends StatelessWidget {
             children: [
               for (var k = 0; k < n; k++)
                 Expanded(
-                  child: Semantics(
-                    button: true,
-                    selected: k == i,
-                    enabled: !disabled.contains(segments[k].$1),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        if (k == i || disabled.contains(segments[k].$1)) return;
-                        SsHaptics.selection();
-                        onChanged(segments[k].$1);
-                      },
-                      child: Center(
-                        child: AnimatedDefaultTextStyle(
-                          duration: SsMotion.short,
-                          style: TextStyle(
-                            fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                            color: k == i
-                                ? (onDark ? c.brand.accentHoverLight : c.accentText)
-                                : (onDark ? AppColors.onDarkSoft : c.muted).withValues(
-                                    alpha: disabled.contains(segments[k].$1) ? .45 : 1,
+                  // v1.9.1: cada segmento é um alvo de 48 também para o leitor de tela (desenho igual).
+                  child: SsTapTarget(
+                    semantics: true,
+                    minSize: Size(0, d.minTarget),
+                    child: Semantics(
+                      button: true,
+                      selected: k == i,
+                      enabled: !disabled.contains(segments[k].$1),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (k == i || disabled.contains(segments[k].$1)) return;
+                          SsHaptics.selection();
+                          onChanged(segments[k].$1);
+                        },
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: SsMotion.short,
+                            style: TextStyle(
+                              fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                              color: k == i
+                                  ? (onDark ? c.brand.accentHoverLight : c.accentText)
+                                  : (onDark ? AppColors.onDarkSoft : c.muted).withValues(
+                                      alpha: disabled.contains(segments[k].$1) ? .45 : 1,
+                                    ),
+                              fontSize: d.font(AppType.sub),
+                              fontWeight: k == i ? FontWeight.w800 : FontWeight.w600,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (icons?[k] case final ic?) ...[
+                                  Builder(
+                                    builder: (ctx) =>
+                                        Icon(ic, size: d.iconSize - 4, color: DefaultTextStyle.of(ctx).style.color),
                                   ),
-                            fontSize: d.font(AppType.sub),
-                            fontWeight: k == i ? FontWeight.w800 : FontWeight.w600,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (icons?[k] case final ic?) ...[
-                                Builder(
-                                  builder: (ctx) =>
-                                      Icon(ic, size: d.iconSize - 4, color: DefaultTextStyle.of(ctx).style.color),
-                                ),
-                                SizedBox(width: d.space(5)),
+                                  SizedBox(width: d.space(5)),
+                                ],
+                                Flexible(child: Text(segments[k].$2, maxLines: 1, overflow: TextOverflow.ellipsis)),
                               ],
-                              Flexible(child: Text(segments[k].$2, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -264,6 +269,7 @@ class SsFilterChip extends StatelessWidget {
 
     // Por fora de tudo: o toque na sobra (alvo 48) passa pelo Semantics.
     return SsTapTarget(
+      semantics: true,
       minSize: Size(0, d.minTarget),
       child: Semantics(
         button: true,

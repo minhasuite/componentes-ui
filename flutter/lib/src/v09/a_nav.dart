@@ -226,22 +226,27 @@ class _SsTabsUnderlineState extends State<SsTabsUnderline> {
               ),
             );
     }
-    return Semantics(
-      button: true,
-      selected: sel,
-      child: InkWell(
-        onTap: () {
-          if (!sel) SsHaptics.tick();
-          widget.onChanged(i);
-        },
-        child: Center(
-          child: _TabLabel(
-            selected: sel,
-            child: AnimatedDefaultTextStyle(
-              duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
-              curve: Curves.easeOut,
-              style: _estilo(context, selected: sel, cor: sel ? on : off),
-              child: rotulo,
+    // v1.9.1: no compacto a aba desenha 42; o leitor de tela e o toque contam 48 (a faixa toda já recebe a sobra).
+    return SsTapTarget(
+      semantics: true,
+      minSize: Size(0, SsDensity.of(context).minTarget),
+      child: Semantics(
+        button: true,
+        selected: sel,
+        child: InkWell(
+          onTap: () {
+            if (!sel) SsHaptics.tick();
+            widget.onChanged(i);
+          },
+          child: Center(
+            child: _TabLabel(
+              selected: sel,
+              child: AnimatedDefaultTextStyle(
+                duration: reduceMotion(context) ? Duration.zero : SsMotion.base,
+                curve: Curves.easeOut,
+                style: _estilo(context, selected: sel, cor: sel ? on : off),
+                child: rotulo,
+              ),
             ),
           ),
         ),

@@ -472,7 +472,12 @@ class SsSideMenuHost extends StatefulWidget {
     this.onOpenChanged,
     this.width,
     this.debugHintAt,
+    this.handleKey,
   });
+
+  /// v1.9.1: chave posta na alça (a pílula da borda e o respiro de toque dela): o alvo de um passo do
+  /// [SsTour] que mostra onde abre o menu. Nulo: sem chave.
+  final GlobalKey? handleKey;
 
   /// Nos testes e no catálogo: a dica parada neste instante (0..1 da linha do tempo).
   @visibleForTesting
@@ -695,6 +700,7 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
                 onDragStart: _dragStart,
                 onDragUpdate: _dragUpdate,
                 onDragEnd: _dragEnd,
+                targetKey: widget.handleKey,
               );
               if (t <= 0) return Stack(children: [Positioned.fill(child: alca)]);
               final shown = t.clamp(0.0, 1.0);
@@ -820,8 +826,10 @@ class _EdgeGlow extends StatelessWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
+    this.targetKey,
   });
 
+  final GlobalKey? targetKey;
   final double t;
   final Color color;
 
@@ -857,6 +865,7 @@ class _EdgeGlow extends StatelessWidget {
           onHorizontalDragUpdate: onDragUpdate,
           onHorizontalDragEnd: onDragEnd,
           child: Padding(
+            key: targetKey,
             padding: const EdgeInsets.fromLTRB(0, 18, 16, 18),
             child: Container(
               width: 5,
@@ -899,7 +908,12 @@ class SsNavScaffold extends StatefulWidget {
     this.floatingActionButton,
     this.debugHintAt,
     this.hideNavOnScroll = false,
+    this.handleKey,
   });
+
+  /// v1.9.1: chave da alça do menu (ver [SsSideMenuHost.handleKey]), para o [SsTour] apontar para ela.
+  /// As abas usam o `itemKeys:` da [navBar].
+  final GlobalKey? handleKey;
 
   /// v1.9: a barra de abas some ao rolar o corpo para baixo e volta ao rolar para cima (ou no topo, ou ao
   /// trocar de aba); enquanto ela está escondida o corpo ganha a altura dela. `navBar.hideOnScroll: true`
@@ -1005,6 +1019,7 @@ class _SsNavScaffoldState extends State<SsNavScaffold> with SingleTickerProvider
         key: _menu,
         peek: widget.peek,
         debugHintAt: widget.debugHintAt,
+        handleKey: widget.handleKey,
         handleBack: false,
         onOpenChanged: (v) => setState(() => _menuOpen = v),
         menu: widget.tabsInMenu

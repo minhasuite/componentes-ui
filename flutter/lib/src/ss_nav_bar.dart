@@ -73,7 +73,13 @@ class SsNavBar extends StatefulWidget {
     required this.onTap,
     this.center,
     this.hideOnScroll = false,
-  }) : assert(items.length >= 2);
+    this.itemKeys,
+  }) : assert(items.length >= 2),
+       assert(itemKeys == null || itemKeys.length == items.length);
+
+  /// v1.9.1: uma chave por aba (na ordem de [items]), posta na aba inteira: o alvo de um passo do
+  /// [SsTour] (`SsTourStep(target: abas[1], …)`) ou de um teste. Nulo: sem chave.
+  final List<GlobalKey>? itemKeys;
 
   /// v1.9: some ao rolar a lista da tela para baixo e volta ao rolar para cima (ou ao chegar no topo, ou ao
   /// trocar de aba). Escuta o `ScrollNotificationObserver` do `Scaffold` (o mesmo do `AppBar`), então serve
@@ -242,6 +248,7 @@ class _SsNavBarState extends State<SsNavBar> with TickerProviderStateMixin {
                           if (center != null && i == half) const Spacer(),
                           Expanded(
                             child: _Tab(
+                              key: widget.itemKeys?[i],
                               item: widget.items[i],
                               selected: i == widget.currentIndex,
                               index: i,
@@ -345,6 +352,7 @@ class _CenterButton extends StatelessWidget {
 
 class _Tab extends StatelessWidget {
   const _Tab({
+    super.key,
     required this.item,
     required this.selected,
     required this.index,

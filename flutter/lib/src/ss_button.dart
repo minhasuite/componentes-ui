@@ -258,7 +258,8 @@ class SsButton extends StatelessWidget {
     // misturado ao texto do cartão e não achava o botão para tocar.
     // (Dentro do SsTapTarget: ele estende o toque além do desenho, e um pai do tamanho do desenho cortaria isso.)
     return SsTapTarget(
-      minSize: Size(0, d.minTarget),
+      semantics: true,
+      minSize: Size(d.minTarget, d.minTarget), // v1.9.1: "Ok" curto também tem 48 de largura
       child: Semantics(
         container: true,
         button: true,

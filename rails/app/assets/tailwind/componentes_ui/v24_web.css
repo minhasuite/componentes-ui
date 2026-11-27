@@ -99,8 +99,15 @@
    desenho. Fora das camadas porque .ss-subnav/.ss-actions do engine.css também estão. */
 @media (pointer: coarse) {
   .ss-btn-sm { min-height: max(var(--ss-control-h-sm), var(--ss-target)); }
+  /* v1.9.1: o botão comum (40) também chega ao alvo; o chip tocável ganha a área invisível em volta (SsFilterChip). */
+  .ss-btn { min-height: max(var(--ss-control-h), var(--ss-target)); }
+  :is(a, button, label).ss-chip { position: relative; }
+  :is(a, button, label).ss-chip::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--ss-target)); height: max(100%, var(--ss-target)); translate: -50% -50%; }
   .ss-tab, .ss-subnav a, .ss-settings-nav a, .ss-dt-pager > :is(a, span), .ss-shell-tenant-item { min-height: var(--ss-target); }
   :is(.ss-icon-btn, .ss-dt-toggle, .ss-shell-collapse) { position: relative; }
   :is(.ss-icon-btn, .ss-dt-toggle, .ss-shell-collapse)::after {
     content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, var(--ss-target)); height: max(100%, var(--ss-target)); translate: -50% -50%; }
+  /* v1.9.1: cada opção do segmentado (.ss-seg) ganha o alvo na altura sem engordar a trilha (SsSegmented). */
+  .ss-seg > :not(.ss-ind)::after { content: ""; position: absolute; inset-inline: 0; top: 50%; height: max(100%, var(--ss-target)); translate: 0 -50%; }
 }
