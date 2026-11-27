@@ -9,10 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'aparencia.dart';
 import 'catalogo/catalogo.dart';
-import 'catalogo/catalogo_v19_movimento.dart';
-import 'catalogo/catalogo_v19_paridade_app.dart';
-import 'catalogo/catalogo_v19_produto.dart';
-import 'catalogo/catalogo_v19_transicoes.dart';
+import 'catalogo/catalogo_v1100.dart';
 import 'categorias.dart';
 import 'telas/tela_demo.dart';
 import 'telas/telas_a.dart';
@@ -26,10 +23,10 @@ void main() {
 const _demoUrl = 'https://demo.minhasuite.com';
 const _repoUrl = 'https://github.com/minhasuite/componentes-ui';
 
-/// Peças da onda atual: as que os `comV19*` do catálogo acrescentam (aplicados a uma lista
-/// vazia) mais as marcadas "(v1.9…)" na descrição. Onda nova de peças = um `comV19*` a mais aqui.
+/// Peças da onda atual: as que o `comV1100` do catálogo acrescenta (aplicado a uma lista
+/// vazia) mais as marcadas "(v1.10…)" na descrição. Onda nova de peças = trocar o `comV*` aqui.
 final Set<String> _novas = {
-  for (final onda in [comV19Movimento, comV19Transicoes, comV19ParidadeApp, comV19Produto])
+  for (final onda in [comV1100])
     for (final c in onda(const <Componente>[])) c.slug,
   for (final c in catalogo)
     if (ehNovidade(c.nome, c.descricao)) c.slug,

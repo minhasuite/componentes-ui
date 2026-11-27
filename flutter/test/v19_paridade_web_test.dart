@@ -22,7 +22,8 @@ Map<String, Map<String, ParEntrada>> lerParidade(String texto) {
   List<String> aspas(String s) => [for (final m in RegExp(r'"((?:[^"\\]|\\.)*)"').allMatches(s)) m.group(1)!];
   for (final linha in texto.split('\n')) {
     if (linha.trim().isEmpty || linha.trimLeft().startsWith('#')) continue;
-    final secao = RegExp(r'^(\w+):\s*$').firstMatch(linha);
+    // v1.10.0: seção vazia como `divida: {}` (o YAML do Ruby lê {} e não nil).
+    final secao = RegExp(r'^(\w+):\s*(?:\{\s*\})?\s*$').firstMatch(linha);
     if (secao != null) {
       atual = out[secao.group(1)!] = {};
       continue;
@@ -180,6 +181,7 @@ void main() {
       expect(y['pares']!['SsB']!.alvos, ['css:.ss-b', 'helper:ss_b']);
       expect(y['pares']!['SsC']!.pendente, isTrue);
       expect(y['so_app']!['SsD']!.alvos.single, 'um motivo qualquer');
+      expect(lerParidade('pares:\n  SsA: "Ss::AComponent"\ndivida: {}\n')['divida'], isEmpty);
       expect(() => lerParidade('pares:\nSsA: x\n'), throwsFormatException);
     });
   });

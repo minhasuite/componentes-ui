@@ -130,3 +130,9 @@ export 'src/v19/produto/notification_center.dart';
 // v1.9 · paridade web: a busca do menu lateral (SsSideMenu(search:)) e o cartão da fila de sincronização.
 export 'src/v19/paridade_web/side_search.dart' show SsSideMenuSearch;
 export 'src/v19/paridade_web/sync_panel.dart';
+// v1.10.0: os pares Flutter que faltavam (cartão de produto, filtros, tarefa longa, árvore e balão).
+export 'src/v1100/filter_sheet.dart';
+export 'src/v1100/job_progress.dart';
+export 'src/v1100/popover.dart';
+export 'src/v1100/product_card.dart';
+export 'src/v1100/tree_view.dart';

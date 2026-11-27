@@ -25,7 +25,7 @@ class Categoria {
 }
 
 /// A onda cujas peças entram em "Novidades".
-const versaoNovidades = '1.9';
+const versaoNovidades = '1.10';
 
 const novidades = Categoria('novidades', 'Novidades (v$versaoNovidades)', 'sparkles', 'O que chegou nesta versão.');
 const fundacao = Categoria(
@@ -175,6 +175,7 @@ final _porSlug = <String, Categoria>{
     'ss-list-item', 'ss-paged-list', 'ss-pull-to-refresh', 'ss-swipe-action', 'ss-value-row', 'ss-value-tile', //
     'ss-rows', 'ss-reorderable-list', 'ss-data-table', 'ss-block-list', 'ss-collapsible', 'ss-compare-table',
     'ss-kanban', 'ss-avatar', 'ss-avatar-extras', 'ss-task-item', 'ss-audit',
+    'ss-filter-bar', 'ss-filter-sheet', 'ss-tree-view', // v1.10
   ])
     s: listas,
   // Dados e gráficos
@@ -198,6 +199,7 @@ final _porSlug = <String, Categoria>{
     'ss-empty-state', 'ss-error-view', 'skeleton', 'ss-toast', 'ss-async-body', 'ss-inline-async', //
     'ss-confirm', 'ss-prompt', 'ss-run-blocking', 'ss-sheet', 'ss-sheet-header', 'ss-offline-banner', 'ss-undo',
     'ss-linear-loader', 'ss-highlight', 'ss-sync', 'ss-async-sliver', 'ss-spinner', 'ss-skeleton-switch',
+    'ss-job-progress', 'ss-popover', // v1.10
     'ss-undoable-removal', 'ss-illustration', 'ss-skeleton', 'ss-badge', 'ss-status-badge', 'ss-dot',
   ])
     s: retorno,
@@ -233,7 +235,7 @@ final _porSlug = <String, Categoria>{
   for (final s in [
     'ss-amount', 'ss-offer-card', 'ss-deal-badge', 'ss-ticket-card', 'ss-wallet-card', 'ss-qr-card', //
     'ss-recurring-card', 'ss-pop-out-card', 'ss-level-card', 'ss-price-board', 'ss-privacy', 'ss-plan',
-    'ss-split-slider',
+    'ss-split-slider', 'ss-product-card', // v1.10
   ])
     s: comercio,
   // Mídia e captura

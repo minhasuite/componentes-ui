@@ -515,6 +515,28 @@ class SsStrings {
     this.syncedOn = _syncedOnPt,
     this.syncNever = 'Nunca sincronizado',
     this.syncNow = 'Sincronizar agora',
+    // v1.10.0: filtros, tarefa longa e árvore
+    this.filters = 'Filtros',
+    this.filtersActive = 'Filtros ativos',
+    this.filterClear = 'Limpar filtros',
+    this.filterShow = 'Mostrar resultados',
+    this.jobQueued = 'Na fila',
+    this.jobRunning = 'Rodando',
+    this.jobDone = 'Concluído',
+    this.jobFailed = 'Falhou',
+    this.jobError = 'Algo deu errado.',
+    this.jobResult = 'Abrir resultado',
+    this.jobTotal = 'Total',
+    this.jobStageDone = 'Concluída',
+    this.jobStageFailed = 'Falhou',
+    this.jobStageSkipped = 'Pulada',
+    this.jobStageRunning = 'Rodando',
+    this.jobStagePending = 'Pendente',
+    this.treeLabel = 'Árvore',
+    this.filterRemove = _v1100FilterRemovePt,
+    this.filterButton = _v1100FilterButtonPt,
+    this.filterShowResults = _v1100FilterShowResultsPt,
+    this.treeCount = _v1100TreeCountPt,
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1289,6 +1311,29 @@ class SsStrings {
   final String syncNever;
   final String syncNow;
 
+  // v1.10.0: filtros (SsFilterBar/SsFilterSheet), tarefa longa (SsJobProgress) e árvore (SsTreeView).
+  final String filters;
+  final String filtersActive;
+  final String filterClear;
+  final String filterShow;
+  final String jobQueued;
+  final String jobRunning;
+  final String jobDone;
+  final String jobFailed;
+  final String jobError;
+  final String jobResult;
+  final String jobTotal;
+  final String jobStageDone;
+  final String jobStageFailed;
+  final String jobStageSkipped;
+  final String jobStageRunning;
+  final String jobStagePending;
+  final String treeLabel;
+  final String Function(String filter, String value) filterRemove;
+  final String Function(int n) filterButton;
+  final String Function(int n) filterShowResults;
+  final String Function(int n) treeCount;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1810,6 +1855,28 @@ class SsStrings {
     syncedOn: _syncedOnPt,
     syncNever: 'Nunca sincronizado',
     syncNow: 'Sincronizar agora',
+    // v1.10.0
+    filters: 'Filtros',
+    filtersActive: 'Filtros ativos',
+    filterClear: 'Limpar filtros',
+    filterShow: 'Mostrar resultados',
+    jobQueued: 'Na fila',
+    jobRunning: 'Rodando',
+    jobDone: 'Concluído',
+    jobFailed: 'Falhou',
+    jobError: 'Algo deu errado.',
+    jobResult: 'Abrir resultado',
+    jobTotal: 'Total',
+    jobStageDone: 'Concluída',
+    jobStageFailed: 'Falhou',
+    jobStageSkipped: 'Pulada',
+    jobStageRunning: 'Rodando',
+    jobStagePending: 'Pendente',
+    treeLabel: 'Árvore',
+    filterRemove: _v1100FilterRemovePt,
+    filterButton: _v1100FilterButtonPt,
+    filterShowResults: _v1100FilterShowResultsPt,
+    treeCount: _v1100TreeCountPt,
   );
 
   /// Inglês.
@@ -2319,6 +2386,28 @@ class SsStrings {
     syncedOn: (date) => 'Synced on $date',
     syncNever: 'Never synced',
     syncNow: 'Sync now',
+    // v1.10.0
+    filters: 'Filters',
+    filtersActive: 'Active filters',
+    filterClear: 'Clear filters',
+    filterShow: 'Show results',
+    jobQueued: 'Queued',
+    jobRunning: 'Running',
+    jobDone: 'Done',
+    jobFailed: 'Failed',
+    jobError: 'Something went wrong.',
+    jobResult: 'Open result',
+    jobTotal: 'Total',
+    jobStageDone: 'Done',
+    jobStageFailed: 'Failed',
+    jobStageSkipped: 'Skipped',
+    jobStageRunning: 'Running',
+    jobStagePending: 'Pending',
+    treeLabel: 'Tree',
+    filterRemove: (filter, value) => 'Remove filter $filter: $value',
+    filterButton: (n) => n == 0 ? 'Filters' : 'Filters, $n active',
+    filterShowResults: (n) => n == 0 ? 'No results' : (n == 1 ? 'Show 1 result' : 'Show $n results'),
+    treeCount: (n) => n == 1 ? '1 item' : '$n items',
   );
 
   /// Espanhol.
@@ -2828,6 +2917,28 @@ class SsStrings {
     syncedOn: (date) => 'Sincronizado el $date',
     syncNever: 'Nunca sincronizado',
     syncNow: 'Sincronizar ahora',
+    // v1.10.0
+    filters: 'Filtros',
+    filtersActive: 'Filtros activos',
+    filterClear: 'Borrar filtros',
+    filterShow: 'Mostrar resultados',
+    jobQueued: 'En cola',
+    jobRunning: 'En curso',
+    jobDone: 'Completado',
+    jobFailed: 'Falló',
+    jobError: 'Algo salió mal.',
+    jobResult: 'Abrir resultado',
+    jobTotal: 'Total',
+    jobStageDone: 'Completada',
+    jobStageFailed: 'Falló',
+    jobStageSkipped: 'Omitida',
+    jobStageRunning: 'En curso',
+    jobStagePending: 'Pendiente',
+    treeLabel: 'Árbol',
+    filterRemove: (filter, value) => 'Quitar el filtro $filter: $value',
+    filterButton: (n) => n == 0 ? 'Filtros' : (n == 1 ? 'Filtros, 1 activo' : 'Filtros, $n activos'),
+    filterShowResults: (n) => n == 0 ? 'Sin resultados' : (n == 1 ? 'Mostrar 1 resultado' : 'Mostrar $n resultados'),
+    treeCount: (n) => n == 1 ? '1 elemento' : '$n elementos',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -3324,6 +3435,28 @@ class SsStrings {
     'syncedOn': syncedOn('12/11'),
     'syncNever': syncNever,
     'syncNow': syncNow,
+    // v1.10.0
+    'filters': filters,
+    'filtersActive': filtersActive,
+    'filterClear': filterClear,
+    'filterShow': filterShow,
+    'jobQueued': jobQueued,
+    'jobRunning': jobRunning,
+    'jobDone': jobDone,
+    'jobFailed': jobFailed,
+    'jobError': jobError,
+    'jobResult': jobResult,
+    'jobTotal': jobTotal,
+    'jobStageDone': jobStageDone,
+    'jobStageFailed': jobStageFailed,
+    'jobStageSkipped': jobStageSkipped,
+    'jobStageRunning': jobStageRunning,
+    'jobStagePending': jobStagePending,
+    'treeLabel': treeLabel,
+    'filterRemove': filterRemove('Situação', 'Pago'),
+    'filterButton': filterButton(2),
+    'filterShowResults': filterShowResults(12),
+    'treeCount': treeCount(3),
   };
 
   /// Os idiomas prontos.
@@ -4580,3 +4713,9 @@ String _v19AssistantRemaining(int n) => n == 1 ? '1 mensagem restante' : '$n men
 String _syncFailedCountPt(int n) => n == 1 ? '1 com erro' : '$n com erro';
 String _syncedAtPt(String time) => 'Sincronizado às $time';
 String _syncedOnPt(String date) => 'Sincronizado em $date';
+// v1.10.0: os textos pt de padrão (constantes, para o construtor).
+String _v1100FilterRemovePt(String filter, String value) => 'Tirar o filtro $filter: $value';
+String _v1100FilterButtonPt(int n) => n == 0 ? 'Filtros' : (n == 1 ? 'Filtros, 1 ativo' : 'Filtros, $n ativos');
+String _v1100FilterShowResultsPt(int n) =>
+    n == 0 ? 'Nenhum resultado' : (n == 1 ? 'Mostrar 1 resultado' : 'Mostrar $n resultados');
+String _v1100TreeCountPt(int n) => n == 1 ? '1 item' : '$n itens';

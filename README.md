@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.9.3
+      ref: v1.10.0
 ```
 
 ```dart
@@ -653,6 +653,83 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.10.0: a dívida de paridade zerada (21 pares web e 5 peças novas no app)
+
+A regra da suíte é web e app com as mesmas funcionalidades, e o `paridade.yml` diz qual peça de um lado responde pela do
+outro. Esta versão fecha o que estava anotado como dívida: as seções `divida:` e `divida_app:` ficam vazias (`{}`), e os
+dois testes de paridade (`flutter/test/v19_paridade_web_test.dart` e `rails/sample/test/components/v19_paridade_web_web_test.rb`)
+cobram que continue assim. Nada quebra na API. O `Ss::EmptyStateComponent(illustration:)` passa a ler o SVG do
+`Ss::IllustrationArtComponent`, com a mesma saída.
+
+### Web: os pares Rails das 21 peças que só existiam no Flutter
+
+Componente, Stimulus e CSS (`rails/app/assets/tailwind/componentes_ui/v1100_web.css`, importado no `engine.css`). O CSS
+usa só tokens, com `--on-accent` no lugar do branco e as durações dos `--ss-dur-*`, e respeita a densidade, o alvo de 44
+(`--ss-target`) e o reduzir movimento. Os textos ficam em `componentes_ui.*` (pt/en/es), os mesmos do `SsStrings`.
+Vitrine: `rails/sample/app/views/vitrine/pecas_v1100.html.erb`. Catálogo: `rails/catalogo/index.html` (gerado por
+`rails/sample/script/catalogo_v1100.rb`).
+
+| Flutter | Rails | Controller |
+|---|---|---|
+| `SsAttachBar` | `Ss::AttachBarComponent(items: [{ icon:, label:, accept:/name:/form: (arquivo) \| href: \| data: (botão), tone: 1..6, color: }], size:)` | — (CSS) |
+| `SsCardStack` | `Ss::CardStackComponent(card_height:, peek:, gap:, initially_open:)` + `with_card`; evento `ss-card-stack:change { open }` | `ss-card-stack` |
+| `SsCurvedHeader` | `Ss::CurvedHeaderComponent(title:, subtitle:, tone: :brand\|:dark, curve:, overlap:, back_href:, back_label:, heading:)` + `with_leading`/`with_action`/`with_bottom`; conteúdo que sobe: `.ss-curved-body` | — |
+| `SsDial` | `Ss::DialComponent(value:, name:, min:, max:, step:, label:, caption:, format: "%.1f°", size:, ticks:, disabled:)`; `role=slider`, hidden `name:`, `ss-dial:change { value }` | `ss-dial` |
+| `SsDuoStat` | `Ss::DuoStatComponent(items: [{ label:, value:, icon:, href: }] × 2, index:, name:)`; `ss-duo:change { index }` | `ss-duo` |
+| `SsFloatingBars` | `Ss::FloatingBarsComponent(values:, labels:, selected:, format: :qty\|:money\|:integer\|lambda\|"%…", title:, value:, height:, href: "…%{index}")`; `ss-floating-bars:change { index }` | `ss-floating-bars` + `ss-in-view` |
+| `SsGoalCard` | `Ss::GoalCardComponent(text:, action_label:, href:, icon:, action_data:)` + `with_art` | `ss-in-view` |
+| `SsHexButton` | `Ss::HexButtonComponent(href:, label:, icon:, size:, type:, form:, name:, value:, disabled:)` | — |
+| `SsIllustratedSplit` | `Ss::IllustratedSplitComponent(title:, text:, illustration:, action_label:, action_href:, secondary_label:, secondary_href:, page:, pages:, heading:)` + `with_art` | — |
+| `SsIllustrationArt` | `Ss::IllustrationArtComponent(:empty\|:offline\|:no_results\|:all_done\|:error, size:)`; o `EmptyStateComponent::ILLUSTRATIONS` agora lê daqui (API igual) | — (CSS do v1.9) |
+| `SsIllustrationStage` | `Ss::IllustrationStageComponent(height:, padding:)` + bloco | — |
+
+| `SsImageViewer` / `showSsImageViewer` | `Ss::ImageViewerComponent(src:, title:, semantic_label:, max_scale:, thumb_size:, inline:)` + `with_trigger`, `with_action` | `ss-image-viewer` |
+| `SsMonthGrid` | `Ss::MonthGridComponent(month:, selected:, url: "…%{date}", name:, month_url: "…%{month}", markers:, today:, turbo_frame:)` | `ss-month-grid` |
+| `SsPeoplePicker` | `Ss::PeoplePickerComponent(people:, name:, selected:, add_url:, add_label:, legend:)` (checkbox por pessoa) | — (CSS `:has(:checked)`) |
+| `SsPopOutCard` | `Ss::PopOutCardComponent(title:, subtitle:, price:, image_url:, url:, add_url:, add_method:, add_params:, image_height:, pop_out:, tone:, action_icon:, action_label:)` + `with_image` | — |
+| `SsProfileHero` | `Ss::ProfileHeroComponent(name:, photo_url:, status:, online:, metrics: [[valor, rótulo]])` + `with_leading`, `with_action` | — |
+| `SsPulseAvatar` | `Ss::PulseAvatarComponent(name:, active:, size:, tone:, status:)` (bloco troca o avatar) | — |
+| `SsRecurringCard` | `Ss::RecurringCardComponent(schedule:, amount:, time:, destination:, done:, url:, menu_url:)` + `with_menu` | `ss-odometer` (valor) |
+| `SsShapeIcon` | `Ss::ShapeIconComponent(icon:, shape: :losango\|:hexagono, tone:, filled:, size:, label:)`; `Ss::ShapeIconComponent.path(shape, s)` | — |
+| `SsThumbRail` | `Ss::ThumbRailComponent(images:, selected:, target:, url: "…%{index}", thumb_size:, height:)` | `ss-thumb-rail` |
+| `SsVerticalSlider` | `Ss::VerticalSliderComponent(name:, value:, min:, max:, step:, label:, suffix:, precision:, format:, height:, width:, tone:, disabled:)` | `ss-vslider` |
+
+
+Notas:
+
+- Textos novos: `card_stack.open/close`, `curved_header.back`, `hex_button.start`, `illustrated_split.page`,
+  `image_viewer.*`, `month_grid.*` e os das outras peças do lote B (ver `componentes_ui.pt-BR.yml`, no fim).
+- O `Ss::PopOutCardComponent` segue a API do `SsPopOutCard` (o cartão de planta e produto do app). O
+  `Ss::ProductCardComponent` (a grade da loja, com selo) continua separado e agora tem o `SsProductCard` como par.
+- O fundo do visor de imagem é `--ss-viewer-bg`: a marca funda misturada ao preto, como o `headerDarkBg` do app.
+- O `SsImageViewer` no web é um `<dialog>` com zoom por roda, pinça, duplo clique, botões e teclado (+ − 0 e setas).
+  Também dá para arrastar a foto ampliada, e o Esc fecha. O `SsMonthGrid` usa links (`url:`) ou botões com `name:`,
+  e o PageUp/PageDown troca o mês.
+
+### App: os pares Flutter que faltavam (`flutter/lib/src/v1100/`)
+
+Saíram do `so_web` o `FilterBarComponent`, o `JobProgressComponent`, o `TreeViewComponent` e o `PopoverComponent`,
+porque o celular também precisa deles. O `ProductCardComponent` saiu do `divida_app`.
+
+| Rails | Flutter |
+|---|---|
+| `Ss::ProductCardComponent` | `SsProductCard(name:, price:, text:, image:/imageUrl:, onTap:, action: SsProductAction(label, onPressed, icon:), badge:, overhang: 64)` |
+| `Ss::FilterBarComponent` | `SsFilterBar(filters: [SsFilterGroup(param:, label:, options: [SsFilterOption(label, value)], multiple:)], values: SsFilterValues, onChanged:, views: [SsFilterView(label, values:, count:)], count:, onSearch:, searchHint:)` |
+| `Ss::FilterBarComponent` | `SsFilterSheet(filters:, values:, count:, onApply:, title:)` e `showSsFilterSheet(context, …) → Future<SsFilterValues?>`: "Mostrar N resultados" ao vivo (o `count` pode ser assíncrono, e a resposta velha não passa por cima da nova), chips do que está ativo e "Limpar filtros". Utilitários em `SsFilters.active/toggle/remove/same/count` |
+| `Ss::JobProgressComponent` | `SsJobProgress(title:, state: SsJobState.queued\|running\|done\|failed, progress:, steps:, currentStep:, stages: [SsJobStage(name, status:, duration:, durationLabel:, detail:)], total:, detail:, error:, onOpenResult:, resultLabel:, onRetry:, onCancel:, cancelling:, flush:)` |
+| `Ss::TreeViewComponent` | `SsTreeView(nodes: [SsTreeNode(label, id:, value:, count:, children:, open:, onTap:)], label:, wrap:, selection: none\|single\|multiple, selected:, onSelectionChanged:)`. No modo múltiplo, o galho marca as folhas e fica "misturado" quando só parte está marcada |
+| `Ss::PopoverComponent` | `SsPopover(label:, child:, title:, icon:, triggerBuilder:, placement: bottomStart\|bottomEnd\|topStart, maxWidth: 352)`, `showSsPopover(anchorCtx, …)` e `SsPopover.close(ctx)`: ancorado, com seta, fecha ao tocar fora, no voltar e no Esc, e abre para cima quando falta espaço embaixo |
+
+Textos novos no `SsStrings` (pt/en/es): `filters`, `filtersActive`, `filterClear`, `filterShow`, `filterRemove`,
+`filterButton`, `filterShowResults`, `jobQueued`, `jobRunning`, `jobDone`, `jobFailed`, `jobError`, `jobResult`,
+`jobTotal`, `jobStageDone`, `jobStageFailed`, `jobStageSkipped`, `jobStageRunning`, `jobStagePending`, `treeLabel` e
+`treeCount`.
+
+Ficou assim o `paridade.yml`: 296 pares, 12 apis, 33 só app, 10 só web e nenhuma dívida (antes eram 269 pares, 10
+apis, 14 só web, 21 dívidas web e 1 dívida app). As vitrines passam a mostrar a v1.10 em "Novidades"
+(`versaoNovidades`/`NOVIDADES`). Catálogo: `flutter/test/catalogo_v1100.dart` (`comV1100`). Testes:
+`flutter/test/v1100_test.dart` (com `ssA11yAudit`) e `rails/sample/test/components/v1_10_0_web_test.rb`.
 
 ## v1.9.3: o que a conferência no emulador dos 8 apps achou
 
@@ -2287,6 +2364,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.10.0` (27/11/2026): seção "v1.10.0". Dívida de paridade zerada: 21 pares Rails das peças do Flutter e `SsProductCard`, `SsFilterBar`/`SsFilterSheet`, `SsJobProgress`, `SsTreeView` e `SsPopover` no app. Nada quebra na API.
 - `v1.8.3` (24/11/2026): seção "v1.8.3". Chat sem `required` no campo (só `aria-required`): some o balão nativo ao parar o mouse. Nada quebra na API.
 - `v1.8.2` (23/11/2026): seção "v1.8.2". Tempo relativo com U+00A0 entre número e unidade (Flutter e Rails) e nome do ranking em até 2 linhas. Nada quebra na API; teste que compara o texto com espaço comum precisa do U+00A0.
 - `v1.7.1` (19/11/2026): seção "v1.7.1". Botão do Google (GIS) sem a caixa branca do iframe no tema escuro. Só web, só CSS. Nada quebra.

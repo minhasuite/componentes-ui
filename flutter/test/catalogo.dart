@@ -61,6 +61,8 @@ import 'catalogo_v19_movimento.dart';
 import 'catalogo_v19_paridade_app.dart';
 import 'catalogo_v19_produto.dart';
 import 'catalogo_v19_paridade_web.dart';
+// v1.10.0: os pares Flutter que faltavam (comV1100, por fora de tudo).
+import 'catalogo_v1100.dart';
 
 class Estado {
   const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
@@ -133,20 +135,24 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV19Correcoes(
-  comV19ParidadeWeb(
-    comV19Produto(
-      comV19ParidadeApp(
-        comV19Transicoes(
-          comV19Movimento(
-            comV130(
-              comV122(
-                comV120(
-                  comV28(
-                    comV27Graficos(
-                      comV27(
-                        comV26(
-                          comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+final catalogo = comV1100(
+  comV19Correcoes(
+    comV19ParidadeWeb(
+      comV19Produto(
+        comV19ParidadeApp(
+          comV19Transicoes(
+            comV19Movimento(
+              comV130(
+                comV122(
+                  comV120(
+                    comV28(
+                      comV27Graficos(
+                        comV27(
+                          comV26(
+                            comV25(
+                              comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))))),
+                            ),
+                          ),
                         ),
                       ),
                     ),
