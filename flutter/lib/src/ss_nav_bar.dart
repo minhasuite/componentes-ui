@@ -41,10 +41,14 @@ class SsNavItem {
 /// redondo na cor da marca, com sombra na própria cor, encaixado num recorte
 /// fixo no meio da barra. Não é uma aba: só chama [onTap].
 class SsNavCenter {
-  const SsNavCenter(this.icon, {required this.onTap, required this.label});
+  const SsNavCenter(this.icon, {required this.onTap, required this.label, this.key});
 
   final IconData icon;
   final VoidCallback onTap;
+
+  /// v1.9.2: chave posta no botão (o alvo de um passo do [SsTour] ou de um teste). O mesmo que
+  /// `SsNavBar(centerKey:)`, que ganha se vier também.
+  final GlobalKey? key;
 
   /// Para o leitor de tela e a dica (o botão não mostra texto).
   final String label;
@@ -74,12 +78,17 @@ class SsNavBar extends StatefulWidget {
     this.center,
     this.hideOnScroll = false,
     this.itemKeys,
+    this.centerKey,
   }) : assert(items.length >= 2),
        assert(itemKeys == null || itemKeys.length == items.length);
 
   /// v1.9.1: uma chave por aba (na ordem de [items]), posta na aba inteira: o alvo de um passo do
   /// [SsTour] (`SsTourStep(target: abas[1], …)`) ou de um teste. Nulo: sem chave.
   final List<GlobalKey>? itemKeys;
+
+  /// v1.9.2: chave no botão central ([center]), para o [SsTour] apontar para ele
+  /// (`SsTourStep(target: centro, …)`). Sem [center], não tem efeito.
+  final GlobalKey? centerKey;
 
   /// v1.9: some ao rolar a lista da tela para baixo e volta ao rolar para cima (ou ao chegar no topo, ou ao
   /// trocar de aba). Escuta o `ScrollNotificationObserver` do `Scaffold` (o mesmo do `AppBar`), então serve
@@ -267,7 +276,7 @@ class _SsNavBarState extends State<SsNavBar> with TickerProviderStateMixin {
                     Positioned(
                       left: ccx - SsNavBar._centerSize / 2,
                       top: SsNavBar.rise + _BarPainter.dip - SsNavBar._centerSize / 2 - 4,
-                      child: _CenterButton(center),
+                      child: KeyedSubtree(key: widget.centerKey ?? center.key, child: _CenterButton(center)),
                     ),
                   Positioned(
                     left: cx - SsNavBar._circle / 2,

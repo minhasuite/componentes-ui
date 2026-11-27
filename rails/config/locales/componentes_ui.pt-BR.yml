@@ -446,6 +446,10 @@ pt-BR:
       mark_read: "Marcar como lida"
       archive: "Arquivar"
       load_more: "Carregar mais"
+      level_info: "Informação"
+      level_warning: "Aviso"
+      level_critical: "Crítico"
+      mute: "Silenciar"
     number:
       delimiter: "."
       separator: ","

@@ -94,6 +94,38 @@ final _opcoes = [
 
 const _tela = Size(360, 780);
 
+// v1.9.2: aviso rico (nível, foto, respostas e silenciar), o que a minha-automacao mostra.
+final _ricos = [
+  SsNotificationItem(
+    id: '11',
+    title: 'Portão da garagem aberto',
+    body: 'Aberto há 10 min, sem ninguém em casa.',
+    createdAt: DateTime(2026, 11, 24, 14, 50),
+    level: SsNotificationLevel.critical,
+    // No app, a foto do aviso (SsNetImage); aqui, um quadro no lugar.
+    image: Builder(
+      builder: (context) {
+        final c = SsColors.of(context);
+        return ColoredBox(
+          color: c.field,
+          child: Center(child: Icon(Icons.videocam_outlined, size: 40, color: c.muted)),
+        );
+      },
+    ),
+    actions: const [SsNotificationAction('Fechar portão', _nada), SsNotificationAction('Deixar aberto', _nada)],
+    onMute: _nada,
+  ),
+  SsNotificationItem(
+    id: '12',
+    title: 'Bateria fraca no sensor da sala',
+    body: '12% de carga.',
+    createdAt: DateTime(2026, 11, 24, 13),
+    read: true,
+    level: SsNotificationLevel.warning,
+    onMute: _nada,
+  ),
+];
+
 List<Componente> comV19Produto(List<Componente> base) => [
   ...base,
   Componente(
@@ -108,6 +140,7 @@ List<Componente> comV19Produto(List<Componente> base) => [
       'Deslizar para a direita marca lida; para a esquerda arquiva (sai encolhendo e volta se falhar). Os dois são ações do leitor de tela.',
       'Pede a próxima página sozinha perto do fim (SsLoadMore, "Sem mais notificações"); aviso repetido entre páginas não duplica.',
       'Puxar para atualizar (SsPullToRefresh) também no vazio e no erro. O sino é o SsNotificationBell com controller.unreadCount.',
+      'v1.9.2, aviso rico (opcional no SsNotificationItem): level (aviso/crítico: tom no quadradinho e no contorno, ícone e selo "AVISO"/"CRÍTICO", também no leitor de tela), image (16:9 embaixo do texto), actions (botões de resposta, o 1º cheio; responder marca lida) e onMute ("Silenciar"). Com botões, o topo continua o toque de abrir e cada botão é um nó próprio.',
     ],
     estados: [
       Estado('lista', 'hoje e ontem, com não lidas', (_) => _central(_avisos), tamanho: _tela, aguarde: 900),
@@ -117,6 +150,13 @@ List<Componente> comV19Produto(List<Componente> base) => [
         'erro ao carregar',
         (_) => _central(const [], erro: true),
         tamanho: const Size(360, 420),
+        aguarde: 900,
+      ),
+      Estado(
+        'rico',
+        'aviso rico: nível, foto, respostas e silenciar',
+        (_) => _central(_ricos),
+        tamanho: _tela,
         aguarde: 900,
       ),
     ],
@@ -133,6 +173,7 @@ List<Componente> comV19Produto(List<Componente> base) => [
       'locked: SsPlanLocked no lugar da conversa, sem campo.',
       'conversations: ao lado a partir de 840 de largura (SsAssistantConversations: abrir, nova, apagar com confirmação); no celular, showSsAssistantConversations numa folha.',
       'Sem controller, o campo limpa ao enviar; enviar trava enquanto responde.',
+      'v1.9.2: attachments (SsChatAttachment) em chips acima do campo, com o ✕ no onRemoveAttachment; com anexo, enviar vale sem texto (onSend recebe \'\').',
     ],
     estados: [
       Estado(
@@ -154,6 +195,22 @@ List<Componente> comV19Produto(List<Componente> base) => [
         'conversa',
         'histórico, ação sugerida e respondendo',
         (_) => SsAssistantView(messages: _conversa, onSend: (_) {}, shortcuts: _atalhos, onShortcut: (_) {}),
+        tamanho: _tela,
+        aguarde: 900,
+      ),
+      Estado(
+        'anexos',
+        'anexo pendente, enviar sem texto',
+        (_) => SsAssistantView(
+          messages: _conversa.take(2).toList(),
+          onSend: (_) {},
+          attachments: const [
+            SsChatAttachment('cupom-mercado.jpg', icon: Icons.image_outlined),
+            SsChatAttachment('nota.pdf', icon: Icons.picture_as_pdf_outlined),
+          ],
+          onRemoveAttachment: (_) {},
+          inputLeading: SsIconButton(icon: Icons.attach_file_rounded, tooltip: 'Anexar', onPressed: _nada),
+        ),
         tamanho: _tela,
         aguarde: 900,
       ),

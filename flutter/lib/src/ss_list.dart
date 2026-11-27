@@ -152,12 +152,18 @@ class SsListItem extends StatelessWidget {
         ),
       ),
     );
+    final toca = onTap != null || onLongPress != null || contextActions.isNotEmpty;
     // Tocável: afunda de leve no toque e volta com mola ao soltar.
-    final tocavel = SsPressable(
-      enabled: onTap != null || onLongPress != null || contextActions.isNotEmpty,
-      scale: .98,
-      child: item,
-    );
+    Widget tocavel = SsPressable(enabled: toca, scale: .98, child: item);
+    // v1.9.2: linha de uma linha só com `leading:` desenha 44 (32 + respiro no compacto; avatar pequeno no
+    // padrão). Com [trailing] (que pode ter botão próprio, que não pode se fundir com a linha), a linha cresce
+    // até 48; sem ele, o alvo cresce por fora (abaixo, no fim).
+    if (toca && trailing != null) {
+      tocavel = ConstrainedBox(
+        constraints: BoxConstraints(minHeight: d.minTarget),
+        child: tocavel,
+      );
+    }
     Widget out = dimmed ? Opacity(opacity: .5, child: tocavel) : tocavel;
     // v1.9: toque longo com o menu de contexto e deslizar, padronizados.
     if (contextActions.isNotEmpty) {
@@ -173,6 +179,9 @@ class SsListItem extends StatelessWidget {
         child: ColoredBox(color: c.surface, child: out),
       );
     }
+    // v1.9.2: sem botão dentro, o toque e o nó do leitor de tela ganham os 48 por fora, sem mudar o desenho
+    // (por fora de tudo: as ações do toque longo e do deslizar ficam no mesmo nó da linha).
+    if (toca && trailing == null) out = SsTapTarget(minSize: Size(0, d.minTarget), semantics: true, child: out);
     return out;
   }
 }

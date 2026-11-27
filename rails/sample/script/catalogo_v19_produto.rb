@@ -24,6 +24,12 @@ avisos = [
 ]
 lista = r(Ss::NotificationCenterComponent.new(id: "cat-avisos", items: avisos, now: agora, read_all_href: "#", next_href: nil))
 vazio = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-vazio", items: []))
+foto = "data:image/svg+xml;utf8," + ERB::Util.url_encode(%(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="#334155"/><rect x="18" y="30" width="60" height="44" rx="4" fill="#64748b"/><circle cx="128" cy="24" r="10" fill="#f59e0b"/></svg>))
+ricos = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-ricos", now: agora, items: [
+  { id: 11, title: "Portão da garagem aberto", text: "Aberto há 10 min, sem ninguém em casa.", at: Time.utc(2026, 11, 24, 14, 50), unread: true, level: :critical,
+    image: foto, image_alt: "Câmera da garagem", href: "#", actions: [{ label: "Fechar portão", href: "#" }, { label: "Deixar aberto", href: "#" }],
+    mute: { options: [1, 8, 24].map { |h| { label: "Por #{h} h", href: "#" } } } },
+  { id: 12, title: "Bateria fraca no sensor da sala", text: "12% de carga.", at: Time.utc(2026, 11, 24, 13), level: :warning, href: "#", mute: { href: "#" } }]))
 print section("ss-notification-center", "Ss::NotificationCenterComponent",
   "Central de notificações (v1.9, par do SsNotificationCenter): por dia, lida/não lida, marcar todas, ler e arquivar por aviso, paginação por turbo-frame lazy e vazio.",
   ["Grupos \"Hoje\", \"Ontem\", \"segunda-feira, 5 de outubro\" (no ano) ou a data; a hora em DM Mono.",
@@ -32,9 +38,11 @@ print section("ss-notification-center", "Ss::NotificationCenterComponent",
    "Faixa: \"2 não lidas\" (role=status) e \"Marcar todas como lidas\" (PATCH em read_all_href:).",
    "read_href:/archive_href: viram botões de ícone de 44px; com mouse, aparecem ao passar ou com o foco.",
    "next_href: <turbo-frame id=\"<id>-p2\" loading=lazy> com \"Carregar mais\"; a resposta é o mesmo componente com fragment: true, page: 2 e after: (não repete o dia).",
-   "Sem itens: Ss::EmptyStateComponent \"Nenhuma notificação\"."],
+   "Sem itens: Ss::EmptyStateComponent \"Nenhuma notificação\".",
+   "v1.9.2, aviso rico (opcional): level: :warning/:critical (tom no ícone e no contorno, selo \"Aviso\"/\"Crítico\"), image: (foto 16:9), actions: (botões de resposta, o 1º cheio) e mute: (\"Silenciar\": um botão ou o menu com options:)."],
   [["lista", "hoje e ontem, com não lidas", box(420, lista)],
-   ["vazio", "nenhuma notificação", box(360, vazio)]])
+   ["vazio", "nenhuma notificação", box(360, vazio)],
+   ["rico", "aviso rico: nível, foto, respostas e silenciar", box(420, ricos)]])
 
 conversa = r(Ss::AssistantComponent.new(id: "cat-asst", url: "#", current_conversation_id: 1, new_conversation_href: "#",
   conversations: [{ id: 1, title: "Treino de 4 dias", subtitle: "há 2 min", href: "#", delete_href: "#" }, { id: 2, title: "Platô no supino", subtitle: "ontem", href: "#", delete_href: "#" }],

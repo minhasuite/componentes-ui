@@ -33,6 +33,11 @@ class SsNotificationItem {
     this.icon,
     this.tone,
     this.data,
+    this.level,
+    this.image,
+    this.actions = const [],
+    this.onMute,
+    this.muteLabel,
   });
 
   final String id;
@@ -50,7 +55,30 @@ class SsNotificationItem {
   final SsTone? tone;
   final Object? data;
 
+  /// v1.9.2: nível do aviso. Aviso e crítico ganham o tom semântico (âmbar, vermelho) no quadradinho e no
+  /// contorno, o ícone do nível e um selo com o nome ("Aviso", "Crítico"; também lido pelo leitor de tela).
+  /// O [tone]/[icon] passados ganham. Nulo: como antes.
+  final SsNotificationLevel? level;
+
+  /// v1.9.2: foto do aviso (instantâneo da câmera), embaixo do texto, 16:9 na largura da linha. O app monta
+  /// (`SsNetImage(url, width: double.infinity, radius: 0)`): o pacote não busca nada.
+  final Widget? image;
+
+  /// v1.9.2: botões de resposta embaixo do aviso (o 1º cheio, os outros fantasma). Tocar marca o aviso como
+  /// lido (como abrir) e chama a ação; depois de responder, o app relê ([SsNotificationCenterController.refresh]).
+  final List<SsNotificationAction> actions;
+
+  /// v1.9.2: "Silenciar" (cala a origem): botão fantasma com o sino cortado, depois das [actions]. Escolher
+  /// por quanto tempo é do app (`showSsPicker`).
+  final VoidCallback? onMute;
+
+  /// Padrão: [SsStrings.notifMute].
+  final String? muteLabel;
+
   bool get unread => !read;
+
+  /// Tem botões dentro (a linha deixa de ser um botão só no leitor de tela).
+  bool get hasButtons => actions.isNotEmpty || onMute != null;
 
   SsNotificationItem copyWith({bool? read}) => SsNotificationItem(
     id: id,
@@ -61,7 +89,46 @@ class SsNotificationItem {
     icon: icon,
     tone: tone,
     data: data,
+    level: level,
+    image: image,
+    actions: actions,
+    onMute: onMute,
+    muteLabel: muteLabel,
   );
+}
+
+/// v1.9.2: nível de um [SsNotificationItem] (o `level:` do `Ss::NotificationCenterComponent`).
+enum SsNotificationLevel {
+  info,
+  warning,
+  critical;
+
+  SsTone get tone => switch (this) {
+    info => SsTone.info,
+    warning => SsTone.warning,
+    critical => SsTone.danger,
+  };
+
+  IconData get icon => switch (this) {
+    info => Icons.info_outline_rounded,
+    warning => Icons.warning_amber_rounded,
+    critical => Icons.error_outline_rounded,
+  };
+
+  String label(SsStrings s) => switch (this) {
+    info => s.notifLevelInfo,
+    warning => s.notifLevelWarning,
+    critical => s.notifLevelCritical,
+  };
+}
+
+/// v1.9.2: botão de resposta de um aviso ("Sim", "Abrir portão"). [onPressed] nulo = desabilitado.
+@immutable
+class SsNotificationAction {
+  const SsNotificationAction(this.label, this.onPressed, {this.icon});
+  final String label;
+  final FutureOr<void> Function()? onPressed;
+  final IconData? icon;
 }
 
 /// Uma página da central: os [items], se há mais ([hasMore]) e, se o servidor contar, o total de não
@@ -110,6 +177,10 @@ class SsNotificationCenterController extends ChangeNotifier {
 /// - [markAllRead]: otimista; se falhar, volta e avisa.
 /// - Vazio: [SsEmptyState] com [emptyTitle]/[emptyText]; erro da 1ª página: o mesmo com "Tentar de novo"
 ///   ([errorText] traduz o erro; padrão [SsStrings.genericError]).
+///
+/// - v1.9.2, aviso rico (no [SsNotificationItem], tudo opcional): [SsNotificationItem.level] (tom e selo),
+///   [SsNotificationItem.image], [SsNotificationItem.actions] (botões de resposta) e
+///   [SsNotificationItem.onMute] ("Silenciar"). Responder marca como lido.
 ///
 /// O sino da barra de cima é o [SsNotificationBell] (ou o [SsBellDot]) com o
 /// [SsNotificationCenterController.unreadCount]; [onUnreadChanged] avisa a cada mudança.
@@ -307,6 +378,12 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
     await widget.onOpen?.call(n.copyWith(read: true));
   }
 
+  // v1.9.2: responder ao aviso também o dá por lido (como abrir).
+  Future<void> _act(SsNotificationItem n, SsNotificationAction a) async {
+    unawaited(_markOne(n));
+    await a.onPressed?.call();
+  }
+
   Future<void> _markAll() async {
     if (widget.markAllRead == null) return;
     final antes = List.of(_items);
@@ -426,7 +503,7 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
             final n = l as SsNotificationItem;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: _comDeslize(n, SsNotificationTile(item: n, onTap: () => _open(n))),
+              child: _comDeslize(n, SsNotificationTile(item: n, onTap: () => _open(n), onAction: (a) => _act(n, a))),
             );
           },
         ),
@@ -504,8 +581,14 @@ class _Faixa extends StatelessWidget {
 /// Uma linha da central (também serve na folha do sino): quadradinho tonal com o ícone, título (negrito e
 /// na cor do texto quando não lido), o corpo em até 3 linhas, a hora e o ponto de não lido. Lida, apaga um
 /// pouco. Um nó só no leitor de tela: "Título. Corpo. 14:05. não lida".
+///
+/// v1.9.2 (aviso rico, tudo opcional no [SsNotificationItem]): o selo do nível (aviso/crítico, com o tom no
+/// quadradinho e no contorno), a [SsNotificationItem.image] embaixo do texto e, com botões
+/// ([SsNotificationItem.actions], [SsNotificationItem.onMute]), a faixa de botões embaixo: aí o topo continua
+/// sendo o toque de abrir e cada botão é um nó próprio. [onAction] troca o que o toque de um botão faz (a
+/// central marca o aviso como lido antes); sem ele, chama o `onPressed` da ação.
 class SsNotificationTile extends StatelessWidget {
-  const SsNotificationTile({super.key, required this.item, this.onTap, this.time});
+  const SsNotificationTile({super.key, required this.item, this.onTap, this.time, this.onAction});
 
   final SsNotificationItem item;
   final VoidCallback? onTap;
@@ -513,102 +596,175 @@ class SsNotificationTile extends StatelessWidget {
   /// Texto da hora; padrão `HH:mm` do [SsNotificationItem.createdAt].
   final String? time;
 
+  /// v1.9.2: toque num botão de resposta (padrão: `action.onPressed`).
+  final void Function(SsNotificationAction action)? onAction;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final s = SsStrings.of(context);
     final n = item;
-    final tom = (n.tone ?? SsTone.accent).colors(context);
+    final nivel = n.level;
+    final tom = (n.tone ?? nivel?.tone ?? SsTone.accent).colors(context);
+    // O selo só quando o nível pede atenção ("Informação" em todo aviso seria ruído).
+    final selo = nivel == null || nivel == SsNotificationLevel.info ? null : nivel.label(s);
     final hora =
         time ??
         (n.createdAt == null ? null : '${two(n.createdAt!.toLocal().hour)}:${two(n.createdAt!.toLocal().minute)}');
     final rotulo = [
+      ?selo,
       n.title,
       if (n.body != null && n.body!.isNotEmpty) n.body!,
       ?hora,
       if (n.unread) s.notifUnread,
     ].join('. ');
-    return Semantics(
-      button: onTap != null,
-      label: rotulo,
-      excludeSemantics: true,
-      child: SsPressable(
-        onTap: onTap,
-        enabled: onTap != null,
-        scale: .98,
-        child: Container(
-          constraints: BoxConstraints(minHeight: d.minTarget + 8),
-          padding: EdgeInsets.symmetric(horizontal: d.space(12), vertical: d.space(10)),
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(color: n.unread ? Color.alphaBlend(c.accent.withValues(alpha: .35), c.line) : c.line),
-            boxShadow: n.unread && !c.isDark ? AppShadows.card : null,
-          ),
-          child: Row(
+    final contorno = selo != null
+        ? Color.alphaBlend(tom.solid.withValues(alpha: n.unread ? .55 : .35), c.line)
+        : n.unread
+        ? Color.alphaBlend(c.accent.withValues(alpha: .35), c.line)
+        : c.line;
+    final pad = EdgeInsets.symmetric(horizontal: d.space(12), vertical: d.space(10));
+    final topo = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Opacity(
+          opacity: n.unread ? 1 : .7,
+          child: SsIconTile(n.icon ?? nivel?.icon ?? Icons.notifications_none_rounded, size: 40, tone: tom.solid),
+        ),
+        SizedBox(width: d.space(12)),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Opacity(
-                opacity: n.unread ? 1 : .7,
-                child: SsIconTile(n.icon ?? Icons.notifications_none_rounded, size: 40, tone: tom.solid),
-              ),
-              SizedBox(width: d.space(12)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            n.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: n.unread ? c.ink : c.ink2,
-                              fontSize: d.font(AppType.body),
-                              fontWeight: n.unread ? FontWeight.w800 : FontWeight.w600,
-                              height: 1.3,
-                            ),
-                          ),
-                        ),
-                        if (hora != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            hora,
-                            style: AppTheme.number(context, size: AppType.label, color: c.muted),
-                          ),
-                        ],
-                        if (n.unread) ...[
-                          const SizedBox(width: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (n.body != null && n.body!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        n.body!,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: c.muted, fontSize: AppType.sub, height: 1.35),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      n.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: n.unread ? c.ink : c.ink2,
+                        fontSize: d.font(AppType.body),
+                        fontWeight: n.unread ? FontWeight.w800 : FontWeight.w600,
+                        height: 1.3,
                       ),
-                    ],
+                    ),
+                  ),
+                  if (hora != null) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      hora,
+                      style: AppTheme.number(context, size: AppType.label, color: c.muted),
+                    ),
                   ],
-                ),
+                  if (n.unread) ...[
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ],
+                ],
               ),
+              if (selo != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: SsBadge(
+                    selo,
+                    micro: true,
+                    icon: nivel!.icon,
+                    variant: nivel == SsNotificationLevel.critical ? SsBadgeVariant.danger : SsBadgeVariant.warning,
+                  ),
+                ),
+              if (n.body != null && n.body!.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  n.body!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: c.muted, fontSize: AppType.sub, height: 1.35),
+                ),
+              ],
+              if (n.image != null)
+                Padding(
+                  padding: EdgeInsets.only(top: d.space(10)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.thumb),
+                    child: AspectRatio(aspectRatio: 16 / 9, child: n.image),
+                  ),
+                ),
             ],
           ),
         ),
+      ],
+    );
+    final deco = BoxDecoration(
+      color: c.surface,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      border: Border.all(color: contorno),
+      boxShadow: n.unread && !c.isDark ? AppShadows.card : null,
+    );
+    Widget tocavel(Widget child, {double scale = .98}) => Semantics(
+      button: onTap != null,
+      label: rotulo,
+      excludeSemantics: true,
+      child: SsPressable(onTap: onTap, enabled: onTap != null, scale: scale, child: child),
+    );
+    if (!n.hasButtons) {
+      return tocavel(
+        Container(
+          constraints: BoxConstraints(minHeight: d.minTarget + 8),
+          padding: pad,
+          decoration: deco,
+          child: topo,
+        ),
+      );
+    }
+    void tocar(SsNotificationAction a) => onAction != null ? onAction!(a) : a.onPressed?.call();
+    return Container(
+      constraints: BoxConstraints(minHeight: d.minTarget + 8),
+      decoration: deco,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Com botões embaixo, o topo não encolhe no toque (os botões ficariam parados ao lado).
+          tocavel(Padding(padding: pad, child: topo), scale: 1),
+          Padding(
+            // Alinhado ao texto (quadradinho de 40 + o respiro).
+            padding: EdgeInsets.fromLTRB(d.space(12) + 40 + d.space(12), 0, d.space(12), d.space(10)),
+            child: Wrap(
+              spacing: d.space(8),
+              runSpacing: d.space(8),
+              children: [
+                for (final (i, a) in n.actions.indexed)
+                  SsButton(
+                    label: a.label,
+                    icon: a.icon,
+                    small: true,
+                    expand: false,
+                    variant: i == 0 ? SsButtonVariant.primary : SsButtonVariant.ghost,
+                    onPressed: a.onPressed == null ? null : () => tocar(a),
+                  ),
+                if (n.onMute != null)
+                  SsButton(
+                    label: n.muteLabel ?? s.notifMute,
+                    icon: Icons.notifications_off_outlined,
+                    small: true,
+                    expand: false,
+                    variant: SsButtonVariant.ghost,
+                    onPressed: n.onMute,
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

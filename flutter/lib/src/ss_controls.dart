@@ -551,41 +551,50 @@ class _SsSearchFieldState extends State<SsSearchField> {
           Icon(Icons.search_rounded, size: d.iconSize + 2, color: on ? c.accent : c.muted),
           SizedBox(width: d.gap - 4),
           Expanded(
-            child: TextField(
-              controller: _ctrl,
-              focusNode: _focus,
-              autofocus: widget.autofocus,
-              onChanged: _changed,
-              onSubmitted: (v) {
-                _timer?.cancel();
-                widget.onSubmitted?.call(v);
-              },
-              textInputAction: TextInputAction.search,
-              style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
-              // Sem borda nenhuma: o `collapsed` herdava o focusedBorder do tema e
-              // desenhava um contorno dentro da caixa (a caixa já tem o seu).
-              decoration: InputDecoration(
-                isCollapsed: true,
-                filled: false,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                hintText: widget.hint ?? SsStrings.of(context).search,
-                hintStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500),
+            // v1.9.2: o nó do campo no leitor de tela (e no ssA11yAudit) tem 48, não a altura de dentro da
+            // caixa (44; 36 no compacto).
+            child: SsTapTarget(
+              minSize: Size(0, d.minTarget),
+              semantics: true,
+              child: TextField(
+                controller: _ctrl,
+                focusNode: _focus,
+                autofocus: widget.autofocus,
+                onChanged: _changed,
+                onSubmitted: (v) {
+                  _timer?.cancel();
+                  widget.onSubmitted?.call(v);
+                },
+                textInputAction: TextInputAction.search,
+                style: TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
+                // Sem borda nenhuma: o `collapsed` herdava o focusedBorder do tema e
+                // desenhava um contorno dentro da caixa (a caixa já tem o seu).
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  filled: false,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  hintText: widget.hint ?? SsStrings.of(context).search,
+                  hintStyle: TextStyle(color: c.muted, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500),
+                ),
               ),
             ),
           ),
           if (_ctrl.text.isNotEmpty)
-            IconButton(
-              tooltip: SsStrings.of(context).clear,
-              icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
-              onPressed: () {
-                _ctrl.clear();
-                _changed('');
-              },
+            SsTapTarget(
+              semantics: true,
+              child: IconButton(
+                tooltip: SsStrings.of(context).clear,
+                icon: Icon(Icons.close_rounded, size: 20, color: c.muted),
+                onPressed: () {
+                  _ctrl.clear();
+                  _changed('');
+                },
+              ),
             )
           else if (widget.suffix == null)
             SizedBox(width: d.padX - 4),

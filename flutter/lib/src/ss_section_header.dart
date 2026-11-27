@@ -26,41 +26,50 @@ class SsSectionHeader extends StatelessWidget {
     final d = SsDensity.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: d.space(10)),
-      child: Row(
-        children: [
-          if (icon != null) ...[Icon(icon, size: 20, color: c.accent), SizedBox(width: d.gap - 4)],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Semantics(
-                  header: true,
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    style: TextStyle(
-                      color: c.ink,
-                      fontSize: d.font(AppType.md),
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-                if (subtitle != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
+      // v1.9.2: o toque na sobra de 48 em volta da linha chega à ação (a linha é mais baixa que 48).
+      child: SsTapTarget(
+        minSize: Size(0, d.minTarget),
+        child: Row(
+          children: [
+            if (icon != null) ...[Icon(icon, size: 20, color: c.accent), SizedBox(width: d.gap - 4)],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Semantics(
+                    header: true,
                     child: Text(
-                      subtitle!,
+                      title,
                       maxLines: 2,
-                      style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: c.ink,
+                        fontSize: d.font(AppType.md),
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
                     ),
                   ),
-              ],
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        subtitle!,
+                        maxLines: 2,
+                        style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          if (action != null) ...[SizedBox(width: d.gap - 4), action!],
-        ],
+            // v1.9.2: a ação ("Ver todos", "+") com 48 de toque e no leitor de tela, sem mudar o desenho. É um
+            // alvo só: para várias ações, monte cada uma com o próprio alvo (SsButton, SsIconButton) num Row.
+            if (action != null) ...[
+              SizedBox(width: d.gap - 4),
+              SsTapTarget(semantics: !(action is Flex || action is Wrap), child: action!),
+            ],
+          ],
+        ),
       ),
     );
   }

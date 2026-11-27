@@ -33,6 +33,20 @@
     .ss-ncenter-item { flex-direction: column; gap: 0; }
     .ss-ncenter-actions { justify-content: flex-end; margin-top: -.6rem; padding: 0 .3rem .1rem; opacity: 1; }
   }
+  /* v1.9.2: aviso rico (nível, foto, botões de resposta e "Silenciar"), embaixo do aviso e alinhado ao texto. */
+  .ss-ncenter-item.is-warning { border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+  .ss-ncenter-item.is-critical { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+  .ss-ncenter-item.is-unread.is-warning { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); }
+  .ss-ncenter-item.is-unread.is-critical { border-color: color-mix(in srgb, var(--danger) 65%, var(--line)); }
+  .ss-ncenter-level { justify-self: start; }
+  .ss-ncenter-item.has-extra { flex-wrap: wrap; }
+  .ss-ncenter-extra { display: grid; gap: .5rem; flex: 1 0 100%; min-width: 0; order: 3;
+                      padding: 0 calc(var(--ss-card-pad) * .75) calc(var(--ss-card-pad) * .6) calc(var(--ss-card-pad) * .75 + 2.5rem + .75rem); }
+  .ss-ncenter-img { display: block; width: 100%; max-width: 28rem; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-field, .75rem);
+                    border: 1px solid var(--line); background: var(--field); }
+  .ss-ncenter-replies { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+  .ss-ncenter-mute-list { min-width: 12rem; }
+  @media (max-width: 560px) { .ss-ncenter-extra { padding-left: calc(var(--ss-card-pad) * .75); } }
   .ss-ncenter-next { display: grid; place-items: center; min-height: 3.5rem; }
   @media (hover: hover) and (min-width: 561px) {
     .ss-ncenter-actions { opacity: 0; transition: opacity var(--ss-dur-short); }

@@ -274,6 +274,8 @@ class _TourLayerState extends State<_TourLayer> {
                       Positioned.fill(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
+                          // v1.9.2: só segura o toque; no leitor de tela não é um botão sem nome.
+                          excludeFromSemantics: true,
                           onTap: () {},
                           child: ExcludeSemantics(
                             child: CustomPaint(

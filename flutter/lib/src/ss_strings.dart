@@ -479,6 +479,10 @@ class SsStrings {
     this.notifEmptyText = 'Os avisos do app aparecem aqui.',
     this.notifUnread = 'não lida',
     this.notifEnd = 'Sem mais notificações',
+    this.notifLevelInfo = 'Informação',
+    this.notifLevelWarning = 'Aviso',
+    this.notifLevelCritical = 'Crítico',
+    this.notifMute = 'Silenciar',
     this.notifUnreadCount = _v19NotifUnreadCount,
     this.assistantConversations = 'Conversas',
     this.assistantNew = 'Nova conversa',
@@ -1242,6 +1246,10 @@ class SsStrings {
   final String notifEmptyText;
   final String notifUnread;
   final String notifEnd;
+  final String notifLevelInfo;
+  final String notifLevelWarning;
+  final String notifLevelCritical;
+  final String notifMute;
   final String Function(int n) notifUnreadCount;
   final String assistantConversations;
   final String assistantNew;
@@ -1766,6 +1774,10 @@ class SsStrings {
     notifEmptyText: 'Os avisos do app aparecem aqui.',
     notifUnread: 'não lida',
     notifEnd: 'Sem mais notificações',
+    notifLevelInfo: 'Informação',
+    notifLevelWarning: 'Aviso',
+    notifLevelCritical: 'Crítico',
+    notifMute: 'Silenciar',
     notifUnreadCount: (n) => n == 1 ? '1 não lida' : '$n não lidas',
     assistantConversations: 'Conversas',
     assistantNew: 'Nova conversa',
@@ -2271,6 +2283,10 @@ class SsStrings {
     notifEmptyText: 'App alerts show up here.',
     notifUnread: 'unread',
     notifEnd: 'No more notifications',
+    notifLevelInfo: 'Info',
+    notifLevelWarning: 'Warning',
+    notifLevelCritical: 'Critical',
+    notifMute: 'Mute',
     notifUnreadCount: (n) => '$n unread',
     assistantConversations: 'Conversations',
     assistantNew: 'New conversation',
@@ -2776,6 +2792,10 @@ class SsStrings {
     notifEmptyText: 'Los avisos de la app aparecen aquí.',
     notifUnread: 'no leída',
     notifEnd: 'No hay más notificaciones',
+    notifLevelInfo: 'Información',
+    notifLevelWarning: 'Aviso',
+    notifLevelCritical: 'Crítico',
+    notifMute: 'Silenciar',
     notifUnreadCount: (n) => n == 1 ? '1 no leída' : '$n no leídas',
     assistantConversations: 'Conversaciones',
     assistantNew: 'Nueva conversación',
@@ -3268,6 +3288,10 @@ class SsStrings {
     'notifEmptyText': notifEmptyText,
     'notifUnread': notifUnread,
     'notifEnd': notifEnd,
+    'notifLevelInfo': notifLevelInfo,
+    'notifLevelWarning': notifLevelWarning,
+    'notifLevelCritical': notifLevelCritical,
+    'notifMute': notifMute,
     'notifUnreadCount': notifUnreadCount(3),
     'assistantConversations': assistantConversations,
     'assistantNew': assistantNew,
@@ -3795,6 +3819,10 @@ class SsStrings {
     String? notifEmptyText,
     String? notifUnread,
     String? notifEnd,
+    String? notifLevelInfo,
+    String? notifLevelWarning,
+    String? notifLevelCritical,
+    String? notifMute,
     String Function(int n)? notifUnreadCount,
     String? assistantConversations,
     String? assistantNew,
@@ -4278,6 +4306,10 @@ class SsStrings {
     notifEmptyText: notifEmptyText ?? this.notifEmptyText,
     notifUnread: notifUnread ?? this.notifUnread,
     notifEnd: notifEnd ?? this.notifEnd,
+    notifLevelInfo: notifLevelInfo ?? this.notifLevelInfo,
+    notifLevelWarning: notifLevelWarning ?? this.notifLevelWarning,
+    notifLevelCritical: notifLevelCritical ?? this.notifLevelCritical,
+    notifMute: notifMute ?? this.notifMute,
     notifUnreadCount: notifUnreadCount ?? this.notifUnreadCount,
     assistantConversations: assistantConversations ?? this.assistantConversations,
     assistantNew: assistantNew ?? this.assistantNew,

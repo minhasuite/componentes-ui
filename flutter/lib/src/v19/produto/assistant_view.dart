@@ -130,6 +130,8 @@ class SsAssistantLock {
 /// - **Conversas**: com [conversations] e largura de [sideBreakpoint] para cima, a lista
 ///   ([SsAssistantConversations]) fica ao lado. No celular, abra pela barra de cima com
 ///   [showSsAssistantConversations].
+/// - **Anexos** (v1.9.2): [attachments] em chips acima do campo ([onRemoveAttachment] no ✕); com anexo, enviar
+///   vale sem texto.
 /// - **Campo**: [onSend] recebe o texto; sem [controller], o campo limpa sozinho ao enviar (com o do app,
 ///   limpar é do app, para devolver o texto se falhar). Enviar trava enquanto [thinking] ou há `pending`.
 ///
@@ -166,7 +168,17 @@ class SsAssistantView extends StatefulWidget {
     this.onNewConversation,
     this.onDeleteConversation,
     this.sideBreakpoint = 840,
+    this.attachments = const [],
+    this.onRemoveAttachment,
   });
+
+  /// v1.9.2: anexos pendentes (foto, PDF) em chips acima do campo, como no [SsChatInput]: vão na próxima
+  /// mensagem, e com anexo o enviar vale com o campo vazio (o [onSend] recebe ''). Escolher o arquivo é do
+  /// app (botão no [inputLeading]); limpar a lista depois de enviar também.
+  final List<SsChatAttachment> attachments;
+
+  /// v1.9.2: o ✕ de cada chip (sem ele, vale o `onRemove` do próprio anexo; sem os dois, o chip não tem ✕).
+  final ValueChanged<SsChatAttachment>? onRemoveAttachment;
 
   final List<SsAssistantMessage> messages;
   final ValueChanged<String> onSend;
@@ -296,6 +308,12 @@ class _SsAssistantViewState extends State<SsAssistantView> {
           enabled: widget.inputEnabled && !widget.loading,
           maxLength: widget.maxLength,
           leading: widget.inputLeading,
+          attachments: [
+            for (final a in widget.attachments)
+              widget.onRemoveAttachment == null
+                  ? a
+                  : SsChatAttachment(a.name, icon: a.icon, onRemove: () => widget.onRemoveAttachment!(a)),
+          ],
         ),
       ],
     );
@@ -353,10 +371,14 @@ class _SsAssistantViewState extends State<SsAssistantView> {
               style: TextStyle(color: c.dangerText, fontSize: AppType.body, height: 1.4),
             ),
             if (widget.onRetryMessage != null)
-              TextButton.icon(
-                onPressed: () => widget.onRetryMessage!(m),
-                icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: Text(s.retry),
+              // v1.9.2: 48 de alvo também no compacto (o botão desenha 40).
+              SsTapTarget(
+                semantics: true,
+                child: TextButton.icon(
+                  onPressed: () => widget.onRetryMessage!(m),
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: Text(s.retry),
+                ),
               ),
           ],
         ),

@@ -19,8 +19,23 @@ module Ss
   # sai só o <turbo-frame id="<id>-p<page>"> com os grupos e o frame da página seguinte. after: (o at: do último aviso
   # da página anterior) evita repetir o título do dia na emenda. Os links dentro vão para a página inteira (_top).
   # now: (padrão Time.current) é o "hoje" dos grupos. empty:/empty_text: trocam o vazio.
+  #
+  # v1.9.2, aviso rico (tudo opcional, par do SsNotificationItem(level:, image:, actions:, onMute:)):
+  #   level: :info/:warning/:critical  aviso e crítico ganham o tom (âmbar, vermelho) no ícone e no contorno, o ícone do
+  #                                    nível (icon:/tone: passados ganham)
+  #                                    nível e o selo com o nome ("Aviso", "Crítico"); info fica como antes.
+  #   image: "url" (image_alt:)        foto embaixo do texto (instantâneo da câmera), preguiçosa, 16:9 no máximo.
+  #   actions: [{ label:, href:, method: (:patch; :get = link), params:, icon: }]  botões de resposta embaixo (o 1º
+  #                                    cheio, os outros fantasma).
+  #   mute: { href:, method: (:patch), label:, params: } ou { label:, options: [{ label:, href:, method:, params: }] }
+  #                                    "Silenciar": um botão, ou o menu com as opções ("Por 1 hora", "Por 8 horas").
+  #
+  #   { id: n.id, title: n.title, text: n.body, at: n.created_at, unread: n.read_at.nil?, level: :critical,
+  #     image: n.image_url, actions: n.actions.map { |a| { label: a["title"], href: responder_path(n), params: { action_id: a["id"] } } },
+  #     mute: { options: [1, 8, 24].map { |h| { label: "Por #{h} h", href: silenciar_path(n, hours: h) } } } }
   class NotificationCenterComponent < BaseComponent
     TONES = %i[accent success warn danger muted].freeze
+    LEVELS = { warning: ["warn", "exclamation-triangle", "ss-badge-warning"], critical: ["danger", "exclamation-circle", "ss-badge-danger"] }.freeze
 
     def initialize(items: [], id: "ss-ncenter", unread_count: nil, read_all_href: nil, read_all_method: :patch, next_href: nil,
                    fragment: false, page: 1, after: nil, now: nil, empty: nil, empty_text: nil, label: nil, **rest)
@@ -96,13 +111,21 @@ module Ss
 
     def same_day?(a, b) = a.nil? == b.nil? && (a.nil? || a.to_date == b.to_date)
 
+    def level_of(it) = LEVELS[it[:level]&.to_sym]
+
     def item(it)
-      css = ["ss-ncenter-item", ("is-unread" if it[:unread])].compact.join(" ")
+      lv = level_of(it)
+      extra = extra(it)
+      css = ["ss-ncenter-item", ("is-unread" if it[:unread]), ("is-#{it[:level]}" if lv), ("has-extra" if extra)].compact.join(" ")
+      tone = it[:tone] || lv&.first
+      icon = it[:icon] || (lv ? lv[1] : "bell")
       time = it[:at] && tag.time(ss_date(it[:at], :time), datetime: it[:at].respond_to?(:iso8601) ? it[:at].iso8601 : it[:at].to_s, class: "ss-ncenter-time")
       body = safe_join([
-        (tag.span(svg(it[:icon] || "bell"), class: ["ss-icon-tile", ("is-#{it[:tone]}" if TONES.include?(it[:tone]&.to_sym))].compact.join(" ")) if it[:icon] != false),
+        (tag.span(svg(icon), class: ["ss-icon-tile", ("is-#{tone}" if TONES.include?(tone&.to_sym))].compact.join(" ")) if it[:icon] != false),
         tag.span(class: "ss-ncenter-text") do
-          safe_join([tag.span(it[:title], class: "ss-ncenter-title"), (tag.span(it[:text], class: "ss-ncenter-note") if it[:text].present?)].compact)
+          safe_join([tag.span(it[:title], class: "ss-ncenter-title"),
+                     (tag.span(safe_join([ss_icon(lv[1], size: nil), tag.span(level_label(it[:level]))]), class: "ss-badge #{lv[2]} ss-ncenter-level") if lv),
+                     (tag.span(it[:text], class: "ss-ncenter-note") if it[:text].present?)].compact)
         end,
         time,
         (tag.span(tag.span(ss_t("notification_center.unread", default: "não lida"), class: "ss-sr"), class: "ss-ncenter-dot") if it[:unread])
@@ -114,7 +137,37 @@ module Ss
              else
                tag.div(body, class: "ss-ncenter-main")
              end
-      tag.li(safe_join([main, actions(it)].compact), class: css, id: (it[:id] && "#{@id}-item-#{it[:id]}"))
+      tag.li(safe_join([main, actions(it), extra].compact), class: css, id: (it[:id] && "#{@id}-item-#{it[:id]}"))
+    end
+
+    def level_label(level) = ss_t("notification_center.level_#{level}", default: { warning: "Aviso", critical: "Crítico" }.fetch(level.to_sym, level.to_s))
+
+    # Foto, botões de resposta e "Silenciar", embaixo do aviso, alinhados ao texto.
+    def extra(it)
+      img = (tag.img(src: it[:image], alt: it[:image_alt] || "", loading: "lazy", class: "ss-ncenter-img") if it[:image].present?)
+      btns = Array(it[:actions]).map { _1.to_h.transform_keys(&:to_sym) }.each_with_index.map do |a, i|
+        reply_button(a, variant: i.zero? ? :primary : :ghost)
+      end
+      btns << mute(it[:mute].to_h.transform_keys(&:to_sym)) if it[:mute].present?
+      parts = [img, (tag.div(safe_join(btns), class: "ss-ncenter-replies") if btns.any?)].compact
+      tag.div(safe_join(parts), class: "ss-ncenter-extra") if parts.any?
+    end
+
+    def reply_button(a, variant:, label: a[:label], icon: a[:icon])
+      method = (a[:method] || :patch).to_s
+      render(ButtonComponent.new(label:, icon:, href: a[:href], method: (method unless method == "get"), params: a[:params],
+                                 variant:, size: :sm, form: { class: "contents", data: { turbo_frame: "_top" } }, data: ({ turbo_frame: "_top" } if method == "get")))
+    end
+
+    def mute(m)
+      label = m[:label] || ss_t("notification_center.mute", default: "Silenciar")
+      opts = Array(m[:options]).map { _1.to_h.transform_keys(&:to_sym) }
+      return reply_button(m, variant: :ghost, label:, icon: m[:icon] || "volume-off") if opts.empty?
+
+      tag.details(class: "ss-menu ss-ncenter-mute") do
+        safe_join([tag.summary(safe_join([ss_icon(m[:icon] || "volume-off", size: nil), tag.span(label)]), class: "ss-menu-btn"),
+                   tag.div(safe_join(opts.map { |o| reply_button(o, variant: :item, icon: o[:icon] || "clock") }), class: "ss-ncenter-mute-list")])
+      end
     end
 
     def actions(it)

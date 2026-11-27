@@ -24,7 +24,7 @@ De onde veio cada uma:
 | | Web | Flutter |
 |---|---|---|
 | Peça | `Ss::NotificationCenterComponent(items:, id: "ss-ncenter", unread_count: nil, read_all_href: nil, read_all_method: :patch, next_href: nil, fragment: false, page: 1, after: nil, now: nil, empty: nil, empty_text: nil)` | `SsNotificationCenter(load:, markRead:, markAllRead:, archive:, onOpen:, onUnreadChanged:, controller:, showHeader: true, groupByDay: true, emptyTitle:, emptyText:, emptyIcon:, errorText:, padding:, now:)` |
-| Item | `{ id:, title:, text:, at:, unread:, icon:, tone:, href:, method:, read_href:, archive_href: }` | `SsNotificationItem(id:, title:, body:, createdAt:, read:, icon:, tone: SsTone, data:)` |
+| Item | `{ id:, title:, text:, at:, unread:, icon:, tone:, href:, method:, read_href:, archive_href:, level:, image:, image_alt:, actions:, mute: }` | `SsNotificationItem(id:, title:, body:, createdAt:, read:, icon:, tone: SsTone, data:, level:, image:, actions:, onMute:, muteLabel:)` |
 | Página | `next_href:` → `<turbo-frame id="<id>-p2" loading=lazy>`; a resposta é o componente com `fragment: true, page: 2, after:` | `load(page)` devolve `SsNotificationPage(items, hasMore:, unreadCount:)` |
 | Linha | `.ss-ncenter-item` (`.is-unread`) | `SsNotificationTile(item:, onTap:, time:)` (também serve na folha do sino) |
 | Sino | `Ss::NotificationBellComponent` (já existia) | `SsNotificationBell` / `SsBellDot` com `SsNotificationCenterController.unreadCount` |
@@ -45,6 +45,8 @@ Comportamento (igual nos dois lados):
   repetir o título do dia na emenda.
 - Puxar para atualizar (app), também no vazio e no erro. Vazio: "Nenhuma notificação"; erro da 1ª página: o motivo
   (`errorText`) e "Tentar de novo".
+- Aviso rico (v1.9.2, opcional): nível (aviso/crítico com tom, ícone e selo), foto 16:9, botões de resposta e "Silenciar" (um
+  botão; no web também o menu com `options:`). No app, responder marca como lido. Ver a seção v1.9.2 do README.
 - A contagem: `unreadCount` do servidor ganha da contagem dos itens carregados (Flutter `SsNotificationPage.unreadCount`,
   web `unread_count:`).
 
@@ -78,7 +80,7 @@ Scaffold(
 
 | | Web | Flutter |
 |---|---|---|
-| Peça | `Ss::AssistantComponent(id:, url:, messages:, shortcuts:, conversations: nil, current_conversation_id:, new_conversation_href:, delete_method: :delete, quota:, locked:, disabled:, thinking:, empty_title:, empty_text:, placeholder:, every: 2000, max_polls: 90)` + bloco (vai no log) | `SsAssistantView(messages:, onSend:, controller:, thinking:, thinkingText:, shortcuts:, onShortcut:, shortcutsInChat: true, emptyTitle:, emptyText:, loading:, error:, onRetry:, onRetryMessage:, locked:, quotaUsed:, quotaLimit:, quotaLabel:, inputEnabled: true, hint:, disabledHint:, maxLength: 2000, inputLeading:, conversations:, currentConversationId:, onOpenConversation:, onNewConversation:, onDeleteConversation:, sideBreakpoint: 840)` |
+| Peça | `Ss::AssistantComponent(id:, url:, messages:, shortcuts:, conversations: nil, current_conversation_id:, new_conversation_href:, delete_method: :delete, quota:, locked:, disabled:, thinking:, empty_title:, empty_text:, placeholder:, every: 2000, max_polls: 90)` + bloco (vai no log) | `SsAssistantView(messages:, onSend:, controller:, thinking:, thinkingText:, shortcuts:, onShortcut:, shortcutsInChat: true, emptyTitle:, emptyText:, loading:, error:, onRetry:, onRetryMessage:, locked:, quotaUsed:, quotaLimit:, quotaLabel:, inputEnabled: true, hint:, disabledHint:, maxLength: 2000, inputLeading:, conversations:, currentConversationId:, onOpenConversation:, onNewConversation:, onDeleteConversation:, sideBreakpoint: 840, attachments:, onRemoveAttachment:)` (anexos: v1.9.2, só app) |
 | Mensagem | `{ from: :me/:ai, text:, time:, status: :pending/:failed, poll_url:, error:, retry_href:, action: {…ChatActionComponent} }` | `SsAssistantMessage(id:, text:, child:, fromMe:, status: SsAssistantStatus, time:, error:, action: SsAssistantAction)` |
 | Atalho | `{ label:, prompt:, icon:, href: }` | `SsAssistantShortcut(label, icon:, value:)` |
 | Conversa | `{ id:, title:, subtitle:, href:, delete_href: }` | `SsAssistantConversation(id:, title:, subtitle:, updatedAt:)`; lista `SsAssistantConversations`; folha `showSsAssistantConversations` |

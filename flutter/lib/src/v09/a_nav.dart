@@ -1108,19 +1108,23 @@ class SsStepTopBar extends StatelessWidget {
               ),
               const Spacer(),
               if (onCancel != null)
-                TextButton.icon(
-                  onPressed: onCancel,
-                  icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
-                  label: Text(
-                    (cancelLabel ?? s.cancel).toUpperCase(),
-                    style: TextStyle(
-                      color: c.muted,
-                      fontSize: AppType.meta,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
+                // v1.9.2: no compacto o botão desenha 40; o alvo (e o nó do leitor de tela) fica com 48.
+                SsTapTarget(
+                  semantics: true,
+                  child: TextButton.icon(
+                    onPressed: onCancel,
+                    icon: Icon(Icons.close_rounded, size: 18, color: c.muted),
+                    label: Text(
+                      (cancelLabel ?? s.cancel).toUpperCase(),
+                      style: TextStyle(
+                        color: c.muted,
+                        fontSize: AppType.meta,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                     ),
+                    style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                   ),
-                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                 ),
               const SizedBox(width: 8),
             ],

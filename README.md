@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.9.1
+      ref: v1.9.2
 ```
 
 ```dart
@@ -653,6 +653,45 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.9.2: alvos de 48 que faltavam, anexos no assistente, chave do botão central e o aviso rico
+
+Achados dos apps ao adotar a v1.9.1 (`ssA11yAudit`) e o que a minha-automacao precisa para trocar a página de avisos feita
+à mão. Nada quebra; o que entra na API é opcional.
+
+- **Alvo de 48** (o desenho é o mesmo; o toque e o nó do leitor de tela crescem por fora, com o `SsTapTarget(semantics: true)`):
+  `SsSearchField` (o campo media 44, 36 no compacto; o ✕ Limpar também), `SsListItem` com `leading:` e sem subtítulo (44: o
+  nó da linha passa a 48; com `trailing:`, que pode ter botão próprio, a linha cresce até 48 para não fundir os nós), a ação
+  do `SsSection` ("Ver todos", 40) e a do `SsSectionHeader(action:)` (uma ação só; `Row`/`Wrap` de ações ficam como estão,
+  cada botão com o próprio alvo). Na varredura das peças v1.9: o "CANCELAR" do `SsWizard` (`SsStepTopBar`) e o "Tentar de
+  novo" da mensagem com erro do `SsAssistantView` (40 no compacto), e o véu do `SsTour`, que era um nó tocável sem nome.
+  `SsNotificationCenter`, `SsCaptureHub`, `SsWhatsNewList`, `SsAdaptiveScaffold` e `SsSyncPanel` passaram sem achado.
+- **`SsAssistantView(attachments:, onRemoveAttachment:)`**: os anexos pendentes (`SsChatAttachment`) em chips na barra do
+  campo, como no `SsChatInput`; com anexo, enviar vale sem texto (o `onSend` recebe `''`). O botão de anexar continua no
+  `inputLeading:`. Web: o `Ss::AssistantComponent` não tem envio de arquivo, então não há par (fica como dívida, se um produto
+  pedir).
+- **Chave do botão central**: `SsNavBar(centerKey:)` ou `SsNavCenter(..., key:)`, para o `SsTour` apontar para ele
+  (`SsTourStep(target: centro, …)`).
+- **Aviso rico** no `SsNotificationCenter` ↔ `Ss::NotificationCenterComponent`, tudo opcional por aviso:
+
+  | | Flutter (`SsNotificationItem`) | Web (item do `items:`) |
+  |---|---|---|
+  | Nível | `level: SsNotificationLevel.info/.warning/.critical` | `level: :info/:warning/:critical` |
+  | Foto | `image:` (widget do app, ex. `SsNetImage`) | `image:` (URL), `image_alt:` |
+  | Respostas | `actions: [SsNotificationAction('Fechar', () => …, icon:)]` | `actions: [{ label:, href:, method: (:patch; :get = link), params:, icon: }]` |
+  | Silenciar | `onMute:`, `muteLabel:` (escolher as horas é do app) | `mute: { href:, method:, params:, label: }` ou `mute: { options: [{ label:, href: }] }` (menu) |
+
+  Aviso e crítico ganham o tom semântico (âmbar, vermelho) no ícone e no contorno, o ícone do nível e o selo "Aviso"/"Crítico"
+  (no leitor de tela também); `info` fica como antes; `icon:`/`tone:` passados ganham. A foto vai embaixo do texto (16:9) e os
+  botões numa faixa embaixo, alinhados ao texto (o 1º cheio, os outros fantasma, "Silenciar" por último). No app, responder dá o
+  aviso por lido (como abrir) e, com botões, o topo continua o toque de abrir e cada botão é um nó próprio. Textos novos:
+  `SsStrings.notifLevelInfo/Warning/Critical`, `notifMute` ↔ `componentes_ui.notification_center.level_*`, `mute`.
+- Catálogo: estados `rico` (`ss-notification-center`) e `anexos` (`ss-assistant`); vitrine Rails "Central de notificações,
+  assistente e captura" com o aviso rico. Testes: `flutter/test/v192_alvos_test.dart` (o `v192_test.dart` é da v0.19.2) e
+  `rails/sample/test/components/v1_9_2_web_test.rb`.
+
+**Ao subir nos apps:** a minha-automacao troca a folha com o `SsNoticeCard` (aberta ao tocar o aviso com botões, foto ou
+silenciar) pelos campos novos do `SsNotificationItem`, e o `/notificacoes` do web pelos do `Ss::NotificationCenterComponent`.
 
 ## v1.9.1: alvos de toque de 48 e a cota com texto grande
 

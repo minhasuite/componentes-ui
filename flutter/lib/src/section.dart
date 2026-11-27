@@ -22,31 +22,39 @@ class SsSection extends StatelessWidget {
     final d = SsDensity.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(4, d.space(20), 4, d.space(8)),
-      child: Row(
-        children: [
-          if (icon != null) ...[Icon(icon, size: 16, color: c.muted), const SizedBox(width: 6)],
-          Expanded(
-            child: Text(
-              title.toUpperCase(),
-              semanticsLabel: title,
-              style: TextStyle(
-                color: c.muted,
-                fontSize: AppType.label,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
+      // v1.9.2: o toque na sobra de 48 (acima e abaixo da linha) chega à ação; o desenho não muda.
+      child: SsTapTarget(
+        minSize: Size(0, d.minTarget),
+        child: Row(
+          children: [
+            if (icon != null) ...[Icon(icon, size: 16, color: c.muted), const SizedBox(width: 6)],
+            Expanded(
+              child: Text(
+                title.toUpperCase(),
+                semanticsLabel: title,
+                style: TextStyle(
+                  color: c.muted,
+                  fontSize: AppType.label,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                ),
               ),
             ),
-          ),
-          if (action != null)
-            TextButton(
-              onPressed: onAction,
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+            // v1.9.2: o "Ver todos" desenha 40; o toque e o nó do leitor de tela ficam com 48.
+            if (action != null)
+              SsTapTarget(
+                semantics: true,
+                child: TextButton(
+                  onPressed: onAction,
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  child: Text(action!, style: TextStyle(fontSize: d.font(AppType.sub))),
+                ),
               ),
-              child: Text(action!, style: TextStyle(fontSize: d.font(AppType.sub))),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

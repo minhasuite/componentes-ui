@@ -14,6 +14,18 @@
   </section>
 
   <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Aviso rico (v1.9.2)", subtitle: "Nível com tom e selo, foto, botões de resposta e Silenciar (um botão ou o menu com as horas)") %>
+    <% foto = "data:image/svg+xml;utf8," + ERB::Util.url_encode(%(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="#334155"/><rect x="18" y="30" width="60" height="44" rx="4" fill="#64748b"/><circle cx="128" cy="24" r="10" fill="#f59e0b"/></svg>)) %>
+    <%= render Ss::NotificationCenterComponent.new(id: "vit-avisos-ricos", now: agora, items: [
+          { id: 11, title: "Portão da garagem aberto", text: "Aberto há 10 min, sem ninguém em casa.", at: agora - 10.minutes, unread: true, level: :critical,
+            image: foto, image_alt: "Câmera da garagem", href: "#",
+            actions: [{ label: "Fechar portão", href: "#" }, { label: "Deixar aberto", href: "#" }],
+            mute: { options: [1, 8, 24].map { |h| { label: "Por #{h} h", href: "#" } } }, read_href: "#", archive_href: "#" },
+          { id: 12, title: "Bateria fraca no sensor da sala", text: "12% de carga.", at: agora - 2.hours, level: :warning, href: "#",
+            mute: { href: "#" }, archive_href: "#" }]) %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
     <%= render Ss::CardHeaderComponent.new(title: "Assistente com IA", subtitle: "Conversas ao lado (≥ 840px), atalhos no topo, ação sugerida, respondendo e cota") %>
     <%= render Ss::AssistantComponent.new(id: "vit-asst", url: "#", current_conversation_id: 1, new_conversation_href: "#",
           conversations: [{ id: 1, title: "Treino de 4 dias", subtitle: "há 2 min", href: "#", delete_href: "#" },

@@ -444,6 +444,10 @@ es:
       mark_read: "Marcar como leída"
       archive: "Archivar"
       load_more: "Cargar más"
+      level_info: "Información"
+      level_warning: "Aviso"
+      level_critical: "Crítico"
+      mute: "Silenciar"
     number:
       delimiter: "."
       separator: ","
