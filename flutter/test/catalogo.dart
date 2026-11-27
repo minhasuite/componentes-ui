@@ -64,11 +64,13 @@ import 'catalogo_v19_paridade_web.dart';
 // v1.10.0: os pares Flutter que faltavam (comV1100).
 // v1.11.0: as variantes do iOS e o botão da Apple (comV1110).
 // v1.12.0 "Kit Brasil": Pix, boleto, CEP, CPF/CNPJ, NF-e e o colar inteligente (comV1120).
-// v1.13.0 "confiança na IA e suíte" (comV1130, por fora de tudo).
+// v1.13.0 "confiança na IA e suíte" (comV1130).
+// v1.14.0 "interface e animação" (comV1140, por fora de tudo).
 import 'catalogo_v1100.dart';
 import 'catalogo_v1110.dart';
 import 'catalogo_v1120.dart';
 import 'catalogo_v1130.dart';
+import 'catalogo_v1140.dart';
 
 class Estado {
   const Estado(
@@ -152,26 +154,28 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV1130(
-  comV1120(
-    comV1110(
-      comV1100(
-        comV19Correcoes(
-          comV19ParidadeWeb(
-            comV19Produto(
-              comV19ParidadeApp(
-                comV19Transicoes(
-                  comV19Movimento(
-                    comV130(
-                      comV122(
-                        comV120(
-                          comV28(
-                            comV27Graficos(
-                              comV27(
-                                comV26(
-                                  comV25(
-                                    comV24(
-                                      comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))),
+final catalogo = comV1140(
+  comV1130(
+    comV1120(
+      comV1110(
+        comV1100(
+          comV19Correcoes(
+            comV19ParidadeWeb(
+              comV19Produto(
+                comV19ParidadeApp(
+                  comV19Transicoes(
+                    comV19Movimento(
+                      comV130(
+                        comV122(
+                          comV120(
+                            comV28(
+                              comV27Graficos(
+                                comV27(
+                                  comV26(
+                                    comV25(
+                                      comV24(
+                                        comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))),
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -16,8 +16,9 @@ module Ss
 
     attr_reader :title, :points
 
-    def initialize(points:, title:, active: nil, format: nil, show_title: false, **opts)
+    def initialize(points:, title:, active: nil, format: nil, show_title: false, scrub: false, **opts)
       super(**opts)
+      @scrub = scrub
       @points = points.map { |(l, v)| [l.to_s, v.to_f] }
       @title = title
       @active = (active || @points.size - 1).clamp(0, [@points.size - 1, 0].max)
@@ -30,6 +31,8 @@ module Ss
     def uid = @uid ||= "ss-area-#{object_id}"
     def active = @active
     def show_title? = @show_title
+    # v1.14.0 (par do SsAreaChart(scrub:)): o balão com o rótulo, a vibração por ponto e o ss-scrub:change.
+    def scrub? = @scrub
 
     def fmt(v)
       return @format.call(v) if @format
@@ -88,6 +91,8 @@ module Ss
 
     def data_points = coords.each_with_index.map { |(x, y), i| [x, y, @points[i][0], fmt(@points[i][1])] }.to_json
     def pct_x(i) = (coords[i][0] / W * 100).round(3)
+    # v1.14.0: perto da borda, o balão encosta para dentro (não corta no fim do gráfico).
+    def pill_edge(i) = pct_x(i) > 86 ? " is-end" : (pct_x(i) < 14 ? " is-start" : "")
     def pct_y(i) = (coords[i][1] / H * 100).round(3)
   end
 end

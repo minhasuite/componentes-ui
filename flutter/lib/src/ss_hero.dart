@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'app_theme.dart';
 import 'density.dart';
 import 'motion.dart';
+import 'v1140/mesh_background.dart';
 
 /// Herói com o gradiente da marca: rótulo, o número grande (DM Mono), uma
 /// legenda e selos. Texto sempre `onDark` (o gradiente é escuro nos dois temas).
@@ -12,15 +13,24 @@ import 'motion.dart';
 /// o bloco "Foto do cupom"): texto e ícones já saem claros, [background]
 /// fica atrás do conteúdo (desenho decorativo com `Positioned`) e [onTap]
 /// o deixa tocável. No web é o `.ss-hero` com qualquer conteúdo dentro.
+///
+/// v1.14.0: [mesh] troca o gradiente parado pelo [SsMeshBackground] (manchas da marca andando devagar; paradas
+/// com "reduzir movimento"). Use num herói por tela: é a animação contínua dela.
 class SsHeroCard extends StatelessWidget {
-  const SsHeroCard({super.key, required this.label, required this.value, this.caption, this.chips = const []})
-    : child = null,
-      background = null,
-      padding = null,
-      radius = null,
-      shadow = false,
-      onTap = null,
-      semanticLabel = null;
+  const SsHeroCard({
+    super.key,
+    required this.label,
+    required this.value,
+    this.caption,
+    this.chips = const [],
+    this.mesh = false,
+  }) : child = null,
+       background = null,
+       padding = null,
+       radius = null,
+       shadow = false,
+       onTap = null,
+       semanticLabel = null;
 
   /// Conteúdo livre no gradiente da marca (diagonal, da cor clara à funda).
   /// [radius] padrão `AppRadius.card` (o login usa `AppRadius.sheet`);
@@ -36,6 +46,7 @@ class SsHeroCard extends StatelessWidget {
     this.shadow = true,
     this.onTap,
     this.semanticLabel,
+    this.mesh = false,
   }) : label = '',
        value = '',
        caption = null,
@@ -58,6 +69,9 @@ class SsHeroCard extends StatelessWidget {
   final VoidCallback? onTap;
   final String? semanticLabel;
 
+  /// v1.14.0: fundo de manchas da marca em movimento ([SsMeshBackground]).
+  final bool mesh;
+
   @override
   Widget build(BuildContext context) => child == null ? _numero(context) : _custom(context);
 
@@ -76,14 +90,18 @@ class SsHeroCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: r,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [c.brandFrom, c.brandTo, c.brandDeep],
-        ),
+        gradient: mesh
+            ? null
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [c.brandFrom, c.brandTo, c.brandDeep],
+              ),
         boxShadow: shadow ? c.primaryShadow : null,
       ),
-      child: background == null ? body : Stack(children: [background!, body]),
+      child: mesh
+          ? SsMeshBackground(child: background == null ? body : Stack(children: [background!, body]))
+          : (background == null ? body : Stack(children: [background!, body])),
     );
     if (onTap != null) card = SsPressable(onTap: onTap, child: card);
     if (semanticLabel != null || onTap != null) {
@@ -97,32 +115,43 @@ class SsHeroCard extends StatelessWidget {
     return card;
   }
 
-  Widget _numero(BuildContext context) => Container(
-    padding: EdgeInsets.all(SsDensity.of(context).cardPad + 2),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(colors: [SsColors.of(context).brandFrom, SsColors.of(context).brandTo]),
-      borderRadius: BorderRadius.circular(AppRadius.card),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+  Widget _numero(BuildContext context) {
+    final conteudo = _conteudoNumero(context);
+    if (mesh) {
+      return SsMeshBackground(
+        radius: AppRadius.card,
+        child: Padding(padding: EdgeInsets.all(SsDensity.of(context).cardPad + 2), child: conteudo),
+      );
+    }
+    return Container(
+      padding: EdgeInsets.all(SsDensity.of(context).cardPad + 2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [SsColors.of(context).brandFrom, SsColors.of(context).brandTo]),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: conteudo,
+    );
+  }
+
+  Widget _conteudoNumero(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(color: AppColors.onDark, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        value,
+        style: AppTheme.number(context, size: AppType.statNum, color: AppColors.onDark),
+      ),
+      if (caption != null)
         Text(
-          label,
-          style: const TextStyle(color: AppColors.onDark, fontSize: AppType.sub, fontWeight: FontWeight.w600),
+          caption!,
+          style: TextStyle(color: AppColors.onDark.withValues(alpha: 0.8), fontSize: AppType.sub),
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: AppTheme.number(context, size: AppType.statNum, color: AppColors.onDark),
-        ),
-        if (caption != null)
-          Text(
-            caption!,
-            style: TextStyle(color: AppColors.onDark.withValues(alpha: 0.8), fontSize: AppType.sub),
-          ),
-        if (chips.isNotEmpty) ...[const SizedBox(height: 10), Wrap(spacing: 6, runSpacing: 6, children: chips)],
-      ],
-    ),
+      if (chips.isNotEmpty) ...[const SizedBox(height: 10), Wrap(spacing: 6, runSpacing: 6, children: chips)],
+    ],
   );
 }
 

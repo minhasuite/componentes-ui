@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssSuccess } from "componentes_ui/controllers/ss_success_check_controller"
+import { haptic } from "componentes_ui/controllers/ss_haptics_controller"
 
 // Ss::MorphButtonComponent (v1.9, par do SsMorphButton). data-state: idle | running | ok | error.
 // No formulário: turbo:submit-start/-end; sem Turbo, o submit mostra carregando até a página trocar.
@@ -6,7 +8,7 @@ import { Controller } from "@hotwired/stimulus"
 // type="button": "ss-morph:run" com detail.waitUntil(promise). API: el.ssMorph.start() / .succeed() / .fail() / .progress(v).
 export default class extends Controller {
   static targets = ["status"]
-  static values = { label: String, loading: String, done: String, failed: String }
+  static values = { label: String, loading: String, done: String, failed: String, sound: Boolean }
 
   connect() {
     this.element.ssMorph = { start: () => this.start(), succeed: () => this.end(true), fail: () => this.end(false), progress: (v) => this.progress(v) }
@@ -72,7 +74,8 @@ export default class extends Controller {
   end(ok) {
     this.element.dataset.state = ok ? "ok" : "error"
     this.element.removeAttribute("aria-busy")
-    navigator.vibrate?.(ok ? [10, 40, 10] : 40)
+    // v1.14.0: o ✓ se desenha (CSS) com a vibração de sucesso e o gancho do som (ssSuccess).
+    ok ? ssSuccess(this.element, { sound: this.soundValue }) : haptic("error")
     this.say(ok ? this.doneValue : this.failedValue)
     this.back = setTimeout(() => {
       this.element.dataset.state = "idle"

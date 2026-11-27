@@ -28,7 +28,11 @@ class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
     required this.slivers,
     this.titleLeading,
     this.titleWidget,
+    this.collapseTint = false,
   });
+
+  /// v1.14.0 (par do `collapse_tint:` do Ss::PageComponent): ver [SsSliverHeader.collapseTint].
+  final bool collapseTint;
 
   final String title;
   final String? subtitle;
@@ -75,6 +79,7 @@ class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
         leading: leading,
         titleLeading: titleLeading,
         titleWidget: titleWidget,
+        collapseTint: collapseTint,
       ),
       ?refresh,
       ...slivers,
@@ -107,7 +112,13 @@ class SsSliverHeader extends StatelessWidget {
     this.titleWidget,
     this.background,
     this.backgroundHeight = 180,
+    this.collapseTint = false,
   });
+
+  /// v1.14.0: aberto, o cabeçalho é transparente (o fundo da tela passa por trás); ao rolar, o título grande vira
+  /// o pequeno e o fundo passa à superfície ([SsColors.surface]) com a sombra da barra, junto do dedo. Sem ele, o
+  /// fundo é sempre o da tela, com o fio embaixo (como antes).
+  final bool collapseTint;
 
   final String title;
 
@@ -197,11 +208,16 @@ class _Delegate extends SliverPersistentHeaderDelegate {
     final h = header;
     final capa = h.background != null;
     final small = capa ? 1.0 : ((t - .6) / .4).clamp(0.0, 1.0);
+    final tint = h.collapseTint;
+    final fundo = Theme.of(context).scaffoldBackgroundColor;
     return Material(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: tint ? Color.lerp(fundo.withValues(alpha: 0), c.surface, t) : fundo,
       shape: Border(
-        bottom: BorderSide(color: c.line.withValues(alpha: c.line.a * t)),
+        bottom: BorderSide(color: c.line.withValues(alpha: c.line.a * t * (tint && !c.isDark ? .5 : 1))),
       ),
+      // A sombra da barra chega junto com a cor (no escuro o fio basta).
+      elevation: tint && !c.isDark ? 3 * t : 0,
+      shadowColor: c.ink.withValues(alpha: .18),
       child: Stack(
         children: [
           if (capa)

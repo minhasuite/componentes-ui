@@ -25,7 +25,7 @@ class Categoria {
 }
 
 /// A onda cujas peças entram em "Novidades".
-const versaoNovidades = '1.13';
+const versaoNovidades = '1.14';
 
 const novidades = Categoria('novidades', 'Novidades (v$versaoNovidades)', 'sparkles', 'O que chegou nesta versão.');
 const fundacao = Categoria(
@@ -153,6 +153,7 @@ final _porSlug = <String, Categoria>{
     'ss-section-icon', 'ss-fullscreen',
     'ss-side-menu-ios', 'ss-nav-bar-ios', // v1.11
     'ss-continue-on', 'ss-suite-switcher', // v1.13
+    'ss-nav-animated-icon', 'ss-collapse-tint', // v1.14
   ])
     s: navegacao,
   // Ações e botões
@@ -179,6 +180,7 @@ final _porSlug = <String, Categoria>{
     s: formularios,
   // Listas e tabelas
   for (final s in [
+    'ss-expandable-row', // v1.14
     'ss-list-item', 'ss-paged-list', 'ss-pull-to-refresh', 'ss-swipe-action', 'ss-value-row', 'ss-value-tile', //
     'ss-rows', 'ss-reorderable-list', 'ss-data-table', 'ss-block-list', 'ss-collapsible', 'ss-compare-table',
     'ss-kanban', 'ss-avatar', 'ss-avatar-extras', 'ss-task-item', 'ss-audit',
@@ -189,6 +191,7 @@ final _porSlug = <String, Categoria>{
   for (final s in [
     'ss-stat-card', 'ss-sparkline', 'ss-rings', 'ss-pill-bars', 'ss-line-chart', 'ss-gauge', 'ss-progress', //
     'ss-proportion-bar', 'ss-area-chart', 'ss-exploded-donut', 'ss-big-ring', 'ss-floating-bars',
+    'ss-chart-scrub', 'ss-period-compare', 'ss-kpi-odometer', // v1.14
     'ss-time-chart', 'ss-state-bands', 'ss-kpi-card', 'ss-bar-chart', 'ss-progress-row', 'ss-chart-legend',
     'ss-diverging-bars', 'ss-day-strip', 'ss-duo-stat', 'ss-heat-calendar', 'ss-odometer', 'ss-card-header-rank',
   ])
@@ -209,6 +212,7 @@ final _porSlug = <String, Categoria>{
     'ss-job-progress', 'ss-popover', // v1.10
     'ss-confirm-ios', 'ss-sheet-ios', // v1.11
     'ss-since-last-visit', 'ss-conflict-resolver', 'ss-privacy-auto', // v1.13
+    'ss-detent-sheet', 'ss-skeleton-of', 'ss-success-check', // v1.14
     'ss-undoable-removal', 'ss-illustration', 'ss-skeleton', 'ss-badge', 'ss-status-badge', 'ss-dot',
   ])
     s: retorno,
@@ -216,6 +220,7 @@ final _porSlug = <String, Categoria>{
   for (final s in [
     'ss-motion', 'ss-fly-to', 'ss-hero-flight', 'ss-shimmer-glass', 'ss-open-card', 'ss-open-container', //
     'ss-predictive-back', 'ss-celebrate',
+    'ss-shared-axis', 'ss-mesh-background', 'ss-tilt-card', // v1.14
   ])
     s: movimento,
   // Conversa, IA e avisos

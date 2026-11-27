@@ -159,3 +159,14 @@ export 'src/v1130/speech.dart';
 export 'src/v1130/spoken_amount.dart';
 export 'src/v1130/strings.dart';
 export 'src/v1130/suite_switcher.dart';
+// v1.14.0 "interface e animação": gráfico que se arrasta, período × anterior, linha que se expande, folha com 3
+// alturas, fundo de manchas, check que se desenha, cartão que inclina e a troca de aba com eixo compartilhado.
+export 'src/v1140/detent_sheet.dart';
+export 'src/v1140/expandable_row.dart';
+export 'src/v1140/mesh_background.dart';
+export 'src/v1140/period_compare.dart';
+export 'src/v1140/scrub.dart';
+export 'src/v1140/shared_axis.dart';
+export 'src/v1140/strings.dart';
+export 'src/v1140/success_check.dart';
+export 'src/v1140/tilt_card.dart';

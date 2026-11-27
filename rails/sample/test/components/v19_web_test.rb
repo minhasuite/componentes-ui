@@ -61,7 +61,7 @@ class V19WebTest < ComponentTest
 
   test "ss-tilt e o CSS do cartão: só com mouse, menos movimento e privacidade" do
     js = JS.join("ss_tilt_controller.js").read
-    ["(hover: hover) and (pointer: fine)", "prefers-reduced-motion", "--ss-rx", "--ss-my", "mouseleave"].each { |k| assert_includes js, k }
+    ["(hover: hover) and (pointer: fine)", "prefers-reduced-motion", "--ss-rx", "--ss-my", "pointerleave"].each { |k| assert_includes js, k }
     css = CSS.join("v19_web.css").read
     ["rotateX(var(--ss-rx", "aspect-ratio: 1.586", "[data-privacy=\"on\"] .ss-wallet-card-v.money", "prefers-reduced-motion",
      ".ss-btn.is-block", ".ss-item.is-danger", "::file-selector-button", ".ss-input[type=\"color\"]"].each { |k| assert_includes css, k }

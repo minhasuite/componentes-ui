@@ -1,12 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import { inView } from "componentes_ui/controllers/ss_in_view_controller"
+import { scrubTick } from "componentes_ui/controllers/ss_scrub_controller"
 
 // Gráfico de área (Ss::AreaChartComponent): linha vertical, marcador e pílula seguem
 // o mouse/dedo; ← → (e Home/End) andam pelos pontos com o foco no gráfico.
 // Entrada ao aparecer (inView): a linha se desenha, a área sobe e o ponto pula.
 export default class extends Controller {
   static targets = ["plot", "cursor", "dot", "pill", "label", "live"]
-  static values = { points: Array, index: Number, w: Number, h: Number }
+  static values = { points: Array, index: Number, w: Number, h: Number, scrub: Boolean }
 
   connect() { this.stop = inView(this.element) }
   disconnect() { this.stop?.() }
@@ -37,9 +38,19 @@ export default class extends Controller {
     this.cursorTarget.setAttribute("x2", x)
     this.dotTarget.setAttribute("cx", x)
     this.dotTarget.setAttribute("cy", y)
-    this.pillTarget.style.left = `${(x / this.wValue) * 100}%`
+    const pct = (x / this.wValue) * 100
+    this.pillTarget.style.left = `${pct}%`
+    this.pillTarget.classList.toggle("is-end", pct > 86)
+    this.pillTarget.classList.toggle("is-start", pct < 14)
     this.pillTarget.style.top = `${(y / this.hValue) * 100}%`
-    this.pillTarget.textContent = text
+    // v1.14.0 (scrub: true): o balão leva o rótulo junto, vibra a cada ponto e avisa a tela (ss-scrub:change).
+    if (this.scrubValue) {
+      this.pillTarget.innerHTML = ""
+      const b = document.createElement("b"); b.textContent = label
+      this.pillTarget.append(b, document.createTextNode(text))
+      this.element.classList.add("is-scrubbing")
+      scrubTick(this.element, i, { label })
+    } else this.pillTarget.textContent = text
     this.labelTargets.forEach((t, j) => t.classList.toggle("is-active", j === i))
     if (announce && this.hasLiveTarget) this.liveTarget.textContent = `${label}: ${text}`
   }

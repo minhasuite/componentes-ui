@@ -13,12 +13,15 @@ module Ss
   # detail.waitUntil(promise) segura o carregando até a promessa: resolvida = ✓, rejeitada = ✗).
   # block: false deixa do tamanho do texto (padrão: a largura toda). O leitor de tela ouve "Salvar: carregando",
   # "concluído" ou "falhou". Reduzir movimento: troca sem animar.
+  # v1.14.0: o ✓ é o Ss::SuccessCheckComponent.mark (círculo e traço que se desenham), com a vibração de sucesso;
+  # sound: true dispara o gancho `ss:sound` { name: "success" } (o produto toca).
   class MorphButtonComponent < BaseComponent
     attr_reader :label
 
-    def initialize(label:, icon: nil, type: :submit, name: nil, value: nil, form: nil, block: true, disabled: false, **rest)
+    def initialize(label:, icon: nil, type: :submit, name: nil, value: nil, form: nil, block: true, disabled: false, sound: false, **rest)
       super(**rest)
       @label, @icon, @type, @name, @value, @form, @block, @disabled = label, icon, type.to_s, name, value, form, block, disabled
+      @sound = sound
     end
 
     def texts
@@ -32,12 +35,12 @@ module Ss
         tag.button(type: (@type == "button" ? "button" : "submit"), name: @name, value: @value, form: @form, disabled: (@disabled || nil),
                    **root_attrs(class: "ss-morph", data: { controller: "ss-morph", state: "idle", ss_morph_loading_value: texts[:loading],
                                                            ss_morph_done_value: texts[:done], ss_morph_failed_value: texts[:failed],
-                                                           ss_morph_label_value: label, action: "click->ss-morph#click" })) do
+                                                           ss_morph_label_value: label, ss_morph_sound_value: (@sound || nil), action: "click->ss-morph#click" })) do
           safe_join([
             tag.span(safe_join([(ss_icon(@icon, size: nil) if @icon), tag.span(label, class: "ss-morph-text")].compact), class: "ss-morph-idle"),
             tag.svg(tag.circle(cx: 12, cy: 12, r: 9, class: "track", pathLength: 100) + tag.circle(cx: 12, cy: 12, r: 9, class: "bar", pathLength: 100),
                     class: "ss-morph-ring", viewBox: "0 0 24 24", "aria-hidden": "true"),
-            ss_icon("check", size: nil, css: "ss-morph-ok"),
+            Ss::SuccessCheckComponent.mark(css: "ss-morph-ok"),
             ss_icon("x", size: nil, css: "ss-morph-err"),
             tag.span(class: "ss-sr", role: "status", data: { ss_morph_target: "status" })
           ])

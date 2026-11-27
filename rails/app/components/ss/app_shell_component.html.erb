@@ -75,5 +75,15 @@
       </div>
     </header>
     <%= tag.main(content, **main_attrs) %>
+    <% if tabs? %>
+      <%= tag.nav(class: "ss-shell-tabbar", "aria-label": tabs_label, data: tabbar_data) do %>
+        <% tabs.each do |it| %>
+          <%= link_to it[:href], class: "ss-shell-tab", "aria-current": (it[:current] ? "page" : nil) do %>
+            <%= tab_icon(it) %><span class="ss-shell-tab-label"><%= it[:label] %></span>
+            <% if badge?(it[:badge]) %><span class="ss-nav-badge ss-shell-tab-badge" aria-label="<%= badge_label(it[:badge]) %>"><%= it[:badge] %></span><% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
 <% end %>

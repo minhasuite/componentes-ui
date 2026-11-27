@@ -20,6 +20,8 @@ module Ss
   # - markers: marcas verticais (deploy, incidente, nota); ver Ss::ChartMarkers.
   # - empty: texto quando não há rótulo nem valor (sem empty:, não desenha nada).
   # - v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala), como no BarChartComponent.
+  # - v1.14.0: scrub: true (par do SsLineChart(scrub:)): o marcador segue o dedo ou o mouse, o balão mostra o
+  #   rótulo e o valor de cada série, vibra a cada ponto e avisa a tela com `ss-scrub:change` { index }.
   class LineChartComponent < BaseComponent
     include ChartMarkers
 
@@ -32,9 +34,11 @@ module Ss
     attr_reader :title, :labels, :series
 
     def initialize(labels:, series:, title:, stacked: false, format: nil, height: 240, active: nil, show_title: false,
-                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, max: nil, **rest)
+                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, max: nil, scrub: false, **rest)
       super(**rest)
+      @title = title # v1.14.0: o título (figcaption, a tabela do leitor de tela e o rótulo do scrub) saía vazio.
       @max = max&.to_f
+      @scrub = scrub
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
       @stacked = stacked
@@ -177,6 +181,18 @@ module Ss
     def marker_x(m) = x(m[:index])
 
     def uid = @uid ||= "ss-linec-#{object_id}"
+
+    # v1.14.0: o arrastar (ss-scrub). Pontos em % do desenho: [x, y da 1ª série cheia, rótulo, [[nome, cor, valor]]].
+    def scrub? = @scrub && data?
+    def scrub_points
+      main = series.index { !_1[:dashed] } || 0
+      vals = stacked? ? tops[main] : series[main][:values]
+      labels.each_index.map do |i|
+        yv = vals[i]
+        [(x(i) * 100.0 / w).round(2), (yv.nil? ? nil : (y(yv) * 100.0 / h).round(2)), labels[i],
+         series.map { |s| [s[:name], s[:color], s[:values][i].nil? ? "—" : fmt(s[:values][i])] }]
+      end
+    end
 
     private
 

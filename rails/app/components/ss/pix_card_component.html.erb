@@ -13,7 +13,7 @@
   <div class="ss-pix-stage">
     <div class="ss-pix-qr" role="img" aria-label="<%= t("pix_qr") %>"><%= qr %></div>
     <div class="ss-pix-paid ss-pix-when-paid">
-      <span class="ss-pix-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="ss-pix-check-path" d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <%= render Ss::SuccessCheckComponent.new(size: "4.5rem", label: t("pix_paid"), sound: @sound, css: "ss-pix-check") %>
       <p><%= t("pix_paid_hint") %></p>
     </div>
     <div class="ss-pix-expired ss-pix-when-expired">

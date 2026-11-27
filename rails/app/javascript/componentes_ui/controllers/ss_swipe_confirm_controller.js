@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { ssSuccess } from "componentes_ui/controllers/ss_success_check_controller"
 
 // Ss::SwipeToConfirmComponent (v1.9, par do SsSwipeToConfirm): arrastar a bolinha até o fim confirma.
 // data-state: idle | loading | done; --p (0..1) é a posição da bolinha. Passou de 85% ao soltar: gruda no fim,
@@ -11,7 +12,7 @@ const ARM = 0.85
 
 export default class extends Controller {
   static targets = ["track", "thumb", "status"]
-  static values = { label: String, doneLabel: String, loading: String }
+  static values = { label: String, doneLabel: String, loading: String, sound: Boolean }
 
   connect() {
     this.form = this.element.tagName === "FORM" ? this.element : null
@@ -96,7 +97,7 @@ export default class extends Controller {
     this.thumbTarget.setAttribute("aria-label", this.doneLabelValue)
     this.thumbTarget.removeAttribute("aria-describedby")
     this.set(1)
-    navigator.vibrate?.([10, 40, 10])
+    ssSuccess(this.element, { sound: this.soundValue })
     this.say(this.doneLabelValue)
   }
 

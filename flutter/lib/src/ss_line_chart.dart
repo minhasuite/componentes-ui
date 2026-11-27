@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'format.dart';
+import 'motion.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
+import 'v1140/scrub.dart';
 import 'v19/transicoes/chart_transition.dart';
 import 'v27/chart_markers.dart';
 
@@ -39,6 +40,10 @@ class SsSeries {
 /// `dashed: true` sai tracejada e fina; [markers] desenha marcas verticais
 /// (deploy, incidente, nota) por rótulo; [empty] mostra o texto no lugar do
 /// gráfico quando não há ponto (sem [empty], como antes).
+///
+/// v1.14.0 (par do `scrub:` do web): o marcador segue o dedo e também o mouse ([SsScrubDetector]), vibra a cada
+/// ponto ([SsHaptics.selection]) e [onScrub] avisa o índice (nulo quando some), para a tela inteira acompanhar.
+/// [scrub] falso deixa o gráfico parado.
 class SsLineChart extends StatefulWidget {
   const SsLineChart({
     super.key,
@@ -52,7 +57,15 @@ class SsLineChart extends StatefulWidget {
     this.markers = const [],
     this.empty,
     this.max,
+    this.scrub = true,
+    this.onScrub,
   });
+
+  /// v1.14.0: arrastar o dedo (ou passar o mouse) mostra o marcador e o balão.
+  final bool scrub;
+
+  /// v1.14.0: o ponto sob o dedo (nulo quando o balão some).
+  final ValueChanged<int?>? onScrub;
 
   /// Topo fixo da escala (v0.28, par do `max:` do Ss::LineChartComponent): com ele o eixo vai de 0
   /// (ou do menor valor negativo) até [max], para pequenos múltiplos na mesma escala.
@@ -104,13 +117,18 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
 
   void _scrub(double dx, double width) {
     if (_n < 2) return;
-    final i = ((dx - _side) / (width - _side * 2) * (_n - 1)).round().clamp(0, _n - 1);
+    final i = SsScrubDetector.indexAt(dx, width, _n, side: _side);
     if (i == _sel) return;
-    HapticFeedback.selectionClick();
+    SsHaptics.selection();
     setState(() => _sel = i);
+    widget.onScrub?.call(i);
   }
 
-  void _solta([_]) => setState(() => _sel = null);
+  void _solta() {
+    if (_sel == null) return;
+    setState(() => _sel = null);
+    widget.onScrub?.call(null);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,12 +177,10 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
             final w = box.maxWidth;
             final sel = _sel;
             final xSel = sel == null ? 0.0 : _side + (w - _side * 2) * sel / math.max(_n - 1, 1);
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragStart: (d) => _scrub(d.localPosition.dx, w),
-              onHorizontalDragUpdate: (d) => _scrub(d.localPosition.dx, w),
-              onHorizontalDragEnd: _solta,
-              onHorizontalDragCancel: _solta,
+            return SsScrubDetector(
+              enabled: widget.scrub,
+              onScrub: (p) => _scrub(p.dx, w),
+              onEnd: _solta,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -172,7 +188,7 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
                     // Desenha-se quando entra na tela (não ao montar, fora dela).
                     child: SsTweenInView(
                       end: 1,
-                      duration: const Duration(milliseconds: 800),
+                      duration: SsMotion.long * 2,
                       builder: (_, t, _) => CustomPaint(
                         painter: _LinePainter(
                           series: series,
@@ -263,9 +279,17 @@ class _Balao extends StatelessWidget {
                         ),
                       ),
                     const Spacer(),
-                    Text(
-                      fmt(series[s].values[i]),
-                      style: AppTheme.number(context, size: AppType.meta, color: c.ink),
+                    // v1.14.0: com o texto grande o valor encolhe em vez de estourar o balão.
+                    Flexible(
+                      flex: 3,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          fmt(series[s].values[i]),
+                          style: AppTheme.number(context, size: AppType.meta, color: c.ink),
+                        ),
+                      ),
                     ),
                   ],
                 ),

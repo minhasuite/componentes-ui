@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 import 'motion.dart';
@@ -111,7 +110,7 @@ class SsSelectable extends StatelessWidget {
   final Widget child;
 
   void _toggle() {
-    HapticFeedback.selectionClick();
+    SsHaptics.selection();
     onToggle();
   }
 

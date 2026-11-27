@@ -1,4 +1,5 @@
-<%= tag.section(**root_attrs(class: classes("ss-hero-section", ("has-media" if media?)))) do %>
+<%= tag.section(**root_attrs(class: classes("ss-hero-section", ("has-media" if media?), ("is-mesh ss-mesh is-soft" if mesh?)))) do %>
+  <% if mesh? %><%= Ss::MeshBackgroundComponent.blobs %><% end %>
   <% if @texture %><div class="ss-texture" aria-hidden="true"></div><% end %>
   <div class="ss-hero-section-text">
     <% if @kicker %><p class="ss-hero-section-kicker"><%= @kicker %></p><% end %>

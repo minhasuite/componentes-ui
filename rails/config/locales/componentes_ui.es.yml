@@ -30,6 +30,7 @@ es:
       thinking: Analizando tus datos…
       thinking_hint: Puedes seguir usando la pantalla.
     app_shell:
+      tabs: Pestañas
       external: '(se abre en otra pestaña)'
       badge:
         one: "%{count} nuevo"
@@ -230,6 +231,7 @@ es:
       select_row: Seleccionar fila %{row}
       select_named: "Seleccionar %{name}"
       selected: seleccionados
+      selected_one: seleccionado
       show_details: Ver detalles
       visible_columns: Columnas visibles
     date:
@@ -1055,3 +1057,23 @@ es:
         share: "pantalla compartida"
         background: "app en segundo plano"
         face_down: "móvil boca abajo"
+    # v1.14.0 "interface e animação" (as mesmas chaves do SsInterfaceStrings do Flutter, em camelCase).
+    interface:
+      scrub_hint: "Arrastra para ver cada punto"
+      period_current: "Este período"
+      period_previous: "Período anterior"
+      period_vs: "frente al período anterior"
+      period_summary: "%{current} en este período, %{previous} en el anterior"
+      period_choose: "Período"
+      expand_edit: "Editar"
+      expand_label: "Editar %{title}"
+      expand_save: "Guardar"
+      expand_cancel: "Cancelar"
+      expand_saved: "Guardado"
+      sheet_handle: "Asa de la hoja"
+      sheet_hint: "Arrastra para cambiar la altura"
+      sheet_expand: "Expandir"
+      sheet_collapse: "Contraer"
+      sheet_size: "%{percent}% de la pantalla"
+      success: "Listo"
+      selection_range_hint: "Mayús + clic marca el intervalo"

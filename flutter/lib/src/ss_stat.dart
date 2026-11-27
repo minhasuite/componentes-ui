@@ -6,6 +6,7 @@ import 'ss_list.dart';
 import 'motion.dart';
 import 'motion_view.dart';
 import 'ss_charts.dart';
+import 'ss_odometer.dart';
 import 'ss_strings.dart';
 import 'v15/privacy.dart';
 
@@ -15,6 +16,9 @@ import 'v15/privacy.dart';
 /// [countUp]: conta de 0 até o valor (no mesmo formato do texto) quando entra
 /// na tela. [roll]: ao mudar, o valor novo rola na vertical (para cima quando
 /// aumentou, para baixo quando caiu) em vez de trocar seco.
+///
+/// v1.14.0: [animate] rola cada dígito como o [SsOdometer] ao mudar (e, com [countUp], parte dos zeros ao entrar
+/// na tela). Par do `ss_amount(..., animate: true)`. O [SsKpiCard] e o [SsStatCard] já ligam por padrão.
 class SsAmount extends StatelessWidget {
   const SsAmount(
     this.text, {
@@ -24,7 +28,11 @@ class SsAmount extends StatelessWidget {
     this.weight = FontWeight.w500,
     this.countUp = false,
     this.roll = false,
+    this.animate = false,
   });
+
+  /// v1.14.0: odômetro (dígito a dígito) no lugar do [roll].
+  final bool animate;
 
   final String text;
   final double size;
@@ -75,6 +83,15 @@ class SsAmount extends StatelessWidget {
         label: SsStrings.of(context).hiddenValue,
         excludeSemantics: true,
         child: _texto(context, ssPrivacyMask(text)),
+      );
+    }
+    if (animate) {
+      return SsOdometer(
+        text,
+        size: size,
+        weight: weight,
+        color: color ?? SsColors.of(context).ink,
+        rollIn: countUp && parse(text) != 0,
       );
     }
     Widget fixo() =>
@@ -176,7 +193,11 @@ class SsStatCard extends StatelessWidget {
     this.onTap,
     this.valueSize = 28,
     this.tone,
+    this.animate = true,
   });
+
+  /// v1.14.0: o número rola dígito a dígito ao mudar ([SsOdometer]); falso volta ao rolar inteiro.
+  final bool animate;
 
   final String label;
 
@@ -238,7 +259,7 @@ class SsStatCard extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: SsAmount(value, size: valueSize, countUp: true, roll: true),
+                    child: SsAmount(value, size: valueSize, countUp: true, roll: true, animate: animate),
                   ),
                   if (delta != null || caption != null) ...[
                     const SizedBox(height: 8),

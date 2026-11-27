@@ -13,13 +13,17 @@ module Ss
   # ser um link. tone: o do ícone (ver CardHeaderComponent).
   # v0.20: value_tone: :danger/:success/:warning/:accent pinta o valor (saldo negativo, meta batida); par do
   # SsKpiCard(valueTone:).
+  # v1.14.0: animate: true (o padrão, par do SsKpiCard(animate:)): o valor é o Ss::OdometerComponent, que rola cada
+  # dígito ao mudar (morph do Turbo, turbo_stream, JS no data-ss-odometer-text-value). animate: false volta ao texto
+  # parado (o ss_amount de antes).
   class KpiCardComponent < BaseComponent
     def initialize(label:, value:, icon: nil, tone: nil, caption: nil, delta: nil, good: nil, trend: nil, hint: nil,
-                   spark: nil, url: nil, money: false, value_tone: nil, **rest)
+                   spark: nil, url: nil, money: false, value_tone: nil, animate: true, **rest)
       super(**rest)
       @label, @value, @icon, @tone, @caption = label, value, icon, tone, caption
       @value_tone = value_tone && ComponentesUi.tone(value_tone).to_s
       @delta, @good, @trend, @hint, @spark, @url, @money = delta, good, trend, hint, spark, url, money
+      @animate = animate
     end
 
     def call
@@ -27,7 +31,7 @@ module Ss
         safe_join([
           render(Ss::CardHeaderComponent.new(title: @url ? link_to(@label, @url, class: "ss-kpi-card-link") : @label,
                                              subtitle: @caption, icon: @icon, tone: @tone || :accent)),
-          tag.div(@money ? ss_amount(@value) : tag.span(@value, class: "num"), class: "ss-kpi-card-value", data: { tone: @value_tone }.compact),
+          tag.div(value_html, class: "ss-kpi-card-value", data: { tone: @value_tone }.compact),
           (foot if @delta || @hint),
           (tag.div(ss_sparkline(@spark, height: 36), class: "ss-kpi-card-spark") if @spark.to_a.size > 1)
         ].compact)
@@ -35,6 +39,12 @@ module Ss
     end
 
     private
+
+    def value_html
+      return render(Ss::OdometerComponent.new(text: @value.to_s, size: "1em", cents: @money, css: "ss-kpi-odo")) if @animate && @value.to_s.match?(/\d/)
+
+      @money ? ss_amount(@value) : tag.span(@value, class: "num")
+    end
 
     def foot
       up = @trend ? @trend.to_s == "up" : !@delta.to_s.strip.start_with?("-", "−")

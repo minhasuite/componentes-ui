@@ -30,6 +30,7 @@ en:
       thinking: Analyzing your data…
       thinking_hint: You can keep using the screen.
     app_shell:
+      tabs: Tabs
       external: '(opens in a new tab)'
       badge:
         one: "%{count} new"
@@ -230,6 +231,7 @@ en:
       select_row: Select row %{row}
       select_named: "Select %{name}"
       selected: selected
+      selected_one: selected
       show_details: Show details
       visible_columns: Visible columns
     date:
@@ -1055,3 +1057,23 @@ en:
         share: "screen shared"
         background: "app in the background"
         face_down: "phone face down"
+    # v1.14.0 "interface e animação" (as mesmas chaves do SsInterfaceStrings do Flutter, em camelCase).
+    interface:
+      scrub_hint: "Drag to see each point"
+      period_current: "This period"
+      period_previous: "Previous period"
+      period_vs: "vs. previous period"
+      period_summary: "%{current} this period, %{previous} in the previous one"
+      period_choose: "Period"
+      expand_edit: "Edit"
+      expand_label: "Edit %{title}"
+      expand_save: "Save"
+      expand_cancel: "Cancel"
+      expand_saved: "Saved"
+      sheet_handle: "Sheet handle"
+      sheet_hint: "Drag to change the height"
+      sheet_expand: "Expand"
+      sheet_collapse: "Collapse"
+      sheet_size: "%{percent}% of the screen"
+      success: "Done"
+      selection_range_hint: "Shift + click selects a range"

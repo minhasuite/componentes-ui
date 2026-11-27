@@ -11,7 +11,12 @@ import 'v19/paridade_web/hide_on_scroll.dart';
 
 /// Uma aba da [SsNavBar].
 class SsNavItem {
-  const SsNavItem(this.icon, this.label, {this.activeIcon, this.badge});
+  const SsNavItem(this.icon, this.label, {this.activeIcon, this.badge, this.animatedIcon = true});
+
+  /// v1.14.0: ao virar a aba atual, o ícone chega no círculo girando de leve com a mola e passa do contorno
+  /// ([icon]) para o cheio ([activeIcon]). Falso: só cresce, como antes. "Reduzir movimento" desliga.
+  /// Par do ícone da barra inferior da `Ss::AppShellComponent` no celular.
+  final bool animatedIcon;
 
   /// v0.20: contagem no ícone (pedidos novos, cards atrasados); 0 ou nulo
   /// some, acima de 99 vira "99+". O leitor de tela ouve "Pedidos: 3 novas".
@@ -187,6 +192,23 @@ class _SsNavBarState extends State<SsNavBar> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// v1.14.0: contorno → cheio no fim do voo (cruzando as duas formas), quando o item anima o ícone.
+  Widget _iconeAtivo(SsNavItem item, SsColors c, double t) {
+    final cheio = Icon(item.activeIcon ?? item.icon, color: c.accent, size: 26);
+    if (!item.animatedIcon || item.activeIcon == null || t >= 1) return cheio;
+    final f = Curves.easeOut.transform(((t - .55) / .35).clamp(0.0, 1.0));
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Opacity(
+          opacity: 1 - f,
+          child: Icon(item.icon, color: c.accent, size: 26),
+        ),
+        Opacity(opacity: f, child: cheio),
+      ],
+    );
+  }
+
   _Pose _pose(int target) {
     final t = _c.value;
     final dist = (target - _from).abs();
@@ -303,13 +325,15 @@ class _SsNavBarState extends State<SsNavBar> with TickerProviderStateMixin {
                           ),
                           child: Opacity(
                             opacity: iconIn.clamp(0.0, 1.0),
-                            child: Transform.scale(
-                              scale: .5 + .5 * iconIn,
-                              // v0.25: Center (com contagem, o Badge ia para o canto de cima).
-                              child: Center(
-                                child: SsNavItem.withBadge(
-                                  Icon(current.activeIcon ?? current.icon, color: c.accent, size: 26),
-                                  current.badge,
+                            child: Transform.rotate(
+                              // v1.14.0: chega girando ~20° e assenta com a mola (o easeOutBack passa do
+                              // ponto e volta um pouco).
+                              angle: current.animatedIcon ? (1 - iconIn) * -.35 : 0,
+                              child: Transform.scale(
+                                scale: .5 + .5 * iconIn,
+                                // v0.25: Center (com contagem, o Badge ia para o canto de cima).
+                                child: Center(
+                                  child: SsNavItem.withBadge(_iconeAtivo(current, c, _c.value), current.badge),
                                 ),
                               ),
                             ),

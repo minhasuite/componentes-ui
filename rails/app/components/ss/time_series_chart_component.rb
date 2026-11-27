@@ -28,6 +28,8 @@ module Ss
   #   último ao sair. (v0.10.1, como o SsTimeChart(legend:, showValues:))
   # - time_zone: "America/Sao_Paulo" (v0.10.1): eixo, balão e resumo nesse fuso, não no do
   #   navegador (o padrão continua o do navegador no JS e o Time.zone no servidor).
+  # - v1.14.0: scrub: true (par do SsTimeChart(scrub:)): vibra a cada leitura que o cursor alcança e avisa a tela
+  #   com `ss-scrub:change` { index, time } (o cursor e o balão já seguiam o dedo e o mouse).
   class TimeSeriesChartComponent < BaseComponent
     include InView
 
@@ -35,8 +37,9 @@ module Ss
 
     def initialize(title:, series: [], from: nil, to: nil, mode: :line, bands: [], band_tones: {}, loading: false,
                    height: 220, legend: true, show_values: false, dual_axis: true, zoom_url: nil, zoom_frame: nil, reset_url: nil,
-                   show_title: false, locale: nil, zoomed: false, texts: {}, time_zone: nil, **opts)
+                   show_title: false, locale: nil, zoomed: false, texts: {}, time_zone: nil, scrub: false, **opts)
       super(**opts)
+      @scrub = scrub
       @title = title
       @series = series.map { |s| normalize(s) }
       @mode = mode.to_s
@@ -115,6 +118,7 @@ module Ss
         ss_time_chart_reset_url_value: @reset_url,
         ss_time_chart_lang_value: @locale&.to_s,
         ss_time_chart_time_zone_value: TimeData.iana(@zone),
+        ss_time_chart_scrub_value: (@scrub || nil),
         ss_time_chart_empty_value: text(:no_value, "—")
       ).compact
     end

@@ -12,6 +12,7 @@ import '../ss_badge.dart';
 import '../ss_button.dart';
 import '../ss_card.dart';
 import '../ss_strings.dart';
+import '../v1140/success_check.dart';
 import 'br.dart';
 import 'qr.dart';
 import 'strings.dart';
@@ -323,7 +324,10 @@ class _Paid extends StatelessWidget {
       width: 112,
       height: 112,
       decoration: BoxDecoration(color: ok.soft, shape: BoxShape.circle),
-      child: Icon(Icons.check_rounded, size: 64, color: ok.solid),
+      // v1.14.0: o ✓ se desenha (a vibração já veio na troca de estado).
+      child: Center(
+        child: ExcludeSemantics(child: SsSuccessCheck(size: 64, color: ok.solid, haptic: false)),
+      ),
     );
     return Column(
       mainAxisSize: MainAxisSize.min,

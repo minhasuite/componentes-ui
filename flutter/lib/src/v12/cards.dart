@@ -137,7 +137,12 @@ class SsKpiCard extends StatelessWidget {
     this.onTap,
     this.valueSize = 24,
     this.valueTone,
+    this.animate = true,
   });
+
+  /// v1.14.0 (par do `animate:` do Ss::KpiCardComponent): o valor rola dígito a dígito ao mudar ([SsOdometer])
+  /// e parte dos zeros ao entrar na tela. Falso: o rolar inteiro de antes.
+  final bool animate;
 
   /// v0.20: o valor no tom (saldo negativo em [SsTone.danger], meta batida em
   /// [SsTone.success]); par do `Ss::KpiCardComponent(value_tone:)`.
@@ -183,6 +188,7 @@ class SsKpiCard extends StatelessWidget {
                   size: d.font(valueSize),
                   countUp: true,
                   roll: true,
+                  animate: animate,
                   color: valueTone?.colors(context).text,
                 ),
               ),

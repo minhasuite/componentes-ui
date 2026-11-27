@@ -269,11 +269,73 @@ module ComponentesUi
     # "R$ 1.234,56" → R$ 1.234<small>,56</small> dentro de .ss-amount. Os centavos
     # saem pelo separador decimal do idioma ("$1,234.56" → <small>.56</small>), e o
     # símbolo depois do número também vale ("1.234,56 R$").
-    def ss_amount(text, css: nil)
+    #
+    # v1.14.0: animate: true (par do SsAmount(animate:)) usa o Ss::OdometerComponent no lugar: o número rola ao
+    # mudar (morph, turbo_stream ou JS no data-ss-odometer-text-value), com os mesmos centavos menores.
+    def ss_amount(text, css: nil, animate: false)
+      if animate && text.to_s.match?(/\d/)
+        return render(Ss::OdometerComponent.new(text: text.to_s, size: "1em", css: ["ss-amount-odo", css].compact.join(" ")))
+      end
+
       sep = Regexp.escape(ss_t("number.separator", locale: ss_number_locale, default: ","))
       main, cents, tail = text.to_s.match(/\A(.*?)(#{sep}\d{2})?(\s*[^\d\s][^\d]*)?\z/m).captures
       inner = cents ? "#{ERB::Util.h(main)}<small>#{ERB::Util.h(cents)}</small>#{ERB::Util.h(tail)}" : ERB::Util.h(text.to_s)
       %(<span class="#{["ss-amount", css].compact.join(" ")}">#{inner}</span>).html_safe
+    end
+
+    # ── v1.14.0: peça que aparece nas duas abas (par do SsTabHero) ─────
+    # O view-transition-name para a mesma peça (o saldo, o avatar) nas duas abas da app_shell: na troca de aba
+    # (AppShellComponent(tabs:, tab_transition: true) + ss_view_transitions_head) ela voa de um lugar ao outro.
+    # O nome não pode aparecer duas vezes na mesma tela.
+    #   <%= tag.div(ss_amount(saldo), class: "ss-figure", **ss_tab_hero("saldo")) %>
+    def ss_tab_hero(name)
+      slug = name.to_s.unicode_normalize(:nfkd).gsub(/\p{Mn}/, "").downcase.gsub(/[^a-z0-9_-]+/, "-").gsub(/-{2,}/, "-").delete_prefix("-").delete_suffix("-")
+      { style: "view-transition-name: ss-tab-hero-#{slug}", data: { ss_tab_hero: slug } }
+    end
+
+    # ── v1.14.0: esqueleto no formato real (par do SsSkeleton.of) ──────
+    # Renderiza o partial com dados de exemplo e troca, no HTML pronto, cada texto por um bloco do tamanho dele
+    # (span .ss-skel-w, texto transparente sobre o --sk com o brilho do skeleton da v1.9) e cada imagem/svg/vídeo
+    # por um bloco do mesmo tamanho; tira ids, href, action, name e eventos (nada clicável nem duplicado) e marca o
+    # contêiner com aria-busy, aria-hidden no desenho e "Carregando…" para o leitor de tela.
+    #   <%= turbo_frame_tag "pedidos", src: pedidos_path, loading: :lazy do %>
+    #     <%= ss_skeleton_for("pedidos/linha", pedido: Pedido.new(numero: "0000", cliente: "Cliente exemplo")) %>
+    #   <% end %>
+    # count: repete o desenho (lista). O partial precisa render sem banco (os locals de exemplo são do produto).
+    SKELETON_DROP = %w[id href action formaction name for src srcset onclick data-controller data-action data-turbo-frame].freeze
+    def ss_skeleton_for(partial, count: 1, label: nil, css: nil, **locals)
+      html = render(partial: partial, locals: locals).to_s
+      frag = Nokogiri::HTML::DocumentFragment.parse(html)
+      frag.css("img, svg, video, canvas, picture, iframe").each do |m|
+        w = m["width"]
+        h = m["height"]
+        style = [("width:#{w.to_s.match?(/\A\d+\z/) ? "#{w}px" : w}" if w), ("height:#{h.to_s.match?(/\A\d+\z/) ? "#{h}px" : h}" if h)].compact.join(";")
+        block = Nokogiri::XML::Node.new("span", frag.document)
+        block["class"] = ["ss-skel-media", m["class"]].compact.join(" ")
+        block["style"] = style if style.present?
+        m.replace(block)
+      end
+      frag.css("input:not([type=hidden]), select, textarea, button").each { |f| f["tabindex"] = "-1"; f["disabled"] = "disabled" }
+      frag.css("input[type=hidden], script, template").each(&:remove)
+      texts = []
+      frag.traverse { |n| texts << n if n.text? && n.content.strip.present? }
+      texts.each do |n|
+        span = Nokogiri::XML::Node.new("span", frag.document)
+        span["class"] = "ss-skel-w"
+        span.content = n.content.strip
+        n.replace(span)
+      end
+      frag.traverse do |n|
+        next unless n.element?
+
+        SKELETON_DROP.each { |a| n.remove_attribute(a) }
+        n.attribute_nodes.each { |a| n.remove_attribute(a.name) if a.name.start_with?("on") }
+      end
+      one = frag.to_html.html_safe
+      label ||= ss_t("common.loading", default: "Carregando…")
+      tag.div(class: ["ss-skel-of", css].compact.join(" "), "aria-busy": "true", role: "status", data: { ss_skeleton_for: partial.to_s }) do
+        safe_join([tag.span(label, class: "ss-sr"), tag.div(safe_join(Array.new(count.to_i.clamp(1, 50)) { one }), class: "ss-skel-of-body", "aria-hidden": "true", inert: true)])
+      end
     end
 
     # Minigráfico sem eixo (curva suave). Vai na base de um .ss-stat ou solto.

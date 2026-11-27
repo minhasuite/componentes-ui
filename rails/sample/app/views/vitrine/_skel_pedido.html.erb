@@ -1,0 +1,12 @@
+<%# v1.14.0: a linha de pedido de exemplo do ss_skeleton_for (o mesmo partial vira o esqueleto e, aqui, a linha real). %>
+<article class="ss-card ss-card-pad flex items-center gap-3">
+  <%= ss_avatar(pedido[:cliente]) %>
+  <div class="grid min-w-0 flex-1 gap-1">
+    <strong class="truncate"><%= pedido[:cliente] %></strong>
+    <small class="ss-muted">Pedido <%= pedido[:numero] %> · <%= pedido[:quando] %></small>
+  </div>
+  <div class="grid justify-items-end gap-1">
+    <span class="num"><%= ss_money(pedido[:total]) %></span>
+    <span class="ss-badge ss-badge-accent"><%= pedido[:status] %></span>
+  </div>
+</article>

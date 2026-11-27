@@ -13,6 +13,7 @@ import '../motion_view.dart';
 import '../skeleton.dart';
 import '../ss_badge.dart';
 import '../ss_strings.dart';
+import '../v1140/scrub.dart';
 import '../v19/transicoes/chart_transition.dart';
 import 'dados_formato.dart';
 import 'dados_state_bands.dart';
@@ -121,7 +122,12 @@ class SsTimeChart extends StatefulWidget {
     this.utcOffset,
     this.showValues = false,
     this.legendAlways = false,
+    this.scrub = true,
   });
+
+  /// v1.14.0 (par do `scrub:` do web): o cursor segue o dedo e o mouse ([SsScrubDetector]) e vibra a cada
+  /// leitura nova sob ele ([SsHaptics.selection]); o instante sai no [onScrub]. Falso: sem cursor nem balão.
+  final bool scrub;
 
   final List<SsTimeSeries> series;
 
@@ -266,12 +272,32 @@ class _SsTimeChartState extends State<SsTimeChart> with SingleTickerProviderStat
   void _scrub(double dx, double w, (DateTime, DateTime) janela) {
     final span = janela.$2.difference(janela.$1).inMilliseconds;
     final t = janela.$1.add(Duration(milliseconds: (dx.clamp(0.0, w) / w * span).round()));
-    if (_cursor == null) SsHaptics.tick();
+    final perto = _leituraPerto(t);
+    if (_cursor == null || perto != _perto) SsHaptics.selection();
+    _perto = perto;
     setState(() => _cursor = t);
     widget.onScrub?.call(t);
   }
 
+  // v1.14.0: a leitura mais perto do cursor (da 1ª série visível), para vibrar a cada ponto.
+  int? _perto;
+
+  int? _leituraPerto(DateTime t) {
+    for (var i = 0; i < widget.series.length; i++) {
+      if (_ocultas.contains(i)) continue;
+      final pts = widget.series[i].points;
+      if (pts.isEmpty) return null;
+      var best = 0;
+      for (var k = 1; k < pts.length; k++) {
+        if (pts[k].t.difference(t).abs() < pts[best].t.difference(t).abs()) best = k;
+      }
+      return best;
+    }
+    return null;
+  }
+
   void _solta([_]) {
+    _perto = null;
     if (_cursor == null) return;
     setState(() => _cursor = null);
     widget.onScrub?.call(null);
@@ -445,16 +471,11 @@ class _SsTimeChartState extends State<SsTimeChart> with SingleTickerProviderStat
               final xCur = cur == null ? 0.0 : w * cur.difference(janela.$1).inMilliseconds / span;
               return Stack(
                 children: [
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onHorizontalDragStart: (d) => _scrub(d.localPosition.dx, w, janela),
-                    onHorizontalDragUpdate: (d) => _scrub(d.localPosition.dx, w, janela),
-                    onHorizontalDragEnd: _solta,
-                    onHorizontalDragCancel: _solta,
-                    // Toque mostra o balão; outro toque esconde.
-                    onTapDown: (d) => _cursor == null ? _scrub(d.localPosition.dx, w, janela) : _solta(),
-                    onDoubleTapDown: (d) => _aproxima(d.localPosition.dx, w, janela, cheio),
-                    onDoubleTap: () {},
+                  SsScrubDetector(
+                    enabled: widget.scrub,
+                    onScrub: (p) => _scrub(p.dx, w, janela),
+                    onEnd: _solta,
+                    onDoubleTap: (p) => _aproxima(p.dx, w, janela, cheio),
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [

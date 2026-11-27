@@ -73,7 +73,7 @@ class V12WebTest < ComponentTest
 
   test "card de indicador: cabeçalho padrão, valor, variação e link" do
     render_inline(Ss::KpiCardComponent.new(label: "Gasto do mês", value: "R$ 312,75", money: true, icon: "<svg></svg>", caption: "01/11 a 30/11",
-                                           delta: "+4%", good: false, hint: "vs. outubro", spark: [1, 3, 2], url: "/energia"))
+                                           delta: "+4%", good: false, hint: "vs. outubro", spark: [1, 3, 2], url: "/energia", animate: false))
     assert_selector ".ss-card.ss-kpi-card.is-link .ss-card-head .ss-card-title a.ss-kpi-card-link[href='/energia']", text: "Gasto do mês"
     assert_selector ".ss-card-sub", text: "01/11 a 30/11"
     assert_selector ".ss-kpi-card-value .ss-amount small", text: ",75"

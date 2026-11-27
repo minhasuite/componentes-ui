@@ -12,6 +12,7 @@ import '../format.dart';
 import '../motion.dart';
 import '../ss_list.dart';
 import '../ss_strings.dart';
+import '../v1140/success_check.dart';
 
 // ---------------------------------------------------------------------------
 // SsSplitSlider
@@ -1089,7 +1090,10 @@ class _SsSwipeToConfirmState extends State<SsSwipeToConfirm> with SingleTickerPr
                                 dimension: 22,
                                 child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.onDark),
                               ),
-                              _SwipeFase.done => const Icon(Icons.check_rounded, color: AppColors.success, size: 26),
+                              // v1.14.0: o ✓ se desenha (a vibração de sucesso já veio do confirmar).
+                              _SwipeFase.done => const ExcludeSemantics(
+                                child: SsSuccessCheck(size: 30, color: AppColors.success, haptic: false),
+                              ),
                               _SwipeFase.idle => Icon(widget.icon, color: AppColors.onDark, size: 24),
                             },
                           ),
@@ -1254,11 +1258,10 @@ class _SsMorphButtonState extends State<SsMorphButton> {
                                 ),
                               ),
                       ),
-                      _MorphFase.ok => const Icon(
-                        Icons.check_rounded,
+                      // v1.14.0: o ✓ se desenha no fim (a vibração de sucesso já veio).
+                      _MorphFase.ok => const ExcludeSemantics(
                         key: ValueKey('ok'),
-                        color: AppColors.onDark,
-                        size: 26,
+                        child: SsSuccessCheck(size: 30, color: AppColors.onDark, haptic: false),
                       ),
                       _MorphFase.erro => const Icon(
                         Icons.close_rounded,

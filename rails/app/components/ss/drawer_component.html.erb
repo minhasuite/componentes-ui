@@ -1,5 +1,13 @@
-<%= tag.dialog(**root_attrs(id: @id, class: classes("ss-drawer", "ss-drawer-panel"), style: (@width ? "--w:#{@width}" : nil), "aria-labelledby": "#{@id}-title",
-      data: { controller: "ss-drawer", ss_drawer_open_value: @open, action: "turbo:before-fetch-request->ss-drawer#loading turbo:frame-load->ss-drawer#loaded click->ss-drawer#backdrop" })) do %>
+<%= tag.dialog(**root_attrs(id: @id, class: classes("ss-drawer", "ss-drawer-panel", ("has-detents" if detents?)), style: style, "aria-labelledby": "#{@id}-title",
+      data: { controller: "ss-drawer", ss_drawer_open_value: @open, ss_drawer_detents_value: (@detents&.to_json), ss_drawer_detent_value: @detent,
+              ss_drawer_size_value: (detents? ? ss_t("interface.sheet_size", default: "%{percent}% da tela", percent: "%{percent}") : nil), action: "turbo:before-fetch-request->ss-drawer#loading turbo:frame-load->ss-drawer#loaded click->ss-drawer#backdrop" })) do %>
+  <% if detents? %>
+    <div class="ss-drawer-handle" role="slider" tabindex="0" aria-label="<%= ss_t("interface.sheet_handle", default: "Alça da folha") %>"
+         aria-description="<%= ss_t("interface.sheet_hint", default: "Arraste para mudar a altura") %>" aria-orientation="vertical"
+         aria-valuemin="<%= detent_pct(@detents.first) %>" aria-valuemax="<%= detent_pct(@detents.last) %>" aria-valuenow="<%= detent_pct(@detent) %>"
+         aria-valuetext="<%= ss_t("interface.sheet_size", default: "%{percent}% da tela", percent: detent_pct(@detent)) %>" data-ss-drawer-target="handle"
+         data-action="pointerdown->ss-drawer#grab keydown->ss-drawer#handleKey"><i></i></div>
+  <% end %>
   <header class="ss-drawer-head">
     <h2 id="<%= @id %>-title" data-ss-drawer-target="title"><%= @title %></h2>
     <form method="dialog"><button class="ss-btn ss-btn-ghost ss-btn-sm ss-drawer-x" data-action="ss-drawer#close" aria-label="<%= @close_label %>" title="<%= @close_label %>">

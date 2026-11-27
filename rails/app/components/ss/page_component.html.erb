@@ -1,4 +1,4 @@
-<%= tag.div(**root_attrs(class: classes("ss-page", ("is-compact" if @compact), ("is-shrink" if @shrink)))) do %>
+<%= tag.div(**root_attrs(class: classes("ss-page", ("is-compact" if @compact), ("is-shrink" if @shrink), ("is-tint" if @tint)))) do %>
   <%= tag.header(class: "ss-page-head", **view_transition_attrs) do %>
     <div class="ss-page-titles">
       <% if @crumbs.present? %><%= render Ss::BreadcrumbsComponent.new(items: @crumbs) %><% end %>

@@ -1,6 +1,6 @@
-<%= tag.figure(**root_attrs(class: classes("ss-area"), data: { controller: "ss-chart", ss_chart_points_value: data_points, ss_chart_index_value: active, ss_chart_w_value: W, ss_chart_h_value: H })) do %>
+<%= tag.figure(**root_attrs(class: classes("ss-area", ("is-scrub" if scrub?)), data: { controller: "ss-chart", ss_chart_points_value: data_points, ss_chart_index_value: active, ss_chart_w_value: W, ss_chart_h_value: H, ss_chart_scrub_value: (scrub? || nil) })) do %>
   <figcaption class="<%= show_title? ? "ss-area-title" : "ss-sr" %>"><%= title %></figcaption>
-  <div class="ss-area-plot" tabindex="0" role="group" aria-roledescription="<%= ss_t("chart.role", default: "gráfico") %>" aria-label="<%= ss_t("chart.keys_hint", default: "%{title}. Use as setas para ver cada ponto.", title: title) %>" data-ss-chart-target="plot"
+  <div class="ss-area-plot" tabindex="0" role="group" aria-roledescription="<%= ss_t("chart.role", default: "gráfico") %>" aria-label="<%= ss_t("chart.keys_hint", default: "%{title}. Use as setas para ver cada ponto.", title: title) %><%= " #{ss_t("interface.scrub_hint", default: "Arraste para ver cada ponto")}." if scrub? %>" data-ss-chart-target="plot"
        data-action="pointermove->ss-chart#move pointerdown->ss-chart#move keydown->ss-chart#key">
     <svg viewBox="0 0 <%= W %> <%= H %>" aria-hidden="true">
       <defs>
@@ -21,7 +21,7 @@
         <text class="ss-area-xtext<%= " is-active" if i == active %>" data-ss-chart-target="label" x="<%= coords[i][0] %>" y="<%= H - 8 %>" text-anchor="<%= i.zero? ? "start" : (i == points.size - 1 ? "end" : "middle") %>"><%= label %></text>
       <% end %>
     </svg>
-    <span class="ss-area-pill num" data-ss-chart-target="pill" style="left:<%= pct_x(active) %>%;top:<%= pct_y(active) %>%"><%= fmt(points[active][1]) %></span>
+    <span class="ss-area-pill num<%= pill_edge(active) %>" data-ss-chart-target="pill" style="left:<%= pct_x(active) %>%;top:<%= pct_y(active) %>%"><%= fmt(points[active][1]) %></span>
   </div>
   <p class="ss-sr" aria-live="polite" data-ss-chart-target="live"></p>
   <div class="ss-sr-wrap"><table class="ss-sr">

@@ -324,7 +324,7 @@ void main() {
     testWidgets('pago: o ✓ e o texto; sem valor, "Valor livre"; en', (t) async {
       await _pump(t, SsPixCard(code: _pix, status: SsPixStatus.paid));
       await t.pumpAndSettle();
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      expect(find.byType(SsSuccessCheck), findsOneWidget);
       expect(find.text('Pagamento recebido'), findsOneWidget);
       expect(find.text('Pronto, o Pix caiu.'), findsOneWidget);
       final livre = SsPixCode.build(key: '+5511987654321', name: 'Ana', city: 'Recife');

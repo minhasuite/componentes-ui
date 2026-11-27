@@ -74,6 +74,8 @@
   .ss-ai-preview-none { color: var(--warn); font-size: .85rem; }
   .ss-ai-preview-actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; }
   .ss-chat-action-review { margin-right: auto; }
+  /* v1.14.0: com a prévia, "Ver alterações" ocupa a linha de cima (no celular encostava no Cancelar). */
+  .ss-chat-action-btns > .ss-chat-action-review { grid-column: 1 / -1; justify-self: start; margin-right: 0; }
 
   /* ── Desde a última visita ───────────────────────────────────────────── */
   .ss-since { display: grid; gap: .75rem; padding: var(--ss-card-pad); overflow: hidden;

@@ -16,8 +16,9 @@ module Ss
     attr_reader :code, :status, :expires_at, :regenerate_href, :regenerate_method
 
     def initialize(code:, amount_cents: nil, receiver: nil, expires_at: nil, status: :waiting, qr: nil, title: nil,
-                   hint: nil, regenerate_href: nil, regenerate_method: :post, **opts)
+                   hint: nil, regenerate_href: nil, regenerate_method: :post, sound: false, **opts)
       super(**opts)
+      @sound = sound
       @code = code.to_s
       @parsed = ComponentesUi::Br.pix_code(@code)
       @amount_cents = amount_cents || @parsed&.amount_cents

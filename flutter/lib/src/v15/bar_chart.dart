@@ -3,7 +3,9 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
+
+import '../motion.dart';
+import '../v1140/scrub.dart';
 
 import '../app_theme.dart';
 import '../format.dart';
@@ -54,7 +56,16 @@ class SsBarChart extends StatefulWidget {
     this.markers = const [],
     this.empty,
     this.max,
+    this.scrub = true,
+    this.onScrub,
   });
+
+  /// v1.14.0 (par do `scrub:` do web): arrastar o dedo ou passar o mouse destaca a barra e abre o balão; cada
+  /// barra nova vibra ([SsHaptics.selection]). Falso: o gráfico fica parado.
+  final bool scrub;
+
+  /// v1.14.0: a barra sob o dedo ou o mouse (nulo quando o balão some), para a tela acompanhar.
+  final ValueChanged<int?>? onScrub;
 
   /// Topo fixo da escala (v0.28, par do `max:` do Ss::BarChartComponent): o eixo vai de 0 até [max],
   /// para pequenos múltiplos lado a lado na mesma escala. Valor acima alarga a escala.
@@ -159,10 +170,17 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
 
   void _pick(double dx, double width) {
     if (_n == 0) return;
-    final i = ((dx - _side) / ((width - _side * 2) / _n)).floor().clamp(0, _n - 1);
+    final i = SsScrubDetector.indexAt(dx, width, _n, side: _side, slots: true);
     if (i == _sel) return;
-    HapticFeedback.selectionClick();
+    SsHaptics.selection();
     setState(() => _sel = i);
+    widget.onScrub?.call(i);
+  }
+
+  void _solta() {
+    if (_sel == null) return;
+    setState(() => _sel = null);
+    widget.onScrub?.call(null);
   }
 
   @override
@@ -211,76 +229,72 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
           final sel = _sel;
           final slot = (w - _side * 2) / math.max(_n, 1);
           final xSel = sel == null ? 0.0 : _side + slot * (sel + .5);
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: (d) => _pick(d.localPosition.dx, w),
-            onHorizontalDragStart: (d) => _pick(d.localPosition.dx, w),
-            onHorizontalDragUpdate: (d) => _pick(d.localPosition.dx, w),
-            child: TapRegion(
-              onTapOutside: (_) => sel == null ? null : setState(() => _sel = null),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned.fill(
-                    child: SsTweenInView(
-                      end: 1,
-                      duration: const Duration(milliseconds: 700),
-                      curve: Curves.easeOutBack,
-                      builder: (_, t, _) => CustomPaint(
-                        painter: _BarPainter(
-                          series: [for (var i = 0; i < barras.length; i++) (barras[i].values, cores[i])],
-                          valueColors: [for (final x in widget.series) x.colors],
-                          markers: marcas,
-                          markerTop: topo,
-                          markerColors: {for (final k in SsChartMarkerKind.values) k: ssMarkerColor(context, k)},
-                          line: linha == null ? null : (linha.values, corLinha),
-                          projection: widget.projection == null
-                              ? null
-                              : (widget.projection!.values, corProj, widget.projectionFrom),
-                          n: _n,
-                          labels: widget.labels,
-                          lo: lo,
-                          hi: hi,
-                          stacked: widget.stacked,
-                          t: t,
-                          sel: sel,
-                          active: widget.active,
-                          format: _fmt,
-                          guide: c.line,
-                          zero: c.ink.withValues(alpha: .3),
-                          surface: c.surface,
-                          hover: c.accent.withValues(alpha: .08),
-                          axis: AppTheme.number(context, size: AppType.micro, color: c.muted),
-                          axisStrong: AppTheme.number(
-                            context,
-                            size: AppType.micro,
-                            color: c.ink,
-                            weight: FontWeight.w700,
-                          ),
+          return SsScrubDetector(
+            enabled: widget.scrub,
+            onScrub: (p) => _pick(p.dx, w),
+            onEnd: _solta,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: SsTweenInView(
+                    end: 1,
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeOutBack,
+                    builder: (_, t, _) => CustomPaint(
+                      painter: _BarPainter(
+                        series: [for (var i = 0; i < barras.length; i++) (barras[i].values, cores[i])],
+                        valueColors: [for (final x in widget.series) x.colors],
+                        markers: marcas,
+                        markerTop: topo,
+                        markerColors: {for (final k in SsChartMarkerKind.values) k: ssMarkerColor(context, k)},
+                        line: linha == null ? null : (linha.values, corLinha),
+                        projection: widget.projection == null
+                            ? null
+                            : (widget.projection!.values, corProj, widget.projectionFrom),
+                        n: _n,
+                        labels: widget.labels,
+                        lo: lo,
+                        hi: hi,
+                        stacked: widget.stacked,
+                        t: t,
+                        sel: sel,
+                        active: widget.active,
+                        format: _fmt,
+                        guide: c.line,
+                        zero: c.ink.withValues(alpha: .3),
+                        surface: c.surface,
+                        hover: c.accent.withValues(alpha: .08),
+                        axis: AppTheme.number(context, size: AppType.micro, color: c.muted),
+                        axisStrong: AppTheme.number(
+                          context,
+                          size: AppType.micro,
+                          color: c.ink,
+                          weight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-                  if (sel != null)
-                    Positioned(
-                      top: topo,
-                      left: (xSel - 70).clamp(0.0, math.max(0.0, w - 140)),
-                      width: 140,
-                      child: IgnorePointer(
-                        child: _Balao(
-                          label: widget.labels[sel],
-                          rows: [
-                            for (var k = 0; k < widget.series.length; k++)
-                              (widget.series[k].name, cores[k], _fmt(_v(widget.series[k].values, sel))),
-                            if (widget.line != null && sel < widget.line!.values.length)
-                              (widget.line!.name, corLinha, _fmt(widget.line!.values[sel])),
-                            if (_temProj(sel)) (widget.projection!.name, corProj, _fmt(widget.projection!.values[sel])),
-                          ],
-                        ),
+                ),
+                if (sel != null)
+                  Positioned(
+                    top: topo,
+                    left: (xSel - 70).clamp(0.0, math.max(0.0, w - 140)),
+                    width: 140,
+                    child: IgnorePointer(
+                      child: _Balao(
+                        label: widget.labels[sel],
+                        rows: [
+                          for (var k = 0; k < widget.series.length; k++)
+                            (widget.series[k].name, cores[k], _fmt(_v(widget.series[k].values, sel))),
+                          if (widget.line != null && sel < widget.line!.values.length)
+                            (widget.line!.name, corLinha, _fmt(widget.line!.values[sel])),
+                          if (_temProj(sel)) (widget.projection!.name, corProj, _fmt(widget.projection!.values[sel])),
+                        ],
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           );
         },

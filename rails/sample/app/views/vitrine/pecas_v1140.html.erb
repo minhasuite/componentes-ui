@@ -1,0 +1,129 @@
+<%# titulo: Interface e animação | grupo: Movimento e transições | tambem: Dados e gráficos; Listas e tabelas; Cards e painéis; Retorno e estados; Navegação e moldura | ordem: 96 | versao: 1.14 %>
+<%# v1.14.0 "interface e animação": gráfico que se arrasta, período × anterior, linha que se expande, seleção em
+    massa, folha com alturas, abas de baixo, fundo de manchas, odômetro no KPI, cabeçalho que muda de cor, check que se
+    desenha, cartão que inclina, troca de aba e o esqueleto no formato real. Dados fictícios. %>
+<%
+  dias = (1..14).map { |d| format("%02d/11", d) }
+  semana = params[:periodo] == "semana"
+  rotulos = semana ? %w[seg ter qua qui sex sáb dom] : dias
+  atual = semana ? [120, 180, 95, 210, 260, 140, 90] : [80, 120, 95, 140, 110, 160, 210, 180, 150, 175, 220, 190, 240, 230]
+  anterior = semana ? [100, 150, 120, 170, 190, 160, 80] : [90, 100, 110, 120, 105, 130, 150, 140, 160, 150, 170, 165, 180, 175]
+  pedidos = [{ id: 1042, cliente: "Loja Exemplo", total: 1290.5, status: "Aberto" }, { id: 1043, cliente: "Mercado Bom Dia", total: 312.0, status: "Separando" },
+             { id: 1044, cliente: "Padaria Central", total: 89.9, status: "Aberto" }, { id: 1045, cliente: "Atacado Sul", total: 4210.0, status: "Faturado" }]
+%>
+<div class="grid gap-6">
+  <%= render(Ss::MeshBackgroundComponent.new(css: "ss-card-pad grid gap-2")) do %>
+    <p class="text-sm font-bold" style="opacity:.85">Fundo de manchas (MeshBackgroundComponent)</p>
+    <h2 class="text-2xl font-extrabold">Saldo de novembro</h2>
+    <p class="num text-3xl"><%= ss_amount(ss_money(8420.15), animate: true) %></p>
+    <p class="text-sm">Manchas da cor da marca se movendo devagar; paradas com reduzir movimento. Uma por tela.</p>
+  <% end %>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Gráfico que se arrasta (scrub: true)", subtitle: "Passe o mouse ou arraste o dedo: o marcador segue, o balão mostra o dia e o valor, vibra a cada ponto e a tela acompanha (evento ss-scrub:change).") %>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <%= render Ss::LineChartComponent.new(title: "Vendas por dia", labels: dias, scrub: true, format: ->(v) { ss_money(v) }, show_title: true, css: "vt-scrub",
+            series: [{ name: "Vendas", values: [80, 120, 95, 140, 110, 160, 210, 180, 150, 175, 220, 190, 240, 230] }]) %>
+      <%= render Ss::BarChartComponent.new(title: "Pedidos por dia", labels: dias.first(7), scrub: true, show_title: true, css: "vt-scrub",
+            series: [{ name: "Pedidos", values: [12, 18, 9, 22, 25, 14, 8] }], line: { name: "Meta", values: [15] * 7 }) %>
+      <%= render Ss::AreaChartComponent.new(title: "Saldo", points: dias.first(8).zip([1200, 980, 1350, 1100, 1500, 1420, 1680, 1610]), scrub: true, show_title: true,
+            format: ->(v) { ss_money(v) }, css: "vt-scrub") %>
+      <%= render Ss::TimeSeriesChartComponent.new(title: "Temperatura da sala", scrub: true, show_title: true, css: "vt-scrub",
+            series: [{ name: "Sala", unit: "°C", decimals: 1, points: (0..23).map { |h| [Time.zone.local(2026, 11, 27, h), 20 + Math.sin(h / 3.0) * 2.5] } }]) %>
+    </div>
+    <p class="ss-muted text-sm" aria-live="polite" data-vt-scrub-out>Arraste um dos gráficos.</p>
+    <script>
+      document.addEventListener("ss-scrub:change", (e) => {
+        const out = document.querySelector("[data-vt-scrub-out]")
+        if (out) out.textContent = e.detail.index == null ? "Arraste um dos gráficos." : `Ponto ${e.detail.index + 1}${e.detail.label ? ` (${e.detail.label})` : ""}`
+      })
+    </script>
+  </section>
+
+  <%= render Ss::PeriodCompareComponent.new(title: "Vendas", labels: rotulos, current: atual, previous: anterior, money: true, frame: "vt-periodo", id: "vt-periodo-cmp",
+        current_label: semana ? "Esta semana" : "Este mês", previous_label: semana ? "Semana passada" : "Mês passado",
+        periods: [{ label: "Mês", href: vitrine_path("pecas_v1140"), current: !semana }, { label: "Semana", href: vitrine_path("pecas_v1140", periodo: "semana"), current: semana }]) %>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Linha que se expande (ExpandableRowComponent)", subtitle: "\"Editar\" abre os campos no lugar, com o foco no primeiro; Esc ou Cancelar desfazem e fecham.") %>
+    <div>
+      <% [["Mercado Exemplo", "12/11 · Mercado", 89.9], ["Posto Avenida", "14/11 · Transporte", 150.0], ["Farmácia Central", "15/11 · Saúde", 42.3]].each_with_index do |(t, sub, v), i| %>
+        <%= render(Ss::ExpandableRowComponent.new(title: t, subtitle: sub, value: ss_money(v), url: vitrine_path("pecas_v1140"), method: :post, open: i == 1)) do %>
+          <label class="ss-field"><span class="ss-label">Descrição</span><input class="ss-input" name="descricao" value="<%= t %>"></label>
+          <label class="ss-field" style="max-width:12rem"><span class="ss-label">Valor (R$)</span><input class="ss-input num" style="text-align:right" name="valor" inputmode="decimal" value="<%= ss_number(v, precision: 2) %>"></label>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Seleção em massa (SelectionBarComponent)", subtitle: "Marque um item: a barra sobe com a mola e o contador rola. Shift + clique marca o intervalo; Esc limpa.") %>
+    <%= render(Ss::SelectionBarComponent.new(name: "ids[]", actions: [
+          { label: "Arquivar", icon: "archive", url: vitrine_path("pecas_v1140"), method: :post },
+          { label: "Excluir", icon: "trash", url: vitrine_path("pecas_v1140"), method: :post, danger: true, confirm: "Excluir os pedidos marcados?" }])) do %>
+      <label class="ss-check mb-2"><input type="checkbox" data-ss-selection-target="all"> Marcar todos</label>
+      <ul class="grid gap-1">
+        <% pedidos.each do |p| %>
+          <li class="flex items-center gap-3 rounded-xl px-2">
+            <label class="ss-check flex-1"><input type="checkbox" class="ss-select-item" value="<%= p[:id] %>"> Pedido <%= p[:id] %> · <%= p[:cliente] %></label>
+            <span class="num"><%= ss_money(p[:total]) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Odômetro no KPI, check que se desenha e cartão que inclina", subtitle: "O KPI rola o número ao mudar (animate: true é o padrão). O ✓ se desenha com a vibração de sucesso (e o gancho ss:sound). O cartão inclina ao passar o mouse ou com o dedo.") %>
+    <div class="grid gap-4 md:grid-cols-3 items-start">
+      <div class="grid gap-2">
+        <%= render Ss::KpiCardComponent.new(label: "Recebido hoje", value: ss_money(1240), money: true, delta: "+12%", good: true, hint: "vs. ontem", id: "vt-kpi") %>
+        <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm justify-self-start" onclick="const o=document.querySelector('#vt-kpi .ss-odo');const n=1240+Math.round(Math.random()*900);o.dataset.ssOdometerTextValue='R$ '+n.toLocaleString('pt-BR')+',00'">Mudar o valor</button>
+      </div>
+      <div class="ss-card ss-card-pad grid justify-items-center gap-2 text-center">
+        <%= render Ss::SuccessCheckComponent.new(label: "Pagamento confirmado", sound: true) %>
+        <strong>Pagamento confirmado</strong>
+        <%= render Ss::MorphButtonComponent.new(label: "Salvar", type: :button, block: false, id: "vt-morph") %>
+      </div>
+      <%= render(Ss::TiltCardComponent.new(href: "#plano", css: "ss-card-pad")) do %>
+        <div class="grid gap-1">
+          <span class="ss-badge ss-badge-accent justify-self-start">Plano</span>
+          <strong class="text-xl">Pro anual</strong>
+          <span class="num text-lg">R$ 19,90/mês</span>
+          <small class="ss-muted">Cobrado uma vez por ano. Cancele quando quiser.</small>
+        </div>
+      <% end %>
+    </div>
+    <%= render Ss::SwipeToConfirmComponent.new(label: "Deslize para confirmar o pedido") %>
+    <script>
+      document.addEventListener("ss-morph:run", (e) => { e.detail?.waitUntil?.(new Promise((ok) => setTimeout(ok, 900))) })
+    </script>
+  </section>
+
+  <section class="grid gap-3">
+    <%= render(Ss::PageComponent.new(title: "Cabeçalho que muda de cor", subtitle: "collapse_tint: true: transparente no topo, superfície com sombra ao rolar", collapse_tint: true)) do %>
+      <p class="ss-muted">Role a página: o cabeçalho acima encolhe, o título diminui e o fundo passa à superfície com sombra (animation-timeline: scroll()).</p>
+    <% end %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Folha com três alturas (DrawerComponent(detents:))", subtitle: "No celular, a folha abre em 33% e a alça leva a 50% e à tela cheia, com a mola (↑ ↓ na alça). No computador, o painel lateral.") %>
+    <div><button type="button" class="ss-btn ss-btn-primary" data-ss-drawer-open="vt-folha">Abrir a folha</button></div>
+    <%= render(Ss::DrawerComponent.new(id: "vt-folha", title: "Filtros", detents: [0.33, 0.5, 1])) do %>
+      <div class="grid gap-3">
+        <% %w[Abertos Separando Faturados Cancelados].each do |s| %><label class="ss-check"><input type="checkbox"> <%= s %></label><% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-3">
+    <%= render Ss::CardHeaderComponent.new(title: "Esqueleto no formato real (ss_skeleton_for)", subtitle: "O mesmo partial da linha vira o esqueleto: texto e imagem viram blocos com o pulso, sem link nem id.") %>
+    <%= ss_skeleton_for("vitrine/skel_pedido", count: 2, pedido: { cliente: "Cliente exemplo", numero: "0000", quando: "hoje", status: "Aberto", total: 1234.56 }) %>
+    <%= render "vitrine/skel_pedido", pedido: { cliente: "Loja Exemplo", numero: "1042", quando: "hoje, 10:12", status: "Aberto", total: 1290.5 } %>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-2">
+    <%= render Ss::CardHeaderComponent.new(title: "Troca de aba e ícone que enche", subtitle: "No celular, as abas de baixo desta vitrine: o ícone da aba atual passa de contorno a cheio com a mola, e a troca é uma View Transition (fade through). A peça que aparece nas duas abas leva ss_tab_hero(\"nome\").") %>
+    <p class="text-sm" <%= tag.attributes(ss_tab_hero("vitrine-versao")) %>><span class="ss-badge ss-badge-accent">componentes_ui v<%= ComponentesUi::VERSION %></span></p>
+  </section>
+</div>

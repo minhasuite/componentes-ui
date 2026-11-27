@@ -95,6 +95,9 @@
 /* v1.13.0 "confiança na IA e suíte": explicar o valor, prévia da IA, desde a última visita, continuar no outro aparelho,
    apps da suíte, conflito de versões e o microfone do dinheiro. */
 @import "./v1130_web.css";
+/* v1.14.0 "interface e animação": gráfico que se arrasta, período × anterior, linha que se expande, seleção em massa,
+   folha com alturas, abas de baixo, fundo de manchas, check que se desenha, cartão que inclina e esqueleto real. */
+@import "./v1140_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

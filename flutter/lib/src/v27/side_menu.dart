@@ -11,6 +11,7 @@ import '../ss_badge.dart';
 import '../ss_nav_bar.dart';
 import '../ss_strings.dart';
 import '../version.dart';
+import '../v1140/shared_axis.dart';
 import '../v1110/platform.dart';
 import '../v19/paridade_web/hide_on_scroll.dart';
 import '../v19/paridade_web/side_search.dart';
@@ -966,7 +967,13 @@ class SsNavScaffold extends StatefulWidget {
     this.hideNavOnScroll = false,
     this.handleKey,
     this.adaptive = true,
+    this.tabTransition = SsSharedAxis.fadeThrough,
   });
+
+  /// v1.14.0: a troca de aba com o eixo compartilhado ([SsSharedAxisTransition]: a aba nova aparece crescendo de
+  /// leve, sem corte seco) e o voo dos [SsTabHero] que aparecem nas duas abas. Nulo: troca seca, como antes.
+  /// Par das View Transitions da `Ss::AppShellComponent`.
+  final SsSharedAxis? tabTransition;
 
   /// v1.11.0: ver [SsSideMenuHost.adaptive].
   final bool adaptive;
@@ -1053,7 +1060,14 @@ class _SsNavScaffoldState extends State<SsNavScaffold> with SingleTickerProvider
                 padding: mq.padding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise * v + safeBottom * (1 - v)),
                 viewPadding: mq.viewPadding.copyWith(bottom: keyboard ? 0 : SsNavBar.rise * v + safeBottom * (1 - v)),
               ),
-              child: widget.body,
+              child: widget.tabTransition == null
+                  ? widget.body
+                  : SsSharedAxisTransition(
+                      transitionKey: nav.currentIndex,
+                      index: nav.currentIndex,
+                      axis: widget.tabTransition!,
+                      child: widget.body,
+                    ),
             ),
           );
           if (!hides) return corpo(1);

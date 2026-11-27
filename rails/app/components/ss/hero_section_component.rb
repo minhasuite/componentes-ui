@@ -6,11 +6,14 @@ module Ss
   #     h.with_actions { link_to "Começar", "/assinar", class: "ss-btn ss-btn-primary" }
   #     h.with_media { image_tag "mockup.png", alt: "" }
   #   end
+  #
+  # v1.14.0: mesh: true põe atrás o fundo de manchas da marca que se movem devagar (Ss::MeshBackgroundComponent no
+  # tom :soft: o texto continua na tinta, com contraste), no lugar do brilho parado.
   class HeroSectionComponent < BaseComponent
     renders_one :actions
     renders_one :media
 
-    def initialize(title:, kicker: nil, highlight: nil, text: nil, texture: false, heading: :h1, **opts)
+    def initialize(title:, kicker: nil, highlight: nil, text: nil, texture: false, heading: :h1, mesh: false, **opts)
       super(**opts)
       @title = title
       @kicker = kicker
@@ -18,7 +21,10 @@ module Ss
       @text = text
       @texture = texture
       @heading = heading
+      @mesh = mesh
     end
+
+    def mesh? = @mesh
 
     def title_html
       return @title unless @highlight.present? && @title.include?(@highlight)

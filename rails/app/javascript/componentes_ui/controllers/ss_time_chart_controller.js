@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { scrubTick } from "componentes_ui/controllers/ss_scrub_controller"
 import { inView } from "componentes_ui/controllers/ss_in_view_controller"
 import { formatter, langOf, ticks, niceRange, valueAt, renderAxis, placeSegments, escapeHtml } from "componentes_ui/controllers/ss_time_axis"
 
@@ -21,7 +22,7 @@ const BOTTOM = 4
 export default class extends Controller {
   static targets = ["stage", "plot", "svg", "axis", "cursor", "brush", "tip", "reset", "key", "live", "bands", "reading"]
   static values = { series: Array, from: Number, to: Number, mode: String, dual: Boolean, zoomUrl: String, zoomFrame: String,
-                    resetUrl: String, lang: String, timeZone: String, empty: String }
+                    resetUrl: String, lang: String, timeZone: String, empty: String, scrub: Boolean }
 
   connect() {
     this.f = formatter(langOf(this.element, this.langValue), this.timeZoneValue || undefined)
@@ -176,6 +177,16 @@ export default class extends Controller {
 
   cursorAt(t) {
     this.t = t
+    // v1.14.0 (scrub: true): a cada leitura nova sob o cursor (a mais perto, da 1ª série visível), vibra e avisa
+    // a tela com ss-scrub:change { index, time } (ms).
+    if (this.scrubValue) {
+      const s = this.seriesValue.find((_, i) => !this.hidden.has(i))
+      if (s?.pts?.length) {
+        let k = 0
+        s.pts.forEach((p, j) => { if (Math.abs(p[0] - t) < Math.abs(s.pts[k][0] - t)) k = j })
+        if (k !== this.scrubIndex) { this.scrubIndex = k; scrubTick(this.element, k, { time: s.pts[k][0] }) }
+      }
+    }
     const x = this.x(t)
     this.cursorTarget.hidden = false
     this.cursorTarget.style.left = `${x}px`
@@ -211,6 +222,10 @@ export default class extends Controller {
 
   hideCursor() {
     this.t = null
+    if (this.scrubValue && this.scrubIndex != null) {
+      this.scrubIndex = null
+      this.element.dispatchEvent(new CustomEvent("ss-scrub:change", { bubbles: true, detail: { index: null } }))
+    }
     this.cursorTarget.hidden = true
     this.tipTarget.hidden = true
     this.dots?.replaceChildren()

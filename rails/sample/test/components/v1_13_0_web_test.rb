@@ -302,12 +302,11 @@ class V1130WebTest < ComponentTest
     assert_match(/export function ssParseAmount/, JS.join("ss_speech.js").read)
   end
 
-  test "vitrine: a página da v1.13 em Novidades e nas quatro categorias" do
-    novas = VitrineController.paginas.select { _1[:grupos].include?(VitrineController::GRUPO_NOVIDADES) }
-    assert_equal ["pecas_v1130"], novas.map { _1[:slug] }
-    assert_equal "1.13", VitrineController::NOVIDADES
-    assert_equal ["Conversa, IA e avisos", "Navegação e moldura", "Retorno e estados", "Formulários e entrada", VitrineController::GRUPO_NOVIDADES],
-                 novas.first[:grupos]
+  # v1.14.0: Novidades passou à v1.14; a página da v1.13 continua marcada com a versão e nas categorias dela.
+  test "vitrine: a página da v1.13 nas quatro categorias, marcada com a versão dela" do
+    pagina = VitrineController.paginas.find { _1[:slug] == "pecas_v1130" }
+    assert_includes Rails.root.join("app/views/vitrine/pecas_v1130.html.erb").read.lines.first, "versao: 1.13"
+    assert_equal ["Conversa, IA e avisos", "Navegação e moldura", "Retorno e estados", "Formulários e entrada"], pagina[:grupos]
   end
 end
 

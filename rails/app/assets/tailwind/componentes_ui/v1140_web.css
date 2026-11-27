@@ -1,0 +1,278 @@
+/* v1.14.0 "interface e animação": gráfico que se arrasta (ss-scrub), este período × o anterior
+   (Ss::PeriodCompareComponent), linha que se expande (Ss::ExpandableRowComponent), seleção em massa
+   (Ss::SelectionBarComponent), folha com alturas (Ss::DrawerComponent(detents:)), abas de baixo com o ícone que
+   enche (Ss::AppShellComponent(tabs:)), fundo de manchas (Ss::MeshBackgroundComponent), odômetro no KPI, cabeçalho que
+   muda de cor (PageComponent(collapse_tint:)), check que se desenha (Ss::SuccessCheckComponent), cartão que inclina
+   (Ss::TiltCardComponent), troca de aba com View Transition e o esqueleto no formato real (ss_skeleton_for).
+   Só tokens; movimento pelos tokens --ss-dur, --ss-ease e --ss-bounce (os de ritmo próprio abaixo); reduzir movimento
+   desliga tudo. No máximo uma animação contínua por tela (o fundo de manchas). Alvo de toque pelo --ss-target. */
+:root {
+  /* Ritmos próprios: o fundo de manchas (contínuo, devagar) e o pulso do esqueleto (o brilho da v1.9). */
+  --ss-dur-ambient: 24s;
+  --ss-dur-pulse: 1.1s;
+}
+
+@layer components {
+  /* ── 1. Gráfico que se arrasta ───────────────────────────────────────── */
+  .ss-scrub-plot { position: relative; touch-action: pan-y; outline: none; border-radius: var(--r-field); }
+  .ss-scrub-plot:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .ss-scrub-plot > svg { display: block; width: 100%; height: auto; }
+  .ss-scrub-cursor { position: absolute; top: 6%; bottom: 12%; width: 0; border-left: 1px dashed color-mix(in srgb, var(--ink) 45%, transparent);
+                     pointer-events: none; transition: left var(--ss-dur-short) var(--ss-ease-standard); }
+  .ss-scrub-dot { position: absolute; width: .8rem; height: .8rem; margin: -.4rem 0 0 -.4rem; border-radius: 999px; background: var(--surface);
+                  box-shadow: 0 0 0 2.5px var(--c, var(--accent)); pointer-events: none;
+                  transition: left var(--ss-dur-short) var(--ss-ease-standard), top var(--ss-dur-short) var(--ss-ease-standard); }
+  .ss-scrub-tip { position: absolute; top: 0; translate: -50% 0; display: grid; gap: .15rem; min-width: 8rem; max-width: 14rem; padding: .4rem .6rem;
+                  border-radius: var(--r-field); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-card), inset 0 0 0 1px var(--line);
+                  font-size: .75rem; pointer-events: none; z-index: 2; transition: left var(--ss-dur-short) var(--ss-ease-standard); }
+  .ss-scrub-tip b { color: var(--muted); font-weight: 700; }
+  .ss-scrub-tip span { display: flex; align-items: center; gap: .35rem; }
+  .ss-scrub-tip i { flex: none; width: .5rem; height: .5rem; border-radius: 999px; }
+  .ss-scrub-tip em { font-style: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-scrub-tip strong { margin-left: auto; font-weight: 600; }
+  .ss-scrub-cursor[hidden], .ss-scrub-dot[hidden], .ss-scrub-tip[hidden] { display: none; }
+  .ss-linec.is-scrub .ss-linec-cursor { display: none; }
+  .ss-linec.is-scrub.is-scrubbing title { display: none; }
+  .ss-area.is-scrub .ss-area-plot { touch-action: pan-y; }
+  /* O balão do ponto na borda encosta para dentro (antes cortava no último ponto). */
+  .ss-area-pill.is-end { translate: calc(-100% + 14px) calc(-100% - 14px); }
+  .ss-area-pill.is-end::after { left: calc(100% - 14px); }
+  .ss-area-pill.is-start { translate: -14px calc(-100% - 14px); }
+  .ss-area-pill.is-start::after { left: 14px; }
+  .ss-area.is-scrub .ss-area-pill b { display: block; font-family: var(--font-sans); font-size: .68rem; font-weight: 700; color: var(--muted); }
+
+  /* ── 2. Este período × o anterior ─────────────────────────────────────── */
+  .ss-period { display: grid; gap: 1rem; }
+  .ss-period-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .75rem 1rem; }
+  .ss-period-titles { display: grid; gap: .25rem; min-width: 0; }
+  .ss-period-title { font-size: .875rem; font-weight: 800; color: var(--ink); }
+  .ss-period-figures { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+  .ss-period-total { --ss-odo-size: 1.75rem; font-weight: 600; }
+  .ss-period-delta { font-size: .8rem; font-weight: 700; }
+  .ss-period-delta small { font-weight: 600; margin-left: .25rem; opacity: .85; }
+  .ss-period-sub { color: var(--muted); font-size: .75rem; }
+  .ss-period-seg { flex: 0 1 auto; }
+  /* O desenho é de 560 de largura: no card largo ele fica ao lado do total, sem crescer o texto do eixo. */
+  @media (min-width: 64rem) {
+    .ss-period { grid-template-columns: minmax(14rem, 1fr) minmax(0, 2fr); align-items: start; }
+    .ss-period-head { flex-direction: column; }
+  }
+  .ss-period.is-swapping .ss-linec-line, .ss-period.is-swapping .ss-linec-dot { animation: none; }
+  @media (max-width: 30rem) { .ss-period-delta small { display: none; } .ss-period-seg { width: 100%; } }
+
+  /* ── 3. Linha que se expande ─────────────────────────────────────────── */
+  .ss-xrow { border-bottom: 1px solid var(--line); }
+  .ss-xrow:last-child { border-bottom: 0; }
+  .ss-xrow-head { display: flex; align-items: center; gap: .75rem; min-height: var(--ss-row-h, 3.5rem); padding-block: .5rem; }
+  .ss-xrow-lead { flex: none; display: inline-flex; }
+  .ss-xrow-main { display: grid; min-width: 0; flex: 1 1 auto; }
+  .ss-xrow-title { color: var(--ink); font-size: .9rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-xrow-sub { color: var(--muted); font-size: .75rem; }
+  .ss-xrow-value { flex: none; color: var(--ink); font-weight: 600; text-align: right; }
+  .ss-xrow-toggle { flex: none; min-height: var(--ss-target, 2.75rem); }
+  .ss-xrow-toggle svg { width: 1rem; height: 1rem; }
+  .ss-xrow.is-open .ss-xrow-toggle { background: var(--accent-soft); color: var(--accent); }
+  .ss-xrow-panel { display: grid; grid-template-rows: 0fr; opacity: 0;
+                   transition: grid-template-rows var(--ss-dur-medium) var(--ss-ease-standard), opacity var(--ss-dur-short) var(--ss-ease-standard); }
+  .ss-xrow.is-open .ss-xrow-panel { grid-template-rows: 1fr; opacity: 1; }
+  .ss-xrow-inner { min-height: 0; overflow: hidden; }
+  .ss-xrow-form { display: grid; gap: .75rem; padding: .25rem .125rem 1rem; }
+  .ss-xrow-fields { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+  .ss-xrow-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+  @media (max-width: 30rem) { .ss-xrow-edit-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+
+  /* ── 4. Seleção em massa ─────────────────────────────────────────────── */
+  .ss-selection .is-selected { background: var(--accent-soft); transition: background-color var(--ss-dur-short) var(--ss-ease-standard); }
+  .ss-selection .ss-selection-bar:not([hidden]) { animation: ss-selbar-in var(--ss-dur-indicator) var(--ss-bounce) both; }
+  .ss-selection .ss-selection-bar.is-out { animation: ss-selbar-out var(--ss-dur-medium) var(--ss-ease-exit) both; }
+  .ss-selection-bar .ss-selection-count { --ss-odo-size: 1em; color: inherit; }
+  .ss-selection-bar .ss-selection-count .ss-odo-n { font-weight: 600; }
+  .ss-selection-bar .ss-selection-form { display: contents; }
+  .ss-selection-bar .ss-selection-clear { margin-left: .25rem; min-width: var(--ss-target, 2.75rem); justify-content: center; }
+  .ss-selection-bar :is(button, a) svg { width: 1.05rem; height: 1.05rem; }
+  @media (max-width: 30rem) {
+    .ss-selection-bar { left: .75rem; right: .75rem; translate: none; justify-content: flex-start; }
+    .ss-selection-bar :is(button, a) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .ss-selection-bar .ss-selection-clear { margin-left: auto; }
+  }
+
+  .ss-drawer-handle { display: none; }
+
+  /* ── 6. Abas de baixo da moldura (celular) ───────────────────────────── */
+  .ss-shell-tabbar { display: none; }
+  @media (max-width: 1023px) {
+    .ss-shell-tabbar { position: sticky; bottom: 0; z-index: 30; display: flex; align-items: stretch; justify-content: space-around;
+                       padding: .25rem .25rem max(.25rem, env(safe-area-inset-bottom, 0px)); background: var(--surface);
+                       border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -18px color-mix(in srgb, var(--ink) 40%, transparent); }
+    .ss-shell-tab { position: relative; flex: 1 1 0; display: grid; justify-items: center; align-content: center; gap: .15rem; min-width: 0;
+                    min-height: 3.5rem; padding: .25rem; border-radius: var(--r-field); color: var(--muted); text-decoration: none;
+                    font-size: .7rem; font-weight: 700; transition: color var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-shell-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .ss-shell-tab[aria-current="page"] { color: var(--accent); }
+    .ss-shell-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ss-tab-ico { position: relative; display: grid; place-items: center; width: 3.25rem; height: 1.75rem; border-radius: 999px;
+                  transition: background-color var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-tab-ico > svg { grid-area: 1 / 1; width: 1.35rem; height: 1.35rem; }
+    .ss-tab-ico .is-solid { opacity: 0; scale: .6; }
+    .ss-shell-tab[aria-current="page"] .ss-tab-ico { background: var(--accent-soft); }
+    .ss-shell-tab[aria-current="page"] .ss-tab-ico .is-outline { opacity: 0; }
+    .ss-shell-tab[aria-current="page"] .ss-tab-ico .is-solid { opacity: 1; scale: 1; animation: ss-tab-ico-in var(--ss-dur-indicator) var(--ss-bounce) both; }
+    .ss-shell-tab-badge { position: absolute; top: .2rem; left: calc(50% + .45rem); }
+    .ss-shell-main:has(> .ss-shell-tabbar) .ss-shell-content { padding-bottom: 1.5rem; }
+  }
+
+  /* ── 7. Fundo de manchas ─────────────────────────────────────────────── */
+  .ss-mesh { position: relative; isolation: isolate; overflow: hidden; }
+  .ss-mesh.is-deep { background: var(--brand-deep, var(--accent-solid)); color: #fff; border-radius: var(--r-card); }
+  .ss-mesh.is-soft { background: var(--page); color: var(--ink); }
+  .ss-mesh-blobs { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .ss-mesh-blobs i { position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; will-change: transform;
+                     animation: ss-mesh-a var(--ss-dur-ambient) ease-in-out infinite alternate; }
+  .ss-mesh-blobs i:nth-child(1) { left: -20%; top: -35%; }
+  .ss-mesh-blobs i:nth-child(2) { right: -25%; top: -10%; animation-name: ss-mesh-b; animation-duration: calc(var(--ss-dur-ambient) * 1.3); }
+  .ss-mesh-blobs i:nth-child(3) { left: 15%; bottom: -55%; animation-name: ss-mesh-c; animation-duration: calc(var(--ss-dur-ambient) * .85); }
+  .ss-mesh.is-deep .ss-mesh-blobs i:nth-child(1) { background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-from, var(--accent)) 70%, transparent), transparent); }
+  .ss-mesh.is-deep .ss-mesh-blobs i:nth-child(2) { background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-to, var(--accent)) 60%, transparent), transparent); }
+  .ss-mesh.is-deep .ss-mesh-blobs i:nth-child(3) { background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 55%, transparent), transparent); }
+  /* Véu da cor funda por cima das manchas: o texto branco fica sobre ≥ 4,5:1 mesmo onde a mancha clareia. */
+  .ss-mesh.is-deep .ss-mesh-blobs::after { content: ""; position: absolute; inset: 0;
+                                           background: linear-gradient(160deg, color-mix(in srgb, var(--brand-deep, var(--accent-solid)) 35%, transparent),
+                                                                                color-mix(in srgb, var(--brand-deep, var(--accent-solid)) 60%, transparent)); }
+  .ss-mesh.is-soft .ss-mesh-blobs i { opacity: .55; }
+  .ss-mesh.is-soft .ss-mesh-blobs i:nth-child(1) { background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent); }
+  .ss-mesh.is-soft .ss-mesh-blobs i:nth-child(2) { background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-to, var(--accent)) 20%, transparent), transparent); }
+  .ss-mesh.is-soft .ss-mesh-blobs i:nth-child(3) { background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-from, var(--accent)) 18%, transparent), transparent); }
+  .ss-mesh.is-still .ss-mesh-blobs i { animation: none; }
+  .ss-mesh-body { position: relative; }
+  .ss-mesh.is-deep .ss-mesh-body :is(h1, h2, h3, h4, p, strong, span, small) { color: inherit; }
+  .ss-hero-section.is-mesh::before { content: none; }
+  .ss-hero-section.is-mesh { background: transparent; }
+
+  /* ── 8. Odômetro no KPI e no ss_amount ───────────────────────────────── */
+  .ss-kpi-card-value .ss-kpi-odo, .ss-amount-odo { --ss-odo-size: 1em; color: inherit; }
+
+  /* ── 9. Cabeçalho que muda de cor ao rolar ───────────────────────────── */
+  .ss-page.is-tint > .ss-page-head { background: var(--surface); box-shadow: 0 1px 0 var(--line), var(--shadow-card); }
+
+  /* ── 10. Check que se desenha ────────────────────────────────────────── */
+  .ss-success-check { --ss-sc-size: 4rem; display: inline-grid; place-items: center; color: var(--success); }
+  .ss-success-check .ss-sc-svg { width: var(--ss-sc-size); height: var(--ss-sc-size); }
+  .ss-sc-svg circle, .ss-sc-svg path { fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+                                       stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .ss-sc-svg circle { stroke-width: 2.5; opacity: .9; }
+  .ss-success-check.is-drawn .ss-sc-circle { animation: ss-sc-draw var(--ss-dur-long) var(--ss-ease-enter) both; }
+  .ss-success-check.is-drawn .ss-sc-mark { animation: ss-sc-draw var(--ss-dur-medium) var(--ss-ease-enter) var(--ss-dur-medium) both; }
+  .ss-success-check.is-drawn .ss-sc-svg { animation: ss-sc-pop var(--ss-dur-indicator) var(--ss-bounce) var(--ss-dur-long) both; }
+  @media (scripting: enabled) { .ss-success-check[data-controller~="ss-success-check"]:not(.is-drawn) .ss-sc-svg { opacity: 0; } }
+  /* Dentro das peças que terminam em ✓: o desenho entra quando o estado vira "feito". */
+  .ss-morph-ok.ss-sc-svg circle, .ss-swipe-ok.ss-sc-svg circle { stroke-width: 3; }
+  .ss-morph[data-state="ok"] .ss-morph-ok .ss-sc-circle,
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-ok .ss-sc-circle { animation: ss-sc-draw var(--ss-dur-long) var(--ss-ease-enter) both; }
+  .ss-morph[data-state="ok"] .ss-morph-ok .ss-sc-mark,
+  .ss-swipe-confirm[data-state="done"] .ss-swipe-ok .ss-sc-mark { animation: ss-sc-draw var(--ss-dur-medium) var(--ss-ease-enter) var(--ss-dur-short) both; }
+
+  /* O botão que vira ✓ no escuro: o branco sobre o --accent claro do escuro não passava 4,5:1; vai o --accent-solid. */
+  .ss-morph[data-state="idle"], .ss-morph[data-state="running"] { background: var(--accent-solid, var(--accent)); }
+  .ss-morph[data-state="running"] { background: var(--accent-soft); }
+  .ss-swipe-confirm:not([data-state="done"]) .ss-swipe-thumb { background: var(--accent-solid, var(--accent)); }
+
+  /* O texto do deslizar não passa por baixo da bolinha (rótulo longo no celular). */
+  .ss-swipe-label { white-space: normal; text-align: center; line-height: 1.2; }
+
+  /* ── 11. Cartão que inclina ──────────────────────────────────────────── */
+  .ss-tilt-card { position: relative; display: block; overflow: hidden; color: inherit; text-decoration: none; touch-action: pan-y;
+                  transform: perspective(900px) rotateX(var(--ss-rx, 0deg)) rotateY(var(--ss-ry, 0deg));
+                  transition: transform var(--ss-dur-long) var(--ss-bounce), box-shadow var(--ss-dur-medium) var(--ss-ease-standard); }
+  .ss-tilt-card.is-tilting { transition: transform var(--ss-dur-short) var(--ss-ease-standard); box-shadow: var(--shadow-hover, var(--shadow-card)); }
+  a.ss-tilt-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ss-tilt-body { position: relative; z-index: 1; }
+  /* Reflexo de vidro (o brilho e o filete do .ss-glass, sem desfoque): anda com o ponteiro. */
+  .ss-tilt-glare { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+                   background: radial-gradient(120% 90% at var(--ss-mx, 30%) var(--ss-my, 0%), color-mix(in srgb, #fff 32%, transparent), transparent 55%);
+                   box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent);
+                   opacity: .55; mix-blend-mode: soft-light; transition: opacity var(--ss-dur-medium) var(--ss-ease-standard); }
+  .ss-tilt-card.is-tilting .ss-tilt-glare { opacity: 1; }
+  .ss-tilt-card.is-dense { transform: none; }
+
+  /* ── 13. Esqueleto no formato real ───────────────────────────────────── */
+  .ss-skel-of { --sk: color-mix(in srgb, var(--line) 75%, var(--field)); position: relative; }
+  .ss-skel-of-body { pointer-events: none; user-select: none; }
+  .ss-skel-of-body * { text-overflow: clip !important; }
+  .ss-skel-of .ss-skel-w { color: transparent !important; border-radius: .35em; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+                           background: var(--sk); animation: ss-skel-pulse var(--ss-dur-pulse) ease-in-out infinite alternate; }
+  .ss-skel-of .ss-skel-media { display: inline-block; min-width: 1.5rem; min-height: 1.5rem; vertical-align: middle; border-radius: var(--r-field);
+                               background: var(--sk); animation: ss-skel-pulse var(--ss-dur-pulse) ease-in-out infinite alternate; }
+  .ss-skel-of [class*="ss-avatar"] { background: var(--sk) !important; color: transparent; box-shadow: none; }
+  .ss-skel-of [class*="ss-avatar"] .ss-skel-w { background: none; }
+  .ss-skel-of :is(.ss-badge, .ss-btn, .ss-status, .ss-delta) { background: transparent; box-shadow: none; border-color: transparent; }
+  .ss-skel-of :is(input, select, textarea) { color: transparent; background: var(--sk); border-color: transparent; }
+}
+
+/* ── 5. Folha com alturas (Ss::DrawerComponent(detents:)), no celular: fora da camada, como o dialog.ss-drawer-panel
+   do v09_layout (que também é fora). ── */
+@media (max-width: 40rem) {
+  dialog.ss-drawer-panel.has-detents { inset: auto 0 0 0; width: 100vw; max-width: 100vw; margin: 0;
+                                       height: calc(var(--ss-detent, .5) * 100dvh); max-height: 100dvh;
+                                       border-radius: 1.25rem 1.25rem 0 0; padding-top: 0; border: 0; border-top: 1px solid var(--line);
+                                       box-shadow: 0 -24px 60px -24px color-mix(in srgb, var(--ink) 45%, transparent);
+                                       transition: height var(--ss-dur-indicator) var(--ss-bounce); }
+  dialog.ss-drawer-panel.has-detents.is-dragging { transition: none; }
+  dialog.ss-drawer-panel.has-detents[open] { animation: ss-sheet-up var(--ss-dur-indicator) var(--ss-bounce); }
+  dialog.ss-drawer-panel.has-detents.is-closing { animation: ss-sheet-down var(--ss-dur-medium) var(--ss-ease-exit) forwards; }
+  .has-detents .ss-drawer-handle { display: grid; place-items: center; height: var(--ss-target, 2.75rem); flex: none; cursor: grab; touch-action: none;
+                                   outline: none; }
+  .has-detents .ss-drawer-handle i { width: 2.4rem; height: .3rem; border-radius: 999px; background: var(--line);
+                                     transition: background-color var(--ss-dur-short) var(--ss-ease-standard), width var(--ss-dur-short) var(--ss-ease-standard); }
+  .has-detents .ss-drawer-handle:focus-visible i, .has-detents.is-dragging .ss-drawer-handle i { background: var(--accent); width: 3rem; }
+  .has-detents.is-dragging .ss-drawer-handle { cursor: grabbing; }
+  .has-detents .ss-drawer-head { padding-top: 0; border-top: 0; }
+}
+
+
+/* ── 9. A cor do cabeçalho segue a rolagem (Chrome/Edge 115+, Safari 26): sem suporte, fica na superfície. ── */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .ss-page.is-tint > .ss-page-head { background: transparent; box-shadow: none;
+                                       animation: ss-page-tint linear both; animation-timeline: scroll(); animation-range: 0 96px; }
+  }
+}
+
+/* ── 12. Troca de aba com View Transition (fade through) ── */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-ss-tab-nav] [data-ss-tab-main] { view-transition-name: ss-tab-main; }
+  html[data-ss-tab-nav] .ss-shell-tabbar { view-transition-name: ss-tab-bar; }
+  ::view-transition-old(ss-tab-main) { animation: ss-ft-out var(--ss-dur-short) var(--ss-ease-exit) both; }
+  ::view-transition-new(ss-tab-main) { animation: ss-ft-in var(--ss-dur-medium) var(--ss-ease-enter) var(--ss-dur-short) both; }
+  ::view-transition-old(ss-tab-bar) { display: none; }
+  ::view-transition-new(ss-tab-bar) { animation: none; }
+  ::view-transition-group(*) { animation-duration: var(--ss-dur-long); animation-timing-function: var(--ss-ease-standard); }
+}
+
+@keyframes ss-selbar-in { from { opacity: 0; translate: -50% 140%; } to { opacity: 1; translate: -50% 0; } }
+@keyframes ss-selbar-out { to { opacity: 0; translate: -50% 140%; } }
+@keyframes ss-sheet-down { to { translate: 0 100%; } }
+@keyframes ss-tab-ico-in { from { scale: .55; rotate: -14deg; } to { scale: 1; rotate: 0deg; } }
+@keyframes ss-mesh-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(18%, 14%) scale(1.15); } }
+@keyframes ss-mesh-b { from { transform: translate(0, 0) scale(1.1); } to { transform: translate(-16%, 18%) scale(.95); } }
+@keyframes ss-mesh-c { from { transform: translate(0, 0) scale(.95); } to { transform: translate(12%, -16%) scale(1.12); } }
+@keyframes ss-page-tint { to { background: var(--surface); box-shadow: 0 1px 0 var(--line), var(--shadow-card); padding-block: .25rem; } }
+@keyframes ss-sc-draw { from { stroke-dashoffset: 1; } }
+@keyframes ss-sc-pop { 0% { scale: 1; } 40% { scale: 1.08; } 100% { scale: 1; } }
+@keyframes ss-skel-pulse { from { opacity: 1; } to { opacity: .45; } }
+@keyframes ss-ft-out { to { opacity: 0; } }
+@keyframes ss-ft-in { from { opacity: 0; scale: .96; } }
+
+@media (max-width: 30rem) {
+  @keyframes ss-selbar-in { from { opacity: 0; translate: 0 140%; } to { opacity: 1; translate: 0 0; } }
+  @keyframes ss-selbar-out { to { opacity: 0; translate: 0 140%; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-scrub-cursor, .ss-scrub-dot, .ss-scrub-tip, .ss-xrow-panel, .ss-tilt-card, .ss-tilt-glare, .ss-shell-tab, .ss-tab-ico,
+  dialog.ss-drawer-panel.has-detents, .ss-drawer-handle i, .ss-selection .is-selected { transition: none !important; }
+  .ss-selection .ss-selection-bar, .ss-selection .ss-selection-bar.is-out, .ss-tab-ico .is-solid, .ss-mesh-blobs i,
+  .ss-success-check .ss-sc-svg, .ss-sc-svg circle, .ss-sc-svg path, dialog.ss-drawer-panel.has-detents[open],
+  dialog.ss-drawer-panel.has-detents.is-closing, .ss-skel-of .ss-skel-w, .ss-skel-of .ss-skel-media { animation: none !important; }
+  .ss-success-check[data-controller~="ss-success-check"]:not(.is-drawn) .ss-sc-svg { opacity: 1; }
+  .ss-tilt-card { transform: none !important; }
+}

@@ -228,6 +228,14 @@ class SsMotion {
   /// frente dispara, a de trás vem ~90 ms depois e no fim ele assenta.
   /// Mesmo tempo do `--ss-worm` no CSS da gem.
   static const worm = Duration(milliseconds: 520);
+
+  /// v1.14.0: o pulso do esqueleto ([SsSkeleton], `SsSkeleton.of`), ida ou volta. Mesmo ritmo do
+  /// `--ss-dur-pulse` do web.
+  static const pulse = Duration(milliseconds: 1100);
+
+  /// v1.14.0: uma volta do fundo ambiente ([SsMeshBackground]): devagar o bastante para não chamar o olho.
+  /// Mesmo ritmo do `--ss-dur-ambient` do web.
+  static const ambient = Duration(seconds: 24);
 }
 
 /// Mola subamortecida normalizada em 0..1 (termina exatamente em 1).

@@ -8,7 +8,7 @@
 # Grupo fora de GRUPOS faz o test/vitrine_test.rb falhar (nenhuma página fica fora do menu).
 class VitrineController < ApplicationController
   # A onda cujas páginas entram em "Novidades".
-  NOVIDADES = "1.13".freeze
+  NOVIDADES = "1.14".freeze
 
   # nome, ícone (ss_icon) e para que serve; na ordem do menu.
   CATEGORIAS = [

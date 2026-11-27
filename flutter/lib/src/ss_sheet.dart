@@ -5,6 +5,7 @@ import 'density.dart';
 import 'motion_view.dart';
 import 'ss_strings.dart';
 import 'v1110/platform.dart';
+import 'v1140/detent_sheet.dart';
 import 'v19/transicoes/predictive_back.dart';
 
 /// Abre uma folha de baixo no padrão da suíte: alça, raio 26, área segura,
@@ -14,6 +15,10 @@ import 'v19/transicoes/predictive_back.dart';
 ///
 /// v1.11.0: no iOS, a folha ganha o × de fechar no canto (lá não há voltar do sistema; o arrastar para
 /// baixo continua). Com [dismissible] falso, não há ×: quem fecha é o próprio conteúdo.
+///
+/// v1.14.0: [detents] (`[.33, .5, 1]`, frações da tela) dá à folha alturas fixas, começando em
+/// `detents[initialDetent]`: arrastar a alça leva entre elas e, ao soltar, ela assenta com mola
+/// ([SsDetentSheet]). Par do `Ss::DrawerComponent(detents:)` do web no celular.
 Future<T?> showSsSheet<T>(
   BuildContext context, {
   required Widget child,
@@ -22,23 +27,37 @@ Future<T?> showSsSheet<T>(
   IconData? icon,
   bool dismissible = true,
   EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(20, 0, 20, 16),
-}) => showModalBottomSheet<T>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  isDismissible: dismissible,
-  enableDrag: dismissible,
-  showDragHandle: false,
-  sheetAnimationStyle: SsOverlayMotion.sheet(context),
-  builder: (context) => SsSheet(
-    title: title,
-    subtitle: subtitle,
-    icon: icon,
-    padding: padding,
-    showClose: dismissible ? null : false,
-    child: child,
-  ),
-);
+  List<double>? detents,
+  int initialDetent = 0,
+}) => detents != null
+    ? showSsDetentSheet<T>(
+        context,
+        detents: detents,
+        initial: initialDetent,
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+        dismissible: dismissible,
+        padding: padding,
+        child: child,
+      )
+    : showModalBottomSheet<T>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        isDismissible: dismissible,
+        enableDrag: dismissible,
+        showDragHandle: false,
+        sheetAnimationStyle: SsOverlayMotion.sheet(context),
+        builder: (context) => SsSheet(
+          title: title,
+          subtitle: subtitle,
+          icon: icon,
+          padding: padding,
+          showClose: dismissible ? null : false,
+          child: child,
+        ),
+      );
 
 /// Casca da folha (o que o [showSsSheet] monta). Pública para quem precisa
 /// do `showModalBottomSheet` direto (folha com altura própria, catálogo).

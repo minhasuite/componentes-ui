@@ -13,6 +13,8 @@ module Ss
   #     stacked: true, format: ->(v) { ss_money(v) })
   #
   # Série: { name:, values:, color: "var(--…)" ou tone: :accent/:success/:danger/:warn/:muted }.
+  # v1.14.0: scrub: true (par do SsBarChart(scrub:)): marcador e balão seguem o dedo/mouse por grupo, vibra a cada
+  # grupo e avisa `ss-scrub:change` { index } (só nas barras em pé).
   # Sem cor, --series-1..6 (a 1ª é a marca). active: índice do grupo em destaque (rótulo forte).
   #
   # v0.19: width: a largura do desenho (viewBox; padrão 560). O SVG ocupa a largura do card e escala
@@ -62,9 +64,11 @@ module Ss
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
                    show_title: false, legend: true, width: W, label_every: nil, projection: nil, projection_from: nil,
-                   horizontal: false, empty: nil, markers: [], max: nil, **rest)
+                   horizontal: false, empty: nil, markers: [], max: nil, scrub: false, **rest)
       super(**rest)
+      @title = title # v1.14.0: o título (figcaption, a tabela do leitor de tela e o rótulo do scrub) saía vazio.
       @max = max&.to_f
+      @scrub = scrub
       @labels = labels.map(&:to_s)
       @series = series.each_with_index.map { |s, i| normalize(s, "var(--series-#{i % 6 + 1})") }
       @line = line && normalize(line, "var(--ink)")
@@ -277,6 +281,18 @@ module Ss
     end
 
     def uid = @uid ||= "ss-barc-#{object_id}"
+
+    # v1.14.0: o arrastar (ss-scrub), em % do desenho; o ponto vai na linha (line:) quando há.
+    def scrub? = @scrub && data? && !horizontal?
+    def scrub_points
+      labels.each_index.map do |i|
+        lv = line && line[:values][i]
+        rows = series.map { |s| [s[:name], color_at(s, i), s[:values][i].nil? ? "—" : fmt(s[:values][i])] }
+        rows << [line[:name], line[:color], fmt(lv)] if lv
+        rows << [projection[:name], projection[:color], fmt(projection[:values][i])] if projection && projection[:values][i]
+        [(cx(i) * 100.0 / w).round(2), (lv ? (y(lv) * 100.0 / h).round(2) : nil), labels[i], rows]
+      end
+    end
 
     private
 

@@ -50,6 +50,14 @@ module Ss
   # - v1.13: with_suite { render Ss::SuiteSwitcherComponent.new(products: …) } = os apps da suíte (grade), na barra de
   #   cima ao lado do avatar (entre o sino e o user).
   #
+  # v1.14.0 (par do SsNavBar + SsNavScaffold do app):
+  # - tabs: [{ label:, icon: "home", href:, current:, badge: }] = a barra de abas de baixo no celular (até 1023 px),
+  #   como a do app: o ícone da aba atual passa de contorno para cheio com escala de mola e leve rotação. icon: nome
+  #   do ss_icon (contorno e cheio saem do mesmo nome) ou SVG pronto (só o contorno).
+  # - tab_transition: true (padrão) = a troca de aba é uma View Transition com nome (fade through no conteúdo, a
+  #   barra parada). Precisa do ss_view_transitions_head no <head>; sem suporte ou com reduzir movimento, corte seco.
+  #   A peça que aparece nas duas abas leva o mesmo nome com ss_tab_hero("saldo") (par do SsTabHero).
+  #
   # v0.24 (auditoria de UX, C02/U14): a troca de empresa só vira menu com 2 ou mais empresas. Com uma só, o nome fica
   # parado (sem seta nem menu; single_tenant: false nem mostra). O nome longo ganha reticências (num <span>, que o
   # grid do rótulo cortava seco) e o nome inteiro no title=.
@@ -70,9 +78,11 @@ module Ss
 
     def initialize(brand: nil, nav: [], tenants: [], tenant_label: nil, search: true,
                    search_label: nil, side_label: nil, search_action: nil, collapsed: false, brand_url: nil,
-                   mobile_brand: true, main_class: nil, main_max: nil, single_tenant: true, **opts)
+                   mobile_brand: true, main_class: nil, main_max: nil, single_tenant: true, tabs: [], tab_transition: true, **opts)
       super(**opts)
       @collapsed = collapsed
+      @tabs = Array(tabs).map { _1.to_h.transform_keys(&:to_sym) }
+      @tab_transition = tab_transition
       @brand_url = brand_url
       @mobile_brand = mobile_brand
       @main_class = main_class
@@ -112,9 +122,26 @@ module Ss
     def badge?(value) = value.present? && value.to_s.strip != "0"
 
     def main_attrs
+      data = { max: (@main_max ? "" : nil), ss_tab_main: (@tab_transition && tabs? ? "" : nil) }.compact
       { class: ["ss-shell-content", @main_class].compact.join(" "), id: "conteudo", tabindex: "-1",
-        data: (@main_max ? { max: "" } : nil), style: (@main_max ? "--shell-main-max:#{ERB::Util.html_escape(@main_max)}" : nil) }.compact
+        data: data.presence, style: (@main_max ? "--shell-main-max:#{ERB::Util.html_escape(@main_max)}" : nil) }.compact
     end
+
+    # v1.14.0: a barra de abas do celular.
+    def tabs? = @tabs.any?
+    def tabs = @tabs
+    def tabs_label = ss_t("app_shell.tabs", default: "Abas")
+
+    # Ícone da aba: contorno e cheio do mesmo nome (o cheio entra na aba atual).
+    def tab_icon(it)
+      ic = it[:icon]
+      return tag.span(it[:label].to_s[0], class: "ss-shell-initial", "aria-hidden": "true") if ic.blank?
+      return tag.span(ic, class: "ss-tab-ico") if ic.respond_to?(:html_safe?) && ic.html_safe?
+
+      tag.span(safe_join([ss_icon(ic, size: nil, css: "is-outline"), ss_icon(ic, variant: :solid, size: nil, css: "is-solid")]), class: "ss-tab-ico")
+    end
+
+    def tabbar_data = (@tab_transition ? { controller: "ss-tab-transition", action: "click->ss-tab-transition#mark" } : {})
 
     # Nada para a barra de cima do computador: ela some (CSS, a partir de 1024 px).
     def top_bare? = !@search && !top? && !user? && !bell? && !help? && !suite?

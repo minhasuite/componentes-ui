@@ -9,6 +9,7 @@ import '../format.dart';
 import '../motion.dart';
 import '../motion_view.dart';
 import '../ss_strings.dart';
+import '../v1140/scrub.dart';
 import '../v19/transicoes/chart_transition.dart';
 
 /// Curva suave por Catmull-Rom em cúbicas (a mesma do SsLineChart).
@@ -36,6 +37,10 @@ Path _curva(List<Offset> pts) {
 /// destacado. Arrastar ou tocar troca o ativo (tique por ponto) e chama
 /// [onSelect]. Cresce de baixo e se desenha quando entra na tela. Para várias séries
 /// ou linha de meta, use o `SsLineChart`.
+///
+/// v1.14.0 (par do `scrub:` do web): o ponto ativo também segue o mouse ([SsScrubDetector]); enquanto o dedo ou
+/// o mouse está em cima, a pílula mostra o rótulo junto do valor; cada ponto novo vibra
+/// ([SsHaptics.selection]) e chama [onScrub] (nulo quando solta). [scrub] falso: só o [active].
 class SsAreaChart extends StatefulWidget {
   const SsAreaChart({
     super.key,
@@ -46,7 +51,15 @@ class SsAreaChart extends StatefulWidget {
     this.format,
     this.height = 220,
     this.label,
+    this.scrub = true,
+    this.onScrub,
   }) : assert(values.length == labels.length);
+
+  /// v1.14.0: arrastar o dedo (ou passar o mouse) troca o ponto ativo.
+  final bool scrub;
+
+  /// v1.14.0: o ponto sob o dedo enquanto arrasta (nulo quando solta).
+  final ValueChanged<int?>? onScrub;
 
   final List<double> values;
   final List<String> labels;
@@ -91,15 +104,28 @@ class _SsAreaChartState extends State<SsAreaChart> with SingleTickerProviderStat
     if (n == 0) return;
     final k = i.clamp(0, n - 1);
     if (k == _sel) return;
-    SsHaptics.tick();
+    SsHaptics.selection();
     setState(() => _sel = k);
     widget.onSelect?.call(k);
+    if (_scrubbing) widget.onScrub?.call(k);
   }
+
+  bool _scrubbing = false;
 
   void _scrub(double dx, double w) {
     final n = widget.values.length;
     if (n < 2) return;
-    _go(((dx - _aSide) / (w - _aSide * 2) * (n - 1)).round());
+    if (!_scrubbing) {
+      setState(() => _scrubbing = true);
+      widget.onScrub?.call(_sel);
+    }
+    _go(SsScrubDetector.indexAt(dx, w, n, side: _aSide));
+  }
+
+  void _solta() {
+    if (!_scrubbing) return;
+    setState(() => _scrubbing = false);
+    widget.onScrub?.call(null);
   }
 
   @override
@@ -122,11 +148,11 @@ class _SsAreaChartState extends State<SsAreaChart> with SingleTickerProviderStat
         child: LayoutBuilder(
           builder: (context, box) {
             final w = box.maxWidth;
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragStart: (d) => _scrub(d.localPosition.dx, w),
-              onHorizontalDragUpdate: (d) => _scrub(d.localPosition.dx, w),
-              onTapUp: (d) => _scrub(d.localPosition.dx, w),
+            return SsScrubDetector(
+              enabled: widget.scrub,
+              keepOnTap: false,
+              onScrub: (p) => _scrub(p.dx, w),
+              onEnd: _solta,
               // Desenha-se quando entra na tela.
               child: SsTweenInView(
                 end: 1,
@@ -143,7 +169,11 @@ class _SsAreaChartState extends State<SsAreaChart> with SingleTickerProviderStat
                     muted: c.muted,
                     surface: c.surface,
                     guide: c.line,
-                    valor: temSel ? _fmt(widget.values[_sel]) : '',
+                    valor: temSel
+                        ? (_scrubbing
+                              ? '${widget.labels[_sel]} · ${_fmt(widget.values[_sel])}'
+                              : _fmt(widget.values[_sel]))
+                        : '',
                     axis: TextStyle(
                       fontFamily: Theme.of(context).textTheme.bodySmall?.fontFamily,
                       fontSize: AppType.label,

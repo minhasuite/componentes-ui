@@ -24,7 +24,10 @@
        end %>
     <%# v0.24: ?empresas=1 ou 2 mostra a troca de empresa (com 1, só o nome parado; nome longo com reticências). %>
     <% tenants = [{ name: "Atacadão Teste do Nordeste Ltda", href: "?empresas=#{params[:empresas]}", current: true }, { name: "Mercado Novo Horizonte", href: "#" }].first(params[:empresas].to_i) %>
-    <%= render Ss::AppShellComponent.new(brand: "Lista Clara", nav: nav, tenants: tenants, search_label: "Buscar componente…", search_action: "vitrine-busca") do |s| %>
+    <%# v1.14.0: as abas de baixo no celular (o ícone da atual enche com a mola; a troca é uma View Transition). %>
+    <% abas = [["Início", "home", "inicio"], ["Novidades", "sparkles", "pecas_v1140"], ["Gráficos", "chart-bar", "dados_barras"], ["Movimento", "lightning-bolt", "movimento_v190"]]
+              .map { |label, icon, slug| { label:, icon:, href: (slug == "inicio" ? root_path : vitrine_path(slug)), current: pagina_atual == slug } } %>
+    <%= render Ss::AppShellComponent.new(brand: "Lista Clara", nav: nav, tenants: tenants, search_label: "Buscar componente…", search_action: "vitrine-busca", tabs: abas) do |s| %>
       <% s.with_side_footer do %>
         <p style="color:color-mix(in srgb,var(--side-ink) 55%,transparent);font-size:12px;padding:0 6px" class="ss-shell-label">componentes_ui v<%= ComponentesUi::VERSION %> · Rails</p>
       <% end %>

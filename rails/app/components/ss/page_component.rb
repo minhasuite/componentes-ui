@@ -23,6 +23,10 @@ module Ss
   # (ss_view_transition_attrs): na navegação do Turbo o card vira o cabeçalho. shrink: true deixa o
   # cabeçalho grudado no alto e encolhe ao rolar (animation-timeline: scroll(), só CSS; sem suporte
   # ou com reduzir movimento, fica parado).
+  #
+  # v1.14.0: collapse_tint: true (par do SsScreenHeader(collapseTint:)): além de encolher (vale o shrink:), o fundo do
+  # cabeçalho passa de transparente para a superfície (--surface) com sombra ao rolar, e o título grande vira o
+  # pequeno. Só CSS (animation-timeline: scroll()); sem suporte, fica na superfície, parado.
   class PageComponent < BaseComponent
     BACK = %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg>).freeze
 
@@ -31,7 +35,7 @@ module Ss
     renders_one :filters
     renders_one :badge
 
-    def initialize(title:, subtitle: nil, crumbs: nil, back: nil, back_label: nil, eyebrow: nil, compact: false, view_transition: nil, shrink: false, **opts)
+    def initialize(title:, subtitle: nil, crumbs: nil, back: nil, back_label: nil, eyebrow: nil, compact: false, view_transition: nil, shrink: false, collapse_tint: false, **opts)
       super(**opts)
       @title = title
       @subtitle = subtitle
@@ -41,7 +45,8 @@ module Ss
       @eyebrow = eyebrow.presence
       @compact = compact
       @view_transition = view_transition
-      @shrink = shrink
+      @shrink = shrink || collapse_tint
+      @tint = collapse_tint
     end
 
     def body? = content.present? && content.to_s.strip.present?

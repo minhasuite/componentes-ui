@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.13.0
+      ref: v1.14.0
 ```
 
 ```dart
@@ -653,6 +653,75 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.0: interface e animação (gráfico que se arrasta, período × anterior, linha que se expande, folha com 3 alturas, fundo de manchas, check que se desenha, cartão que inclina e a troca de aba)
+
+A suíte mais bonita e agradável, nos dois lados com o mesmo nome. Tudo pelos tokens de movimento da v1.9 (`SsMotion` ↔
+`--ss-dur-*`/`--ss-ease-*`/`--ss-bounce`; o teste reprova duração solta), com "reduzir movimento" desligando tudo
+(`MediaQuery.disableAnimations` / `prefers-reduced-motion`) e **no máximo uma animação contínua por tela** (o fundo de
+manchas ou o esqueleto, nunca os dois). Tokens novos de ritmo próprio: `SsMotion.pulse` (1,1 s) ↔ `--ss-dur-pulse` e
+`SsMotion.ambient` (24 s) ↔ `--ss-dur-ambient`. Nada quebra na API: os parâmetros novos são opcionais. Duas mudanças
+de padrão: o `SsKpiCard`/`SsStatCard` ↔ `KpiCardComponent` passam a rolar o número no odômetro (`animate: true`) e o
+`SsNavScaffold` troca de aba com o eixo compartilhado (`tabTransition:`).
+
+| Flutter | Rails | O que faz |
+|---|---|---|
+| `scrub:` (padrão `true`) e `onScrub: (int?)` em `SsLineChart`, `SsAreaChart`, `SsBarChart`; `SsTimeChart(scrub:)` com o `onScrub(DateTime?)` de sempre; `SsScrubDetector(onScrub:, onEnd:)` e `SsScrubDetector.indexAt` para o gráfico do produto | `scrub: true` (padrão `false`) em `LineChartComponent`, `AreaChartComponent`, `BarChartComponent` (em pé) e `TimeSeriesChartComponent`; controller `ss-scrub`, evento `ss-scrub:change` `{ index, label }` (`{ index, time }` no tempo; `index: null` ao soltar) | marcador que segue o dedo ou o mouse, valor e data no balão, vibração a cada ponto (`SsHaptics.selection` ↔ `haptic("selection")`), ← → Home End no web e o índice para a tela inteira acompanhar |
+| `SsPeriodCompare(labels:, current:, previous:, title:, currentLabel:, previousLabel:, format:, higherIsBetter:, currentTotal:, previousTotal:, periods:, period:, onPeriodChanged:, onScrub:, card:)` | `Ss::PeriodCompareComponent(title:, labels:, current:, previous:, total:, previous_total:, money:, format:, higher_is_better: true, periods: [{ label:, href:, current: }], frame:, current_label:, previous_label:, delta:)` (`ss-period-compare`) | este período × o anterior no mesmo gráfico (o anterior como linha fantasma tracejada), o total no odômetro com o `SsDelta` (verde quando o sentido é bom) e a troca de período animada; arrastando, o número vira o do ponto contra o mesmo ponto do anterior |
+| `SsExpandableRow(title:, subtitle:, value:, icon:, leading:, editor:, onSave: () → bool?, onCancel:, expanded:, onExpandedChanged:)` | `Ss::ExpandableRowComponent(title:, subtitle:, value:, url:, method: :patch, open:, save_label:, cancel_label:, edit_label:)` + bloco com os campos e slot `leading` (`ss-expandable-row`) | a linha se expande no lugar para a edição rápida: altura animada, foco no 1º campo, Salvar (o `false` mantém aberta para o erro), Cancelar e Esc devolvem o foco à linha |
+| `SsSelectable`/`SsSelectionBar` (já animados: a barra sobe com a mola e o contador é o `SsOdometer`; agora com o `SsHaptics.selection`) | `Ss::SelectionBarComponent(actions: [{ label:, icon:, url:, method:, danger:, confirm: } \| { label:, href: }], name: "ids[]", label:)` + bloco com a lista (`.ss-select-item` ou `data-ss-selection-target=item\|all`), `ss-selection` (`ss-selection:change { ids, count }`) | seleção em massa: marcar com Shift (intervalo), a barra de ações entrando animada, o contador com odômetro, Esc limpa |
+| `showSsSheet(detents: [.33, .5, 1], initialDetent:)`, `SsDetentSheet`, `showSsDetentSheet` | `Ss::DrawerComponent(detents: [0.33, 0.5, 1], detent:)` (no celular; alça `role=slider`, evento `ss-drawer:detent`) | folha com alturas fixas: arrastar a alça leva entre elas e, ao soltar, assenta com uma mola de verdade (a velocidade conta); abaixo da menor, fecha; ↑ ↓ na alça e "50% da tela" no leitor de tela |
+| `SsNavItem(animatedIcon: true)` | `AppShellComponent(tabs: [{ label:, icon:, href:, current:, badge: }])`: a barra inferior do celular | ao virar a aba atual, o ícone chega girando ~20° com a mola e passa do contorno ao cheio |
+| `SsMeshBackground(child:, colors:, animate:, radius:, veil:)`, `SsHeroCard(mesh: true)` / `SsHeroCard.custom(mesh: true)` | `Ss::MeshBackgroundComponent(tone: :deep\|:soft, animate: true)`, `HeroSectionComponent(mesh: true)` | manchas suaves da marca andando devagar atrás do cabeçalho de destaque; só gradientes radiais (sem desfoque), parado com reduzir movimento; o véu sobe sozinho até o texto claro passar de 4,5:1 em toda paleta (`SsMeshBackground.veilFor`, testado nas 30) |
+| `SsKpiCard(animate: true)`, `SsStatCard(animate: true)`, `SsAmount(animate: false)` | `KpiCardComponent(animate: true)`, `ss_amount(text, animate: false)` (o `ss-odometer` da v1.9) | odômetro como padrão: o número parte dos zeros ao entrar e cada dígito gira ao mudar |
+| `SsScreenHeader(collapseTint: true)` / `SsSliverHeader(collapseTint:)` | `PageComponent(collapse_tint: true)` (liga o `shrink`; `animation-timeline: scroll()`) | o título grande vira o pequeno e o fundo passa de transparente à superfície com sombra, junto com a rolagem |
+| `SsSuccessCheck(size:, color:, filled:, play:, haptic:, sound:, label:, onDone:)`, `SsSounds.player = (SsSound s) => …` | `Ss::SuccessCheckComponent(size:, label:, sound: false, haptic: true)`, `.mark(css:)`, `ss-success-check` (`ssSuccess(el, { sound })`, evento `ss:sound { name: "success" }` no `window`) | o ✓ que se desenha (círculo e traço, com um pulinho), `SsHaptics.success` e o som curto opcional (o app fornece o player; o pacote só o gancho). Já no fim do `SsMorphButton`, do `SsSwipeToConfirm` e do `SsPixCard` pago (no web, `sound:` nos três) |
+| `SsTiltCard(child:, enabled:, glass:, maxTilt: 6, radius:, shine:)` | `Ss::TiltCardComponent(glass: true, dense: false, href:)` (o `ss-tilt` responde ao toque; `data-ss-tilt-off`) | cartão de destaque que inclina ao toque ou ao mouse, com o reflexo de vidro seguindo; desligado com reduzir movimento e em tela de dados densos |
+| `SsSharedAxisTransition(transitionKey:, index:, axis: SsSharedAxis.fadeThrough\|horizontal\|vertical)`, `SsTabHero(tag:, child:)`, `SsNavScaffold(tabTransition: SsSharedAxis.fadeThrough)` (padrão; `null` volta ao corte seco) | `AppShellComponent(tab_transition: true)` (`ss-tab-transition`, View Transitions com nome) + `ss_tab_hero(nome)` → `{ style:, data: }` (precisa do `ss_view_transitions_head`) | a troca de aba aparece esmaecendo e crescendo (fade through) em vez do corte seco; a peça com a mesma `tag` nas duas abas voa do lugar antigo ao novo |
+| `SsSkeleton.of(child)` | `ss_skeleton_for(partial, count: 1, label:, css:, **locals)` | o esqueleto no formato real: sai da própria árvore (app: mede o widget e desenha um bloco por linha de texto, imagem, avatar e ícone tonal e o contorno dos cards; web: renderiza o partial e troca texto e imagem por blocos com o Nokogiri), com o pulso da v1.9; fora do toque e do leitor de tela ("Carregando…") |
+
+**Limites.** O web do `ss_skeleton_for` precisa que o partial renderize com dados de exemplo nos `locals` (sem banco).
+O scrub não vale para as barras deitadas. No app, a troca de aba anima só a chegada (o `IndexedStack` guarda as duas
+telas; não há como pintar as duas juntas sem remontar), e o `SsTabHero` voa entre vagas de `IndexedStack`/`Offstage`.
+O fundo de manchas do web não pausa fora da tela (só anima `transform`, o que é barato).
+
+**Textos.** pt-BR, en e es: `SsInterfaceStrings` (`SsInterfaceStrings.of(context)`) ↔ `componentes_ui.interface.*` (as
+mesmas chaves em snake_case; o teste do Flutter confere as chaves da gem). Acessibilidade: alvos de 48/44 (a alça da
+folha tem 48), rótulos e valores no leitor de tela (a alça diz a altura; o comparador lê "R$ 4.870,00 neste período,
+R$ 4.150,00 no anterior"), regiões vivas no que muda sozinho, `ssA11yAudit` nos testes novos.
+
+**Ao subir nos produtos.** Teste que procura o valor de um `SsKpiCard`/`SsStatCard` com `find.text` passa a
+`find.bySemanticsLabel` (os dígitos do odômetro são colunas) ou usa `animate: false`; o mesmo vale para o
+`KpiCardComponent` no web (`animate: false`). Quem não quiser a troca de aba animada passa `tabTransition: null`.
+
+**Onde cada peça entra nos produtos:**
+
+- **meu-financeiro**: `SsPeriodCompare` em "Gastos do mês" (novembro × outubro, `higherIsBetter: false`); scrub com
+  `onScrub` no gráfico de gastos para o total e a lista do dia acompanharem; `SsExpandableRow` no extrato para mudar o
+  valor e a categoria sem abrir o lançamento; `SsTiltCard` no cartão de crédito; `SsHeroCard(mesh: true)` no saldo do
+  início; `SsTabHero` do saldo entre Início e Extrato.
+- **minhas-vendas**: `SsPeriodCompare` e scrub no painel de vendas (semana × anterior); seleção em massa
+  (`SelectionBarComponent` com Shift) em pedidos e títulos; `SsExpandableRow` na quantidade e no desconto do item do
+  pedido; `SsSuccessCheck` no pedido enviado e no Pix pago do PDV; `showSsSheet(detents:)` nos filtros do app de vendas
+  externas.
+- **meu-gestor**: `SsPeriodCompare` nos indicadores e metas; `SsSkeleton.of`/`ss_skeleton_for` nos cards de insight;
+  `PageComponent(collapse_tint:)` nas telas longas de fluxo.
+- **minhas-compras** e **minhas-viagens**: `showSsSheet(detents:)` no mapa/lista de ofertas e no "Onde comer";
+  `SsTiltCard` no cartão da viagem e da conquista; `SsSuccessCheck` ao salvar o cupom lido.
+- **meu-personal**, **meu-cultivo** e **meu-tempo**: `SsSuccessCheck` no treino concluído, na rega feita e no quiz
+  respondido; `SsHeroCard(mesh: true)` no cabeçalho do dia; scrub nos gráficos de evolução.
+- **Todos os apps**: o ícone animado da barra e a troca de aba com eixo compartilhado já vêm com a tag
+  (`SsNavScaffold`); `SsScreenHeader(collapseTint: true)` nas telas principais; odômetro nos KPIs.
+
+`paridade.yml`: 9 pares novos (`SsScrubDetector` → `js:ss-scrub`, `SsPeriodCompare`, `SsExpandableRow`, `SsDetentSheet`,
+`SsMeshBackground`, `SsSuccessCheck`, `SsTiltCard`, `SsSharedAxisTransition`, `SsTabHero` → `helper:ss_tab_hero`),
+`SsSelectionBar` ganha `Ss::SelectionBarComponent` e `js:ss-selection`, `SsSkeleton` ganha `helper:ss_skeleton_for`, e
+3 apis (`SsSounds` → `js:ss-success-check`, `showSsDetentSheet`, `SsInterfaceStrings`). Vitrines: Novidades '1.14' e
+as categorias "Movimento e transições", "Dados e gráficos", "Listas e tabelas", "Navegação e moldura" e "Retorno e
+estados" (`rails/sample/app/views/vitrine/pecas_v1140.html.erb`). Catálogo: `flutter/test/catalogo_v1140.dart`
+(`comV1140`) e as seções do `rails/catalogo/index.html` geradas por `rails/sample/script/catalogo_v1140.rb`. Testes:
+`flutter/test/v1140_test.dart` e `rails/sample/test/components/v1_14_0_web_test.rb`. Capturas do web da v1.12, v1.13 e
+v1.14 em 390 e 1440, claro e escuro, pela vitrine num container com o Playwright (`mcr.microsoft.com/playwright:v1.56.1-noble`).
 
 ## v1.13.0: confiança na IA e suíte (explicar o valor, prévia da IA, desde a última visita, continuar no outro aparelho, a suíte, o conflito, o valor falado e o modo discreto automático)
 
@@ -2593,6 +2662,8 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.0` (27/11/2026): seção "v1.14.0" (interface e animação). Scrub nos gráficos (`SsScrubDetector` ↔ `ss-scrub`), `SsPeriodCompare` ↔ `Ss::PeriodCompareComponent`, `SsExpandableRow` ↔ `Ss::ExpandableRowComponent`, `Ss::SelectionBarComponent` + `ss-selection`, `showSsSheet(detents:)` ↔ `DrawerComponent(detents:)`, ícone animado na barra, `SsMeshBackground` ↔ `Ss::MeshBackgroundComponent`, odômetro padrão no KPI, `collapseTint`/`collapse_tint`, `SsSuccessCheck` ↔ `Ss::SuccessCheckComponent` (+ `SsSounds`/`ss:sound`), `SsTiltCard` ↔ `Ss::TiltCardComponent`, `SsSharedAxisTransition`/`SsTabHero` ↔ View Transitions + `ss_tab_hero`, `SsSkeleton.of` ↔ `ss_skeleton_for`. Nada quebra na API; muda o padrão do KPI (odômetro) e da troca de aba do `SsNavScaffold`.
+- `v1.13.0` (27/11/2026): seção "v1.13.0" (confiança na IA e suíte).
 - `v1.12.0` (27/11/2026): seção "v1.12.0" (Kit Brasil). `SsPixCard` ↔ `Ss::PixCardComponent`, `SsNfeCard` ↔ `Ss::NfeCardComponent`, `SsSmartPaste` ↔ `Ss::SmartPasteComponent` (detector igual em Dart, Ruby e JS), `SsPixKeyField`/`SsBoletoField`/`SsCepField`/`SsDocumentField` ↔ `f.ss_pix_key`/`ss_boleto`/`ss_cep`/`ss_document`, QR puro (`SsQrCode`/`SsQrImage` ↔ `ComponentesUi::Qr`/`ss_qr_svg`), `SsBr` ↔ `ComponentesUi::Br` e os formatadores `SsFormats.cpf/cnpj/cep/phoneBr/boleto/nfeKey` ↔ `ss_*`. Nenhuma dependência nova. Nada quebra na API.
 - `v1.11.0` (27/11/2026): seção "v1.11.0" (adaptativa). `SsPlatform`/`SsPlatformScope` e `adaptive:` nas peças: no iOS, `CupertinoSwitch`, roda de data e hora, folha de ação (`showSsPicker` curto, `SsOverflowMenu`, `SsContextMenu`), `CupertinoAlertDialog` no `showSsConfirm`, `CupertinoSliverRefreshControl`, haptics do iOS, × na `SsSheet`, transição do iOS no tema e a alça do menu que cede ao voltar do sistema em rota empilhada. `SsAppleButton` ↔ `Ss::AppleButtonComponent`, `SsAuthLayout(providers:)` ↔ `with_provider`, `ss_platform`. Dependência nova: `cupertino_ui`. Nada quebra na API; no Android o desenho não muda.
 - `v1.10.0` (27/11/2026): seção "v1.10.0". Dívida de paridade zerada: 21 pares Rails das peças do Flutter e `SsProductCard`, `SsFilterBar`/`SsFilterSheet`, `SsJobProgress`, `SsTreeView` e `SsPopover` no app. Nada quebra na API.

@@ -1,4 +1,5 @@
-<%= tag.figure(**root_attrs(class: classes("ss-barc", ("is-stacked" if stacked?), ("is-horizontal" if horizontal?), ("is-empty" unless data?)), id: uid)) do %>
+<%= tag.figure(**root_attrs(class: classes("ss-barc", ("is-stacked" if stacked?), ("is-horizontal" if horizontal?), ("is-empty" unless data?), ("is-scrub" if scrub?)), id: uid,
+                           data: (scrub? ? { controller: "ss-scrub", ss_scrub_points_value: scrub_points.to_json } : {}))) do %>
   <figcaption class="<%= show_title? ? "ss-barc-title" : "ss-sr" %>"><%= title %></figcaption>
   <% if !data? %>
     <p class="ss-chart-empty"><%= empty_text %></p>
@@ -24,6 +25,7 @@
       <% end %>
     </svg>
   <% else %>
+    <% if scrub? %><div class="ss-scrub-plot" data-ss-scrub-target="plot" tabindex="0" role="group" aria-roledescription="<%= ss_t("chart.role", default: "gráfico") %>" aria-label="<%= title %>. <%= ss_t("interface.scrub_hint", default: "Arraste para ver cada ponto") %>"><% end %>
     <svg viewBox="0 0 <%= w %> <%= h %>" aria-hidden="true">
       <% guides.each do |(gy, _v, zero)| %>
         <line class="<%= zero ? "ss-barc-zero" : "ss-barc-guide" %>" x1="<%= PX %>" x2="<%= w - PX %>" y1="<%= gy %>" y2="<%= gy %>"/>
@@ -53,6 +55,7 @@
         <text class="ss-barc-ytext" x="<%= PX %>" y="<%= gy - 5 %>"><%= fmt(v) %></text>
       <% end %>
     </svg>
+    <% if scrub? %></div><p class="ss-sr" aria-live="polite" data-ss-scrub-target="live"></p><% end %>
   <% end %>
   <% if data? && legend? %>
     <ul class="ss-barc-legend" aria-hidden="true">
