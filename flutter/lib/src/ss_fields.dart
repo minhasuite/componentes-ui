@@ -319,6 +319,9 @@ class SsTextField extends StatefulWidget {
 }
 
 class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStateMixin {
+  Widget _alvo48(Widget campo, SsDensity d) =>
+      widget.suffix != null ? campo : SsTapTarget(minSize: Size(0, d.minTarget), semantics: true, child: campo);
+
   late final FocusNode _focus = widget.focusNode ?? FocusNode();
   final _field = GlobalKey<FormFieldState<String>>();
   late final _shake = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
@@ -453,7 +456,9 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
                     ? [BoxShadow(color: c.accent.withValues(alpha: .12), spreadRadius: 4)]
                     : const [],
               ),
-              child: widget.label != null ? Semantics(label: widget.label, child: campo) : campo,
+              // v1.9.3: o nó do campo no leitor de tela tem 48 (no compacto media 33). Com suffix (um botão
+              // próprio, ex. mostrar senha) fica como estava, para o botão não se fundir ao campo.
+              child: _alvo48(widget.label != null ? Semantics(label: widget.label, child: campo) : campo, d),
             ),
           ],
         ),

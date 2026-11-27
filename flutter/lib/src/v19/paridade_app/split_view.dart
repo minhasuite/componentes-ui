@@ -230,15 +230,14 @@ class SsAdaptiveScaffold extends StatelessWidget {
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SafeArea(
-              right: false,
-              child: SsSideRail(
-                items: items,
-                currentIndex: currentIndex,
-                onTap: onTap,
-                header: railHeader,
-                footer: railFooter,
-              ),
+            // v1.9.3: o trilho pinta até o topo (sem a faixa clara do SafeArea sob a barra de status).
+            SsSideRail(
+              items: items,
+              currentIndex: currentIndex,
+              onTap: onTap,
+              header: railHeader,
+              footer: railFooter,
+              edgeToEdge: true,
             ),
             Expanded(child: body),
           ],

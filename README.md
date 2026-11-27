@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.9.2
+      ref: v1.9.3
 ```
 
 ```dart
@@ -653,6 +653,56 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.9.3: o que a conferência no emulador dos 8 apps achou
+
+Conferência das peças v1.9 nos 8 apps, no emulador Android, em 27/11/2026. Nada quebra na API; `SsSideRail(edgeToEdge:)`,
+`SsSideMenuHost.gestureFreeLeft`, `SsNavBar.minLabelSize`, `SsQuota.quotaText`, `ssJoinSentences` e o `target:` do
+`Ss::ButtonComponent` são novos.
+
+- **`SsSideMenuHost`: a alça e a faixa de arrastar saem da faixa de gesto do sistema.** No Android com navegação por
+  gestos, o arraste que começa nos primeiros ~24 dp da borda é o "voltar" do sistema e não chega ao app: arrastar a alça,
+  como o tour manda, voltava e fechava o app na 1ª aba. O Flutter 3.50 não tem como pedir a exclusão do gesto (o
+  `View.setSystemGestureExclusionRects` do Android não está no canal da plataforma; conferido no `flutter.jar` do engine),
+  então a alça e a faixa começam em `SsSideMenuHost.gestureFreeLeft(mq)` (`systemGestureInsets.left` + `padding.left`).
+  Com gesto, a pílula fica solta da borda, com as duas pontas arredondadas; tocar nela abre o menu e arrastar a partir dela
+  também. Na navegação por botões, no iOS e nos testes (inset 0) continua colada na borda. A pílula passa a ficar por cima
+  dos primeiros pixels do conteúdo (lista com margem de 16), em opacidade baixa.
+- **`SsAdaptiveScaffold`/`SsSideRail` na tela larga**: cada aba do trilho é um nó do leitor de tela com o toque
+  (`"Início, aba 1 de 5"`, selecionada, o mesmo texto da `SsNavBar`). Antes o `excludeSemantics` tirava o toque e o
+  Android não listava as abas. `railHeader`/`railFooter` são grupos próprios. Com `edgeToEdge: true` (o
+  `SsAdaptiveScaffold` liga) o trilho pinta sob a barra de status, a de navegação e o recorte da esquerda, e afasta o
+  conteúdo pelo `MediaQuery.padding`; antes o `SafeArea` deixava uma faixa clara no topo.
+- **`SsNotificationBell`**: um nó só, "Notificações, 3 não lidas", com o plural de `SsStrings.notifUnreadCount`
+  ("1 não lida"; en "Notifications, 3 unread"; es "Notificaciones, 1 no leída"), com o número de verdade acima de 99.
+  Antes o leitor lia só o "3" do selo. **Padrão que mudou:** o nome padrão era "Avisos" e agora é `SsStrings.notifications`
+  (`label:` passou a `String?`). Quem quer "Avisos" passa `label: 'Avisos'`. Teste que procurava a dica
+  `'Avisos, 3 não lidos'` passa a procurar `'Notificações, 3 não lidas'`. No web o sino segue "Avisos" (é o título
+  visível do popover) e ganhou o singular: "Avisos, 1 não lido" (`componentes_ui.bell.unread_single`, também no
+  `ss-bell` ao atualizar a contagem).
+- **Selo largo** ("12", "99+") no `SsIconButton(badge:)`: cresce para a esquerda (a ponta direita fica onde fica a do selo de
+  um dígito). O sino limita a escala de texto do selo a 1,3×. Com texto 1,6× o "99+" era cortado na borda do botão.
+- **`SsNavBar` com texto 1,6×**: o rótulo da aba encolhe só ele até caber, com 2 de respiro de cada lado e piso em
+  `SsNavBar.minLabelSize` (10). Só abaixo do piso termina em "…". Antes saía "Lançam…" e "Assisten…". Ícone e alvo de toque
+  não mudam.
+- **`SsStatCard`**: o rótulo quebra em até 3 linhas em vez de cortar. Se a palavra mais longa não cabe ao lado do ícone
+  (2 colunas de 360 a 1,6×), o ícone sobe e o rótulo fica com a largura toda, sem partir a palavra.
+- **`SsNotificationTile`**: o texto do leitor não repete a pontuação ("Chegou o boleto. 10:30", e não "boleto.. 10:30"):
+  `ssJoinSentences`.
+- **`SsQuota`**: números a partir de 1.000 com o milhar do `SsFormats` ("36 de 1.500 este mês"; "1,500" com
+  `SsFormats.usd`). O `SsStrings.quotaUsed` continua recebendo inteiros (`SsQuota.quotaText`).
+- **Alvos de 48**: `SsFilterChip` também na largura (rótulo curto como "Pix" dava 41). No `SsTextField` o nó do campo
+  tem 48 (no compacto media 33), menos com `suffix:`, para o botão de dentro (mostrar senha) continuar um nó próprio.
+- **Web, `Ss::ButtonComponent(target:)`**: no link (`<a>`), com `rel="noopener"` (`rel:` troca). Em `<button>`/`button_to`
+  não tem efeito. No `Ss::NotificationCenterComponent`, a ação `:get` com URL externa (http/https de outro host) abre em
+  outra aba (`target="_blank" rel="noopener"`, sem o `data-turbo-frame`); `target:` na ação troca.
+- Catálogo: estados `fora-do-gesto` (`ss-side-menu`), `ate-o-topo` (`ss-side-rail`), `texto-1-6` (`ss-nav-bar`,
+  `ss-stat-card`, `ss-notification-bell`) e `cota-milhar` (`ss-plan`), em `flutter/test/catalogo_v19_3.dart`. Testes:
+  `flutter/test/v193_test.dart` e `rails/sample/test/components/v1_9_3_web_test.rb`.
+
+**Ao subir nos apps:** o texto do tour que diz "arraste da borda" continua valendo (a faixa de arrastar começa logo
+depois da faixa do sistema), mas "toque na alça" é o caminho que sempre funciona; teste de app que procurava o sino por
+`'Avisos, N não lidos'` muda para `'Notificações, N não lidas'` (ou passe `label:`).
 
 ## v1.9.2: alvos de 48 que faltavam, anexos no assistente, chave do botão central e o aviso rico
 

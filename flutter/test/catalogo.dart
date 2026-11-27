@@ -37,6 +37,7 @@ import 'catalogo_v18.dart';
 import 'catalogo_v19.dart';
 import 'catalogo_v191.dart';
 import 'catalogo_v192.dart';
+import 'catalogo_v19_3.dart';
 import 'catalogo_v20.dart';
 import 'catalogo_v24.dart';
 import 'catalogo_sino.dart';
@@ -132,19 +133,21 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV19ParidadeWeb(
-  comV19Produto(
-    comV19ParidadeApp(
-      comV19Transicoes(
-        comV19Movimento(
-          comV130(
-            comV122(
-              comV120(
-                comV28(
-                  comV27Graficos(
-                    comV27(
-                      comV26(
-                        comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+final catalogo = comV19Correcoes(
+  comV19ParidadeWeb(
+    comV19Produto(
+      comV19ParidadeApp(
+        comV19Transicoes(
+          comV19Movimento(
+            comV130(
+              comV122(
+                comV120(
+                  comV28(
+                    comV27Graficos(
+                      comV27(
+                        comV26(
+                          comV25(comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo)))))))))),
+                        ),
                       ),
                     ),
                   ),

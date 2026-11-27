@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
 // Dispara "ss-bell:change" com { count } quando o número muda (ex. o selo do ícone da PWA).
 export default class extends Controller {
   static targets = ["count", "button", "frame"]
-  static values = { url: String, every: { type: Number, default: 60000 }, label: String, unread: String }
+  static values = { url: String, every: { type: Number, default: 60000 }, label: String, unread: String, unreadOne: String }
 
   connect() {
     this.onVisible = () => { if (!document.hidden) this.refresh() }
@@ -44,7 +44,11 @@ export default class extends Controller {
     const changed = this.countTarget.textContent !== text
     this.countTarget.textContent = text
     this.countTarget.hidden = n === 0
-    if (this.hasButtonTarget) this.buttonTarget.setAttribute("aria-label", n > 0 ? this.unreadValue.replace("%{count}", text) : this.labelValue)
+    if (this.hasButtonTarget) {
+      // v1.9.3: o singular ("Avisos, 1 não lido").
+      const nome = n === 1 && this.unreadOneValue ? this.unreadOneValue : this.unreadValue.replace("%{count}", text)
+      this.buttonTarget.setAttribute("aria-label", n > 0 ? nome : this.labelValue)
+    }
     if (changed) this.dispatch("change", { detail: { count: n } })
   }
 }

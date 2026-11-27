@@ -26,7 +26,8 @@ module Ss
   #                                    nível e o selo com o nome ("Aviso", "Crítico"); info fica como antes.
   #   image: "url" (image_alt:)        foto embaixo do texto (instantâneo da câmera), preguiçosa, 16:9 no máximo.
   #   actions: [{ label:, href:, method: (:patch; :get = link), params:, icon: }]  botões de resposta embaixo (o 1º
-  #                                    cheio, os outros fantasma).
+  #                                    cheio, os outros fantasma). v1.9.3: link (:get) para URL externa (http(s) de
+  #                                    outro host) abre em outra aba (target="_blank" rel="noopener"); target: troca.
   #   mute: { href:, method: (:patch), label:, params: } ou { label:, options: [{ label:, href:, method:, params: }] }
   #                                    "Silenciar": um botão, ou o menu com as opções ("Por 1 hora", "Por 8 horas").
   #
@@ -155,8 +156,21 @@ module Ss
 
     def reply_button(a, variant:, label: a[:label], icon: a[:icon])
       method = (a[:method] || :patch).to_s
-      render(ButtonComponent.new(label:, icon:, href: a[:href], method: (method unless method == "get"), params: a[:params],
-                                 variant:, size: :sm, form: { class: "contents", data: { turbo_frame: "_top" } }, data: ({ turbo_frame: "_top" } if method == "get")))
+      target = (a.key?(:target) ? a[:target] : ("_blank" if method == "get" && external?(a[:href])))
+      render(ButtonComponent.new(label:, icon:, href: a[:href], method: (method unless method == "get"), params: a[:params], target:,
+                                 variant:, size: :sm, form: { class: "contents", data: { turbo_frame: "_top" } },
+                                 data: ({ turbo_frame: "_top" } if method == "get" && target.blank?)))
+    end
+
+    # URL absoluta (http/https) de outro host que não o da página.
+    def external?(href)
+      uri = URI.parse(href.to_s)
+      return false unless %w[http https].include?(uri.scheme) && uri.host.present?
+
+      host = (helpers.request.host if helpers.respond_to?(:request) && helpers.request)
+      host.blank? || uri.host.casecmp(host).nonzero?
+    rescue URI::InvalidURIError, NoMethodError
+      false
     end
 
     def mute(m)

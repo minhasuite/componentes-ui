@@ -70,6 +70,7 @@ en:
       title: Notifications
       unread: "%{count} unread"
       unread_one: unread
+      unread_single: "1 unread"
     block_list:
       delete: Delete
       duplicate: Duplicate

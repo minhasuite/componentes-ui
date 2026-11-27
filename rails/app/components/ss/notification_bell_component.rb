@@ -43,11 +43,13 @@ module Ss
     def pid = "#{@id}-panel"
     def frame_id = "#{@id}-list"
     def unread_label = ss_t("bell.unread", count: "%{count}", default: "%{count} não lidos")
-    def button_label(n) = n.positive? ? "#{@label}, #{unread_label.sub('%{count}', self.class.count_text(n))}" : @label
+    # v1.9.3: o singular ("Avisos, 1 não lido"; antes "1 não lidos").
+    def unread_single = ss_t("bell.unread_single", default: "1 não lido")
+    def button_label(n) = n.positive? ? "#{@label}, #{n == 1 ? unread_single : unread_label.sub('%{count}', self.class.count_text(n))}" : @label
 
     def bell_data
       { controller: "ss-popover ss-bell", ss_bell_url_value: @count_url, ss_bell_every_value: @every, ss_bell_label_value: @label,
-        ss_bell_unread_value: "#{@label}, #{unread_label}" }.compact
+        ss_bell_unread_value: "#{@label}, #{unread_label}", ss_bell_unread_one_value: "#{@label}, #{unread_single}" }.compact
     end
 
     def trigger

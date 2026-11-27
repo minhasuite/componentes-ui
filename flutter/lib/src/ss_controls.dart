@@ -268,9 +268,10 @@ class SsFilterChip extends StatelessWidget {
     }
 
     // Por fora de tudo: o toque na sobra (alvo 48) passa pelo Semantics.
+    // v1.9.3: 48 de largura também (o rótulo curto, "Pix", dava 41); o desenho não muda.
     return SsTapTarget(
       semantics: true,
-      minSize: Size(0, d.minTarget),
+      minSize: Size(d.minTarget, d.minTarget),
       child: Semantics(
         button: true,
         selected: selected,

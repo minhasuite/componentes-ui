@@ -28,6 +28,9 @@ module Ss
   # v0.23 (par do SsPressable): variant: :bare = botão sem desenho (.ss-btn-bare) para conteúdo livre que já é a
   # peça (um card, uma amostra, uma linha): só o foco, o cursor e o toque que encolhe.
   #   render(Ss::ButtonComponent.new(variant: :bare, type: :submit, name: "style", value: "glass")) { render Ss::... }
+  # v1.9.3: target: no link (<a>), ex. target: "_blank" para link externo abrir em outra aba; ganha
+  # rel="noopener" (rel: troca). Em <button>/button_to não tem efeito.
+  #   render Ss::ButtonComponent.new(label: "Ver no site", href: "https://exemplo.com", target: "_blank", trailing_icon: "external-link")
   class ButtonComponent < BaseComponent
     VARIANTS = { primary: "ss-btn ss-btn-primary", outline: "ss-btn ss-btn-outline", ghost: "ss-btn ss-btn-ghost",
                  danger: "ss-btn ss-btn-danger", on_grad: "ss-btn is-on-grad", chip: "ss-chip", item: "ss-item",
@@ -36,8 +39,10 @@ module Ss
 
     def initialize(label: nil, icon: nil, trailing_icon: nil, href: nil, method: nil, variant: :primary, size: :md, block: false,
                    type: :button, confirm: nil, confirm_tone: nil, confirm_button: nil, params: nil, form: nil, submitting: nil,
-                   tone: nil, solid: false, stacked: false, **rest)
+                   tone: nil, solid: false, stacked: false, target: nil, rel: nil, **rest)
       super(**rest)
+      @target = target.presence&.to_s
+      @rel = rel.presence || ("noopener" if @target && @target != "_self")
       @solid, @stacked = solid, stacked
       @label, @icon, @trailing_icon, @href = label, icon, trailing_icon, href
       @method = method.to_s.downcase.presence
@@ -51,7 +56,7 @@ module Ss
 
     def call
       return button_to_form if @href && METHODS.include?(@method)
-      return link_to(@href, **attrs(confirm_data)) { body } if @href
+      return link_to(@href, **attrs(confirm_data).merge({ target: @target, rel: @rel }.compact)) { body } if @href
 
       tag.button(type: @type, form: (@form.to_s if @form.is_a?(String) || @form.is_a?(Symbol)), **attrs(confirm_data.merge(submitting_data))) { body }
     end

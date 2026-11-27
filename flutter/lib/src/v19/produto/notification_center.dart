@@ -612,13 +612,14 @@ class SsNotificationTile extends StatelessWidget {
     final hora =
         time ??
         (n.createdAt == null ? null : '${two(n.createdAt!.toLocal().hour)}:${two(n.createdAt!.toLocal().minute)}');
-    final rotulo = [
+    // v1.9.3: sem ".." quando o corpo (ou o título) já termina em pontuação.
+    final rotulo = ssJoinSentences([
       ?selo,
       n.title,
       if (n.body != null && n.body!.isNotEmpty) n.body!,
       ?hora,
       if (n.unread) s.notifUnread,
-    ].join('. ');
+    ]);
     final contorno = selo != null
         ? Color.alphaBlend(tom.solid.withValues(alpha: n.unread ? .55 : .35), c.line)
         : n.unread
@@ -768,4 +769,20 @@ class SsNotificationTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// v1.9.3: junta frases para o leitor de tela com ". ", sem repetir a pontuação de quem já termina em
+/// ".", "!", "?", "…" ou ":" ("Chegou o boleto.. 10:30" vira "Chegou o boleto. 10:30"). Partes vazias saem.
+String ssJoinSentences(Iterable<String> parts) {
+  final b = StringBuffer();
+  for (final raw in parts) {
+    final p = raw.trim();
+    if (p.isEmpty) continue;
+    if (b.isNotEmpty) {
+      final t = b.toString();
+      b.write(RegExp(r'[.!?…:;]$').hasMatch(t) ? ' ' : '. ');
+    }
+    b.write(p);
+  }
+  return b.toString();
 }

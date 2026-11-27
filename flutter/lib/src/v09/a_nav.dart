@@ -540,6 +540,7 @@ class SsSideRail extends StatelessWidget {
     required this.onTap,
     this.header,
     this.footer,
+    this.edgeToEdge = false,
   });
 
   final List<SsNavItem> items;
@@ -550,6 +551,11 @@ class SsSideRail extends StatelessWidget {
   final Widget? header;
   final Widget? footer;
 
+  /// v1.9.3: o trilho pinta até as bordas da tela (sob a barra de status, a de navegação e o recorte da
+  /// esquerda) e afasta o conteúdo pelo `MediaQuery.padding`, em vez de ficar dentro de um `SafeArea`
+  /// (que deixava uma faixa clara sob a barra de status). O [SsAdaptiveScaffold] liga.
+  final bool edgeToEdge;
+
   static const width = 72.0;
   static const _itemH = 64.0;
   static const _circle = 46.0;
@@ -557,10 +563,20 @@ class SsSideRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
-    return SizedBox(
+    final s = SsStrings.of(context);
+    final pad = edgeToEdge ? MediaQuery.paddingOf(context) : EdgeInsets.zero;
+    // v1.9.3: faixa da cor do trilho sob a barra de status / de navegação (só com edgeToEdge).
+    Widget faixa(double h) => Container(
+      width: width,
+      height: h,
+      margin: const EdgeInsets.only(right: _circle / 2),
+      color: c.accent,
+    );
+    Widget rail = SizedBox(
       width: width + _circle / 2,
       child: Column(
         children: [
+          if (pad.top > 0) faixa(pad.top),
           if (header != null)
             SizedBox(
               width: width + _circle / 2,
@@ -571,7 +587,8 @@ class SsSideRail extends StatelessWidget {
                 color: c.accent,
                 child: IconTheme.merge(
                   data: const IconThemeData(color: AppColors.onDark),
-                  child: Center(child: header),
+                  // v1.9.3: um grupo próprio na árvore do leitor de tela (logo, menu, busca).
+                  child: Semantics(container: true, explicitChildNodes: true, child: Center(child: header)),
                 ),
               ),
             ),
@@ -643,10 +660,23 @@ class SsSideRail extends StatelessWidget {
                       for (var i = 0; i < items.length; i++)
                         SizedBox(
                           height: _itemH,
+                          // v1.9.3: o nó da aba tem o toque e o estado (antes o excludeSemantics tirava o toque
+                          // do InkResponse e o Android não listava a aba), com o mesmo texto da SsNavBar.
                           child: Semantics(
+                            container: true,
                             button: true,
+                            enabled: true,
                             selected: i == currentIndex,
-                            label: items[i].label,
+                            inMutuallyExclusiveGroup: true,
+                            label: s.tabOf(
+                              (items[i].badge ?? 0) > 0 ? s.newCount(items[i].label, items[i].badge!) : items[i].label,
+                              i + 1,
+                              items.length,
+                            ),
+                            onTap: () {
+                              if (i != currentIndex) SsHaptics.tick();
+                              onTap(i);
+                            },
                             excludeSemantics: true,
                             child: Tooltip(
                               message: items[i].label,
@@ -685,12 +715,29 @@ class SsSideRail extends StatelessWidget {
               color: c.accent,
               child: IconTheme.merge(
                 data: const IconThemeData(color: AppColors.onDark),
-                child: Center(child: footer),
+                child: Semantics(container: true, explicitChildNodes: true, child: Center(child: footer)),
               ),
             ),
+          if (pad.bottom > 0) faixa(pad.bottom),
         ],
       ),
     );
+    if (pad.left > 0) {
+      rail = Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ColoredBox(
+            color: c.accent,
+            child: SizedBox(width: pad.left),
+          ),
+          rail,
+        ],
+      );
+    }
+    return edgeToEdge
+        ? MediaQuery.removePadding(context: context, removeTop: true, removeBottom: true, removeLeft: true, child: rail)
+        : rail;
   }
 }
 

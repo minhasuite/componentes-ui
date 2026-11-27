@@ -13,7 +13,7 @@ void main() {
     var tocou = 0;
     await tester.pumpWidget(app(SsNotificationBell(count: 3, onPressed: () => tocou++)));
     expect(find.text('3'), findsOneWidget);
-    expect(find.byTooltip('Avisos, 3 não lidos'), findsOneWidget);
+    expect(find.byTooltip('Notificações, 3 não lidas'), findsOneWidget);
     await tester.tap(find.byType(SsNotificationBell));
     expect(tocou, 1);
 

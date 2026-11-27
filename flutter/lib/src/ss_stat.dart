@@ -194,6 +194,17 @@ class SsStatCard extends StatelessWidget {
   /// Cor do ícone (sucesso, aviso...); sem ela, a da marca.
   final Color? tone;
 
+  Widget? _iconBox(SsColors c) => icon == null
+      ? null
+      : tone == null
+      ? Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, size: 15, color: c.accentText),
+        )
+      : SsIconTile(icon!, size: 26, tone: tone);
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -218,29 +229,10 @@ class SsStatCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      if (icon != null) ...[
-                        tone == null
-                            ? Container(
-                                width: 26,
-                                height: 26,
-                                decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(8)),
-                                child: Icon(icon, size: 15, color: c.accentText),
-                              )
-                            : SsIconTile(icon!, size: 26, tone: tone),
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // v1.9.3: o rótulo quebra (até 3 linhas) em vez de cortar com texto grande; se a palavra mais
+                  // longa não cabe ao lado do ícone (2 colunas de 360 a 1,6×), o ícone sobe e o rótulo fica com a
+                  // largura toda, sem partir a palavra no meio.
+                  _StatLabel(label: label, icon: _iconBox(c)),
                   const SizedBox(height: 10),
                   // Encolhe em vez de estourar na grade de 2 colunas em 360 dp.
                   FittedBox(
@@ -273,6 +265,53 @@ class SsStatCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Rótulo do [SsStatCard]: ícone ao lado; o ícone sobe quando a palavra mais longa não cabe ao lado dele.
+class _StatLabel extends StatelessWidget {
+  const _StatLabel({required this.label, this.icon});
+  final String label;
+  final Widget? icon;
+
+  static const _lado = 26.0 + 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SsColors.of(context);
+    final d = SsDensity.of(context);
+    final estilo = TextStyle(color: c.muted, fontSize: d.font(AppType.sub), fontWeight: FontWeight.w600);
+    final texto = Text(label, maxLines: 3, overflow: TextOverflow.ellipsis, style: estilo);
+    if (icon == null) return texto;
+    return LayoutBuilder(
+      builder: (context, box) {
+        var acima = false;
+        if (box.maxWidth.isFinite) {
+          final palavra = label.split(RegExp(r'\s+')).fold('', (a, b) => b.length > a.length ? b : a);
+          final tp = TextPainter(
+            text: TextSpan(text: palavra, style: DefaultTextStyle.of(context).style.merge(estilo)),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          acima = tp.width > box.maxWidth - _lado;
+          tp.dispose();
+        }
+        if (acima) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [icon!, const SizedBox(height: 8), texto],
+          );
+        }
+        return Row(
+          children: [
+            icon!,
+            const SizedBox(width: 8),
+            Expanded(child: texto),
+          ],
+        );
+      },
     );
   }
 }

@@ -72,6 +72,7 @@ pt-BR:
       title: Avisos
       unread: "%{count} não lidos"
       unread_one: não lido
+      unread_single: "1 não lido"
     block_list:
       delete: Excluir
       duplicate: Duplicar

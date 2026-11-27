@@ -107,6 +107,10 @@ class SsNavBar extends StatefulWidget {
   /// Altura da barra (sem o círculo que sobe e sem a área segura).
   static const barHeight = 64.0;
 
+  /// v1.9.3: menor tamanho do rótulo da aba quando ele encolhe para caber (texto grande, rótulo longo,
+  /// 5 abas em 360): 10, um ponto abaixo do [AppType.label]. Abaixo disso termina em "…".
+  static const minLabelSize = 10.0;
+
   /// Quanto o círculo passa da borda de cima da barra.
   static const rise = 22.0;
 
@@ -414,11 +418,73 @@ class _Tab extends StatelessWidget {
                 fontSize: AppType.label,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
-              child: Text(item.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              // v1.9.3: com texto grande o rótulo encolhe até caber (sem "Lançam…"), não abaixo de
+              // [SsNavBar.minLabelSize]; só então termina em "…".
+              child: _TabLabel(item.label),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Rótulo da aba: a escala de texto do sistema vale até caber na largura da aba; passou, encolhe só
+/// este texto (o alvo de toque e o ícone não mudam), com piso em [SsNavBar.minLabelSize].
+class _TabLabel extends StatelessWidget {
+  const _TabLabel(this.label);
+  final String label;
+
+  static const _respiro = 2.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final estilo = DefaultTextStyle.of(context).style;
+    final scaler = MediaQuery.textScalerOf(context);
+    return LayoutBuilder(
+      builder: (context, box) {
+        final base = estilo.fontSize ?? AppType.label;
+        final cheio = scaler.scale(base);
+        var tamanho = cheio;
+        // Respiro de 2 de cada lado: rótulos vizinhos não encostam ("LançamentosAssistente").
+        final cabe = box.maxWidth - 2 * _respiro;
+        if (box.maxWidth.isFinite) {
+          final piso = math.min(SsNavBar.minLabelSize, cheio);
+          double largura(double t) {
+            final tp = TextPainter(
+              text: TextSpan(
+                text: label,
+                style: estilo.copyWith(fontSize: t),
+              ),
+              textDirection: Directionality.of(context),
+              maxLines: 1,
+              textScaler: TextScaler.noScaling,
+            )..layout();
+            final w = tp.width;
+            tp.dispose();
+            return w;
+          }
+
+          final w = largura(cheio);
+          if (w > cabe) {
+            // A largura não é bem proporcional ao tamanho (arredondamento dos glifos): confere e desce de 0,25.
+            tamanho = math.max(piso, cheio * cabe / w);
+            while (tamanho > piso && largura(tamanho) > cabe) {
+              tamanho = math.max(piso, tamanho - .25);
+            }
+          }
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _respiro),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            textScaler: TextScaler.linear(tamanho / base),
+          ),
+        );
+      },
     );
   }
 }

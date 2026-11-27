@@ -60,6 +60,24 @@ class SsIconButton extends StatelessWidget {
   final String? badge;
   final bool selected;
 
+  /// Deslocamento do selo largo: o padrão do Material (4, -4) menos o que ele passa da largura do selo
+  /// de um dígito ([BadgeThemeData.largeSize], 16).
+  static Offset _badgeOffset(BuildContext context, String text) {
+    final theme = Theme.of(context);
+    final style = theme.badgeTheme.textStyle ?? theme.textTheme.labelSmall ?? const TextStyle(fontSize: 11);
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final largura = tp.width + 8; // o padding de 4 + 4 do selo com texto
+    tp.dispose();
+    final sobra = math.max(0.0, largura - (theme.badgeTheme.largeSize ?? 16));
+    final dx = Directionality.of(context) == TextDirection.ltr ? 4 - sobra : -4 + sobra;
+    return Offset(dx, -4);
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -67,6 +85,9 @@ class SsIconButton extends StatelessWidget {
     Widget i = Icon(icon, size: size * .52);
     if (badge != null) {
       i = Badge(
+        // v1.9.3: selo de mais de um caractere ("12", "99+") cresce para a esquerda: a ponta direita fica
+        // onde fica a do selo de um dígito (com texto 1,6× o "99+" passava da borda do botão e era cortado).
+        offset: badge!.length > 1 ? _badgeOffset(context, badge!) : null,
         label: badge!.isEmpty ? null : Text(badge!),
         backgroundColor: AppColors.danger,
         textColor: AppColors.onDark,

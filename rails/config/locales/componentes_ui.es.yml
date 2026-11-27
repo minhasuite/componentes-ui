@@ -70,6 +70,7 @@ es:
       title: Avisos
       unread: "%{count} sin leer"
       unread_one: sin leer
+      unread_single: "1 sin leer"
     block_list:
       delete: Eliminar
       duplicate: Duplicar

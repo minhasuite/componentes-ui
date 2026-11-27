@@ -460,8 +460,13 @@ class _SsSideMenuScope extends InheritedWidget {
 /// toque: a tela segue usável durante a dica; tocar na fresta abre o menu.
 /// Com "reduzir movimento" a dica não roda.
 ///
-/// A faixa da borda fica depois dos gestos do sistema
-/// (`MediaQuery.systemGestureInsets`), para não brigar com o voltar do Android.
+/// v1.9.3: **a alça e a faixa de arrastar ficam fora da faixa de gesto do sistema**
+/// (`MediaQuery.systemGestureInsets.left`, mais o `padding.left`). No Android com navegação por gestos,
+/// o arraste que começa nessa faixa é o "voltar" do sistema e nunca chega ao app: arrastar a alça colada na
+/// borda fechava o app na 1ª aba. O Flutter 3.50 não tem como pedir a exclusão do gesto
+/// (`View.setSystemGestureExclusionRects` não está no canal da plataforma), então a alça fica logo depois
+/// da faixa (a pílula ganha as duas pontas arredondadas) e a faixa de arrastar começa ali. Tocar na alça
+/// abre o menu. Sem gesto do sistema (navegação por botões, iOS, testes) tudo fica colado na borda, como antes.
 class SsSideMenuHost extends StatefulWidget {
   const SsSideMenuHost({
     super.key,
@@ -505,6 +510,11 @@ class SsSideMenuHost extends StatefulWidget {
   static const edgeWidth = 20.0;
 
   static bool _peeked = false;
+
+  /// v1.9.3: x a partir do qual o toque e o arraste chegam ao app na borda esquerda: a faixa de gesto do
+  /// sistema (`systemGestureInsets.left`, o "voltar" do Android) mais o recorte da tela (`padding.left`).
+  /// A alça e a faixa de arrastar começam aqui.
+  static double gestureFreeLeft(MediaQueryData mq) => mq.systemGestureInsets.left + mq.padding.left;
 
   /// Nos testes: deixa a dica rodar de novo.
   @visibleForTesting
@@ -659,7 +669,8 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
     final s = SsStrings.of(context);
     final mq = MediaQuery.of(context);
     _w = _widthFor(mq);
-    final edge = mq.systemGestureInsets.left + mq.padding.left + SsSideMenuHost.edgeWidth;
+    // v1.9.3: onde começa a área que é do app (depois do gesto de voltar do sistema).
+    final inicio = SsSideMenuHost.gestureFreeLeft(mq);
 
     Widget host = Stack(
       children: [
@@ -668,10 +679,10 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
         // toque passa para a tela de baixo.
         if (!_open)
           Positioned(
-            left: 0,
+            left: inicio,
             top: 0,
             bottom: 0,
-            width: edge,
+            width: SsSideMenuHost.edgeWidth,
             child: Semantics(
               button: true,
               label: s.sideMenuOpen,
@@ -701,6 +712,7 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
                 onDragUpdate: _dragUpdate,
                 onDragEnd: _dragEnd,
                 targetKey: widget.handleKey,
+                inset: inicio,
               );
               if (t <= 0) return Stack(children: [Positioned.fill(child: alca)]);
               final shown = t.clamp(0.0, 1.0);
@@ -827,9 +839,14 @@ class _EdgeGlow extends StatelessWidget {
     required this.onDragUpdate,
     required this.onDragEnd,
     this.targetKey,
+    this.inset = 0,
   });
 
   final GlobalKey? targetKey;
+
+  /// v1.9.3: distância da borda (a faixa de gesto do sistema); acima de 0 a pílula solta da borda e
+  /// arredonda as duas pontas.
+  final double inset;
   final double t;
   final Color color;
 
@@ -855,25 +872,31 @@ class _EdgeGlow extends StatelessWidget {
       final f = (t - SsSideMenuHostState._closed) / (1 - SsSideMenuHostState._closed);
       a = _repouso + (1 - _repouso) * math.pow(math.sin(2 * math.pi * f), 2).toDouble() * (1 - f * .4);
     }
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ExcludeSemantics(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          onHorizontalDragStart: onDragStart,
-          onHorizontalDragUpdate: onDragUpdate,
-          onHorizontalDragEnd: onDragEnd,
-          child: Padding(
-            key: targetKey,
-            padding: const EdgeInsets.fromLTRB(0, 18, 16, 18),
-            child: Container(
-              width: 5,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: a),
-                borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
-                boxShadow: [BoxShadow(color: color.withValues(alpha: a * .5), blurRadius: 12, spreadRadius: 1)],
+    final solta = inset > 0;
+    return Padding(
+      padding: EdgeInsets.only(left: inset),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: ExcludeSemantics(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            onHorizontalDragStart: onDragStart,
+            onHorizontalDragUpdate: onDragUpdate,
+            onHorizontalDragEnd: onDragEnd,
+            child: Padding(
+              key: targetKey,
+              padding: const EdgeInsets.fromLTRB(0, 18, 16, 18),
+              child: Container(
+                width: 5,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: a),
+                  borderRadius: solta
+                      ? BorderRadius.circular(99)
+                      : const BorderRadius.horizontal(right: Radius.circular(99)),
+                  boxShadow: [BoxShadow(color: color.withValues(alpha: a * .5), blurRadius: 12, spreadRadius: 1)],
+                ),
               ),
             ),
           ),

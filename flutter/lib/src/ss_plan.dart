@@ -204,6 +204,17 @@ class SsQuota extends StatelessWidget {
   /// Período depois do "2 de 3". Padrão: [SsStrings.thisMonth].
   final String? label;
 
+  /// v1.9.3: o [SsStrings.quotaUsed] com os números a partir de 1.000 no milhar de [f] ("36 de 1.500";
+  /// "36 of 1,500" com [SsFormats.usd]).
+  static String quotaText(SsStrings s, SsFormats f, int used, int limit, String period) {
+    var t = s.quotaUsed(used, limit, period);
+    for (final n in {used, limit}) {
+      if (n.abs() < 1000) continue;
+      t = t.replaceAll(RegExp('(?<![0-9])$n(?![0-9])'), f.integer(n));
+    }
+    return t;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
@@ -214,7 +225,8 @@ class SsQuota extends StatelessWidget {
         ? (AppColors.aquecFg, c.aquecText, Icons.warning_amber_rounded)
         : (c.accent, c.muted, null);
     final s = SsStrings.of(context);
-    final frase = s.quotaUsed(used.clamp(0, limit), limit, label ?? s.thisMonth);
+    // v1.9.3: números de 4 dígitos ou mais com o milhar do SsFormats ("36 de 1.500").
+    final frase = quotaText(s, SsFormats.of(context), used.clamp(0, limit), limit, label ?? s.thisMonth);
     return Semantics(
       label: resta <= 0 ? s.limitReached(frase) : frase,
       child: ExcludeSemantics(
