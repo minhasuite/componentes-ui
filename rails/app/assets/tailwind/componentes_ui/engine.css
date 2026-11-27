@@ -86,6 +86,8 @@
 @import "./v19_produto.css";
 /* v1.9 · paridade web: os pares Rails das peças que só existiam no Flutter (paridade.yml na raiz). */
 @import "./v19_paridade_web.css";
+/* v1.10.0: os pares Rails das peças que eram dívida no paridade.yml. */
+@import "./v1100_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

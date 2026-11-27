@@ -822,3 +822,45 @@ pt-BR:
       offline_pending: 'Sem conexão · %{count} a enviar'
       last_today: Sincronizado às %{time}
       last_day: Sincronizado em %{date}
+    # v1.10 · paridade: os pares Rails que faltavam (lote A).
+    card_stack:
+      open: 'Abrir %{count} cartões'
+      close: 'Fechar cartões'
+    curved_header:
+      back: 'Voltar'
+    hex_button:
+      start: 'Começar'
+    illustrated_split:
+      page: 'Página %{page} de %{pages}'
+    # v1.10: pares Rails das peças do Flutter (lote B).
+    image_viewer:
+      image: Imagem
+      open: 'Abrir imagem: %{name}'
+      zoom: Zoom %{pct}%
+      zoom_in: Ampliar
+      zoom_out: Reduzir
+      reset: Tamanho original
+      broken: Não deu para abrir a imagem
+    month_grid:
+      label: Calendário de %{month}
+      today: hoje
+      markers:
+        one: 1 marcador
+        other: '%{count} marcadores'
+    people_picker:
+      label: Pessoas
+      add: Novo
+    pop_out_card:
+      add: Adicionar
+    profile_hero:
+      online: Online
+      photo: Foto de %{name}
+    recurring_card:
+      done: Feito
+      pending: Pendente
+      more: Mais opções
+    thumb_rail:
+      label: Miniaturas
+      image_of: Imagem %{i} de %{n}
+      previous: Miniaturas anteriores
+      next: Próximas miniaturas

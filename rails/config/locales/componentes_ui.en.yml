@@ -820,3 +820,45 @@ en:
       offline_pending: 'No connection · %{count} to send'
       last_today: Synced at %{time}
       last_day: Synced on %{date}
+    # v1.10 · paridade: os pares Rails que faltavam (lote A).
+    card_stack:
+      open: 'Open %{count} cards'
+      close: 'Close cards'
+    curved_header:
+      back: 'Back'
+    hex_button:
+      start: 'Get started'
+    illustrated_split:
+      page: 'Page %{page} of %{pages}'
+    # v1.10: Rails pairs of the Flutter pieces (batch B).
+    image_viewer:
+      image: Image
+      open: 'Open image: %{name}'
+      zoom: Zoom %{pct}%
+      zoom_in: Zoom in
+      zoom_out: Zoom out
+      reset: Original size
+      broken: Couldn't open the image
+    month_grid:
+      label: Calendar for %{month}
+      today: today
+      markers:
+        one: 1 marker
+        other: '%{count} markers'
+    people_picker:
+      label: People
+      add: New
+    pop_out_card:
+      add: Add
+    profile_hero:
+      online: Online
+      photo: Photo of %{name}
+    recurring_card:
+      done: Done
+      pending: Pending
+      more: More options
+    thumb_rail:
+      label: Thumbnails
+      image_of: Image %{i} of %{n}
+      previous: Previous thumbnails
+      next: Next thumbnails

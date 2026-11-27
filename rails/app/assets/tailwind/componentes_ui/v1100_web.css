@@ -1,0 +1,449 @@
+/* v1.10.0: os pares Rails das 21 peças do Flutter que eram dívida no paridade.yml (anexos, pilha de cartões, cabeçalho
+   curvo, botão giratório, dois números, barras flutuantes, meta, botão hexagonal, ilustrações, visor de foto, grade do mês,
+   pessoas, cartão que salta, topo do perfil, avatar ao vivo, conta recorrente, ícone na forma, miniaturas e slider de pé).
+   Só tokens; reduzir movimento desliga. */
+@layer components {
+    /* ── Anexos (Ss::AttachBarComponent, par do SsAttachBar) ───────────── */
+    .ss-attach { --s: calc(var(--ss-control-h, 3rem) + 8px); display: flex; justify-content: space-around; align-items: flex-start; gap: calc(var(--ss-gap, .75rem) / 2); }
+    .ss-attach-item { --c: var(--series-1); flex: 1 1 0; min-width: var(--ss-target, 2.75rem); max-width: calc(var(--s) + 2rem); display: grid; justify-items: center; gap: 6px;
+                      padding: 0; border: 0; background: none; font: inherit; color: var(--ink-2); text-decoration: none; cursor: pointer; position: relative;
+                      animation: ss-attach-in var(--ss-dur-long) var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * var(--ss-dur-short) / 3.6); }
+    .ss-attach-item[data-tone="2"] { --c: var(--series-2); }
+    .ss-attach-item[data-tone="3"] { --c: var(--series-3); }
+    .ss-attach-item[data-tone="4"] { --c: var(--series-4); }
+    .ss-attach-item[data-tone="5"] { --c: var(--series-5); }
+    .ss-attach-item[data-tone="6"] { --c: var(--series-6); }
+    .ss-attach-sq { display: grid; place-items: center; width: max(var(--s), var(--ss-target, 2.75rem)); height: max(var(--s), var(--ss-target, 2.75rem));
+                    border-radius: calc(var(--s) * .32); background: var(--c); color: var(--on-accent);
+                    box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--c) 60%, transparent); transition: scale var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-attach-item.is-light .ss-attach-sq { color: var(--ink); }
+    .ss-attach-sq > svg { width: calc(var(--s) * .44); height: calc(var(--s) * .44); }
+    .ss-attach-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(.75rem * var(--ss-font-scale, 1)); font-weight: 600; }
+    .ss-attach-item:active .ss-attach-sq { scale: .92; }
+    .ss-attach-item:is(:focus-visible, :focus-within:has(:focus-visible)) .ss-attach-sq { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .ss-attach-item:disabled { cursor: not-allowed; opacity: .5; }
+    .ss-attach-file { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    @keyframes ss-attach-in { from { opacity: 0; scale: .6; } }
+  
+    /* ── Pilha de cartões (Ss::CardStackComponent, par do SsCardStack) ───── */
+    .ss-cstack { position: relative; height: var(--hc); transition: height var(--ss-dur-indicator) var(--ss-bounce); }
+    .ss-cstack.is-open { height: calc(var(--ho) + var(--ss-target, 2.75rem) + var(--gap)); }
+    .ss-cstack-list { position: relative; height: 100%; margin: 0; padding: 0; list-style: none; }
+    .ss-cstack-card { position: absolute; inset-inline: 0; top: calc((var(--n) - 1 - var(--i)) * var(--peek)); height: var(--h);
+                      scale: var(--sc); opacity: var(--op); transform-origin: top center;
+                      transition: top var(--ss-dur-indicator) var(--ss-bounce), scale var(--ss-dur-medium) var(--ss-ease-standard), opacity var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-cstack-card > * { height: 100%; }
+    .ss-cstack.is-open .ss-cstack-card { top: calc(var(--i) * (var(--h) + var(--gap))); scale: 1; opacity: 1; }
+    .ss-cstack-toggle { position: absolute; z-index: 30; inset: 0; display: flex; align-items: flex-end; justify-content: center; gap: .35rem;
+                        padding: 0 0 .5rem; border: 0; border-radius: var(--r-card); background: none; color: transparent; font: inherit; cursor: pointer; }
+    .ss-cstack-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .ss-cstack-text, .ss-cstack-ico { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .ss-cstack.is-open .ss-cstack-toggle { inset: auto 0 0 auto; left: 50%; translate: -50% 0; min-height: var(--ss-target, 2.75rem); padding: 0 var(--ss-pad-x, 1rem);
+                                           align-items: center; border-radius: 999px; background: var(--field); color: var(--ink-2); font-weight: 700;
+                                           font-size: calc(.85rem * var(--ss-font-scale, 1)); white-space: nowrap; }
+    .ss-cstack.is-open :is(.ss-cstack-text, .ss-cstack-ico) { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+    .ss-cstack.is-open .ss-cstack-ico { width: 1.1rem; height: 1.1rem; }
+  
+    /* ── Cabeçalho com curva (Ss::CurvedHeaderComponent, par do SsCurvedHeader) ── */
+    .ss-curved { --curve: 28px; --overlap: 36px; --bg: color-mix(in srgb, var(--brand-deep, var(--accent-solid)) 80%, var(--side));
+                 position: relative; display: grid; gap: 2px; padding: 8px 8px 12px; color: var(--on-accent); }
+    .ss-curved[data-tone="dark"] { --bg: var(--side); }
+    .ss-curved-bg { position: absolute; z-index: -1; inset: 0 0 calc(var(--overlap) * -1) 0; background: var(--bg); pointer-events: none;
+                    -webkit-mask: radial-gradient(100% calc(var(--curve) * 2) at 50% 100%, transparent 50%, black calc(50% + 1px));
+                    mask: radial-gradient(100% calc(var(--curve) * 2) at 50% 100%, transparent 50%, black calc(50% + 1px)); }
+    .ss-curved-row { display: flex; align-items: center; min-height: max(var(--ss-target, 2.75rem), 48px); gap: 4px; }
+    .ss-curved-title { flex: 1; min-width: 0; margin: 0 0 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                       font-size: calc(1.25rem * var(--ss-font-scale, 1)); font-weight: 800; color: var(--on-accent); }
+    .ss-curved.is-centered .ss-curved-title { margin: 0; text-align: center; }
+    .ss-curved-lead, .ss-curved-actions { display: flex; align-items: center; gap: 4px; min-width: max(var(--ss-target, 2.75rem), 48px); }
+    .ss-curved-actions { justify-content: flex-end; }
+    .ss-curved-btn { display: grid; place-items: center; width: max(var(--ss-target, 2.75rem), 48px); height: max(var(--ss-target, 2.75rem), 48px);
+                     border-radius: 50%; color: var(--on-accent); transition: background-color var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-curved-btn:hover { background: color-mix(in srgb, var(--on-accent) 14%, transparent); }
+    .ss-curved-btn:focus-visible { outline: 2px solid var(--on-accent); outline-offset: -2px; }
+    .ss-curved-btn > svg { width: 1.35rem; height: 1.35rem; }
+    .ss-curved-sub { margin: 0; padding: 0 8px; font-size: calc(.875rem * var(--ss-font-scale, 1)); color: color-mix(in srgb, var(--on-accent) 72%, transparent); }
+    .ss-curved.is-centered .ss-curved-sub { text-align: center; }
+    .ss-curved-bottom { padding: 12px 8px 0; }
+    .ss-curved-body { position: relative; }
+  
+    /* ── Botão giratório (Ss::DialComponent, par do SsDial) ─────────────── */
+    .ss-dial { --s: 220px; --f: 0; display: inline-block; width: var(--s); max-width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .ss-dial-face { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; cursor: grab; outline: none; }
+    .ss-dial[data-dragging] .ss-dial-face { cursor: grabbing; }
+    .ss-dial-face:focus-visible { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+    .ss-dial-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .ss-dial-tick { stroke: var(--muted); opacity: .45; stroke-width: 1.4; stroke-linecap: round; transition: stroke var(--ss-dur-short) var(--ss-ease-standard), opacity var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-dial-tick.is-big { stroke-width: 2; }
+    /* --on: 1 nas marcações até o valor (f ≥ k), 0 nas outras; sem JS de pintura. */
+    .ss-dial-tick { --on: clamp(0, (var(--f) - var(--k)) * 100000 + 1, 1); stroke: color-mix(in srgb, var(--accent) calc(var(--on, 0) * 100%), var(--muted)); opacity: calc(.45 + var(--on, 0) * .55); }
+    .ss-dial-track, .ss-dial-arc { fill: none; stroke-width: 10; stroke-linecap: round; }
+    .ss-dial-track { stroke: var(--field); }
+    .ss-dial-arc { stroke: var(--accent); stroke-dasharray: calc(var(--f) * 100) 100; transition: stroke-dasharray var(--ss-dur-short) var(--ss-ease-enter); }
+    .ss-dial-arc { stroke-width: calc(10px * clamp(0, var(--f) * 100000, 1)); }
+    .ss-dial-knob { fill: var(--surface); filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--ink) 14%, transparent)); }
+    [data-theme="dark"] .ss-dial-knob { filter: none; stroke: var(--line); stroke-width: 1; }
+    .ss-dial-center { position: relative; display: grid; justify-items: center; gap: 4px; pointer-events: none; }
+    .ss-dial-value { font: 500 calc(var(--s) * .17) var(--font-mono); color: var(--ink); line-height: 1; }
+    .ss-dial-cap { font-size: calc(.85rem * var(--ss-font-scale, 1)); font-weight: 600; color: var(--muted); }
+    .ss-dial.is-disabled { opacity: .55; }
+    .ss-dial.is-disabled .ss-dial-face { cursor: not-allowed; }
+  
+    /* ── Duas estatísticas (Ss::DuoStatComponent, par do SsDuoStat) ──────── */
+    .ss-duo { --x: 0; --g: var(--ss-gap, .75rem); position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: var(--g); isolation: isolate; }
+    .ss-duo-pill { position: absolute; z-index: 0; top: 0; bottom: 0; left: 0; width: calc((100% - var(--g)) / 2); border-radius: var(--r-card);
+                   background: linear-gradient(135deg, var(--brand-to, var(--accent-solid)), color-mix(in srgb, var(--brand-to, var(--accent-solid)) 45%, var(--brand-deep, var(--accent-solid))));
+                   box-shadow: 0 10px 24px -12px var(--brand-to, var(--accent)); translate: calc(var(--x) * (100% + var(--g))) 0;
+                   transition: translate var(--ss-dur-indicator) var(--ss-bounce); }
+    .ss-duo-side { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-width: 0; min-height: calc(var(--ss-control-h, 3rem) + 24px);
+                   padding: calc(var(--ss-card-pad, 1rem) - 4px) calc(var(--ss-card-pad, 1rem) - 2px); border: 0; border-radius: var(--r-card);
+                   background: var(--surface); box-shadow: var(--shadow-card); font: inherit; text-align: left; color: var(--ink); text-decoration: none; cursor: pointer;
+                   transition: background-color var(--ss-dur-long) var(--ss-ease-standard), color var(--ss-dur-long) var(--ss-ease-standard), box-shadow var(--ss-dur-long) var(--ss-ease-standard); }
+    .ss-duo-side.is-on { background: transparent; box-shadow: none; color: var(--on-accent); cursor: default; }
+    .ss-duo-side:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .ss-duo-ico { flex: none; width: 22px; height: 22px; color: var(--muted); rotate: -45deg; transition: rotate var(--ss-dur-long) var(--ss-spring), color var(--ss-dur-long) var(--ss-ease-standard); }
+    .ss-duo-side.is-on .ss-duo-ico { color: var(--on-accent); rotate: 0deg; }
+    .ss-duo-text { display: grid; min-width: 0; gap: 2px; }
+    .ss-duo-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(.75rem * var(--ss-font-scale, 1)); font-weight: 600; color: var(--muted); }
+    .ss-duo-side.is-on .ss-duo-label { color: color-mix(in srgb, var(--on-accent) 80%, transparent); }
+    .ss-duo-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 calc(1.25rem * var(--ss-font-scale, 1)) var(--font-mono); }
+    /* O valor encolhe até caber no lado (como o FittedBox do SsDuoStat): ~11 dígitos mono no que sobra do ícone e do respiro. */
+    @supports (container-type: inline-size) {
+      .ss-duo-side { container-type: inline-size; }
+      .ss-duo-value { font-size: clamp(.8rem, calc((100cqi - 4.5rem) / 6.6), calc(1.25rem * var(--ss-font-scale, 1))); }
+    }
+    [data-theme="dark"] .ss-duo-side:not(.is-on) { box-shadow: 0 0 0 1px var(--line); }
+  
+    /* ── Barras no card da marca (Ss::FloatingBarsComponent, par do SsFloatingBars) ── */
+    .ss-fbars { --h: 260px; display: flex; flex-direction: column; gap: 10px; height: var(--h); padding: var(--ss-card-pad, 1rem) calc(var(--ss-card-pad, 1rem) + 2px) calc(var(--ss-card-pad, 1rem) - 2px);
+                border-radius: calc(var(--r-card) + 4px); background: var(--accent-solid); color: var(--on-accent); box-shadow: 0 14px 30px -14px var(--accent-solid); }
+    .ss-fbars-head { display: flex; align-items: baseline; gap: var(--ss-gap, .75rem); }
+    .ss-fbars-title { flex: 1; min-width: 0; font-weight: 700; font-size: calc(1rem * var(--ss-font-scale, 1)); color: color-mix(in srgb, var(--on-accent) 85%, transparent); }
+    .ss-fbars-total { font: 500 calc(1.25rem * var(--ss-font-scale, 1)) var(--font-mono); }
+    .ss-fbars-row { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 4px; }
+    .ss-fbars-item { flex: 1 1 0; min-width: var(--ss-target, 2.75rem); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px;
+                     padding: 0; border: 0; border-radius: var(--r-field); background: none; font: inherit; color: inherit; text-decoration: none; cursor: pointer; }
+    .ss-fbars-item:focus-visible { outline: 2px solid var(--on-accent); outline-offset: 2px; }
+    .ss-fbars-slot { position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; padding-top: 1.75rem; }
+    .ss-fbars-bar { position: relative; width: min(100%, 2.6rem); height: max(calc(var(--f) * 100%), 6px); border-radius: 999px;
+                    background: color-mix(in srgb, var(--on-accent) 28%, transparent); transform-origin: bottom;
+                    transition: background-color var(--ss-dur-medium) var(--ss-ease-standard);
+                    animation: ss-fbars-up var(--ss-dur-indicator) var(--ss-bounce) backwards; animation-delay: calc(var(--i, 0) * var(--ss-dur-short) / 4.5); }
+    .ss-fbars.ss-iv:not([data-in-view]) .ss-fbars-bar { animation-play-state: paused; }
+    .ss-fbars-item.is-on .ss-fbars-bar { background: var(--on-accent); }
+    .ss-fbars-tag { position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+                    background: var(--on-accent); color: var(--accent-solid); font: 600 calc(.75rem * var(--ss-font-scale, 1)) var(--font-mono);
+                    opacity: 0; scale: .8; transition: opacity var(--ss-dur-short) var(--ss-ease-standard), scale var(--ss-dur-medium) var(--ss-bounce); pointer-events: none; }
+    .ss-fbars-item.is-on .ss-fbars-tag { opacity: 1; scale: 1; }
+    .ss-fbars-label { font-size: calc(.75rem * var(--ss-font-scale, 1)); font-weight: 700; color: color-mix(in srgb, var(--on-accent) 75%, transparent); }
+    .ss-fbars-item.is-on .ss-fbars-label { color: var(--on-accent); }
+    @keyframes ss-fbars-up { from { scale: 1 0; } }
+  
+    /* ── Card de meta (Ss::GoalCardComponent, par do SsGoalCard) ──────────── */
+    .ss-goal { display: grid; justify-items: center; gap: 6px; padding: 24px 20px 14px; border-radius: calc(var(--r-card) + 4px); background: var(--surface);
+               box-shadow: var(--shadow-card); text-align: center; }
+    [data-theme="dark"] .ss-goal { box-shadow: 0 0 0 1px var(--line); }
+    .ss-goal-art { display: grid; place-items: center; margin-bottom: 10px; animation: ss-goal-pop var(--ss-dur-indicator) var(--ss-bounce) backwards; }
+    .ss-goal-ico { width: 64px; height: 64px; color: var(--accent); filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--accent) 45%, transparent)); }
+    .ss-goal-text { margin: 0; max-width: 32ch; font-size: calc(1rem * var(--ss-font-scale, 1)); font-weight: 600; line-height: 1.4; color: var(--ink-2); }
+    .ss-goal-action { display: inline-grid; gap: 4px; justify-items: stretch; min-height: max(var(--ss-target, 2.75rem), 44px); align-content: center;
+                      padding: 0 12px; border: 0; border-radius: var(--r-field); background: none; font: inherit; font-weight: 700;
+                      font-size: calc(1.05rem * var(--ss-font-scale, 1)); color: var(--accent); text-decoration: none; cursor: pointer; }
+    .ss-goal-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-goal-line { height: 2px; background: var(--accent); transform-origin: center; animation: ss-goal-line var(--ss-dur-long) var(--ss-ease-enter) backwards;
+                    animation-delay: calc(var(--ss-dur-medium) * .8); }
+    .ss-goal.ss-iv:not([data-in-view]) :is(.ss-goal-art, .ss-goal-line) { animation-play-state: paused; }
+    @keyframes ss-goal-pop { from { opacity: 0; scale: .6; } }
+    @keyframes ss-goal-line { from { scale: 0 1; } }
+  
+    /* ── Botão hexagonal (Ss::HexButtonComponent, par do SsHexButton) ─────── */
+    .ss-hex { --s: 72px; position: relative; isolation: isolate; display: inline-grid; place-items: center; width: var(--s); height: var(--s);
+              padding: 0; border: 0; background: none; color: var(--on-accent); cursor: pointer; text-decoration: none;
+              transition: scale var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-hex::before { content: ""; position: absolute; z-index: -2; inset: -26%; border-radius: 50%; pointer-events: none;
+                      background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 38%, transparent), transparent); }
+    .ss-hex-shape { position: absolute; z-index: -1; inset: 0; background: var(--grad, var(--accent-solid));
+                    clip-path: polygon(50% 2%, 93% 26%, 93% 74%, 50% 98%, 7% 74%, 7% 26%); }
+    .ss-hex-ico { width: calc(var(--s) * .4); height: calc(var(--s) * .4); }
+    .ss-hex:active { scale: .92; }
+    .ss-hex:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 30%; }
+    .ss-hex:disabled { cursor: not-allowed; opacity: .5; }
+  
+    /* ── Tela partida com ilustração (Ss::IllustratedSplitComponent, par do SsIllustratedSplit) ── */
+    .ss-isplit { display: flex; flex-direction: column; min-height: 100%; background: var(--accent-soft); }
+    .ss-isplit-art { flex: 1; display: grid; place-items: center; padding: 24px 32px 48px; min-height: 12rem; }
+    .ss-isplit-art > :is(img, svg) { max-width: 100%; max-height: 22rem; height: auto; }
+    .ss-isplit-panel { display: grid; gap: 10px; padding: 52px 28px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--surface); text-align: center;
+                       -webkit-mask: radial-gradient(70% 36px at 50% 36px, black 98%, transparent 100%) top / 100% 72px no-repeat, linear-gradient(black, black) 0 36px / 100% calc(100% - 36px) no-repeat;
+                       mask: radial-gradient(70% 36px at 50% 36px, black 98%, transparent 100%) top / 100% 72px no-repeat, linear-gradient(black, black) 0 36px / 100% calc(100% - 36px) no-repeat; }
+    .ss-isplit-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+    .ss-isplit-dots span { width: 7px; height: 7px; border-radius: 999px; background: var(--muted); opacity: .45;
+                           transition: width var(--ss-dur-medium) var(--ss-spring), background-color var(--ss-dur-medium) var(--ss-ease-standard), opacity var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-isplit-dots span.is-on { width: 22px; background: var(--accent); opacity: 1; }
+    .ss-isplit-title { margin: 0; font-size: calc(1.6rem * var(--ss-font-scale, 1)); font-weight: 800; line-height: 1.2; color: var(--ink); }
+    .ss-isplit-text { margin: 0; font-size: calc(1rem * var(--ss-font-scale, 1)); line-height: 1.45; color: var(--muted); }
+    .ss-isplit-actions { display: grid; gap: 4px; margin-top: 14px; }
+    .ss-isplit-actions .ss-btn { width: 100%; min-height: max(var(--ss-target, 2.75rem), 48px); justify-content: center; }
+  
+    /* ── Arte das ilustrações (Ss::IllustrationArtComponent, par do SsIllustrationArt) ── */
+    .ss-illus { --s: 132px; display: inline-block; width: var(--s); margin: 0; vertical-align: middle; }
+    .ss-illus[data-illustration="error"] .ss-ill-floor { fill: color-mix(in srgb, var(--danger) 10%, transparent); }
+  
+    /* ── Palco da ilustração (Ss::IllustrationStageComponent, par do SsIllustrationStage) ── */
+    .ss-ill-stage { --h: 112px; padding: var(--pad, 12px 0); border-radius: calc(var(--r-card) + 8px); background: linear-gradient(to bottom, var(--accent-soft), var(--page)); }
+    .ss-ill-stage-fit { display: flex; align-items: center; justify-content: center; height: var(--h); overflow: hidden; }
+    .ss-ill-stage-fit > * { max-height: 100%; max-width: 100%; }
+    .ss-ill-stage-fit > :is(img, svg, .ss-illus) { height: 100%; width: auto; }
+    .ss-ill-stage-fit > .ss-illus { width: auto; aspect-ratio: 160 / 120; }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .ss-attach-item, .ss-attach-sq, .ss-cstack, .ss-cstack-card, .ss-dial *, .ss-duo-pill, .ss-duo-side, .ss-duo-ico,
+    .ss-fbars-bar, .ss-fbars-tag, .ss-goal-art, .ss-goal-line, .ss-hex, .ss-isplit-dots span { transition: none !important; animation: none !important; }
+  }
+
+    /* ── Ícone em forma (Ss::ShapeIconComponent, par do SsShapeIcon) ──── */
+    .ss-shape-icon { --s: 52px; --k: var(--accent); position: relative; flex: none; display: inline-grid; place-items: center;
+                     width: var(--s); height: var(--s); color: var(--k); }
+    .ss-shape-icon[data-tone="success"] { --k: var(--success); }
+    .ss-shape-icon[data-tone="warn"] { --k: var(--warn); }
+    .ss-shape-icon[data-tone="danger"] { --k: var(--danger); }
+    .ss-shape-icon[data-tone="info"] { --k: var(--ss-info); }
+    .ss-shape-icon-bg { position: absolute; inset: 0; width: 100%; height: 100%; fill: color-mix(in srgb, var(--k) 14%, transparent); }
+    [data-theme="dark"] .ss-shape-icon-bg { fill: color-mix(in srgb, var(--k) 22%, transparent); }
+    .ss-shape-icon.is-filled { color: var(--on-accent); }
+    .ss-shape-icon.is-filled .ss-shape-icon-bg { fill: var(--k); }
+    .ss-shape-icon-ico { position: relative; width: calc(var(--s) * .42); height: calc(var(--s) * .42); }
+  
+    /* ── Avatar com ondas (Ss::PulseAvatarComponent, par do SsPulseAvatar) ── */
+    .ss-pulse { --s: 72px; --k: var(--accent); position: relative; display: inline-grid; place-items: center;
+                width: calc(var(--s) * 2); height: calc(var(--s) * 2); }
+    .ss-pulse[data-tone="success"] { --k: var(--success); }
+    .ss-pulse[data-tone="warn"] { --k: var(--warn); }
+    .ss-pulse[data-tone="danger"] { --k: var(--danger); }
+    .ss-pulse-waves { position: absolute; inset: 0; pointer-events: none; }
+    .ss-pulse-waves i { position: absolute; inset: 0; margin: auto; width: var(--s); height: var(--s); border-radius: 50%; opacity: 0;
+                        background: color-mix(in srgb, var(--k) 22%, transparent); }
+    /* Uma volta = 5,5 × --ss-dur-long (2,2 s, a do app); as três ondas defasadas em 1/3 da volta (--n). */
+    .ss-pulse.is-active .ss-pulse-waves i { --t: calc(var(--ss-dur-long) * 5.5); animation: ss-pulse-wave var(--t) var(--ss-ease-exit) infinite;
+                                            animation-delay: calc(var(--t) / -3 * var(--n, 0)); }
+    .ss-pulse-face { position: relative; display: grid; place-items: center; width: var(--s); height: var(--s); border-radius: 50%; }
+    .ss-pulse-face > :not(.ss-avatar) { width: 100%; height: 100%; display: grid; place-items: center; border-radius: 50%;
+                                        background: var(--k); color: var(--on-accent); }
+    .ss-pulse-face > svg { padding: 24%; }
+    @keyframes ss-pulse-wave { from { opacity: 1; scale: 1; } to { opacity: 0; scale: 2; } }
+  
+    /* ── Lançamento recorrente (Ss::RecurringCardComponent, par do SsRecurringCard) ── */
+    .ss-recurring { position: relative; display: grid; gap: 1rem; padding: var(--ss-card-pad, 1.1rem) .4rem calc(var(--ss-card-pad, 1.1rem) - .4rem) var(--ss-card-pad, 1.1rem);
+                    border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card);
+                    transition: box-shadow var(--ss-dur-short) var(--ss-ease-standard), translate var(--ss-dur-short) var(--ss-ease-standard); }
+    [data-theme="dark"] .ss-recurring { border: 1px solid var(--line); }
+    .ss-recurring.is-link:hover { box-shadow: var(--shadow-hover); translate: 0 -2px; }
+    .ss-recurring.is-link:has(.ss-recurring-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-recurring-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ss-gap, .75rem); padding-right: .6rem; }
+    .ss-recurring-check { display: grid; place-items: center; width: var(--ss-chip-h, 2rem); height: var(--ss-chip-h, 2rem); flex: none; border-radius: 50%;
+                          background: var(--field); border: 1.5px solid color-mix(in srgb, var(--muted) 60%, transparent); color: var(--muted);
+                          transition: background-color var(--ss-dur-medium) var(--ss-ease-standard), border-color var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-recurring-check > svg { width: 1.1rem; height: 1.1rem; scale: .6; transition: scale var(--ss-dur-indicator) var(--ss-bounce); }
+    .ss-recurring.is-done .ss-recurring-check { background: var(--success); border-color: var(--success); color: var(--on-accent); }
+    .ss-recurring.is-done .ss-recurring-check > svg { scale: 1; }
+    .ss-recurring-when { display: grid; justify-items: end; text-align: right; min-width: 0; }
+    .ss-recurring-when :is(strong, a) { color: var(--ink-2); font-weight: 700; font-size: calc(.875rem * var(--ss-font-scale, 1)); text-decoration: none; }
+    .ss-recurring-when .num { color: var(--muted); font: 500 calc(.75rem * var(--ss-font-scale, 1)) var(--font-mono); }
+    .ss-recurring-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+    .ss-recurring-link:focus-visible { outline: none; }
+    .ss-recurring-foot { display: flex; align-items: flex-end; gap: .5rem; }
+    .ss-recurring-value { flex: 1; min-width: 0; display: grid; gap: .15rem; color: var(--ink); }
+    .ss-recurring-dest { color: var(--muted); font-size: calc(.75rem * var(--ss-font-scale, 1)); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ss-recurring-menu { position: relative; z-index: 1; }
+    .ss-recurring-more { display: grid; place-items: center; width: var(--ss-target); height: var(--ss-target); border-radius: 50%; color: var(--muted); }
+    .ss-recurring-more:hover { background: var(--field); color: var(--ink); }
+    .ss-recurring-more > svg { width: 1.25rem; height: 1.25rem; }
+  
+    /* ── Card que a imagem vaza (Ss::PopOutCardComponent, par do SsPopOutCard) ── */
+    .ss-popout { --ih: 120px; --po: 44px; --bg: var(--surface); position: relative; display: block; padding-top: var(--po); }
+    .ss-popout[data-tone] { --tn: var(--accent); --bg: color-mix(in srgb, var(--tn) 14%, var(--surface)); }
+    [data-theme="dark"] .ss-popout[data-tone] { --bg: color-mix(in srgb, var(--tn) 22%, var(--surface)); }
+    .ss-popout[data-tone="success"] { --tn: var(--success); }
+    .ss-popout[data-tone="warn"] { --tn: var(--warn); }
+    .ss-popout[data-tone="danger"] { --tn: var(--danger); }
+    .ss-popout[data-tone="info"] { --tn: var(--ss-info); }
+    .ss-popout-img { position: absolute; inset: 0 0 auto; z-index: 1; height: var(--ih); display: grid; place-items: center; pointer-events: none;
+                     transition: translate var(--ss-dur-medium) var(--ss-ease-spring), scale var(--ss-dur-medium) var(--ss-ease-spring); }
+    .ss-popout-img > :is(img, svg) { width: auto; height: var(--ih); max-width: 100%; object-fit: contain; display: block; }
+    .ss-popout-body { display: grid; gap: .1rem; padding: calc(var(--ih) - var(--po) + 10px) calc(var(--ss-card-pad, 1.1rem) - 4px) calc(var(--ss-card-pad, 1.1rem) - 4px) var(--ss-card-pad, 1.1rem);
+                      border-radius: var(--r-card); background: var(--bg); box-shadow: var(--shadow-card);
+                      transition: box-shadow var(--ss-dur-short) var(--ss-ease-standard); }
+    [data-theme="dark"] .ss-popout-body { border: 1px solid var(--line); }
+    .ss-popout.is-link:hover .ss-popout-body { box-shadow: var(--shadow-hover); }
+    .ss-popout.is-link:hover .ss-popout-img { translate: 0 -4px; scale: 1.04; }
+    .ss-popout:has(.ss-popout-link:focus-visible) .ss-popout-body { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-popout-title { margin: 0; color: var(--ink); font-weight: 800; font-size: calc(1rem * var(--ss-font-scale, 1));
+                       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ss-popout-link { color: inherit; text-decoration: none; }
+    .ss-popout-link:focus-visible { outline: none; }
+    .ss-popout-link::after { content: ""; position: absolute; inset: 0; }
+    .ss-popout-sub { margin: 0; color: var(--muted); font-size: calc(.75rem * var(--ss-font-scale, 1)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ss-popout-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
+    .ss-popout-price { font-size: 1.25rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .ss-popout-form { position: relative; z-index: 2; display: contents; }
+    .ss-popout-btn { position: relative; z-index: 2; flex: none; display: grid; place-items: center; width: var(--ss-target); height: var(--ss-target);
+                     padding: 0; border: 0; border-radius: var(--r-field); background: var(--accent); color: var(--on-accent); cursor: pointer;
+                     box-shadow: 0 8px 16px -8px var(--accent); transition: scale var(--ss-dur-short) var(--ss-ease-spring); }
+    .ss-popout-btn:hover { background: var(--accent-hover, var(--accent)); }
+    .ss-popout-btn:active { scale: .9; }
+    .ss-popout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .ss-popout-btn > svg { width: 1.25rem; height: 1.25rem; }
+  
+    /* ── Topo do perfil (Ss::ProfileHeroComponent, par do SsProfileHero) ── */
+    .ss-profile-hero { display: grid; justify-items: center; padding: .25rem .5rem 2.5rem; background: var(--accent-soft); text-align: center;
+                       border-radius: 0 0 50% 50% / 0 0 3rem 3rem; }
+    .ss-profile-hero-bar { justify-self: stretch; display: flex; align-items: center; justify-content: space-between; min-height: var(--ss-target); }
+    .ss-profile-hero-actions { display: flex; gap: .25rem; }
+    .ss-profile-hero-photo { --h: 250; width: 104px; height: 104px; margin-top: .25rem; border-radius: 34px; border: 4px solid var(--surface); overflow: hidden;
+                             box-shadow: var(--shadow-hover); background: linear-gradient(135deg, hsl(var(--h) 62% 56%), hsl(calc(var(--h) + 20) 58% 40%)); }
+    .ss-profile-hero-photo > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ss-profile-hero-initials { display: grid; place-items: center; height: 100%; color: var(--on-accent); font-size: 2.1rem; font-weight: 800; line-height: 1; }
+    .ss-profile-hero-name { margin: .875rem 0 0; color: var(--ink); font-size: calc(1.375rem * var(--ss-font-scale, 1)); font-weight: 800; letter-spacing: -.02em; }
+    .ss-profile-hero-status { display: inline-flex; align-items: center; gap: .4rem; margin: .25rem 0 0; color: var(--ink-2); font-weight: 600;
+                              font-size: calc(.875rem * var(--ss-font-scale, 1)); }
+    .ss-profile-hero-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
+    .ss-profile-hero-metrics { display: flex; justify-content: center; flex-wrap: wrap; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+    .ss-profile-hero-metric { display: grid; gap: .25rem; padding-inline: 1rem; }
+    .ss-profile-hero-metric + .ss-profile-hero-metric { border-left: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+    .ss-profile-hero-metric strong { order: -1; color: var(--ink); font: 500 1.5rem/1 var(--font-mono); }
+    .ss-profile-hero-metric span { color: var(--muted); font-size: calc(.75rem * var(--ss-font-scale, 1)); font-weight: 600; }
+  
+    /* ── Escolher pessoas (Ss::PeoplePickerComponent, par do SsPeoplePicker) ── */
+    .ss-people { min-width: 0; margin: 0; padding: 0; border: 0; }
+    .ss-people-row { display: flex; gap: .625rem; overflow-x: auto; padding: 4px var(--ss-pad-x, 1rem); scroll-snap-type: x proximity; scrollbar-width: none; }
+    .ss-people-pill { position: relative; flex: none; width: 76px; display: grid; justify-items: center; gap: 6px; padding: 10px 6px 8px; border-radius: 38px;
+                      background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none; cursor: pointer; scroll-snap-align: start;
+                      transition: background-color var(--ss-dur-medium) var(--ss-ease-spring), border-color var(--ss-dur-medium) var(--ss-ease-spring); }
+    .ss-people-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; border-radius: inherit; }
+    .ss-people-pill:has(:checked) { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+    .ss-people-pill:has(:focus-visible), .ss-people-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-people-face { display: grid; pointer-events: none; }
+    .ss-people-face .ss-avatar { border-color: transparent; }
+    .ss-people-pill:has(:checked) .ss-people-face { animation: ss-people-pop var(--ss-dur-indicator) var(--ss-bounce); }
+    .ss-people-pill:has(:checked) .ss-avatar { box-shadow: 0 0 0 2px var(--accent); }
+    .ss-people-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: calc(.75rem * var(--ss-font-scale, 1)); pointer-events: none; }
+    .ss-people-pill:has(:checked) .ss-people-name { color: var(--accent); }
+    .ss-people-badge { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--field); color: var(--ink-2); pointer-events: none;
+                       transition: background-color var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-people-badge.is-blank { background: none; }
+    .ss-people-badge > svg { grid-area: 1 / 1; width: 15px; height: 15px; transition: scale var(--ss-dur-indicator) var(--ss-bounce), opacity var(--ss-dur-short) ease; }
+    .ss-people-badge .is-check { scale: 0; opacity: 0; }
+    .ss-people-pill:has(:checked) .ss-people-badge { background: var(--accent); color: var(--on-accent); }
+    .ss-people-pill:has(:checked) .ss-people-badge .is-check { scale: 1; opacity: 1; }
+    .ss-people-pill:has(:checked) .ss-people-badge .is-plus { scale: 0; opacity: 0; }
+    .ss-people-add-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--field); color: var(--ink-2); }
+    .ss-people-add-ico > svg { width: 22px; height: 22px; }
+    @keyframes ss-people-pop { from { scale: .78; } }
+  
+    /* ── Grade do mês (Ss::MonthGridComponent, par do SsMonthGrid) ──────── */
+    .ss-month-grid { display: grid; gap: .25rem; min-width: 0; touch-action: pan-y; }
+    .ss-month-grid-head, .ss-month-grid-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .ss-month-grid-head span { text-align: center; color: var(--muted); font-size: calc(.6875rem * var(--ss-font-scale, 1)); font-weight: 700; }
+    .ss-month-grid-day { display: grid; justify-items: center; align-content: center; gap: 3px; min-height: max(var(--ss-target), 48px); padding: 0; border: 0;
+                         background: none; color: var(--ink); text-decoration: none; cursor: pointer; border-radius: var(--r-field); font: inherit; }
+    .ss-month-grid-day:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .ss-month-grid-n { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font: 500 calc(.9375rem * var(--ss-font-scale, 1)) var(--font-mono);
+                       transition: background-color var(--ss-dur-short) var(--ss-ease-standard), color var(--ss-dur-short) var(--ss-ease-standard); }
+    .ss-month-grid-day:hover:not(.is-out) .ss-month-grid-n { background: var(--field); }
+    .ss-month-grid-day.is-today .ss-month-grid-n { box-shadow: inset 0 0 0 1.6px var(--accent); font-weight: 700; }
+    .ss-month-grid-day:is([aria-current], [aria-pressed="true"]) .ss-month-grid-n { background: var(--accent); color: var(--on-accent); box-shadow: none; font-weight: 700;
+                                                                                      animation: ss-month-grid-pop var(--ss-dur-indicator) var(--ss-bounce); }
+    .ss-month-grid-day.is-out { color: color-mix(in srgb, var(--muted) 55%, transparent); cursor: default; }
+    .ss-month-grid-dots { display: flex; gap: 2px; height: 4px; }
+    .ss-month-grid-dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+    .ss-month-grid-dots i[data-tone="success"] { background: var(--success); }
+    .ss-month-grid-dots i[data-tone="warn"] { background: var(--warn); }
+    .ss-month-grid-dots i[data-tone="danger"] { background: var(--danger); }
+    .ss-month-grid-dots i[data-tone="muted"] { background: var(--muted); }
+    .ss-month-grid-day.is-out .ss-month-grid-dots i { opacity: .4; }
+    @keyframes ss-month-grid-pop { from { scale: .8; } }
+  
+    /* ── Miniaturas em coluna (Ss::ThumbRailComponent, par do SsThumbRail) ── */
+    .ss-thumbs { --ts: 64px; display: flex; flex-direction: column; align-items: center; width: max(var(--ss-target), calc(var(--ts) + 8px)); height: 100%; min-height: 0; }
+    .ss-thumbs-arrow { flex: none; display: grid; place-items: center; width: max(var(--ss-target), var(--ts)); height: var(--ss-target); padding: 0; border: 0;
+                       border-radius: var(--r-field); background: none; color: var(--ink-2); cursor: pointer; }
+    .ss-thumbs-arrow[hidden] { display: grid; visibility: hidden; }
+    .ss-thumbs-arrow:hover { background: var(--field); }
+    .ss-thumbs-arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .ss-thumbs-arrow > svg { width: 1.25rem; height: 1.25rem; }
+    .ss-thumbs-list { position: relative; flex: 1; min-height: 0; display: grid; align-content: start; justify-items: center; gap: 10px; padding-block: 4px;
+                      overflow-y: auto; scrollbar-width: none; }
+    .ss-thumbs-item { display: block; width: var(--ts); height: var(--ts); padding: 3px; border: 2px solid transparent; border-radius: calc(var(--r-field) + 3px);
+                      background: none; opacity: .55; cursor: pointer;
+                      transition: opacity var(--ss-dur-short) ease, border-color var(--ss-dur-medium) var(--ss-ease-spring); }
+    .ss-thumbs-item:hover { opacity: .8; }
+    .ss-thumbs-item:is([aria-pressed="true"], [aria-current]) { opacity: 1; border-color: var(--accent); }
+    .ss-thumbs-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-thumbs-item > img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: calc(var(--r-field) - 2px); }
+  
+    /* ── Slider de pé (Ss::VerticalSliderComponent, par do SsVerticalSlider) ── */
+    .ss-vslider { --h: 220px; --w: 64px; --f: 0; --k: var(--accent); --th: calc(var(--w) - 8px); --in: calc(var(--h) - 8px);
+                  position: relative; flex: none; width: var(--w); height: var(--h); border-radius: calc(var(--w) / 2); background: var(--field);
+                  box-shadow: inset 0 0 0 1px var(--line); }
+    .ss-vslider[data-tone="success"] { --k: var(--success); }
+    .ss-vslider[data-tone="warn"] { --k: var(--warn); }
+    .ss-vslider[data-tone="danger"] { --k: var(--danger); }
+    .ss-vslider:has(.ss-vslider-input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-vslider-fill { position: absolute; left: 4px; right: 4px; bottom: 4px; height: calc(var(--th) + (var(--in) - var(--th)) * var(--f));
+                       border-radius: calc(var(--th) / 2); background: var(--k); pointer-events: none;
+                       transition: height var(--ss-dur-short) var(--ss-ease-enter); }
+    .ss-vslider-thumb { position: absolute; left: 4px; top: calc(4px + (var(--in) - var(--th)) * (1 - var(--f))); width: var(--th); height: var(--th);
+                        display: grid; place-items: center; padding-inline: 4px; border-radius: 50%; background: var(--surface); color: var(--ink);
+                        box-shadow: var(--shadow-card); pointer-events: none; transition: top var(--ss-dur-short) var(--ss-ease-enter); }
+    .ss-vslider-thumb output { max-width: 100%; overflow: hidden; font: 500 calc(1rem * var(--ss-font-scale, 1)) var(--font-mono); white-space: nowrap; }
+    .ss-vslider-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; writing-mode: vertical-lr; direction: rtl; }
+    .ss-vslider.is-disabled { cursor: not-allowed; }
+    .ss-vslider.is-disabled .ss-vslider-fill { opacity: .4; }
+    .ss-vslider.is-disabled .ss-vslider-input { cursor: not-allowed; }
+  
+    /* ── Foto em tela cheia com zoom (Ss::ImageViewerComponent, par do SsImageViewer) ── */
+    .ss-viewer-wrap { --ss-viewer-bg: color-mix(in srgb, var(--brand-deep, var(--accent)) 22%, black); display: inline-block; }
+    .ss-viewer-wrap.is-inline { display: block; }
+    .ss-viewer-trigger { --ts: 96px; display: inline-grid; min-width: var(--ss-target); min-height: var(--ss-target); padding: 0; border: 0; background: none;
+                         border-radius: var(--r-field); cursor: zoom-in; color: inherit; font: inherit; }
+    .ss-viewer-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-viewer-thumb { width: var(--ts); height: var(--ts); object-fit: cover; border-radius: var(--r-field); display: block; }
+    .ss-viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+                 display: none; grid-template-rows: auto 1fr auto; background: var(--ss-viewer-bg); color: var(--on-accent); }
+    .ss-viewer[open], .is-inline > .ss-viewer { display: grid; }
+    .is-inline > .ss-viewer { width: 100%; height: 100%; min-height: 320px; border-radius: var(--r-card); overflow: hidden; }
+    .ss-viewer::backdrop { background: var(--ss-viewer-bg); }
+    .ss-viewer[open] { animation: ss-viewer-in var(--ss-dur-medium) var(--ss-ease-enter); }
+    .ss-viewer-bar { display: flex; align-items: center; gap: .5rem; padding: max(.25rem, env(safe-area-inset-top)) .5rem .25rem; }
+    .ss-viewer-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+    .ss-viewer-actions { display: flex; gap: .25rem; }
+    .ss-viewer-btn { display: grid; place-items: center; width: var(--ss-target); height: var(--ss-target); padding: 0; border: 0; border-radius: 50%;
+                     background: none; color: var(--on-accent); cursor: pointer; text-decoration: none; }
+    .ss-viewer-btn:hover { background: color-mix(in srgb, var(--on-accent) 12%, transparent); }
+    .ss-viewer-btn:focus-visible { outline: 2px solid var(--on-accent); outline-offset: -2px; }
+    .ss-viewer-btn:disabled { opacity: .4; cursor: default; background: none; }
+    .ss-viewer-btn > svg { width: 1.4rem; height: 1.4rem; }
+    .ss-viewer-stage { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; touch-action: none; cursor: zoom-in; user-select: none; }
+    .ss-viewer-stage.is-zoomed { cursor: grab; }
+    .ss-viewer-stage.is-zoomed:active { cursor: grabbing; }
+    .ss-viewer-stage:focus-visible { outline: 2px solid var(--on-accent); outline-offset: -4px; }
+    .ss-viewer-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: center; will-change: transform; pointer-events: none; }
+    .ss-viewer-img.is-anim { transition: transform var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-viewer-broken { display: grid; justify-items: center; gap: .5rem; color: color-mix(in srgb, var(--on-accent) 70%, transparent); font-weight: 600; }
+    .ss-viewer-broken[hidden] { display: none; }
+    .ss-viewer-broken > svg { width: 3rem; height: 3rem; }
+    .ss-viewer-tools { display: flex; align-items: center; justify-content: center; gap: .25rem; padding: .25rem .5rem max(.5rem, env(safe-area-inset-bottom)); }
+    .ss-viewer-pct { min-width: 4.5ch; text-align: center; font: 500 .875rem var(--font-mono); }
+    @keyframes ss-viewer-in { from { opacity: 0; } }
+  
+    @media (prefers-reduced-motion: reduce) {
+      .ss-pulse.is-active .ss-pulse-waves i { animation: none; opacity: 1; scale: 1.33; }
+      .ss-pulse.is-active .ss-pulse-waves i:nth-child(2) { scale: 1.67; opacity: .5; }
+      .ss-pulse.is-active .ss-pulse-waves i:nth-child(3) { display: none; }
+      .ss-recurring, .ss-recurring-check, .ss-recurring-check > svg, .ss-popout-img, .ss-popout-body, .ss-popout-btn,
+      .ss-people-pill, .ss-people-badge, .ss-people-badge > svg, .ss-month-grid-n, .ss-thumbs-item,
+      .ss-vslider-fill, .ss-vslider-thumb, .ss-viewer-img.is-anim { transition: none; }
+      .ss-people-pill:has(:checked) .ss-people-face, .ss-month-grid-day .ss-month-grid-n, .ss-viewer[open] { animation: none; }
+      .ss-recurring.is-link:hover, .ss-popout.is-link:hover .ss-popout-img { translate: none; scale: none; }
+    }
+}

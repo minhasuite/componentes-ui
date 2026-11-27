@@ -1,0 +1,180 @@
+<%# titulo: Pares da v1.10 (cartões, ilustrações, foto e controles) | grupo: Cards e painéis | tambem: Ações e botões; Formulários e entrada; Dados e gráficos; Tempo e agenda; Mídia e captura; Comércio e finanças | ordem: 90 | versao: 1.10 %>
+<%# v1.10.0: os pares Rails das 21 peças do Flutter que eram dívida no paridade.yml (raiz do repo). %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Anexos (AttachBarComponent)") %>
+    <div class="max-w-md">
+      <%= render Ss::AttachBarComponent.new(items: [
+            { icon: "camera", label: "Foto", accept: "image/*", name: "anexo[foto]" },
+            { icon: "document-text", label: "Arquivo", accept: ".pdf", name: "anexo[arquivo]" },
+            { icon: "location-marker", label: "Local", href: "#" },
+            { icon: "user", label: "Contato" }]) %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Pilha de cartões (CardStackComponent)") %>
+    <div class="max-w-sm">
+      <%= render(Ss::CardStackComponent.new(card_height: 110)) do |s| %>
+        <% %w[Nubank Inter C6].each_with_index do |b, i| %>
+          <% s.with_card do %>
+            <div class="ss-card ss-card-pad" style="height:100%;background:var(--series-<%= i + 1 %>);color:var(--on-accent)"><strong><%= b %></strong><br>final 40<%= i %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4" style="overflow:hidden">
+    <%= render Ss::CardHeaderComponent.new(title: "Cabeçalho com curva (CurvedHeaderComponent)") %>
+    <div class="max-w-md" style="position:relative;isolation:isolate">
+      <%= render Ss::CurvedHeaderComponent.new(title: "Carteira", subtitle: "Novembro de 2026", back_href: "#") %>
+      <div class="ss-curved-body ss-card ss-card-pad mx-3">Saldo do mês</div>
+    </div>
+    <div class="max-w-md" style="position:relative;isolation:isolate">
+      <%= render Ss::CurvedHeaderComponent.new(title: "Início", tone: :dark, heading: :h3) %>
+      <div class="ss-curved-body ss-card ss-card-pad mx-3">Conteúdo que sobe por cima</div>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Botão giratório (DialComponent)") %>
+    <div class="flex flex-wrap gap-6 items-center">
+      <%= render Ss::DialComponent.new(name: "volume", value: 40, label: "Volume", caption: "Sala", size: 200) %>
+      <%= render Ss::DialComponent.new(name: "temp", value: 22.5, min: 16, max: 30, step: 0.5, format: "%.1f°", label: "Temperatura", size: 160) %>
+      <%= render Ss::DialComponent.new(value: 10, label: "Desligado", size: 140, disabled: true) %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Duas estatísticas (DuoStatComponent)") %>
+    <div class="max-w-md">
+      <%= render Ss::DuoStatComponent.new(index: 0, name: "lado", items: [
+            { label: "Despesas", value: ss_money(3210.4), icon: "arrow-up" },
+            { label: "Receitas", value: ss_money(5100), icon: "arrow-down" }]) %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Barras no card da marca (FloatingBarsComponent)") %>
+    <div class="max-w-md">
+      <%= render Ss::FloatingBarsComponent.new(title: "Gastos", value: ss_money(1820), values: [320, 410, 280, 520, 290],
+                                                labels: %w[Jul Ago Set Out Nov], format: :money) %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Meta, botão hexagonal e ilustrações") %>
+    <div class="grid gap-6 sm:grid-cols-2 items-start">
+      <%= render Ss::GoalCardComponent.new(text: "Junte para a viagem de julho sem apertar o mês.", action_label: "Criar meta", href: "#") %>
+      <%= render(Ss::GoalCardComponent.new(text: "Nenhuma tarefa para hoje.", action_label: "Planejar a semana")) do |c| %>
+        <% c.with_art { render Ss::IllustrationArtComponent.new(:all_done, size: 96) } %>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-8 p-4"><%= render Ss::HexButtonComponent.new(href: "#") %><%= render Ss::HexButtonComponent.new(label: "Continuar", icon: "check", size: 56) %></div>
+    <div class="flex flex-wrap gap-4">
+      <% Ss::IllustrationArtComponent::KINDS.each do |k| %><%= render Ss::IllustrationArtComponent.new(k, size: 96) %><% end %>
+    </div>
+    <div class="max-w-sm"><%= render(Ss::IllustrationStageComponent.new) { render Ss::IllustrationArtComponent.new(:empty) } %></div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Tela partida com ilustração (IllustratedSplitComponent)") %>
+    <div class="max-w-sm" style="height:600px;border-radius:var(--r-card);overflow:hidden">
+      <%= render Ss::IllustratedSplitComponent.new(title: "Seu dinheiro num lugar só", text: "Contas, cartões e metas.", illustration: :empty,
+                                                    action_label: "Começar", action_href: "#", secondary_label: "Já tenho conta", secondary_href: "#",
+                                                    page: 0, pages: 3, heading: :h3) %>
+    </div>
+  </section>
+
+<%# v1.10 (lote B): pares Rails das peças do Flutter. Fotos de mentira em SVG (data URI). %>
+<% foto_b = ->(h, w = 400, a = 300) { "data:image/svg+xml,#{ERB::Util.url_encode(%(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 #{w} #{a}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(#{h} 60% 62%)"/><stop offset="1" stop-color="hsl(#{h + 30} 55% 38%)"/></linearGradient></defs><rect width="#{w}" height="#{a}" fill="url(#g)"/><circle cx="#{w * 0.62}" cy="#{a * 0.42}" r="#{a * 0.22}" fill="hsl(#{h} 80% 88%)"/></svg>))}" } %>
+<% dia = Date.current %>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Foto com zoom <small class="ss-muted">Ss::ImageViewerComponent · SsImageViewer</small></h2>
+  <p class="ss-muted">Clique na miniatura: roda, pinça, duplo clique e + − 0 ampliam; arraste a ampliada; Esc fecha.</p>
+  <div class="flex flex-wrap gap-4 items-start">
+    <%= render Ss::ImageViewerComponent.new(src: foto_b.(200, 1200, 900), title: "cupom.jpg") %>
+    <%= render Ss::ImageViewerComponent.new(src: "/nao-existe.jpg", title: "quebrada.jpg") do |v| %>
+      <% v.with_trigger { tag.span("Abrir imagem quebrada", class: "ss-btn ss-btn-ghost") } %>
+    <% end %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Grade do mês <small class="ss-muted">Ss::MonthGridComponent · SsMonthGrid</small></h2>
+  <div class="grid gap-6 md:grid-cols-2">
+    <%= render Ss::MonthGridComponent.new(month: dia, selected: dia, url: "?dia=%{date}", month_url: "?mes=%{month}",
+          markers: { dia - 2 => %i[accent success], dia + 3 => [:warn], dia + 9 => %i[danger accent muted] }) %>
+    <%= render Ss::MonthGridComponent.new(month: dia, name: "entrega") %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Escolher pessoas <small class="ss-muted">Ss::PeoplePickerComponent · SsPeoplePicker</small></h2>
+  <%= render Ss::PeoplePickerComponent.new(name: "pessoas[]", people: ["Ana Souza", "Bruno Lima", "Carla Dias", "Davi Rocha", "Elisa Prado"],
+        selected: ["Ana Souza"], add_url: "#") %>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Card que a imagem vaza <small class="ss-muted">Ss::PopOutCardComponent · SsPopOutCard</small></h2>
+  <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))">
+    <%= render Ss::PopOutCardComponent.new(title: "Costela-de-adão", subtitle: "Meia-sombra", price: ss_money(89.9), image_url: foto_b.(140, 200, 200), url: "#", add_url: "#") %>
+    <%= render Ss::PopOutCardComponent.new(title: "Jiboia", subtitle: "Sol pleno", price: ss_money(39.9), tone: :success, image_url: foto_b.(100, 200, 200), add_url: "#", add_method: :get) %>
+    <%= render Ss::PopOutCardComponent.new(title: "Samambaia", price: ss_money(25), tone: :warn, image_url: foto_b.(40, 200, 200)) %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Topo do perfil <small class="ss-muted">Ss::ProfileHeroComponent · SsProfileHero</small></h2>
+  <%= render Ss::ProfileHeroComponent.new(name: "Ana Souza", status: "Online agora", online: true,
+        metrics: [%w[128 pedidos], ["4,9", "nota"], ["3 anos", "cliente"]]) do |h| %>
+    <% h.with_action { render Ss::IconButtonComponent.new(icon: "pencil", label: "Editar", href: "#") } %>
+  <% end %>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Avatar ao vivo <small class="ss-muted">Ss::PulseAvatarComponent · SsPulseAvatar</small></h2>
+  <div class="flex flex-wrap gap-4 items-center">
+    <%= render Ss::PulseAvatarComponent.new(name: "Ana Souza", status: "chamando") %>
+    <%= render Ss::PulseAvatarComponent.new(name: "Assistente", status: "ouvindo", tone: :success) { ss_icon("sparkles", size: nil) } %>
+    <%= render Ss::PulseAvatarComponent.new(name: "Bruno Lima", active: false) %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Conta recorrente <small class="ss-muted">Ss::RecurringCardComponent · SsRecurringCard</small></h2>
+  <div class="grid gap-4 md:grid-cols-2">
+    <%= render Ss::RecurringCardComponent.new(schedule: "Todo domingo", time: "11:00", amount: ss_money(50), destination: "para Instituto Sol", url: "#", menu_url: "#") %>
+    <%= render Ss::RecurringCardComponent.new(schedule: "Todo dia 5", time: "08:00", amount: ss_money(1290), destination: "Aluguel", done: true, menu_url: "#") %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Ícone em forma <small class="ss-muted">Ss::ShapeIconComponent · SsShapeIcon</small></h2>
+  <div class="flex flex-wrap gap-3">
+    <% [["bolt", :losango, nil, false], ["leaf", :losango, :success, false], ["check", :hexagono, nil, true], ["fire", :hexagono, :warn, true], ["heart", :losango, :danger, true]].each do |i, s, t, f| %>
+      <%= render Ss::ShapeIconComponent.new(icon: i, shape: s, tone: t, filled: f) %>
+    <% end %>
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Miniaturas em coluna <small class="ss-muted">Ss::ThumbRailComponent · SsThumbRail</small></h2>
+  <% fotos = [200, 140, 30, 280, 330, 60].map { |h| foto_b.(h, 600, 600) } %>
+  <div class="flex gap-4 items-start" style="height:320px">
+    <%= render Ss::ThumbRailComponent.new(images: fotos, selected: 0, target: "vitrine-foto") %>
+    <img id="vitrine-foto" src="<%= fotos.first %>" alt="Foto escolhida" style="width:300px;height:300px;border-radius:16px;object-fit:cover">
+  </div>
+</section>
+
+<section class="ss-card ss-card-pad grid gap-4">
+  <h2 class="ss-h2">Slider de pé <small class="ss-muted">Ss::VerticalSliderComponent · SsVerticalSlider</small></h2>
+  <div class="flex flex-wrap gap-6">
+    <%= render Ss::VerticalSliderComponent.new(name: "volume", value: 40, label: "Volume", suffix: "%") %>
+    <%= render Ss::VerticalSliderComponent.new(name: "temp", value: 21.5, min: 16, max: 30, step: 0.5, precision: 1, suffix: "°", tone: :warn, label: "Temperatura") %>
+    <%= render Ss::VerticalSliderComponent.new(name: "brilho", value: 70, disabled: true, label: "Brilho") %>
+  </div>
+</section>
+</div>
