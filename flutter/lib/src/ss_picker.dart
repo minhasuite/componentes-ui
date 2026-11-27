@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_theme.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 import 'motion_view.dart';
 import 'ss_controls.dart';
 import 'ss_error_view.dart';
@@ -47,6 +49,10 @@ String foldAccents(String s) {
 ///   load: (q) async => (await repo.stores(q)).map((s) => s.label).toList(),
 ///   allowCustom: true, noneLabel: 'Sem loja', hint: 'Feira, padaria, mercado…');
 /// ```
+///
+/// v1.11.0: no iOS (com [adaptive]), a escolha curta (lista local [items] de até [SsPlatform.actionSheetMax]
+/// itens, sem [load], [allowCustom], [noneLabel], [actions] nem [itemBuilder]) abre a folha de ação do
+/// iOS, com o [title] em cima e o Cancelar; busca, escolha livre e lista longa seguem na folha de busca.
 Future<T?> showSsPicker<T>(
   BuildContext context, {
   required String title,
@@ -62,30 +68,49 @@ Future<T?> showSsPicker<T>(
   String Function(String text)? customLabel,
   String? noneLabel,
   List<SsPickerAction<T>> actions = const [],
-}) => showModalBottomSheet<T>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: false,
-  // Sobe com mola, como a [showSsSheet].
-  sheetAnimationStyle: SsOverlayMotion.sheet(context),
-  builder: (context) => SsPickerSheet<T>(
-    title: title,
-    load: load,
-    items: items,
-    labelOf: labelOf,
-    itemBuilder: itemBuilder,
-    emptyText: emptyText,
-    hint: hint,
-    initialQuery: initialQuery,
-    allowCustom: allowCustom,
-    customOf: customOf,
-    customLabel: customLabel,
-    noneLabel: noneLabel,
-    actions: actions,
-    onSelect: (v) => Navigator.pop(context, v),
-  ),
-);
+  bool adaptive = true,
+}) =>
+    SsPlatform.cupertino(context, adaptive: adaptive) &&
+        items != null &&
+        load == null &&
+        !allowCustom &&
+        noneLabel == null &&
+        actions.isEmpty &&
+        itemBuilder == null &&
+        items.isNotEmpty &&
+        items.length <= SsPlatform.actionSheetMax
+    ? ssActionSheet<T>(
+        context,
+        title: title,
+        choices: [
+          for (final it in items)
+            (label: labelOf?.call(it) ?? '$it', value: it, destructive: false, checked: false, icon: null),
+        ],
+      )
+    : showModalBottomSheet<T>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: false,
+        // Sobe com mola, como a [showSsSheet].
+        sheetAnimationStyle: SsOverlayMotion.sheet(context),
+        builder: (context) => SsPickerSheet<T>(
+          title: title,
+          load: load,
+          items: items,
+          labelOf: labelOf,
+          itemBuilder: itemBuilder,
+          emptyText: emptyText,
+          hint: hint,
+          initialQuery: initialQuery,
+          allowCustom: allowCustom,
+          customOf: customOf,
+          customLabel: customLabel,
+          noneLabel: noneLabel,
+          actions: actions,
+          onSelect: (v) => Navigator.pop(context, v),
+        ),
+      );
 
 /// O corpo do [showSsPicker] (público para o catálogo e para quem monta a
 /// própria rota): busca fixa no topo e a lista embaixo, em 90% da altura.

@@ -88,6 +88,8 @@
 @import "./v19_paridade_web.css";
 /* v1.10.0: os pares Rails das peças que eram dívida no paridade.yml. */
 @import "./v1100_web.css";
+/* v1.11.0 "adaptativa": o botão de entrar com a Apple e a linha de entrar com outra conta na entrada. */
+@import "./v1110_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

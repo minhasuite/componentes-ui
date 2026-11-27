@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.10.0
+      ref: v1.11.0
 ```
 
 ```dart
@@ -653,6 +653,116 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.11.0: adaptativa (o pacote pronto para os apps irem ao iOS sem perder o padrão da suíte)
+
+Os apps da suíte rodam no iOS com o mesmo pacote. Nada quebra na API: os parâmetros novos são opcionais e, no
+Android, nenhum desenho muda. No iOS, as peças abaixo trocam o desenho e o comportamento pelo do sistema, com a
+mesma API e a mesma volta. Tudo foi testado no Fedora, sem Mac, com `ThemeData(platform: TargetPlatform.iOS)` e
+`debugDefaultTargetPlatformOverride` nos testes de widget (`flutter/test/v1110_test.dart`).
+
+**Detecção e saída.** `SsPlatform.of(context)` lê `Theme.of(context).platform` (iOS e macOS contam como Apple);
+`SsPlatform.cupertino(context, adaptive:)` decide. Toda peça adaptativa tem `adaptive` (padrão `true`); `false` fica
+no desenho da suíte. Para o app inteiro: `MaterialApp(builder: (c, child) => SsPlatformScope(adaptive: false, child:
+child!))`, que também prende a rolagem (sem elástico). `SsPlatform.backIcon` (o "‹" no iOS), `SsPlatform.scrollPhysics`
+e `SsPlatform.actionSheetMax` (8). No web, `ss_platform`/`ss_apple_platform?` dizem a plataforma pelo User-Agent
+(o desenho web não muda).
+
+**Peças Cupertino.** No Flutter 3.50, o `package:flutter/cupertino.dart` está obsoleto (como o Material, saiu do SDK):
+as peças vêm do pacote `cupertino_ui` (^1.1.1), de que o `material_ui` já dependia; o pacote passa a depender dele
+direto. Os apps não importam nada do Cupertino: a conformidade continua reprovando `Cupertino*` no app.
+
+| Peça | No iOS (com `adaptive`) |
+|---|---|
+| `AppTheme.build` | `CupertinoPageTransitionsBuilder` no iOS e no macOS (voltar de arrastar da borda); o Android segue o voltar preditivo |
+| `SsSwitch` / `SsSwitchRow` | desenho e arrasto do `CupertinoSwitch`, trilha na cor da marca, alvo de 48 e o mesmo haptic; a linha não espalha tinta |
+| `showSsDatePicker` / `showSsTimePicker` / `SsDateField` / `SsTimeField` | a roda do `CupertinoDatePicker` numa folha (Cancelar, título, Confirmar na cor da marca), com os limites, o `selectableDayPredicate`, 24 h e dia/mês/ano pelo idioma |
+| `showSsPicker` | com `items:` de até 8 (sem `load`, `allowCustom`, `noneLabel`, `actions`, `itemBuilder`): a folha de ação do iOS com o `title`; o resto segue a folha de busca |
+| `SsOverflowMenu` / `SsContextMenu` | a folha de ação (`CupertinoActionSheet`): destrutiva em vermelho, ✓ das marcadas, Cancelar separado; o ⋮ vira ⋯ |
+| `showSsConfirm` | `CupertinoAlertDialog`: Cancelar à esquerda; com `danger`, a confirmação é a destrutiva (vermelha) e o Cancelar fica em negrito |
+| listas do pacote | rolagem com elástico (`BouncingScrollPhysics`), que o `ScrollConfiguration` do `MaterialApp` já tira da plataforma do tema; `SsPlatformScope(adaptive: false)` prende |
+| `SsPullToRefresh` | `CupertinoSliverRefreshControl` como 1ª fatia (`ListView`, `GridView`, `CustomScrollView` e conteúdo solto); quem monta a própria rolagem (`SingleChildScrollView`, `NestedScrollView`, `SsSelfScrolling`) fica com o indicador da suíte. `SsScreenHeader(onRefresh:)` põe o controle do iOS logo abaixo do cabeçalho |
+| `SsHaptics` | seleção → `selectionClick`; sucesso, aviso e erro → `successNotification`/`warningNotification`/`errorNotification` (um toque, o `UINotificationFeedbackGenerator`); `SsHaptics.adaptive = false` volta ao mapa do Android |
+| `SsSheet` / `showSsSheet` | o × de fechar no canto (lá não há voltar do sistema); `showClose:` força ou tira; `dismissible: false` não tem × |
+| `SsScreenHeader` / `SsTopBar` | o "‹" do iOS no voltar automático |
+| `SsNavBar` | continua a da suíte (é a marca); já soma o `viewPadding.bottom` (o home indicator, 34) |
+
+**Voltar no iOS e o menu lateral.** No iOS, voltar é arrastar da borda esquerda, justo onde ficam a alça e a faixa do
+`SsSideMenuHost`. Com `adaptive` e no iOS:
+
+- **rota empilhada** (a tela do host está por cima de outra, ou um `Navigator` de dentro do `child` pode voltar, como
+  o `ShellRoute` do go_router com uma tela aberta, lido pela `NavigationNotification`): a alça e a faixa saem, a dica
+  ao abrir não roda e o voltar do sistema vence. O menu ainda abre por `SsSideMenuHostState.open()`;
+  `SsSideMenuHostState.yieldsToBack` diz se cedeu;
+- **telas principais** (a raiz): a alça fica, como no Android;
+- `SsSideMenuHost(adaptive: false)` / `SsNavScaffold(adaptive: false)` deixa a alça sempre.
+
+Toda tela empilhada do pacote tem voltar ou fechar visível: `SsScreenHeader` e `SsTopBar` (voltar automático com
+`canPop`), `SsFullscreenPage` (×) e `SsSheet` (× no iOS; no Android, o voltar do sistema). Ilha dinâmica e texto
+grande: o `SsScreenHeader` desce pelo `MediaQuery.padding.top`, o `SsTopBar` e a `SsFullscreenPage` ficam no
+`AppBar` do `Scaffold` (área segura), a folha abre com `useSafeArea` e fica abaixo da ilha; os testes conferem com
+`padding.top = 59`, `bottom = 34` e texto 1,6×.
+
+**Entrar com a Apple.** `SsAppleButton(onPressed:, style: black|white|outline, label: continueWith|signIn, text:)` no
+desenho das Human Interface Guidelines: logo da Apple (o glifo em SVG de 24 × 24, o mesmo `<path>` nos dois lados),
+"Continuar com a Apple"/"Entrar com a Apple" (pt, en, es: `SsStrings.appleContinue`/`appleSignIn`), altura 50 e raio
+14 como o `SsGoogleButton`; sem `style`, preto no claro e branco no escuro. `SsAppleButton.icon` é o quadrado só com o
+logo. Espaço na entrada: `SsAuthLayout(providers: [SsGoogleButton(onTap: g), SsAppleButton.icon(onPressed: a)])` (vale
+no `.cartaz` e no `.folhinha`; a linha é o `SsAuthProviders`). Web: `Ss::AppleButtonComponent(href:, label: :continue |
+:sign_in | "texto", style: :black | :white | :outline, method: :post | :get, compact:)` e o slot `with_provider` do
+`Ss::AuthLayoutComponent` (`.ss-auth-providers`). Sem `href:`, é um `<button type=button>` para o Sign in with Apple JS,
+que fica com o produto (script, `AppleID.auth.init` e o clique). O texto usa a Manrope do tema, não a SF do sistema.
+
+**Compras no iOS.** No iOS, recurso digital (plano Pro/Max, cota de IA, conteúdo) **só pode ser vendido pela compra
+dentro do app da Apple** (StoreKit; diretriz 3.1.1 da App Store): nada de botão, link ou texto levando ao checkout web
+(`/assinar/<produto>` das Licenças, Mercado Pago). As peças de plano não amarram a loja: `SsPlanOffer(ctaLabel:,
+onBuy:)` e `SsPlansView(onRestore:, onManage:)` recebem o texto e a ação do app (no iOS, a compra da Apple e o
+"Restaurar compras"). Nada no pacote abre URL nem leva a checkout web (conferido em `lib/`). Venda de bem ou serviço
+físico (pedido do minhas-vendas) continua fora da regra.
+
+**Checklist do que um app da suíte precisa para ir ao iOS** (o pacote cobre o desenho; o resto é do app):
+
+- [ ] **Mac ou runner macOS**: o build do iOS (`flutter build ipa`) só roda no macOS com Xcode. Nesta máquina (Fedora)
+      não há; a CI precisa de um runner `macos-*` do GitHub ou de um Mac na rede. O desenho se confere aqui pelos testes.
+- [ ] **Entrar com a Apple**: app com entrada pelo Google precisa oferecer também uma entrada com a mesma proteção de
+      privacidade (diretriz 4.8); a da Apple é a que passa sem discussão. Capability "Sign in
+      with Apple" no Xcode, o `sign_in_with_apple` no app, o Services ID e a chave no Apple Developer, e o backend que
+      valida o `identityToken`. Na tela, `SsAppleButton` no `providers:`.
+- [ ] **Compra pela Apple**: produtos e assinaturas no App Store Connect, `in_app_purchase` (StoreKit 2), validação do
+      recibo no servidor e o aviso às Licenças. Nenhum caminho para o checkout web no iOS. "Restaurar compras" visível.
+- [ ] **Textos de permissão no `Info.plist`** (em pt-BR, dizendo para quê): `NSCameraUsageDescription` (foto, cupom),
+      `NSPhotoLibraryUsageDescription`, `NSMicrophoneUsageDescription` (ditado), `NSLocationWhenInUseUsageDescription`,
+      `NSFaceIDUsageDescription` (biometria do `SsLockScreen`), `NSContactsUsageDescription` se usar. Sem o texto, o
+      app cai ao pedir.
+- [ ] **Rede local**: o que fala com aparelho na rede (minha-automacao, impressora) precisa de
+      `NSLocalNetworkUsageDescription` e do `NSBonjourServices` com os tipos (`_hap._tcp` etc.); HTTP sem TLS precisa
+      de exceção no `NSAppTransportSecurity`.
+- [ ] **HealthKit** (meu-personal): capability HealthKit, `NSHealthShareUsageDescription`/`NSHealthUpdateUsageDescription`
+      e o pacote `health` no lugar do Health Connect do Android.
+- [ ] **WidgetKit**: o widget da tela inicial do iOS é uma extensão em Swift (WidgetKit) com App Group para ler os dados
+      do app (`home_widget`); o widget Android não serve lá.
+- [ ] **Push**: APNs (chave .p8 no Firebase) e a capability Push Notifications.
+- [ ] **TestFlight**: conta Apple Developer (US$ 99/ano), app no App Store Connect, assinatura (certificado e perfil),
+      build pela CI no macOS e o teste interno no TestFlight antes da revisão; a ficha pede capturas do iPhone (6,9") e,
+      se o app roda no iPad, do iPad (13").
+- [ ] **Exclusão de conta dentro do app** (diretriz 5.1.1(v)), como já pede a Play.
+
+Fora desta versão: a roda e a folha de ação usam o desenho do iOS mas com a fonte do tema (a SF não está no pacote
+nem nos testes); a `SsNavBar`, a alça e a casca continuam as da suíte; o `SsDateField` segue com os chips de atalho.
+
+### Acertos da v1.10 (web)
+
+- `--ss-viewer-bg` (o fundo do visor de foto) sem `black`: `color-mix(…, var(--side))`.
+- `CurvedHeaderComponent(tone: :dark)` quase sumia no tema escuro (o `--side` é quase a página): agora
+  `color-mix(in srgb, var(--side) 82%, var(--ink))`, que levanta no escuro e quase não muda no claro.
+- As ondas do `PulseAvatarComponent` quase não apareciam no claro: 34% da cor e um aro de 1,5 px; no escuro, as de antes.
+
+O `paridade.yml` ficou com 298 pares, 13 apis, 34 só app, 10 só web e nenhuma dívida (novos: `SsAppleButton` ↔
+`Ss::AppleButtonComponent`, `SsAuthProviders` ↔ `Ss::AuthLayoutComponent`, `SsPlatform` ↔ `helper:ss_platform` e
+`SsPlatformScope` só app). Catálogo: `flutter/test/catalogo_v1110.dart` (`comV1110`; o `Estado(plataforma:)` força a
+plataforma do estado, também na vitrine do app) e as seções `ss-apple-btn`, `ss-curved-v1110` e `ss-pulse-v1110` do
+`rails/catalogo/index.html` (`rails/sample/script/catalogo_v1110.rb`). Vitrine web: `pecas_v1110` em "Novidades
+(v1.11)". Testes: `flutter/test/v1110_test.dart` e `rails/sample/test/components/v1_11_0_web_test.rb`.
 
 ## v1.10.0: a dívida de paridade zerada (21 pares web e 5 peças novas no app)
 
@@ -2364,6 +2474,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.11.0` (27/11/2026): seção "v1.11.0" (adaptativa). `SsPlatform`/`SsPlatformScope` e `adaptive:` nas peças: no iOS, `CupertinoSwitch`, roda de data e hora, folha de ação (`showSsPicker` curto, `SsOverflowMenu`, `SsContextMenu`), `CupertinoAlertDialog` no `showSsConfirm`, `CupertinoSliverRefreshControl`, haptics do iOS, × na `SsSheet`, transição do iOS no tema e a alça do menu que cede ao voltar do sistema em rota empilhada. `SsAppleButton` ↔ `Ss::AppleButtonComponent`, `SsAuthLayout(providers:)` ↔ `with_provider`, `ss_platform`. Dependência nova: `cupertino_ui`. Nada quebra na API; no Android o desenho não muda.
 - `v1.10.0` (27/11/2026): seção "v1.10.0". Dívida de paridade zerada: 21 pares Rails das peças do Flutter e `SsProductCard`, `SsFilterBar`/`SsFilterSheet`, `SsJobProgress`, `SsTreeView` e `SsPopover` no app. Nada quebra na API.
 - `v1.8.3` (24/11/2026): seção "v1.8.3". Chat sem `required` no campo (só `aria-required`): some o balão nativo ao parar o mouse. Nada quebra na API.
 - `v1.8.2` (23/11/2026): seção "v1.8.2". Tempo relativo com U+00A0 entre número e unidade (Flutter e Rails) e nome do ranking em até 2 linhas. Nada quebra na API; teste que compara o texto com espaço comum precisa do U+00A0.

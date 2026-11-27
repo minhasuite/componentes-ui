@@ -22,8 +22,8 @@ class VitrineTest < ActionDispatch::IntegrationTest
 
   test "páginas da onda atual entram em Novidades" do
     novas = PAGINAS.select { _1[:grupos].include?(VitrineController::GRUPO_NOVIDADES) }.map { _1[:slug] }
-    assert_includes novas, "pecas_v1100"
-    refute_includes novas, "pecas_v19_produto"
+    assert_includes novas, "pecas_v1110"
+    refute_includes novas, "pecas_v1100"
   end
 
   test "início mostra a suíte, o app, o APK e a grade das categorias" do

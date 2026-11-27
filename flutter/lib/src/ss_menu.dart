@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'app_theme.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 import 'density.dart';
 import 'motion.dart';
 import 'motion_view.dart';
@@ -42,8 +44,21 @@ class SsMenuAction {
 ///
 /// v0.19.1: [child] troca o ⋮ por outra âncora (ex. "↗ No app" em texto);
 /// aí o menu abre mesmo com uma ação só.
+///
+/// v1.11.0: no iOS (com [adaptive]), tocar no ⋯ abre a folha de ação do iOS (`CupertinoActionSheet`): as
+/// ações, a destrutiva em vermelho, o ✓ das marcadas e o Cancelar separado. O ícone vira o ⋯ do iOS.
 class SsOverflowMenu extends StatelessWidget {
-  const SsOverflowMenu({super.key, required this.items, this.tooltip, this.icon = Icons.more_vert_rounded, this.child});
+  const SsOverflowMenu({
+    super.key,
+    required this.items,
+    this.tooltip,
+    this.icon = Icons.more_vert_rounded,
+    this.child,
+    this.adaptive = true,
+  });
+
+  /// v1.11.0: a folha de ação no iOS.
+  final bool adaptive;
 
   final List<SsMenuAction> items;
 
@@ -66,6 +81,32 @@ class SsOverflowMenu extends StatelessWidget {
         tooltip: a.label,
         icon: Icon(a.icon, color: a.destructive ? AppColors.danger : null),
         onPressed: a.onTap,
+      );
+    }
+    if (SsPlatform.cupertino(context, adaptive: adaptive)) {
+      Future<void> abrir() async {
+        final i = await ssActionSheet<int>(
+          context,
+          choices: [
+            for (final (i, a) in items.indexed)
+              (label: a.label, value: i, destructive: a.destructive, checked: a.checked, icon: null),
+          ],
+        );
+        if (i != null) items[i].onTap();
+      }
+
+      final tip = tooltip ?? SsStrings.of(context).moreOptions;
+      if (child != null) {
+        return Semantics(
+          button: true,
+          label: tip,
+          child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: abrir, child: child),
+        );
+      }
+      return IconButton(
+        tooltip: tip,
+        icon: Icon(icon == Icons.more_vert_rounded ? Icons.more_horiz_rounded : icon),
+        onPressed: abrir,
       );
     }
     return PopupMenuButton<int>(

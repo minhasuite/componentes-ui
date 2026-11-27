@@ -9,6 +9,10 @@ import 'v170/auth_cartaz.dart';
 // dos tokens de cada um. Ao mudar aqui, copie para os outros apps.
 
 /// Halos da marca atrás do formulário, ícone do app, nome, frase e o formulário.
+///
+/// v1.11.0: [providers] é o lugar dos botões de entrar com outra conta, numa linha embaixo do formulário:
+/// `providers: [SsGoogleButton(onTap: g), SsAppleButton.icon(onPressed: a)]` (os quadrados lado a lado)
+/// ou um [SsAppleButton] inteiro sozinho. Vale também no [SsAuthLayout.cartaz] e no [SsAuthLayout.folhinha].
 class SsAuthLayout extends StatelessWidget {
   const SsAuthLayout({
     super.key,
@@ -16,7 +20,11 @@ class SsAuthLayout extends StatelessWidget {
     required this.subtitle,
     required this.halo,
     required this.children,
+    this.providers = const [],
   });
+
+  /// v1.11.0: os botões de entrar com o Google e com a Apple (ver acima).
+  final List<Widget> providers;
 
   /// v0.22: a tela de entrada "Folhinha" (par do `Ss::AuthLayoutComponent`): folhinha de parede com a data
   /// de hoje, o formulário do app no bloco e a faixa do [product] na cor da marca. Três variações
@@ -37,6 +45,7 @@ class SsAuthLayout extends StatelessWidget {
     String? note,
     (String, String) brand = const ('Minha', 'Suite'),
     List<Widget> footer = const [],
+    List<Widget> providers = const [],
   }) => SsAuthFolhinha(
     key: key,
     product: product,
@@ -48,7 +57,7 @@ class SsAuthLayout extends StatelessWidget {
     note: note,
     brand: brand,
     footer: footer,
-    children: children,
+    children: [...children, if (providers.isNotEmpty) SsAuthProviders(providers)],
   );
 
   /// v1.7: a tela de entrada "Cartaz + papel" (par do `Ss::AuthLayoutComponent(variant: :cartaz, layout: :split)`):
@@ -73,6 +82,7 @@ class SsAuthLayout extends StatelessWidget {
     IconData? icon,
     (String, String) brand = const ('Minha', 'Suite'),
     List<Widget> footer = const [],
+    List<Widget> providers = const [],
   }) => SsAuthCartaz(
     key: key,
     product: product,
@@ -85,7 +95,7 @@ class SsAuthLayout extends StatelessWidget {
     icon: icon,
     brand: brand,
     footer: footer,
-    children: children,
+    children: [...children, if (providers.isNotEmpty) SsAuthProviders(providers)],
   );
 
   final String title;
@@ -151,6 +161,7 @@ class SsAuthLayout extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   ...children,
+                  if (providers.isNotEmpty) SsAuthProviders(providers),
                 ],
               ),
             ),
@@ -175,6 +186,27 @@ class _Halo extends StatelessWidget {
         gradient: RadialGradient(colors: [color.withValues(alpha: .28), color.withValues(alpha: 0)]),
       ),
     ),
+  );
+}
+
+/// v1.11.0: a linha dos botões de entrar com outra conta ([SsGoogleButton], [SsAppleButton]) do
+/// `providers:` do [SsAuthLayout]: um botão sozinho ocupa a largura; vários ficam lado a lado, centrados,
+/// com 12 entre eles. Pública para a tela de entrada própria do app.
+class SsAuthProviders extends StatelessWidget {
+  const SsAuthProviders(this.providers, {super.key});
+
+  final List<Widget> providers;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 12),
+    child: providers.length == 1
+        ? providers.single
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 12,
+            children: [for (final p in providers) Flexible(child: p)],
+          ),
   );
 }
 

@@ -13,6 +13,8 @@ import 'ss_aurora.dart';
 import 'ss_error_view.dart';
 import 'ss_strings.dart';
 import 'v19/movimento/skeleton_switch.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 
 String _mensagem(
   BuildContext context,
@@ -178,8 +180,24 @@ abstract interface class SsSelfScrolling {}
 /// [SsSelfScrolling] ([SsLogbook], [SsPagedList], [SsScreenHeader],
 /// [SsMenuView]). Para um widget próprio que monta a sua rolagem (e precisa
 /// de altura limitada), passe [scrollable] `true`; `false` força o embrulho.
+///
+/// v1.11.0: no iOS (com [adaptive]), o puxar do iOS (`CupertinoSliverRefreshControl`, a rodinha que
+/// aparece no vão do elástico) com rolagem de elástico: a lista (`ListView`, `GridView`,
+/// `CustomScrollView`) vira um `CustomScrollView` com o controle como 1ª fatia, e o conteúdo solto rola
+/// por dentro. O que monta a própria rolagem (`SingleChildScrollView`, `NestedScrollView`, `PageView`, as
+/// peças [SsSelfScrolling]) fica com o indicador da suíte, que também funciona no iOS; o [SsScreenHeader]
+/// com `onRefresh:` põe o controle do iOS embaixo do cabeçalho.
 class SsPullToRefresh extends StatefulWidget {
-  const SsPullToRefresh({super.key, required this.onRefresh, required this.child, this.scrollable});
+  const SsPullToRefresh({
+    super.key,
+    required this.onRefresh,
+    required this.child,
+    this.scrollable,
+    this.adaptive = true,
+  });
+
+  /// v1.11.0: o puxar do iOS no iOS.
+  final bool adaptive;
 
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -243,9 +261,51 @@ class _SsPullToRefreshState extends State<SsPullToRefresh> with SingleTickerProv
     }
   }
 
+  /// v1.11.0: o puxar do iOS, ou nulo quando o filho monta a própria rolagem (fica o da suíte).
+  Widget? _cupertino(BuildContext context) {
+    final w = widget.child;
+    final controle = ssCupertinoRefresh(context, () async {
+      SsHaptics.threshold();
+      await widget.onRefresh();
+    });
+    if (w is ScrollView) {
+      if (w.scrollDirection != Axis.vertical || w.reverse || w.shrinkWrap) return null;
+      return CustomScrollView(
+        controller: w.controller,
+        primary: w.primary,
+        physics: ssBouncingAlways,
+        scrollCacheExtent: w.scrollCacheExtent,
+        keyboardDismissBehavior: w.keyboardDismissBehavior,
+        clipBehavior: w.clipBehavior,
+        restorationId: w.restorationId,
+        // ignore: invalid_use_of_protected_member
+        slivers: [controle, ...w.buildSlivers(context)],
+      );
+    }
+    if (widget.scrollable ?? SsPullToRefresh.selfScrolling(w)) return null;
+    return LayoutBuilder(
+      builder: (_, box) => CustomScrollView(
+        physics: ssBouncingAlways,
+        slivers: [
+          controle,
+          SliverToBoxAdapter(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: box.maxHeight),
+              child: w,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    if (SsPlatform.cupertino(context, adaptive: widget.adaptive)) {
+      final ios = _cupertino(context);
+      if (ios != null) return ios;
+    }
     final child = widget.scrollable ?? SsPullToRefresh.selfScrolling(widget.child)
         ? widget.child
         : LayoutBuilder(

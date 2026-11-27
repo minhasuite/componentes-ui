@@ -537,6 +537,9 @@ class SsStrings {
     this.filterButton = _v1100FilterButtonPt,
     this.filterShowResults = _v1100FilterShowResultsPt,
     this.treeCount = _v1100TreeCountPt,
+    // v1.11.0: entrar com a Apple (SsAppleButton).
+    this.appleContinue = 'Continuar com a Apple',
+    this.appleSignIn = 'Entrar com a Apple',
   });
 
   /// Idioma destes textos (também o do calendário do [SsDateField]).
@@ -1334,6 +1337,12 @@ class SsStrings {
   final String Function(int n) filterShowResults;
   final String Function(int n) treeCount;
 
+  /// v1.11.0: "Continuar com a Apple" (o padrão do [SsAppleButton]).
+  final String appleContinue;
+
+  /// v1.11.0: "Entrar com a Apple" (`SsAppleButtonLabel.signIn`).
+  final String appleSignIn;
+
   /// "Outubro 2026".
   String monthTitle(DateTime d) => '${months[d.month - 1]} ${d.year}';
 
@@ -1877,6 +1886,8 @@ class SsStrings {
     filterButton: _v1100FilterButtonPt,
     filterShowResults: _v1100FilterShowResultsPt,
     treeCount: _v1100TreeCountPt,
+    appleContinue: 'Continuar com a Apple',
+    appleSignIn: 'Entrar com a Apple',
   );
 
   /// Inglês.
@@ -2408,6 +2419,8 @@ class SsStrings {
     filterButton: (n) => n == 0 ? 'Filters' : 'Filters, $n active',
     filterShowResults: (n) => n == 0 ? 'No results' : (n == 1 ? 'Show 1 result' : 'Show $n results'),
     treeCount: (n) => n == 1 ? '1 item' : '$n items',
+    appleContinue: 'Continue with Apple',
+    appleSignIn: 'Sign in with Apple',
   );
 
   /// Espanhol.
@@ -2939,6 +2952,8 @@ class SsStrings {
     filterButton: (n) => n == 0 ? 'Filtros' : (n == 1 ? 'Filtros, 1 activo' : 'Filtros, $n activos'),
     filterShowResults: (n) => n == 0 ? 'Sin resultados' : (n == 1 ? 'Mostrar 1 resultado' : 'Mostrar $n resultados'),
     treeCount: (n) => n == 1 ? '1 elemento' : '$n elementos',
+    appleContinue: 'Continuar con Apple',
+    appleSignIn: 'Iniciar sesión con Apple',
   );
 
   /// Todos os textos (as funções com argumentos de exemplo), para teste.
@@ -3457,6 +3472,8 @@ class SsStrings {
     'filterButton': filterButton(2),
     'filterShowResults': filterShowResults(12),
     'treeCount': treeCount(3),
+    'appleContinue': appleContinue,
+    'appleSignIn': appleSignIn,
   };
 
   /// Os idiomas prontos.

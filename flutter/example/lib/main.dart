@@ -9,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'aparencia.dart';
 import 'catalogo/catalogo.dart';
-import 'catalogo/catalogo_v1100.dart';
+import 'catalogo/catalogo_v1110.dart';
 import 'categorias.dart';
 import 'telas/tela_demo.dart';
 import 'telas/telas_a.dart';
@@ -23,10 +23,10 @@ void main() {
 const _demoUrl = 'https://demo.minhasuite.com';
 const _repoUrl = 'https://github.com/minhasuite/componentes-ui';
 
-/// Peças da onda atual: as que o `comV1100` do catálogo acrescenta (aplicado a uma lista
-/// vazia) mais as marcadas "(v1.10…)" na descrição. Onda nova de peças = trocar o `comV*` aqui.
+/// Peças da onda atual: as que o `comV1110` do catálogo acrescenta (aplicado a uma lista
+/// vazia) mais as marcadas "(v1.11…)" na descrição. Onda nova de peças = trocar o `comV*` aqui.
 final Set<String> _novas = {
-  for (final onda in [comV1100])
+  for (final onda in [comV1110])
     for (final c in onda(const <Componente>[])) c.slug,
   for (final c in catalogo)
     if (ehNovidade(c.nome, c.descricao)) c.slug,
@@ -484,11 +484,16 @@ class _EstadoView extends StatelessWidget {
                   child: FittedBox(
                     child: SizedBox.fromSize(
                       size: estado.tamanho,
+                      // v1.11.0: o estado pode forçar a plataforma (a variante do iOS das peças adaptativas).
                       child: HeroControllerScope.none(
-                        child: Navigator(
-                          key: ValueKey('${comp.slug}/${estado.slug}/${Theme.of(context).brightness}'),
-                          onGenerateRoute: (_) => PageRouteBuilder<void>(
-                            pageBuilder: (context, _, _) => Scaffold(body: Builder(builder: estado.build)),
+                        child: _comPlataforma(
+                          context,
+                          estado.plataforma,
+                          Navigator(
+                            key: ValueKey('${comp.slug}/${estado.slug}/${Theme.of(context).brightness}'),
+                            onGenerateRoute: (_) => PageRouteBuilder<void>(
+                              pageBuilder: (context, _, _) => Scaffold(body: Builder(builder: estado.build)),
+                            ),
                           ),
                         ),
                       ),
@@ -503,6 +508,14 @@ class _EstadoView extends StatelessWidget {
     );
   }
 }
+
+/// O [child] com a plataforma do tema trocada (nula: a do aparelho).
+Widget _comPlataforma(BuildContext context, TargetPlatform? p, Widget child) => p == null
+    ? child
+    : Theme(
+        data: Theme.of(context).copyWith(platform: p),
+        child: child,
+      );
 
 class _Sobre extends StatelessWidget {
   const _Sobre();

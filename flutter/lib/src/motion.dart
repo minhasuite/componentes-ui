@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
@@ -414,11 +415,23 @@ class _ConfettiPainter extends CustomPainter {
 /// | [error] | toque forte | aviso de erro ([showSsToast] com o tom de erro) |
 ///
 /// [enabled] falso desliga tudo (preferência do app ou teste).
+///
+/// v1.11.0: no iOS (com [adaptive]), cada contexto vai para o gerador do iOS que diz a mesma coisa:
+/// [selection] → `UISelectionFeedbackGenerator`; [limit] e [light] → impacto leve; [threshold] → impacto
+/// médio; [success], [warning] e [error] → `UINotificationFeedbackGenerator` (sucesso, aviso e erro, um
+/// toque só, no lugar dos impactos do Android). A plataforma vem do `defaultTargetPlatform` (o
+/// `debugDefaultTargetPlatformOverride` nos testes).
 class SsHaptics {
   const SsHaptics._();
 
   /// Liga e desliga todas as vibrações do pacote (preferência "Vibração" do app).
   static bool enabled = true;
+
+  /// v1.11.0: falso usa no iOS o mesmo mapa do Android (impactos).
+  static bool adaptive = true;
+
+  static bool get _ios =>
+      adaptive && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS);
 
   /// Escolheu uma opção (chave, segmentado, chip).
   static Future<void> selection() => enabled ? HapticFeedback.selectionClick() : Future.value();
@@ -426,19 +439,22 @@ class SsHaptics {
   /// Bateu no limite (mínimo ou máximo do slider, fim da lista de opções).
   static Future<void> limit() => enabled ? HapticFeedback.lightImpact() : Future.value();
 
-  /// Deu certo: dois toques leves.
+  /// Deu certo: dois toques leves (no iOS, a notificação de sucesso).
   static Future<void> success() async {
     if (!enabled) return;
+    if (_ios) return HapticFeedback.successNotification();
     await HapticFeedback.lightImpact();
     await Future<void>.delayed(const Duration(milliseconds: 90));
     await HapticFeedback.lightImpact();
   }
 
   /// Atenção: ação perigosa confirmada, item removido com desfazer.
-  static Future<void> warning() => enabled ? HapticFeedback.mediumImpact() : Future.value();
+  static Future<void> warning() =>
+      !enabled ? Future.value() : (_ios ? HapticFeedback.warningNotification() : HapticFeedback.mediumImpact());
 
-  /// Falhou.
-  static Future<void> error() => enabled ? HapticFeedback.heavyImpact() : Future.value();
+  /// Falhou (no iOS, a notificação de erro).
+  static Future<void> error() =>
+      !enabled ? Future.value() : (_ios ? HapticFeedback.errorNotification() : HapticFeedback.heavyImpact());
 
   /// O mesmo que [selection] (nome da v0.5).
   static Future<void> tick() => selection();

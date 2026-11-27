@@ -33,7 +33,15 @@ module Ss
   #   render(Ss::AuthLayoutComponent.new(product: "Minhas Vendas", tagline: "A venda não para.", variant: :cartaz,
   #                                      word: "vendas", facts: %w[Web Windows Caixa App], icon: "chart-bar",
   #                                      title: "Entrar", subtitle: "no Minhas Vendas")) { … }
+  #
+  # v1.11.0 · with_provider (par do SsAuthLayout(providers:)): os botões de entrar com outra conta, numa linha
+  # embaixo do formulário (.ss-auth-providers): um sozinho ocupa a largura; os quadrados (compact: true) ficam
+  # lado a lado.
+  #   c.with_provider { render Ss::GoogleButtonComponent.new(href: …) }
+  #   c.with_provider { render Ss::AppleButtonComponent.new(href: …) }
   class AuthLayoutComponent < BaseComponent
+    renders_many :providers
+
     VARIANTS = %i[sheet wall pad cartaz].freeze
     LAYOUTS = %i[split].freeze
 

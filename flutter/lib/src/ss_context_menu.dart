@@ -3,6 +3,8 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 import 'density.dart';
 import 'motion.dart';
 import 'motion_view.dart';
@@ -21,8 +23,14 @@ class SsContextAction {
 /// o fundo escurece e a lista de [actions] aparece ancorada abaixo (ou acima,
 /// se não couber). [preview] troca o item levantado por uma prévia compacta.
 /// No leitor de tela, as ações viram ações personalizadas do item.
+///
+/// v1.11.0: no iOS (com [adaptive]), o toque longo (e o [SsContextMenuState.open]) abre a folha de ação do
+/// iOS com as mesmas ações (a destrutiva em vermelho) e o Cancelar.
 class SsContextMenu extends StatefulWidget {
-  const SsContextMenu({super.key, required this.child, required this.actions, this.preview});
+  const SsContextMenu({super.key, required this.child, required this.actions, this.preview, this.adaptive = true});
+
+  /// v1.11.0: a folha de ação no iOS.
+  final bool adaptive;
 
   final Widget child;
   final List<SsContextAction> actions;
@@ -36,6 +44,18 @@ class SsContextMenu extends StatefulWidget {
 /// `GlobalKey<SsContextMenuState>()` e `key.currentState!.open()`.
 class SsContextMenuState extends State<SsContextMenu> {
   void open() {
+    if (SsPlatform.cupertino(context, adaptive: widget.adaptive)) {
+      ssActionSheet<int>(
+        context,
+        choices: [
+          for (final (i, a) in widget.actions.indexed)
+            (label: a.label, value: i, destructive: a.destructive, checked: false, icon: a.icon),
+        ],
+      ).then((i) {
+        if (i != null) widget.actions[i].onTap();
+      });
+      return;
+    }
     final nav = Navigator.of(context);
     final box = context.findRenderObject() as RenderBox?;
     final navBox = nav.context.findRenderObject() as RenderBox?;

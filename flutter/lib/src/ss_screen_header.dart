@@ -7,6 +7,8 @@ import 'density.dart';
 import 'ss_async.dart';
 import 'motion.dart';
 import 'ss_strings.dart';
+import 'v1110/cupertino.dart' show ssBouncingAlways, ssCupertinoRefresh;
+import 'v1110/platform.dart';
 
 /// Tela com título grande que encolhe ao rolar: monta um `CustomScrollView`
 /// com o [SsSliverHeader] e os seus [slivers]. Vai no `body` do Scaffold
@@ -51,12 +53,17 @@ class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
 
   @override
   Widget build(BuildContext context) {
+    // v1.11.0: no iOS, o puxar do iOS fica logo abaixo do cabeçalho preso (como na barra do sistema).
+    if (onRefresh != null && SsPlatform.cupertino(context)) {
+      return _view(refresh: ssCupertinoRefresh(context, onRefresh!), physics: ssBouncingAlways);
+    }
     final view = _view();
     return onRefresh == null ? view : SsPullToRefresh(onRefresh: onRefresh!, child: view);
   }
 
-  Widget _view() => CustomScrollView(
+  Widget _view({Widget? refresh, ScrollPhysics? physics}) => CustomScrollView(
     controller: controller,
+    physics: physics,
     slivers: [
       SsSliverHeader(
         title: title,
@@ -69,6 +76,7 @@ class SsScreenHeader extends StatelessWidget implements SsSelfScrolling {
         titleLeading: titleLeading,
         titleWidget: titleWidget,
       ),
+      ?refresh,
       ...slivers,
     ],
   );
@@ -138,7 +146,7 @@ class SsSliverHeader extends StatelessWidget {
           leading ??
           ((ModalRoute.of(context)?.canPop ?? false)
               ? SsHeaderAction(
-                  icon: Icons.arrow_back_rounded,
+                  icon: SsPlatform.backIcon(context),
                   tooltip: SsStrings.of(context).back,
                   onPressed: () => Navigator.maybePop(context),
                 )

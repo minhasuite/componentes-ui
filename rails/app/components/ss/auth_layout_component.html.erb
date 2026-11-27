@@ -7,6 +7,7 @@
     <h1 class="ss-auth-title"><%= title %></h1>
     <% if subtitle %><p class="ss-auth-sub"><%= subtitle %></p><% end %>
     <%= content %>
+    <% if providers? %><div class="ss-auth-providers<%= " is-row" if providers.size > 1 %>"><% providers.each do |p| %><%= p %><% end %></div><% end %>
   </div>
 <% end %>
 <% rodape = capture do %>

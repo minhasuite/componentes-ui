@@ -1,7 +1,7 @@
 name: componentes_ui
 description: Design system "Lista Clara" da MinhaSuite (tema, tokens e componentes Ss*).
 publish_to: "none"
-version: 1.10.0
+version: 1.11.0
 
 environment:
   sdk: ^3.14.0
@@ -15,6 +15,9 @@ dependencies:
   # AsyncValue do SsAsyncBody (todos os apps da suíte usam Riverpod 2).
   flutter_riverpod: ^2.5.1
   material_ui: ^1.11.1
+  # v1.11.0: as variantes do iOS (chave, roda de data, folha de ação, alerta, puxar para atualizar e a
+  # transição de página). O material_ui já depende dele; no Flutter 3.50 o flutter/cupertino.dart está obsoleto.
+  cupertino_ui: ^1.1.1
   # `package:componentes_ui/testing.dart` (só nos testes dos apps): finders do material_ui.
   flutter_test:
     sdk: flutter

@@ -1,0 +1,40 @@
+<%# titulo: Entrar com a Apple e a v1.11 (adaptativa) | grupo: Ações e botões | tambem: Telas montadas; Navegação e moldura | ordem: 95 | versao: 1.11 %>
+<%# v1.11.0 "adaptativa": o par web do SsAppleButton, a linha de entrar com outra conta na entrada e os três acertos da v1.10. %>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Entrar com a Apple (AppleButtonComponent)", subtitle: "Preto, contorno e branco, como pedem as diretrizes da Apple. O botão é só o desenho: a entrada (Sign in with Apple JS ou OmniAuth) é do produto.") %>
+    <div class="grid gap-3 max-w-sm">
+      <%= render Ss::AppleButtonComponent.new(href: "#", method: :get) %>
+      <%= render Ss::AppleButtonComponent.new(href: "#", method: :get, label: :sign_in, style: :outline) %>
+      <div class="ss-card ss-card-pad" style="background:var(--side)">
+        <%= render Ss::AppleButtonComponent.new(style: :white, id: "vitrine-apple-js") %>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Ao lado do Google (with_provider)", subtitle: "Os quadrados só com o logo ficam lado a lado; um botão sozinho ocupa a largura.") %>
+    <div class="max-w-sm">
+      <div class="ss-auth-providers is-row">
+        <%= render Ss::GoogleButtonComponent.new(href: "#", method: :get) %>
+        <%= render Ss::AppleButtonComponent.new(href: "#", method: :get, compact: true) %>
+      </div>
+      <div class="ss-auth-providers">
+        <%= render Ss::AppleButtonComponent.new(href: "#", method: :get) %>
+      </div>
+    </div>
+    <p class="ss-muted">Plataforma desta visita (<code>ss_platform</code>): <strong><%= ss_platform %></strong>. Para quem está num aparelho da Apple, o produto pode pôr a Apple primeiro (<code>ss_apple_platform?</code>).</p>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4" style="overflow:hidden">
+    <%= render Ss::CardHeaderComponent.new(title: "Acertos da v1.10", subtitle: "Cabeçalho curvo escuro visível no tema escuro, ondas do avatar no claro e o fundo do visor só com tokens.") %>
+    <div class="max-w-md" style="position:relative;isolation:isolate">
+      <%= render Ss::CurvedHeaderComponent.new(title: "Início", tone: :dark, heading: :h3) %>
+      <div class="ss-curved-body ss-card ss-card-pad mx-3">tone: :dark</div>
+    </div>
+    <div class="flex gap-4 flex-wrap">
+      <%= render Ss::PulseAvatarComponent.new(name: "Ana Souza", status: "chamando") %>
+      <%= render Ss::PulseAvatarComponent.new(name: "Assistente", status: "ouvindo", tone: :success) { ss_icon("sparkles", size: nil) } %>
+    </div>
+  </section>
+</div>

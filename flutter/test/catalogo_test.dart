@@ -52,7 +52,8 @@ void main() {
               debugShowCheckedModeBanner: false,
               // Sem transição de tema: senão o 1º quadro do escuro sai com cores do claro.
               themeAnimationDuration: Duration.zero,
-              theme: tema == 'claro' ? AppTheme.light : AppTheme.dark,
+              // v1.11.0: o estado pode forçar a plataforma (a variante do iOS das peças adaptativas).
+              theme: (tema == 'claro' ? AppTheme.light : AppTheme.dark).copyWith(platform: e.plataforma),
               home: RepaintBoundary(
                 key: const Key('shot'),
                 // Chave por estado: senão o Flutter reaproveita o State do anterior.

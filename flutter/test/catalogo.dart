@@ -61,14 +61,27 @@ import 'catalogo_v19_movimento.dart';
 import 'catalogo_v19_paridade_app.dart';
 import 'catalogo_v19_produto.dart';
 import 'catalogo_v19_paridade_web.dart';
-// v1.10.0: os pares Flutter que faltavam (comV1100, por fora de tudo).
+// v1.10.0: os pares Flutter que faltavam (comV1100).
+// v1.11.0: as variantes do iOS e o botão da Apple (comV1110, por fora de tudo).
 import 'catalogo_v1100.dart';
+import 'catalogo_v1110.dart';
 
 class Estado {
-  const Estado(this.slug, this.titulo, this.build, {this.tamanho = const Size(360, 96), this.aguarde = 400});
+  const Estado(
+    this.slug,
+    this.titulo,
+    this.build, {
+    this.tamanho = const Size(360, 96),
+    this.aguarde = 400,
+    this.plataforma,
+  });
   final String slug;
   final String titulo;
   final WidgetBuilder build;
+
+  /// v1.11.0: força a plataforma do tema neste estado (ex. `TargetPlatform.iOS` para a variante do iOS das
+  /// peças adaptativas). Nulo: a do tema (Android no teste).
+  final TargetPlatform? plataforma;
 
   /// ms entre montar e capturar (menor = pega uma animação no meio).
   final int aguarde;
@@ -135,22 +148,24 @@ class _NavDemoState extends State<_NavDemo> {
   }
 }
 
-final catalogo = comV1100(
-  comV19Correcoes(
-    comV19ParidadeWeb(
-      comV19Produto(
-        comV19ParidadeApp(
-          comV19Transicoes(
-            comV19Movimento(
-              comV130(
-                comV122(
-                  comV120(
-                    comV28(
-                      comV27Graficos(
-                        comV27(
-                          comV26(
-                            comV25(
-                              comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))))),
+final catalogo = comV1110(
+  comV1100(
+    comV19Correcoes(
+      comV19ParidadeWeb(
+        comV19Produto(
+          comV19ParidadeApp(
+            comV19Transicoes(
+              comV19Movimento(
+                comV130(
+                  comV122(
+                    comV120(
+                      comV28(
+                        comV27Graficos(
+                          comV27(
+                            comV26(
+                              comV25(
+                                comV24(comV21(comV20(comV192(comV191(comV19(comV18(comV16(comV152(_catalogo))))))))),
+                              ),
                             ),
                           ),
                         ),

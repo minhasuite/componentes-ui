@@ -1,4 +1,4 @@
-# paridade.yml (v1.9; dívida zerada na v1.10.0): o par web de cada peça do Flutter, e vice-versa.
+# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform): o par web de cada peça do Flutter, e vice-versa.
 #
 # A regra da suíte é web e app com as mesmas funcionalidades; aqui fica escrito qual peça de um lado
 # responde pela do outro. Dois testes leem este arquivo e falham quando alguém cria peça num lado só:
@@ -28,6 +28,7 @@ pares:
   SsAiMark: "css:.ss-ai-badge"
   SsAmount: "helper:ss_amount"
   SsAppearancePanel: "Ss::ThemeSwitcherComponent"
+  SsAppleButton: "Ss::AppleButtonComponent"
   SsAreaChart: "Ss::AreaChartComponent"
   SsAsideLayout: "Ss::AsideLayoutComponent"
   SsAssistantConversations: "Ss::AssistantComponent"
@@ -40,6 +41,7 @@ pares:
   SsAuthError: "Ss::AuthLayoutComponent"
   SsAuthFolhinha: "Ss::AuthLayoutComponent"
   SsAuthLayout: "Ss::AuthLayoutComponent"
+  SsAuthProviders: "Ss::AuthLayoutComponent"
   SsAvatar: "helper:ss_avatar"
   SsAvatarStack: "css:.ss-avatars"
   SsBadge: "Ss::BadgeComponent"
@@ -330,6 +332,7 @@ apis:
   showSsSheet: ["Ss::DialogComponent", "Ss::DrawerComponent"]
   showSsToast: ["Ss::ToastComponent", "Ss::ToastStackComponent"]
   showSsUndo: "Ss::ToastComponent"
+  SsPlatform: "helper:ss_platform"
 
 so_app:
   SsAmountKeypad: "teclado numérico desenhado na tela; no web o valor é digitado no teclado físico (Ss::MoneyInputComponent)"
@@ -365,6 +368,7 @@ so_app:
   SsBackShrink: "voltar preditivo do Android (gesto do sistema)"
   SsPredictiveBackScope: "voltar preditivo do Android (gesto do sistema)"
   SsSliverEntrance: "entrada de sliver do Flutter; no web é o ss-in-view"
+  SsPlatformScope: "infra: liga e desliga as variantes do iOS no Flutter; o web não muda o desenho por plataforma (o ss_platform só diz qual é)"
 
 so_web:
   Ss::BlockComponent: "peça interna do Ss::BlockListComponent (o with_block da lista)"

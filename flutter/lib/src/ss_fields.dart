@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoDatePickerMode, CupertinoSwitch;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,8 @@ import 'ss_stat.dart';
 import 'ss_strings.dart';
 import 'v15/amount.dart';
 import 'v20/pecas.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 
 /// Validadores prontos para os campos `Ss*`. As mensagens saem em português;
 /// para outro idioma, passe [SsStrings] (ex.:
@@ -70,6 +73,10 @@ abstract final class SsValidators {
 /// `showDatePicker` cru.
 ///
 /// `final d = await showSsDatePicker(context, initialDate: item.expiresOn, firstDate: hoje)`
+///
+/// v1.11.0: no iOS (com [adaptive]), a roda do `CupertinoDatePicker` numa folha (Cancelar, o título e
+/// Confirmar em cima), com os mesmos limites, o mesmo [selectableDayPredicate] e a mesma volta (o dia, ou
+/// nulo). [initialEntryMode] não vale lá. `adaptive: false` fica no calendário da suíte.
 Future<DateTime?> showSsDatePicker(
   BuildContext context, {
   DateTime? initialDate,
@@ -80,6 +87,7 @@ Future<DateTime?> showSsDatePicker(
   String? cancelText,
   DatePickerEntryMode initialEntryMode = DatePickerEntryMode.calendar,
   bool Function(DateTime day)? selectableDayPredicate,
+  bool adaptive = true,
 }) {
   final s = SsStrings.of(context);
   final first = DateUtils.dateOnly(firstDate ?? DateTime(2000));
@@ -87,6 +95,19 @@ Future<DateTime?> showSsDatePicker(
   var inicial = DateUtils.dateOnly(initialDate ?? DateTime.now());
   if (inicial.isBefore(first)) inicial = first;
   if (inicial.isAfter(last)) inicial = last;
+  if (SsPlatform.cupertino(context, adaptive: adaptive)) {
+    return ssWheelSheet(
+      context,
+      mode: CupertinoDatePickerMode.date,
+      initial: inicial,
+      minimum: first,
+      maximum: last,
+      title: helpText,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      selectableDayPredicate: selectableDayPredicate,
+    ).then((d) => d == null ? null : DateUtils.dateOnly(d));
+  }
   return showDatePicker(
     context: context,
     initialDate: inicial,
@@ -107,6 +128,9 @@ Future<DateTime?> showSsDatePicker(
 /// lugar do `showTimePicker` cru.
 ///
 /// `final t = await showSsTimePicker(context, initialTime: TimeOfDay.now())`
+///
+/// v1.11.0: no iOS (com [adaptive]), a roda de hora do `CupertinoDatePicker` numa folha, como a do
+/// [showSsDatePicker]; [use24h] vale lá também.
 Future<TimeOfDay?> showSsTimePicker(
   BuildContext context, {
   TimeOfDay? initialTime,
@@ -115,8 +139,22 @@ Future<TimeOfDay?> showSsTimePicker(
   String? cancelText,
   TimePickerEntryMode initialEntryMode = TimePickerEntryMode.dial,
   bool use24h = true,
+  bool adaptive = true,
 }) {
   final s = SsStrings.of(context);
+  if (SsPlatform.cupertino(context, adaptive: adaptive)) {
+    final t = initialTime ?? TimeOfDay.now();
+    final hoje = DateTime.now();
+    return ssWheelSheet(
+      context,
+      mode: CupertinoDatePickerMode.time,
+      initial: DateTime(hoje.year, hoje.month, hoje.day, t.hour, t.minute),
+      use24h: use24h,
+      title: helpText,
+      confirmText: confirmText,
+      cancelText: cancelText,
+    ).then((d) => d == null ? null : TimeOfDay.fromDateTime(d));
+  }
   return showTimePicker(
     context: context,
     initialTime: initialTime ?? TimeOfDay.now(),
@@ -967,6 +1005,7 @@ class SsDateField extends StatelessWidget {
     this.validator,
     this.showShortcuts = true,
     this.helperText,
+    this.adaptive = true,
   }) : _hora = false;
 
   const SsDateField._hora({
@@ -981,6 +1020,7 @@ class SsDateField extends StatelessWidget {
     this.validator,
     this.showShortcuts = true,
     this.helperText,
+    this.adaptive = true,
   }) : _hora = true;
 
   final String? label;
@@ -995,6 +1035,9 @@ class SsDateField extends StatelessWidget {
 
   /// Dica fixa embaixo dos chips (some enquanto há erro).
   final String? helperText;
+
+  /// v1.11.0: no iOS, o calendário e o relógio viram a roda numa folha (ver [showSsDatePicker]).
+  final bool adaptive;
   final bool _hora;
 
   /// Os 3 atalhos a partir de [today]: (rótulo, dia). Sem [strings], em
@@ -1029,6 +1072,7 @@ class SsDateField extends StatelessWidget {
       initialDate: value ?? initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
+      adaptive: adaptive,
     );
     if (d != null) onChanged(_comHora(d));
   }
@@ -1038,6 +1082,7 @@ class SsDateField extends StatelessWidget {
     final t = await showSsTimePicker(
       context,
       initialTime: value == null ? const TimeOfDay(hour: 9, minute: 0) : TimeOfDay.fromDateTime(value!),
+      adaptive: adaptive,
     );
     if (t == null) return;
     final d = value ?? DateTime.now();
@@ -1341,7 +1386,11 @@ class SsSwitchRow extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.icon,
+    this.adaptive = true,
   });
+
+  /// v1.11.0: no iOS, a chave é a do iOS (ver [SsSwitch.adaptive]) e a linha não espalha a tinta.
+  final bool adaptive;
 
   /// Quadrado tonal à esquerda ([SsIconTile]).
   final IconData? icon;
@@ -1354,9 +1403,11 @@ class SsSwitchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
+    final ios = SsPlatform.cupertino(context, adaptive: adaptive);
     return MergeSemantics(
       child: InkWell(
         borderRadius: BorderRadius.circular(d.radiusField),
+        splashFactory: ios ? NoSplash.splashFactory : null,
         // O toque no próprio interruptor já dá o haptic (SsSwitch).
         onTap: onChanged == null
             ? null
@@ -1392,7 +1443,7 @@ class SsSwitchRow extends StatelessWidget {
                 ),
               ),
               SizedBox(width: d.gap),
-              SsSwitch(value: value, onChanged: onChanged),
+              SsSwitch(value: value, onChanged: onChanged, adaptive: adaptive),
             ],
           ),
         ),
@@ -1409,12 +1460,18 @@ class SsSwitchRow extends StatelessWidget {
 /// girando na bolinha; ao bater no fim, um anel ([SsRipple]) se abre em volta.
 /// Toque alterna (com haptic, sem arrasto); [onChanged] nulo desabilita
 /// (apagado). [activeColor] troca a cor da marca (ex.: `colorScheme.primary`).
+///
+/// v1.11.0: no iOS (com [adaptive]), o desenho e o arrasto do `CupertinoSwitch`, com a trilha ligada na cor
+/// da marca, o mesmo alvo de 48 e o mesmo haptic. `adaptive: false` fica com a chave líquida da suíte.
 class SsSwitch extends StatefulWidget {
-  const SsSwitch({super.key, required this.value, required this.onChanged, this.activeColor});
+  const SsSwitch({super.key, required this.value, required this.onChanged, this.activeColor, this.adaptive = true});
 
   final bool value;
   final ValueChanged<bool>? onChanged;
   final Color? activeColor;
+
+  /// v1.11.0: a chave do iOS no iOS.
+  final bool adaptive;
 
   @override
   State<SsSwitch> createState() => _SsSwitchState();
@@ -1478,6 +1535,24 @@ class _SsSwitchState extends State<SsSwitch> with SingleTickerProviderStateMixin
     final c = SsColors.of(context);
     final on = widget.onChanged != null;
     final accent = widget.activeColor ?? c.accent;
+    if (SsPlatform.cupertino(context, adaptive: widget.adaptive)) {
+      return SizedBox(
+        width: 60,
+        height: 48,
+        child: Center(
+          child: CupertinoSwitch(
+            value: widget.value,
+            activeTrackColor: accent,
+            onChanged: on
+                ? (v) {
+                    SsHaptics.selection();
+                    widget.onChanged!(v);
+                  }
+                : null,
+          ),
+        ),
+      );
+    }
     const curso = _w - _pad * 2 - _thumb;
     return Semantics(
       toggled: widget.value,
@@ -1647,7 +1722,11 @@ class SsTimeField extends StatelessWidget {
     this.enabled = true,
     this.validator,
     this.helperText,
+    this.adaptive = true,
   });
+
+  /// v1.11.0: no iOS, a roda de hora numa folha (ver [showSsTimePicker]).
+  final bool adaptive;
 
   final String? label;
   final TimeOfDay? value;
@@ -1669,7 +1748,11 @@ class SsTimeField extends StatelessWidget {
 
   Future<void> _abrir(BuildContext context) async {
     FocusManager.instance.primaryFocus?.unfocus();
-    final r = await showSsTimePicker(context, initialTime: value ?? const TimeOfDay(hour: 7, minute: 0));
+    final r = await showSsTimePicker(
+      context,
+      initialTime: value ?? const TimeOfDay(hour: 7, minute: 0),
+      adaptive: adaptive,
+    );
     if (r != null) onChanged(r);
   }
 

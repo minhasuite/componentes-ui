@@ -11,6 +11,7 @@ import '../ss_badge.dart';
 import '../ss_nav_bar.dart';
 import '../ss_strings.dart';
 import '../version.dart';
+import '../v1110/platform.dart';
 import '../v19/paridade_web/hide_on_scroll.dart';
 import '../v19/paridade_web/side_search.dart';
 
@@ -467,6 +468,17 @@ class _SsSideMenuScope extends InheritedWidget {
 /// (`View.setSystemGestureExclusionRects` não está no canal da plataforma), então a alça fica logo depois
 /// da faixa (a pílula ganha as duas pontas arredondadas) e a faixa de arrastar começa ali. Tocar na alça
 /// abre o menu. Sem gesto do sistema (navegação por botões, iOS, testes) tudo fica colado na borda, como antes.
+///
+/// v1.11.0 · **iOS**: lá, voltar é arrastar da borda esquerda (o `CupertinoPageTransitionsBuilder` que o
+/// [AppTheme.build] liga no iOS), justo onde ficam a alça e a faixa. Então, com [adaptive] e no iOS:
+/// - **rota empilhada** (a tela do host foi empilhada por cima de outra, ou um `Navigator` de dentro do
+///   [child] pode voltar, ex. o `ShellRoute` do go_router com uma tela aberta): a alça e a faixa somem, e o
+///   arrastar da borda é o voltar do sistema. A dica ao abrir não roda. O menu ainda abre por
+///   [SsSideMenuHostState.open];
+/// - **telas principais** (a raiz, nada para voltar): a alça e a faixa ficam, como no Android.
+/// O "pode voltar de dentro" vem da `NavigationNotification` que todo `Navigator` manda ao mudar a pilha
+/// (vale o `Navigator` mais recente que avisou). `adaptive: false` (ou o [SsPlatformScope]) deixa a alça
+/// sempre, como no Android.
 class SsSideMenuHost extends StatefulWidget {
   const SsSideMenuHost({
     super.key,
@@ -478,7 +490,11 @@ class SsSideMenuHost extends StatefulWidget {
     this.width,
     this.debugHintAt,
     this.handleKey,
+    this.adaptive = true,
   });
+
+  /// v1.11.0: no iOS, a alça e a faixa somem em rota empilhada (ver acima). Falso: ficam sempre.
+  final bool adaptive;
 
   /// v1.9.1: chave posta na alça (a pílula da borda e o respiro de toque dela): o alvo de um passo do
   /// [SsTour] que mostra onde abre o menu. Nulo: sem chave.
@@ -544,7 +560,19 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
   bool _peeking = false;
   double _w = 300;
 
+  // v1.11.0: um Navigator de dentro do child pode voltar (NavigationNotification) e, no iOS, a alça cede.
+  bool _innerCanPop = false;
+  bool _yields = false;
+
   bool get isOpen => _open;
+
+  /// v1.11.0: a alça e a faixa estão fora porque, no iOS, o arrastar da borda é o voltar do sistema.
+  bool get yieldsToBack => _yields;
+
+  bool _onNavigation(NavigationNotification n) {
+    if (n.canHandlePop != _innerCanPop && mounted) setState(() => _innerCanPop = n.canHandlePop);
+    return false;
+  }
 
   double _widthFor(MediaQueryData mq) => widget.width ?? math.min(mq.size.width * .84, 320.0);
 
@@ -568,7 +596,7 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
       SsSideMenuHost._peeked = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future<void>.delayed(const Duration(milliseconds: 900), () {
-          if (!mounted || _open || _c.value != 0 || reduceMotion(context)) return;
+          if (!mounted || _open || _yields || _c.value != 0 || reduceMotion(context)) return;
           setState(() => _peeking = true);
           _hint.forward(from: 0).whenCompleteOrCancel(() {
             if (mounted && _peeking) setState(() => _peeking = false);
@@ -671,13 +699,18 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
     _w = _widthFor(mq);
     // v1.9.3: onde começa a área que é do app (depois do gesto de voltar do sistema).
     final inicio = SsSideMenuHost.gestureFreeLeft(mq);
+    // v1.11.0: no iOS, em rota empilhada, a borda esquerda é do voltar do sistema.
+    final yields =
+        SsPlatform.cupertino(context, adaptive: widget.adaptive) &&
+        (_innerCanPop || !(ModalRoute.of(context)?.isFirst ?? true));
+    _yields = yields;
 
     Widget host = Stack(
       children: [
-        widget.child,
+        NotificationListener<NavigationNotification>(onNotification: _onNavigation, child: widget.child),
         // Faixa da borda: pega o arraste com o menu fechado. Translúcida: o
         // toque passa para a tela de baixo.
-        if (!_open)
+        if (!_open && !yields)
           Positioned(
             left: inicio,
             top: 0,
@@ -714,12 +747,12 @@ class SsSideMenuHostState extends State<SsSideMenuHost> with TickerProviderState
                 targetKey: widget.handleKey,
                 inset: inicio,
               );
-              if (t <= 0) return Stack(children: [Positioned.fill(child: alca)]);
+              if (t <= 0) return yields ? const SizedBox.shrink() : Stack(children: [Positioned.fill(child: alca)]);
               final shown = t.clamp(0.0, 1.0);
               final width = _w * math.max(t, 0);
               return Stack(
                 children: [
-                  Positioned.fill(child: alca),
+                  if (!yields) Positioned.fill(child: alca),
                   // Fundo que escurece. Na dica ele só tinge, sem segurar o toque.
                   Positioned.fill(
                     child: IgnorePointer(
@@ -932,7 +965,11 @@ class SsNavScaffold extends StatefulWidget {
     this.debugHintAt,
     this.hideNavOnScroll = false,
     this.handleKey,
+    this.adaptive = true,
   });
+
+  /// v1.11.0: ver [SsSideMenuHost.adaptive].
+  final bool adaptive;
 
   /// v1.9.1: chave da alça do menu (ver [SsSideMenuHost.handleKey]), para o [SsTour] apontar para ela.
   /// As abas usam o `itemKeys:` da [navBar].
@@ -1043,6 +1080,7 @@ class _SsNavScaffoldState extends State<SsNavScaffold> with SingleTickerProvider
         peek: widget.peek,
         debugHintAt: widget.debugHintAt,
         handleKey: widget.handleKey,
+        adaptive: widget.adaptive,
         handleBack: false,
         onOpenChanged: (v) => setState(() => _menuOpen = v),
         menu: widget.tabsInMenu

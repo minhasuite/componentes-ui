@@ -12,6 +12,7 @@ import '../density.dart';
 import '../motion.dart';
 import '../ss_fit.dart';
 import '../ss_strings.dart';
+import '../v1110/platform.dart';
 
 /// Visual do [SsIconButton].
 enum SsIconButtonVariant {
@@ -221,7 +222,7 @@ class SsTopBar extends StatelessWidget implements PreferredSizeWidget {
         leading ??
         (automaticallyImplyLeading && (podeVoltar || onBack != null)
             ? SsIconButton(
-                icon: Icons.arrow_back_rounded,
+                icon: SsPlatform.backIcon(context),
                 tooltip: s.back,
                 color: fg,
                 onPressed: onBack ?? () => Navigator.of(context).maybePop(),

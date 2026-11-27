@@ -10,9 +10,15 @@ import 'ss_button.dart';
 import 'ss_list.dart';
 import 'ss_sheet.dart';
 import 'ss_strings.dart';
+import 'v1110/cupertino.dart';
+import 'v1110/platform.dart';
 
 /// Pergunta sim/não e devolve `true` só se confirmou. Botões empilhados na
 /// largura toda; [danger] pinta a confirmação de vermelho.
+///
+/// v1.11.0: no iOS (com [adaptive]), o alerta do iOS (`CupertinoAlertDialog`): Cancelar à esquerda e a
+/// confirmação à direita; com [danger], a confirmação é a destrutiva (vermelha) e o Cancelar fica em
+/// negrito. Mesma volta (`true` só se confirmou). `adaptive: false` fica com o diálogo da suíte.
 Future<bool> showSsConfirm(
   BuildContext context, {
   required String title,
@@ -21,20 +27,30 @@ Future<bool> showSsConfirm(
   String? cancelLabel,
   bool danger = false,
   IconData? icon,
-}) async =>
-    await showDialog<bool>(
-      context: context,
-      animationStyle: SsOverlayMotion.dialog(context),
-      builder: (_) => SsConfirmDialog(
+  bool adaptive = true,
+}) async => SsPlatform.cupertino(context, adaptive: adaptive)
+    ? ssCupertinoConfirm(
+        context,
         title: title,
         message: message,
         confirmLabel: confirmLabel,
         cancelLabel: cancelLabel,
         danger: danger,
         icon: icon,
-      ),
-    ) ??
-    false;
+      )
+    : await showDialog<bool>(
+            context: context,
+            animationStyle: SsOverlayMotion.dialog(context),
+            builder: (_) => SsConfirmDialog(
+              title: title,
+              message: message,
+              confirmLabel: confirmLabel,
+              cancelLabel: cancelLabel,
+              danger: danger,
+              icon: icon,
+            ),
+          ) ??
+          false;
 
 /// Ação irreversível (zerar dados, excluir conta): só libera a confirmação
 /// depois de digitar [word] (sem diferenciar maiúscula).

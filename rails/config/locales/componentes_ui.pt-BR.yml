@@ -864,3 +864,7 @@ pt-BR:
       image_of: Imagem %{i} de %{n}
       previous: Miniaturas anteriores
       next: Próximas miniaturas
+    # v1.11.0: entrar com a Apple (Ss::AppleButtonComponent, par do SsAppleButton).
+    apple:
+      continue: "Continuar com a Apple"
+      sign_in: "Entrar com a Apple"

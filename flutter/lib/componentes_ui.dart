@@ -136,3 +136,6 @@ export 'src/v1100/job_progress.dart';
 export 'src/v1100/popover.dart';
 export 'src/v1100/product_card.dart';
 export 'src/v1100/tree_view.dart';
+// v1.11.0 "adaptativa": a plataforma (SsPlatform, SsPlatformScope) e o botão de entrar com a Apple.
+export 'src/v1110/apple_button.dart';
+export 'src/v1110/platform.dart';

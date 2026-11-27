@@ -143,10 +143,10 @@ void main() {
   });
 
   group('voltar preditivo', () {
-    testWidgets('o AppTheme liga o builder no Android e o iOS segue igual', (t) async {
+    testWidgets('o AppTheme liga o builder no Android (v1.11.0: o iOS usa a transição do iOS)', (t) async {
       final b = AppTheme.light.pageTransitionsTheme.builders;
       expect(b[TargetPlatform.android], isA<SsPredictiveBackPageTransitionsBuilder>());
-      expect(b[TargetPlatform.iOS], isA<FadeUpwardsPageTransitionsBuilder>());
+      expect(b[TargetPlatform.iOS], isNot(isA<FadeUpwardsPageTransitionsBuilder>()));
     });
 
     testWidgets('página: o gesto encolhe a tela, desistir volta e soltar fecha', (t) async {

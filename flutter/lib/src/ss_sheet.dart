@@ -3,12 +3,17 @@ import 'package:material_ui/material_ui.dart';
 import 'app_theme.dart';
 import 'density.dart';
 import 'motion_view.dart';
+import 'ss_strings.dart';
+import 'v1110/platform.dart';
 import 'v19/transicoes/predictive_back.dart';
 
 /// Abre uma folha de baixo no padrão da suíte: alça, raio 26, área segura,
 /// sobe junto com o teclado e rola quando o conteúdo passa da tela. Sobe com
 /// mola (passa um pouco e assenta) e desce reta ([SsOverlayMotion.sheet]).
 /// [title] monta o [SsSheetHeader]; [child] é o corpo (sem Scaffold).
+///
+/// v1.11.0: no iOS, a folha ganha o × de fechar no canto (lá não há voltar do sistema; o arrastar para
+/// baixo continua). Com [dismissible] falso, não há ×: quem fecha é o próprio conteúdo.
 Future<T?> showSsSheet<T>(
   BuildContext context, {
   required Widget child,
@@ -25,7 +30,14 @@ Future<T?> showSsSheet<T>(
   enableDrag: dismissible,
   showDragHandle: false,
   sheetAnimationStyle: SsOverlayMotion.sheet(context),
-  builder: (context) => SsSheet(title: title, subtitle: subtitle, icon: icon, padding: padding, child: child),
+  builder: (context) => SsSheet(
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    padding: padding,
+    showClose: dismissible ? null : false,
+    child: child,
+  ),
 );
 
 /// Casca da folha (o que o [showSsSheet] monta). Pública para quem precisa
@@ -38,6 +50,7 @@ class SsSheet extends StatelessWidget {
     this.subtitle,
     this.icon,
     this.padding = const EdgeInsets.fromLTRB(20, 0, 20, 16),
+    this.showClose,
   });
 
   final Widget child;
@@ -46,36 +59,56 @@ class SsSheet extends StatelessWidget {
   final IconData? icon;
   final EdgeInsetsGeometry padding;
 
+  /// v1.11.0: o × de fechar no canto de cima. Nulo: só no iOS (lá não há voltar do sistema).
+  final bool? showClose;
+
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
     final kb = MediaQuery.viewInsetsOf(context).bottom;
+    final fechar = showClose ?? SsPlatform.cupertino(context);
     // v1.9: o gesto de voltar do Android 14+ desce e encolhe a folha antes de fechar.
     return SsPredictiveBackScope(
       child: Padding(
         padding: EdgeInsets.only(bottom: kb),
         child: SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
             children: [
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10, bottom: 6),
-                  width: 38,
-                  height: 5,
-                  decoration: BoxDecoration(color: c.muted2, borderRadius: BorderRadius.circular(AppRadius.pill)),
-                ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10, bottom: 6),
+                      width: 38,
+                      height: 5,
+                      decoration: BoxDecoration(color: c.muted2, borderRadius: BorderRadius.circular(AppRadius.pill)),
+                    ),
+                  ),
+                  if (title != null)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20, 8, fechar ? 48 : 20, 4),
+                      child: SsSheetHeader(title!, subtitle: subtitle, icon: icon),
+                    ),
+                  Flexible(
+                    child: SingleChildScrollView(padding: padding.add(const EdgeInsets.only(top: 8)), child: child),
+                  ),
+                ],
               ),
-              if (title != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-                  child: SsSheetHeader(title!, subtitle: subtitle, icon: icon),
+              if (fechar)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: IconButton(
+                    key: const ValueKey('ss-sheet-close'),
+                    tooltip: SsStrings.of(context).close,
+                    color: c.muted,
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.maybePop(context),
+                  ),
                 ),
-              Flexible(
-                child: SingleChildScrollView(padding: padding.add(const EdgeInsets.only(top: 8)), child: child),
-              ),
             ],
           ),
         ),

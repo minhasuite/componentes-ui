@@ -862,3 +862,7 @@ en:
       image_of: Image %{i} of %{n}
       previous: Previous thumbnails
       next: Next thumbnails
+    # v1.11.0: entrar com a Apple (Ss::AppleButtonComponent, par do SsAppleButton).
+    apple:
+      continue: "Continue with Apple"
+      sign_in: "Sign in with Apple"

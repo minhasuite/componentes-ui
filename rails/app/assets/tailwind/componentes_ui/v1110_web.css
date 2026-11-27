@@ -1,0 +1,32 @@
+/* v1.11.0 "adaptativa": o botão de entrar com a Apple (Ss::AppleButtonComponent, par do SsAppleButton) e a linha dos
+   botões de entrar com outra conta no Ss::AuthLayoutComponent (with_provider, par do SsAuthLayout(providers:)).
+   O preto e o branco do botão são os da Apple (as diretrizes exigem essas duas cores), declarados uma vez nos tokens
+   --ss-apple-ink e --ss-apple-paper; o resto é token da suíte. */
+@layer components {
+    .ss-apple-btn { --ss-apple-ink: #000; --ss-apple-paper: #fff; --fg: var(--ss-apple-paper); --bg: var(--ss-apple-ink); --bd: var(--ss-apple-ink);
+                    width: 100%; justify-content: center; gap: .5rem; min-height: calc(var(--ss-control-h) + .25rem);
+                    background: var(--bg); color: var(--fg); border: 1px solid var(--bd); font-weight: 600;
+                    transition: filter var(--ss-dur-fast) ease, transform var(--ss-dur-fast) ease; }
+    .ss-apple-btn.is-white { --fg: var(--ss-apple-ink); --bg: var(--ss-apple-paper); --bd: var(--line); }
+    .ss-apple-btn.is-outline { --fg: var(--ss-apple-ink); --bg: var(--ss-apple-paper); --bd: var(--ss-apple-ink); }
+    [data-theme="dark"] .ss-apple-btn.is-white { --bd: var(--ss-apple-paper); }
+    .ss-apple-btn:hover { filter: brightness(.92); }
+    .ss-apple-btn.is-black:hover { filter: brightness(1.35); }
+    .ss-apple-btn:active { transform: scale(.98); }
+    .ss-apple-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ss-apple-btn[disabled] { opacity: .5; cursor: not-allowed; filter: none; }
+    .ss-apple-btn.is-compact { width: auto; aspect-ratio: 1; padding: 0; min-width: calc(var(--ss-control-h) + .25rem); }
+    .ss-apple-logo { width: 1.25rem; height: 1.25rem; flex: none; margin-top: -2px; }
+    .ss-apple-form { display: contents; }
+
+    /* A linha de entrar com outra conta, embaixo do formulário da entrada. */
+    .ss-auth-providers { display: grid; gap: .75rem; margin-top: .75rem; }
+    .ss-auth-providers.is-row { display: flex; justify-content: center; flex-wrap: wrap; }
+    .ss-auth-providers.is-row > :is(form, a, button, div) { flex: 1 1 0; min-width: 0; }
+    .ss-auth-providers.is-row > :has(> .is-compact), .ss-auth-providers.is-row > .is-compact { flex: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ss-apple-btn { transition: none; }
+      .ss-apple-btn:active { transform: none; }
+    }
+}

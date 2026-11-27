@@ -25,7 +25,7 @@ class Categoria {
 }
 
 /// A onda cujas peças entram em "Novidades".
-const versaoNovidades = '1.10';
+const versaoNovidades = '1.11';
 
 const novidades = Categoria('novidades', 'Novidades (v$versaoNovidades)', 'sparkles', 'O que chegou nesta versão.');
 const fundacao = Categoria(
@@ -142,6 +142,7 @@ final _porSlug = <String, Categoria>{
     'ss-series-ink', 'ss-high-contrast', 'ss-appearance-panel', 'ss-icon-tile', 'ss-icon-tile-image',
     'ss-shape-icon', 'ss-locale-picker', 'ss-aurora-background', 'ss-fit', 'ss-fit-title', 'ss-prose',
     'ss-code-block', 'ss-divider', 'ss-link-text', 'ss-monogram', 'ss-field-label-icon',
+    'ss-platform', // v1.11
   ])
     s: fundacao,
   // Navegação e moldura
@@ -150,6 +151,7 @@ final _porSlug = <String, Categoria>{
     'ss-curved-header', 'ss-count-tabs', 'ss-step-top-bar', 'ss-top-bar', 'ss-command-palette', 'ss-tabs-view',
     'ss-side-menu', 'ss-nav-scaffold', 'ss-split', 'ss-aside-layout', 'ss-section', 'ss-section-header',
     'ss-section-icon', 'ss-fullscreen',
+    'ss-side-menu-ios', 'ss-nav-bar-ios', // v1.11
   ])
     s: navegacao,
   // Ações e botões
@@ -158,6 +160,7 @@ final _porSlug = <String, Categoria>{
     'ss-icon-button', 'ss-button-pair', 'ss-button-group', 'ss-hex-button', 'ss-morph-button',
     'ss-hold-to-confirm', 'ss-swipe-to-confirm', 'ss-sticky-action-bar', 'ss-danger-zone', 'ss-selection-bar',
     'ss-selectable', 'ss-call-controls',
+    'ss-apple-button', 'ss-action-sheet', // v1.11
   ])
     s: acoes,
   // Formulários e entrada
@@ -168,6 +171,7 @@ final _porSlug = <String, Categoria>{
     'ss-icon-picker', 'ss-color-picker', 'ss-field-group', 'ss-money-field-expression', 'ss-input-chip',
     'ss-radio-group', 'ss-repeater', 'ss-editable-value', 'ss-wizard', 'ss-otp', 'ss-tag-input',
     'ss-step-heading', 'ss-terms-notice', 'ss-v102-params',
+    'ss-switch-ios', // v1.11
   ])
     s: formularios,
   // Listas e tabelas
@@ -200,6 +204,7 @@ final _porSlug = <String, Categoria>{
     'ss-confirm', 'ss-prompt', 'ss-run-blocking', 'ss-sheet', 'ss-sheet-header', 'ss-offline-banner', 'ss-undo',
     'ss-linear-loader', 'ss-highlight', 'ss-sync', 'ss-async-sliver', 'ss-spinner', 'ss-skeleton-switch',
     'ss-job-progress', 'ss-popover', // v1.10
+    'ss-confirm-ios', 'ss-sheet-ios', // v1.11
     'ss-undoable-removal', 'ss-illustration', 'ss-skeleton', 'ss-badge', 'ss-status-badge', 'ss-dot',
   ])
     s: retorno,
@@ -223,6 +228,7 @@ final _porSlug = <String, Categoria>{
     'ss-agenda-list', 'ss-agenda-list-hora', 'ss-day-agenda-all-day', 'ss-weekday-picker', 'ss-date-picker',
     'ss-time-picker', 'ss-date-range', 'ss-gantt', 'ss-clock', 'ss-date-field', 'ss-date-time-field',
     'ss-time-field',
+    'ss-date-wheel', // v1.11
   ])
     s: tempo,
   // Casa e automação

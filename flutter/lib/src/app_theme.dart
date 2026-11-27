@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransitionsBuilder;
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -682,13 +683,14 @@ class AppTheme {
       scaffoldBackgroundColor: page,
       textTheme: text,
       splashFactory: InkSparkle.splashFactory,
-      // Transição de páginas suave (deslize horizontal estilo iOS) no lugar do
-      // zoom padrão do Material 3, que ficava "grosseiro" entre as views.
+      // Transição de páginas suave no lugar do zoom padrão do Material 3, que ficava "grosseiro" entre as views.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           // v1.9: no Android 14+, o gesto de voltar encolhe a página e mostra a anterior (voltar preditivo).
           TargetPlatform.android: SsPredictiveBackPageTransitionsBuilder(),
-          TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+          // v1.11.0: no iOS (e macOS), a transição do sistema, com o voltar de arrastar da borda esquerda.
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
         },
       ),
       appBarTheme: AppBarTheme(

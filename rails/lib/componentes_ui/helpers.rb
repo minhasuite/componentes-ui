@@ -465,6 +465,25 @@ module ComponentesUi
       { controller: "ss-cue", ss_cue_kind_value: k, ss_cue_active_value: active ? "true" : "false", ss_cue_key_value: key&.to_s }.compact
     end
 
+    # ── v1.11.0: a plataforma de quem abriu a página (par do SsPlatform do Flutter) ──────────────────
+    # :ios (iPhone, iPad, inclusive o iPad que se diz Mac), :mac, :android ou :other, pelo User-Agent.
+    # Serve para pôr o Ss::AppleButtonComponent primeiro para quem está num aparelho da Apple; o desenho das
+    # peças web não muda por plataforma. Fora de uma requisição (teste, script): :other.
+    #   ss_platform                       # => :ios
+    #   ss_platform(user_agent: "…")      # o User-Agent dado
+    def ss_platform(user_agent: nil)
+      ua = user_agent || (request.user_agent if respond_to?(:request) && request)
+      ua = ua.to_s
+      return :ios if ua.match?(/iPhone|iPad|iPod/)
+      return :android if ua.match?(/Android/)
+      return :mac if ua.match?(/Macintosh|Mac OS X/)
+
+      :other
+    end
+
+    # O aparelho é da Apple (iOS ou Mac)?
+    def ss_apple_platform?(user_agent: nil) = %i[ios mac].include?(ss_platform(user_agent:))
+
     private
 
     def fmt(p) = "#{p[0].round(2)},#{p[1].round(2)}"

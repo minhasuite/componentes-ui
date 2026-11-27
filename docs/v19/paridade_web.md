@@ -81,7 +81,8 @@ Testes:
   yml (par, `so_web` ou `divida_app`) e **todo alvo existe** (constante, helper, método do FormBuilder,
   classe no CSS, arquivo do controller).
 
-Estado atual: 269 pares, 10 apis, 33 só app, 14 só web, 21 dívidas web (`divida:`, 1 pendente) e 1 dívida app (`ProductCard`); 29 entradas pendentes. Pendentes
+Estado atual (v1.11.0): 298 pares, 13 apis, 34 só app, 10 só web e nenhuma dívida (`divida: {}` e `divida_app: {}`;
+na v1.10.0 eram 296, 12, 33 e 10). Histórico, na v1.9: 269 pares, 10 apis, 33 só app, 14 só web, 21 dívidas web (`divida:`, 1 pendente) e 1 dívida app (`ProductCard`); 29 entradas pendentes. Pendentes
 da v1.9 (marcar como feitas no merge): `SsNotificationCenter` (↔ `NotificationList` e o
 `NotificationCenterComponent` que o agente de produto criou), `SsAssistantView`, `SsAssistantConversations`,
 `SsCaptureHub`, `SsNotificationTile`, `SsGantt`, `SsTour`, `SsWizard`, `SsDateRangeField`, `SsOtpField`,
