@@ -1,0 +1,14 @@
+<%= tag.div(**root) do %>
+  <div class="ss-field">
+    <label for="<%= uid %>"><%= label %></label>
+    <div class="ss-smart-paste-box">
+      <textarea id="<%= uid %>" name="<%= name %>" class="ss-input ss-smart-paste-input" rows="2" placeholder="<%= hint %>" autocomplete="off" autocorrect="off" spellcheck="false" aria-describedby="<%= uid %>-result" data-ss-smart-paste-target="input" data-action="input->ss-smart-paste#detect"><%= value %></textarea>
+      <% if paste_button? %>
+        <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm ss-smart-paste-btn" data-ss-smart-paste-target="paste" data-action="ss-smart-paste#paste"><%= ss_icon("clipboard", size: :xs) %><span><%= t("paste_paste") %></span></button>
+      <% end %>
+    </div>
+  </div>
+  <div class="ss-smart-paste-result" id="<%= uid %>-result" aria-live="polite" data-ss-smart-paste-target="result">
+    <% if match %><%= card(match) %><% else %><p class="ss-smart-paste-empty"><%= t("paste_empty") %></p><% end %>
+  </div>
+<% end %>

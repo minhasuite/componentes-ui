@@ -6,6 +6,10 @@ require "componentes_ui/helpers"
 require "componentes_ui/form_builder"
 require "componentes_ui/form_helpers"
 require "componentes_ui/transition_helpers"
+# v1.12.0 "Kit Brasil": contas brasileiras, QR Code e o detector do colar inteligente (puros, sem gem).
+require "componentes_ui/br"
+require "componentes_ui/qr"
+require "componentes_ui/paste_detector"
 
 module ComponentesUi
   # Configuração da gem (v0.10). No app, num initializer:

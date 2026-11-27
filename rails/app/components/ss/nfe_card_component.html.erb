@@ -1,0 +1,29 @@
+<%= tag.article(**root_attrs(class: classes("ss-card", "ss-nfe"), data: { valid: valid? ? "true" : "false" }, "aria-labelledby": "#{uid}-title")) do %>
+  <header class="ss-nfe-head">
+    <div>
+      <h3 class="ss-nfe-title" id="<%= uid %>-title"><%= title %></h3>
+      <% if number %><p class="ss-nfe-number"><%= number %></p><% end %>
+    </div>
+    <% if status_label %><span class="ss-badge ss-badge-<%= status_tone %> ss-badge-dot"><%= status_label %></span><% end %>
+  </header>
+  <dl class="ss-nfe-facts">
+    <% if issuer %><div><dt><%= t("nfe_issuer") %></dt><dd><%= issuer %></dd></div><% end %>
+    <% if cnpj %><div><dt><%= t("nfe_cnpj") %></dt><dd class="num"><%= cnpj %></dd></div><% end %>
+    <% if issued_at %><div><dt><%= t("nfe_date") %></dt><dd class="num"><%= ss_date(issued_at) %></dd></div><% end %>
+    <% if amount_cents %><div class="is-total"><dt><%= t("nfe_amount") %></dt><dd><%= ss_amount(ss_money(amount_cents / 100.0)) %></dd></div><% end %>
+  </dl>
+  <div class="ss-nfe-key">
+    <div class="ss-nfe-key-text">
+      <span class="ss-nfe-key-label" id="<%= uid %>-key"><%= t("nfe_key") %></span>
+      <p class="num" aria-labelledby="<%= uid %>-key"><%= key_display %></p>
+    </div>
+    <% if qr_url %><div class="ss-nfe-qr" role="img" aria-label="<%= t("nfe_qr") %>"><%= ss_qr_svg(qr_url, margin: 0) %></div><% end %>
+  </div>
+  <% unless valid? %>
+    <p class="ss-nfe-invalid" role="status"><%= ss_icon("exclamation", size: :xs) %><span><%= t("nfe_key_invalid") %></span></p>
+  <% end %>
+  <div class="ss-nfe-actions" data-controller="ss-copy" data-ss-copy-text-value="<%= digits %>" data-ss-copy-done-value="<%= t("nfe_key_copied") %>">
+    <button type="button" class="ss-btn ss-btn-ghost ss-btn-sm" data-action="ss-copy#copy" data-ss-copy-target="button" aria-live="polite"><%= ss_icon("duplicate", size: :xs) %><span data-ss-copy-target="label"><%= t("nfe_copy_key") %></span></button>
+    <% if open_href %><a class="ss-btn ss-btn-ghost ss-btn-sm" href="<%= open_href %>" target="_blank" rel="noopener"><%= ss_icon("external-link", size: :xs) %><span><%= t("nfe_open") %></span></a><% end %>
+  </div>
+<% end %>

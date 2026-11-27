@@ -139,3 +139,12 @@ export 'src/v1100/tree_view.dart';
 // v1.11.0 "adaptativa": a plataforma (SsPlatform, SsPlatformScope) e o botão de entrar com a Apple.
 export 'src/v1110/apple_button.dart';
 export 'src/v1110/platform.dart';
+// v1.12.0 "Kit Brasil": Pix, boleto, CEP, CPF/CNPJ, NF-e, o QR puro-Dart e o colar inteligente.
+export 'src/v1120/br.dart';
+export 'src/v1120/fields.dart';
+export 'src/v1120/nfe_card.dart';
+export 'src/v1120/paste_detector.dart';
+export 'src/v1120/pix_card.dart';
+export 'src/v1120/qr.dart';
+export 'src/v1120/smart_paste.dart';
+export 'src/v1120/strings.dart';

@@ -136,10 +136,9 @@ class V1110WebTest < ComponentTest
     assert_includes css, '[data-theme="dark"] .ss-pulse { --ss-pulse-a: 22%; --ss-pulse-ring: 0%; }'
   end
 
-  test "vitrine: a página da v1.11 está em Novidades" do
-    novas = VitrineController.paginas.select { _1[:grupos].include?(VitrineController::GRUPO_NOVIDADES) }.map { _1[:slug] }
-    assert_equal ["pecas_v1110"], novas
-    assert_equal "1.11", VitrineController::NOVIDADES
+  # v1.12.0: Novidades passou à v1.12; a página da v1.11 continua marcada com a versão dela.
+  test "vitrine: a página da v1.11 está marcada com a versão dela" do
+    assert_includes Rails.root.join("app/views/vitrine/pecas_v1110.html.erb").read.lines.first, "versao: 1.11"
   end
 
   private

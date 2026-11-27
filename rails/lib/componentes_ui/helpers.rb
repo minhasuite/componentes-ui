@@ -484,6 +484,44 @@ module ComponentesUi
     # O aparelho é da Apple (iOS ou Mac)?
     def ss_apple_platform?(user_agent: nil) = %i[ios mac].include?(ss_platform(user_agent:))
 
+    # ── v1.12.0 "Kit Brasil": os formatadores brasileiros (os mesmos SsFormats.cpf/cnpj/cep/phoneBr/boleto/nfeKey
+    # do Flutter). O formato é o do Brasil em qualquer idioma; parcial quando incompleto. ──────────────────────
+    def ss_cpf(text) = ComponentesUi::Br.format_cpf(text)
+    def ss_cnpj(text) = ComponentesUi::Br.format_cnpj(text)
+    def ss_document(text) = ComponentesUi::Br.format_document(text)
+    def ss_cep(text) = ComponentesUi::Br.format_cep(text)
+    def ss_phone_br(text) = ComponentesUi::Br.format_phone(text)
+    def ss_boleto(text) = ComponentesUi::Br.format_boleto(text)
+    def ss_nfe_key(text) = ComponentesUi::Br.format_nfe_key(text)
+
+    # O QR Code de [text] em SVG (ComponentesUi::Qr, sem gem): <%= ss_qr_svg(pix, label: "QR Code do Pix") %>.
+    def ss_qr_svg(text, label: nil, margin: 4, ecl: :m) = ComponentesUi::Qr.svg(text, label:, margin:, ecl:).html_safe
+
+    # A frase do colar inteligente para o que o ComponentesUi::PasteDetector achou ("Isso parece um boleto de
+    # R$ 123,45 com vencimento em 10/12/2026"), no idioma da página; os mesmos moldes do SsPasteDetector.summary.
+    def ss_paste_summary(match)
+      what = ss_t("br.paste_what.#{match.type}", default: "")
+      return ss_t("br.paste_invalid", what:) if !match.valid && what.present?
+
+      f = match.fields
+      amount = f[:amount_cents] && ss_money(f[:amount_cents] / 100.0)
+      date_s = f[:due_date] || f[:date]
+      date = date_s && ss_date(Date.iso8601(date_s))
+      key = case match.type
+            when :pix then amount ? "pix" : "pix_free"
+            when :boleto then if amount && date then "boleto"
+                              elsif amount then "boleto_amount"
+                              elsif date then "boleto_due"
+                              else "boleto_plain"
+                              end
+            else match.type.to_s
+            end
+      vars = { amount: amount.to_s, date: date.to_s, name: f[:name].to_s, value: (f[:display] || match.value).to_s,
+               model: (f[:model_name] || "NF-e").to_s, uf: f[:uf].to_s, number: (f[:number] ? ss_number(f[:number]) : ""),
+               domain: f[:domain].to_s, count: (f[:length] || match.text.length).to_s }
+      ComponentesUi::Br.fill(ss_t("br.paste_summary.#{key}", default: key), vars)
+    end
+
     private
 
     def fmt(p) = "#{p[0].round(2)},#{p[1].round(2)}"

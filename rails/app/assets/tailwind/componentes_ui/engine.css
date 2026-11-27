@@ -90,6 +90,8 @@
 @import "./v1100_web.css";
 /* v1.11.0 "adaptativa": o botão de entrar com a Apple e a linha de entrar com outra conta na entrada. */
 @import "./v1110_web.css";
+/* v1.12.0 "Kit Brasil": Pix, nota fiscal, colar inteligente e a linha de retorno dos campos brasileiros. */
+@import "./v1120_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

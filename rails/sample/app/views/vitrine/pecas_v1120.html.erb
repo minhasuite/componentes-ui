@@ -1,0 +1,63 @@
+<%# titulo: Kit Brasil: Pix, boleto, NF-e e o colar inteligente | grupo: Comércio e finanças | tambem: Formulários e entrada | ordem: 95 | versao: 1.12 %>
+<%# v1.12.0 "Kit Brasil": os pares web do SsPixCard, SsNfeCard, SsSmartPaste e dos campos brasileiros. Dados de exemplo
+    com DV calculado, sem pessoas reais. %>
+<%
+  br = ComponentesUi::Br
+  pix = br.pix_build(key: "loja@exemplo.com.br", name: "Loja Exemplo", city: "São Paulo", amount_cents: 12_345, txid: "PEDIDO1042")
+  chave43 = "3526111122233300018155001000012345112345678"
+  chave = chave43 + br.nfe_key_dv(chave43).to_s
+  nfce43 = "3526111122233300018165002000000789187654321"
+  nfce = nfce43 + br.nfe_key_dv(nfce43).to_s
+  qr_nfce = "https://www.exemplo.gov.br/nfce/consulta?p=#{nfce}|2|1|1|ABCDEF0123456789"
+%>
+<div class="grid gap-6">
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Pix (PixCardComponent)", subtitle: "O QR sai do próprio copia e cola (sem gem). Aguardando com contagem, pago com a animação de sucesso e expirado. O pagamento é do produto.") %>
+    <div class="grid gap-4 md:grid-cols-3 items-start">
+      <%= render Ss::PixCardComponent.new(code: pix, expires_at: 15.minutes.from_now) %>
+      <%= render Ss::PixCardComponent.new(code: pix, status: :paid) %>
+      <%= render Ss::PixCardComponent.new(code: pix, status: :expired, regenerate_href: "#") %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Nota fiscal (NfeCardComponent)", subtitle: "Chave de acesso em blocos com copiar e o DV conferido; com qr_url:, o QR da consulta.") %>
+    <div class="grid gap-4 md:grid-cols-2 items-start">
+      <%= render Ss::NfeCardComponent.new(access_key: chave, issuer: "Loja Exemplo Comércio Ltda", issued_at: Date.new(2026, 11, 20), amount_cents: 48_990, status: :authorized) %>
+      <%= render Ss::NfeCardComponent.new(access_key: nfce, issuer: "Mercado Exemplo", issued_at: Date.new(2026, 11, 26), amount_cents: 8_990, status: :pending, qr_url: qr_nfce, open_href: "#") %>
+    </div>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Colar inteligente (SmartPasteComponent)", subtitle: "Cole um Pix, boleto, chave de nota, CPF, CEP, telefone, e-mail, link, valor ou data. As ações são as que o produto registrou para o tipo.") %>
+    <%= render Ss::SmartPasteComponent.new(value: "34191.09008 00012.345674 89012.345677 1 16560000012345", actions: {
+          boleto: [{ label: "Pagar boleto", href: "#boleto-%{value}", icon: "cash", primary: true }, { label: "Agendar", href: "#agendar" }],
+          pix: [{ label: "Pagar Pix", href: "#pix", icon: "qrcode" }],
+          pix_key: [{ label: "Enviar Pix para esta chave", href: "#pix-chave" }],
+          nfe: [{ label: "Importar nota", href: "#nfe-%{value}", icon: "document-text" }],
+          url: [{ label: "Abrir link", href: "%{value}", target: "_blank" }],
+          cep: [{ label: "Usar no endereço", href: "#cep" }],
+          money: [{ label: "Lançar despesa", href: "#lancar" }]
+        }) %>
+    <p class="ss-muted">Experimente colar: <code class="num"><%= pix[0, 40] %>…</code>, <code class="num"><%= br.format_nfe_key(chave) %></code>, <code>11.222.333/0001-81</code>, <code>(11) 98765-4321</code>, <code>R$ 89,90</code>, <code>10/12/2026</code> ou <code>exemplo.com.br</code>.</p>
+  </section>
+
+  <section class="ss-card ss-card-pad grid gap-4">
+    <%= render Ss::CardHeaderComponent.new(title: "Campos brasileiros (f.ss_pix_key, f.ss_boleto, f.ss_cep, f.ss_document)", subtitle: "Máscara, dígitos verificadores e o retorno embaixo. CEP 01310-100 e CNPJ 11.222.333/0001-81 respondem no endpoint de exemplo.") %>
+    <%= ss_form_with url: "#", scope: :demo_br, html: { class: "grid gap-4 max-w-3xl" } do |f| %>
+      <div class="grid gap-4 md:grid-cols-2">
+        <%= f.ss_document :documento, lookup_url: "/demo/cnpj/%{cnpj}", value: "11.222.333/0001-81" %>
+        <%= f.ss_pix_key :chave_pix, value: "+55 11 98765-4321" %>
+      </div>
+      <%= f.ss_boleto :linha, value: "83690000001-6 23450048123-4 45678901234-5 56789012345-6" %>
+      <div class="grid gap-4 md:grid-cols-4">
+        <%= f.ss_cep :cep, lookup_url: "/demo/cep/%{cep}", fill: { street: "demo_br_logradouro", district: "demo_br_bairro", city: "demo_br_cidade", state: "demo_br_uf" } %>
+        <%= f.ss_text_field :logradouro, label: "Logradouro", wrapper_class: "md:col-span-3" %>
+        <%= f.ss_text_field :bairro, label: "Bairro", wrapper_class: "md:col-span-2" %>
+        <%= f.ss_text_field :cidade, label: "Cidade" %>
+        <%= f.ss_text_field :uf, label: "UF", maxlength: 2 %>
+      </div>
+      <p class="ss-muted">Formatadores: <code><%= ss_cpf("60472138553") %></code> · <code><%= ss_cnpj("12abc34501de35") %></code> · <code><%= ss_cep("01310100") %></code> · <code><%= ss_phone_br("5511987654321") %></code></p>
+    <% end %>
+  </section>
+</div>

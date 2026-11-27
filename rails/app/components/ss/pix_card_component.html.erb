@@ -1,0 +1,38 @@
+<%= tag.article(**root) do %>
+  <header class="ss-pix-head">
+    <h3 class="ss-pix-title" id="<%= uid %>-title"><%= title %></h3>
+    <span class="ss-pix-status" role="status">
+      <span class="ss-badge ss-badge-warn ss-badge-dot ss-pix-when-waiting"><%= t("pix_waiting") %></span>
+      <span class="ss-badge ss-badge-success ss-badge-dot ss-pix-when-paid"><%= t("pix_paid") %></span>
+      <span class="ss-badge ss-badge-danger ss-badge-dot ss-pix-when-expired"><%= t("pix_expired") %></span>
+    </span>
+  </header>
+  <p class="ss-pix-amount num"><span class="ss-sr"><%= t("pix_amount") %>: </span><%= amount_text %></p>
+  <% if receiver %><p class="ss-pix-receiver"><%= t("pix_receiver") %>: <%= receiver %></p><% end %>
+
+  <div class="ss-pix-stage">
+    <div class="ss-pix-qr" role="img" aria-label="<%= t("pix_qr") %>"><%= qr %></div>
+    <div class="ss-pix-paid ss-pix-when-paid">
+      <span class="ss-pix-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="ss-pix-check-path" d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <p><%= t("pix_paid_hint") %></p>
+    </div>
+    <div class="ss-pix-expired ss-pix-when-expired">
+      <p><%= t("pix_expired_hint") %></p>
+      <% if regenerate_href %>
+        <%= button_to regenerate_href, method: regenerate_method, class: "ss-btn ss-btn-primary ss-btn-sm", form: { class: "ss-pix-regen" } do %><%= ss_icon("refresh", size: :xs) %><span><%= t("pix_regenerate") %></span><% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="ss-pix-when-waiting ss-pix-pay">
+    <% if counting? %>
+      <p class="ss-pix-timer" aria-live="off"><%= t("pix_valid_for", time: "") %><b class="num" data-ss-countdown-target="clock"><%= clock %></b></p>
+    <% end %>
+    <div class="ss-pix-code" data-controller="ss-copy" data-ss-copy-text-value="<%= code %>" data-ss-copy-done-value="<%= t("pix_copied") %>">
+      <label class="ss-sr" for="<%= uid %>-code"><%= t("pix_code") %></label>
+      <input id="<%= uid %>-code" class="ss-input num" value="<%= code %>" readonly data-action="focus->ss-copy#select">
+      <button type="button" class="ss-btn ss-btn-primary ss-pix-copy" data-action="ss-copy#copy" data-ss-copy-target="button" aria-live="polite"><%= ss_icon("duplicate", size: :xs) %><span data-ss-copy-target="label"><%= t("pix_copy") %></span></button>
+    </div>
+    <% if hint %><p class="ss-pix-hint"><%= hint %></p><% end %>
+  </div>
+<% end %>

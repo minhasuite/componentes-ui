@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.11.0
+      ref: v1.12.0
 ```
 
 ```dart
@@ -653,6 +653,67 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.12.0: Kit Brasil (Pix, boleto, NF-e, CEP, CPF/CNPJ) e o colar inteligente
+
+Peças do Brasil nos dois lados, com o mesmo nome e a mesma conta. Nada quebra na API; tudo é novo. O pacote só
+**exibe e confere**: gerar a cobrança, saber que pagou, buscar CEP/CNPJ e abrir a câmera são do produto (callback no
+app, endpoint no web). Sem pacote nem gem nova: o QR Code é um gerador pequeno próprio (puro-Dart `SsQrCode` e Ruby
+`ComponentesUi::Qr`, modo byte, versões 1 a 40, correção M, a mesma matriz nos dois, conferida módulo a módulo e
+lida por um decodificador de QR na verificação).
+
+| Flutter | Rails | O que faz |
+|---|---|---|
+| `SsPixCard(code:, amountCents:, receiver:, expiresAt:, status: SsPixStatus.waiting\|paid\|expired, qr:, onCopy:, onExpired:, onRegenerate:)` | `Ss::PixCardComponent(code:, amount_cents:, receiver:, expires_at:, status:, qr:, regenerate_href:)` | QR gerado do copia e cola (ou o pronto do PSP), valor e recebedor (lidos do BR Code se não vierem), validade com contagem (zera → expirado sozinho), "Copiar código" com retorno, pago com o ✓ na mola (`SsMotion.spring`/`--ss-bounce`, reduzir movimento desliga) e expirado com "Gerar outro código" |
+| `SsPixKeyField(type:, onChanged: (chave, tipo))` | `f.ss_pix_key(:campo, type:)` (`ss-pix-key`) | detecta CPF, CNPJ, telefone, e-mail ou aleatória enquanto digita, mostra o tipo embaixo, formata ao sair; a chave da API sai de `SsBr.pixKeyNormalize`/`Br.pix_key_normalize` |
+| `SsBoletoField(onChanged:, onScan:)` + `SsBoletoMask` | `f.ss_boleto(:campo)` (`ss-boleto`) | linha digitável de 47 (bancário) ou 48 (arrecadação) com máscara, DV módulo 10/11, valor e vencimento embaixo (vencido em âmbar); colar o código de barras de 44 vira a linha; no app, "Ler código de barras" pelo `onScan` (a câmera é do app) |
+| `SsCepField(onLookup: (cep) → SsAddress?, street:, district:, city:, state:, onAddress:, autoLookup:)` | `f.ss_cep(:campo, lookup_url: "/cep/%{cep}", fill: { street: "id", … })` (`ss-cep`) | máscara e, com os 8 dígitos, o endpoint do produto preenche os campos ligados; não achou/falhou diz e deixa preencher; resposta velha não passa por cima |
+| `SsDocumentField(kind: SsDocumentKind.any\|cpf\|cnpj, onLookup: (cnpj) → razão?)` | `f.ss_document(:campo, kind:, lookup_url: "/cnpj/%{cnpj}")` (`ss-document`) | o `mask: :document` com detecção CPF/CNPJ (o alfanumérico de 2026 também: DV com ASCII − 48), DV e a razão social embaixo |
+| `SsNfeCard(accessKey:, issuer:, issuerCnpj:, issuedAt:, amountCents:, status: SsNfeStatus.*, qrUrl:, onOpen:)` | `Ss::NfeCardComponent(access_key:, issuer:, issuer_cnpj:, issued_at:, amount_cents:, status:, qr_url:, open_href:)` | chave em 11 blocos de 4 com copiar e o DV conferido (errado: aviso), modelo/número/série/CNPJ lidos da chave, data, valor, situação e o QR da consulta |
+| `SsSmartPaste(actions: {SsPasteType.boleto: [SsPasteAction('Pagar', (m) => …, primary: true)]}, onDetected:)` | `Ss::SmartPasteComponent(actions: { boleto: [{ label:, href: "…%{value}", method:, icon:, primary: }] })` (`ss-smart-paste`) | o colar inteligente (abaixo) |
+| `SsQrImage(data:, size:, semanticLabel:)` / `SsQrCode.encode` | `ss_qr_svg(texto, label:)` / `ComponentesUi::Qr` | o QR, módulo escuro em fundo claro em qualquer tema |
+
+**Colar inteligente.** A pessoa cola qualquer coisa e o cartão diz o que é ("Isso parece um boleto de R$ 123,45 com
+vencimento em 10/12/2026") com as ações que o produto registrou para o tipo. O detector é puro e igual nos três
+lados: `SsPasteDetector.detect(texto) → SsPasteMatch` (Dart), `ComponentesUi::PasteDetector.detect` (Ruby, para o
+servidor e a 1ª pintura) e `ssDetect` do `ss_br.js` (o retorno ao vivo no Stimulus). Tipos, na ordem: `pix` (copia e
+cola, BR Code EMV com CRC16), `url` (com a chave da NFC-e dentro vira `nfe`), `date`, os só de números (`boleto`
+47/48, `nfe` ou código de barras 44, `cnpj`, `cpf` ou `phone` 11, `phone` 10, `cep`), `phone` (+55), `email`,
+`pix_key` (aleatória), `cnpj` alfanumérico, `money` (R$), `url` (domínio solto) e `text`. `valid` diz se o DV (ou o
+CRC, ou a data) confere; com DV errado o cartão avisa e não mostra ação. CPF, CNPJ, telefone e e-mail válidos têm
+`also: [pix_key]`, então mostram também as ações de chave Pix. `fields` tem as mesmas chaves nos três (`amount_cents`,
+`due_date`, `name`, `key`, `uf`, `model_name`, `domain`…). Os 57 exemplos de `docs/v1120/exemplos.json` (gerados por
+`rails/sample/script/exemplos_v1120.rb`, com DV calculado e sem dados de pessoas reais, mais as matrizes do QR) passam
+nos três: no teste do Dart, no do Ruby e no `rails/sample/test/js/ss_br_check.mjs` (node; o teste Ruby roda quando há
+node no PATH).
+
+**Contas e formatadores.** `SsBr` (Dart) ↔ `ComponentesUi::Br` (Ruby) ↔ `ss_br.js`: `cpfValid`, `cnpjValid`
+(alfanumérico), `documentKind`, `phoneValid`/`phoneE164`, `pixKeyType`, `mod10`, `mod11Bank`, `mod11Dv`,
+`boletoLineFromBarcode`; `SsBoleto.parse` (vencimento pelo fator, no ciclo novo de 22/02/2025 quando é o mais perto de
+hoje), `SsNfeKey.parse`, `SsPixCode.parse`/`build` (o copia e cola estático, para exemplo e Pix de balcão sem PSP).
+Formatadores: `SsFormats.brl.cpf/cnpj/cep/phoneBr/boleto/nfeKey` ↔ `ss_cpf`, `ss_cnpj`, `ss_cep`, `ss_phone_br`,
+`ss_boleto`, `ss_nfe_key` (e `ss_document`, `ss_paste_summary`).
+
+**Textos.** pt-BR, com en e es só traduzindo a interface (o formato do dado continua o brasileiro): `SsBrStrings`
+(`SsBrStrings.of(context)`, pelo idioma do `SsStrings`) ↔ `componentes_ui.br.*` (as mesmas chaves em snake_case; os
+moldes da frase do colar vão ao JS). Acessibilidade: alvos de 48/44 (`--ss-target`), retorno embaixo dos campos como
+região viva, QR com nome no leitor de tela, `ssA11yAudit` nos testes novos (padrão e compacto); movimento pelos tokens.
+
+**Quem se beneficia:**
+
+- **minhas-vendas**: `SsPixCard` no PDV e no pedido (Pix da cobrança), `SsBoletoField` nas contas a pagar,
+  `SsNfeCard` na entrada pela NF-e e no pedido faturado, `SsDocumentField` com a razão social no cadastro de cliente e
+  fornecedor, `SsCepField` no endereço.
+- **meu-gestor**: `SsNfeCard` no recebimento de compra (NF-e × pedido) e o colar inteligente para conferir a chave.
+- **meu-financeiro**: `SsBoletoField` e `SsSmartPaste` para lançar boleto, Pix (copia e cola ou chave) e valor colados;
+  `SsPixKeyField` nos favorecidos.
+- **minhas-compras**: `SsNfeCard` e o colar com a URL do QR da NFC-e do cupom (vira `nfe` com a chave).
+
+Vitrine: `rails/sample/app/views/vitrine/pecas_v1120.html.erb` em "Comércio e finanças" e "Formulários e entrada"
+(Novidades da v1.12), com os endpoints de exemplo `/demo/cep/:cep` e `/demo/cnpj/:cnpj`. Catálogo:
+`flutter/test/catalogo_v1120.dart` (`comV1120`) e as seções `ss-pix-card`, `ss-nfe-card`, `ss-smart-paste` e
+`ss-br-fields` do `rails/catalogo/index.html` (`rails/sample/script/catalogo_v1120.rb`). `paridade.yml`: 8 pares novos
+e 8 apis. Testes: `flutter/test/v1120_test.dart` e `rails/sample/test/components/v1_12_0_web_test.rb`.
 
 ## v1.11.0: adaptativa (o pacote pronto para os apps irem ao iOS sem perder o padrão da suíte)
 
@@ -2474,6 +2535,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.12.0` (27/11/2026): seção "v1.12.0" (Kit Brasil). `SsPixCard` ↔ `Ss::PixCardComponent`, `SsNfeCard` ↔ `Ss::NfeCardComponent`, `SsSmartPaste` ↔ `Ss::SmartPasteComponent` (detector igual em Dart, Ruby e JS), `SsPixKeyField`/`SsBoletoField`/`SsCepField`/`SsDocumentField` ↔ `f.ss_pix_key`/`ss_boleto`/`ss_cep`/`ss_document`, QR puro (`SsQrCode`/`SsQrImage` ↔ `ComponentesUi::Qr`/`ss_qr_svg`), `SsBr` ↔ `ComponentesUi::Br` e os formatadores `SsFormats.cpf/cnpj/cep/phoneBr/boleto/nfeKey` ↔ `ss_*`. Nenhuma dependência nova. Nada quebra na API.
 - `v1.11.0` (27/11/2026): seção "v1.11.0" (adaptativa). `SsPlatform`/`SsPlatformScope` e `adaptive:` nas peças: no iOS, `CupertinoSwitch`, roda de data e hora, folha de ação (`showSsPicker` curto, `SsOverflowMenu`, `SsContextMenu`), `CupertinoAlertDialog` no `showSsConfirm`, `CupertinoSliverRefreshControl`, haptics do iOS, × na `SsSheet`, transição do iOS no tema e a alça do menu que cede ao voltar do sistema em rota empilhada. `SsAppleButton` ↔ `Ss::AppleButtonComponent`, `SsAuthLayout(providers:)` ↔ `with_provider`, `ss_platform`. Dependência nova: `cupertino_ui`. Nada quebra na API; no Android o desenho não muda.
 - `v1.10.0` (27/11/2026): seção "v1.10.0". Dívida de paridade zerada: 21 pares Rails das peças do Flutter e `SsProductCard`, `SsFilterBar`/`SsFilterSheet`, `SsJobProgress`, `SsTreeView` e `SsPopover` no app. Nada quebra na API.
 - `v1.8.3` (24/11/2026): seção "v1.8.3". Chat sem `required` no campo (só `aria-required`): some o balão nativo ao parar o mouse. Nada quebra na API.

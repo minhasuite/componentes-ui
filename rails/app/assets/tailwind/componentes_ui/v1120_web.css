@@ -1,0 +1,107 @@
+/* v1.12.0 "Kit Brasil": o cartão do Pix (Ss::PixCardComponent), a nota fiscal (Ss::NfeCardComponent), o colar
+   inteligente (Ss::SmartPasteComponent), a linha de retorno dos campos f.ss_pix_key/ss_boleto/ss_cep/ss_document
+   (.ss-br-feedback) e o QR em SVG (ss_qr_svg). Só tokens; o fundo do QR é o papel claro (--ss-qr-paper), porque o
+   leitor do banco precisa de módulo escuro sobre fundo claro também no tema escuro. Densidade pelos --ss-gap,
+   --ss-card-pad e --r-*; movimento pelos tokens --ss-dur e --ss-ease; reduzir movimento desliga. */
+@layer components {
+    .ss-qr-svg { display: block; width: 100%; height: auto; color: var(--ss-qr-ink, #1e2233); }
+
+    /* ── Pix ─────────────────────────────────────────────────────────────── */
+    .ss-pix { --ss-qr-paper: #fff; display: grid; gap: calc(var(--ss-gap) * .75); max-width: 24rem; padding: var(--ss-card-pad); }
+    .ss-pix-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .ss-pix-title { font-size: .95rem; font-weight: 800; color: var(--ink); }
+    .ss-pix-amount { font-size: 1.75rem; font-weight: 700; color: var(--ink); line-height: 1.1; }
+    .ss-pix-receiver { color: var(--muted); font-size: .85rem; margin-top: -.25rem; }
+    .ss-pix-stage { display: grid; place-items: center; padding-block: .5rem; }
+    .ss-pix-qr { width: min(100%, 14.5rem); padding: .75rem; border-radius: var(--r-card); background: var(--ss-qr-paper);
+                 box-shadow: inset 0 0 0 1px var(--line); transition: opacity var(--ss-dur-medium) var(--ss-ease-standard); }
+    .ss-pix-pay { display: grid; gap: .75rem; }
+    .ss-pix-timer { text-align: center; color: var(--muted); font-size: .85rem; }
+    .ss-pix-timer b { color: var(--ink); font-weight: 700; }
+    .ss-pix-code { display: grid; gap: .6rem; }
+    .ss-pix-code .ss-input { font-size: .75rem; text-overflow: ellipsis; color: var(--ink-2); }
+    .ss-pix-copy { width: 100%; justify-content: center; min-height: var(--ss-target, 2.75rem); }
+    .ss-pix-code.is-copied .ss-pix-copy { background: var(--success); border-color: var(--success); color: var(--on-accent); }
+    .ss-pix-hint { color: var(--muted); font-size: .8rem; text-align: center; }
+    .ss-pix-paid, .ss-pix-expired { display: grid; justify-items: center; gap: .75rem; text-align: center; }
+    .ss-pix-paid p { font-weight: 700; color: var(--ink); }
+    .ss-pix-expired p { color: var(--muted); font-size: .85rem; }
+    .ss-pix-check { display: grid; place-items: center; width: 7rem; height: 7rem; border-radius: 999px; background: var(--success-soft); color: var(--success);
+                    animation: ss-pix-pop var(--ss-dur-long) var(--ss-bounce, var(--ss-ease-spring)) both; }
+    .ss-pix-check svg { width: 4rem; height: 4rem; }
+    .ss-pix-check-path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: ss-pix-draw var(--ss-dur-long) var(--ss-ease-enter) var(--ss-dur-short) forwards; }
+    @keyframes ss-pix-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes ss-pix-draw { to { stroke-dashoffset: 0; } }
+
+    /* Os três estados: data-state do servidor; data-expired do ss-countdown quando a contagem zera. */
+    .ss-pix .ss-pix-when-paid, .ss-pix .ss-pix-when-expired { display: none; }
+    .ss-pix[data-state="paid"] .ss-pix-when-paid { display: revert; }
+    .ss-pix[data-state="paid"] .ss-pix-paid { display: grid; }
+    .ss-pix[data-state="paid"] .ss-pix-when-waiting { display: none; }
+    .ss-pix[data-state="paid"] .ss-pix-qr { display: none; }
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-when-waiting { display: none; }
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-when-expired { display: revert; }
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-expired { display: grid; }
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-qr { opacity: .25; }
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-stage { gap: .75rem; }
+    .ss-pix-status .ss-badge { display: none; }
+    .ss-pix[data-state="waiting"]:not([data-expired]) .ss-pix-status .ss-pix-when-waiting,
+    .ss-pix[data-state="paid"] .ss-pix-status .ss-pix-when-paid,
+    .ss-pix:is([data-state="expired"], [data-state="waiting"][data-expired]) .ss-pix-status .ss-pix-when-expired { display: inline-flex; }
+    .ss-pix-regen { display: contents; }
+
+    /* ── Nota fiscal ─────────────────────────────────────────────────────── */
+    .ss-nfe { --ss-qr-paper: #fff; display: grid; gap: calc(var(--ss-gap) * .75); padding: var(--ss-card-pad); max-width: 30rem; }
+    .ss-nfe-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+    .ss-nfe-title { font-size: .95rem; font-weight: 800; color: var(--ink); }
+    .ss-nfe-number { color: var(--muted); font-size: .8rem; }
+    .ss-nfe-facts { display: grid; gap: .4rem; margin: 0; }
+    .ss-nfe-facts > div { display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem; }
+    .ss-nfe-facts dt { color: var(--muted); }
+    .ss-nfe-facts dd { margin: 0; color: var(--ink); font-weight: 600; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+    .ss-nfe-facts .is-total dd { font-size: 1.1rem; font-weight: 700; }
+    .ss-nfe-key { display: flex; gap: .75rem; align-items: flex-start; padding: .75rem; border-radius: var(--r-field); background: var(--field); }
+    .ss-nfe-key-text { flex: 1; min-width: 0; }
+    .ss-nfe-key-label { display: block; color: var(--muted); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .ss-nfe-key-text p { margin-top: .25rem; color: var(--ink); font-size: .85rem; line-height: 1.5; word-spacing: .1em; }
+    .ss-nfe-qr { flex: none; width: 6rem; padding: .35rem; border-radius: calc(var(--r-field) - 2px); background: var(--ss-qr-paper); box-shadow: inset 0 0 0 1px var(--line); }
+    .ss-nfe-invalid { display: flex; gap: .4rem; align-items: center; color: var(--warn); font-size: .8rem; font-weight: 600; }
+    .ss-nfe-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .ss-nfe-actions .ss-btn { min-height: var(--ss-target, 2.75rem); }
+    .ss-nfe-actions.is-copied .ss-btn:first-child { color: var(--success); }
+
+    /* ── Colar inteligente ───────────────────────────────────────────────── */
+    .ss-smart-paste { display: grid; gap: .75rem; max-width: 40rem; }
+    .ss-smart-paste-box { position: relative; }
+    .ss-smart-paste-box > .ss-smart-paste-input { min-height: 3.25rem; resize: vertical; padding-right: 6.5rem; font-size: .9rem; }
+    .ss-smart-paste-box > .ss-smart-paste-btn { position: absolute; top: .4rem; right: .4rem; min-height: var(--ss-target, 2.75rem); }
+    .ss-smart-paste-btn[hidden] { display: none; }
+    .ss-smart-paste-empty { color: var(--muted); font-size: .85rem; padding-inline: .25rem; }
+    .ss-paste-card { display: grid; gap: .6rem; padding: var(--ss-card-pad);
+                     animation: ss-paste-in var(--ss-dur-medium) var(--ss-ease-enter) both; }
+    .ss-paste-head { display: flex; gap: .75rem; align-items: flex-start; }
+    .ss-paste-icon { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: calc(var(--r-field) - 2px);
+                     background: var(--accent-soft); color: var(--accent); }
+    .ss-paste-icon svg { width: 1.35rem; height: 1.35rem; }
+    .ss-paste-card[data-valid="false"] .ss-paste-icon { background: var(--warn-soft); color: var(--warn); }
+    .ss-paste-summary { color: var(--ink); font-weight: 700; line-height: 1.4; align-self: center; overflow-wrap: anywhere; }
+    .ss-paste-detail { color: var(--muted); font-size: .78rem; line-height: 1.5; word-spacing: .1em; overflow-wrap: anywhere; }
+    .ss-paste-also { justify-self: start; }
+    .ss-paste-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .ss-paste-actions .ss-btn { min-height: var(--ss-target, 2.75rem); }
+    .ss-paste-form { display: contents; }
+    @keyframes ss-paste-in { from { opacity: 0; transform: translateY(var(--ss-dist-small, 4px)); } to { opacity: 1; transform: none; } }
+
+    /* ── A linha de retorno dos campos do kit ────────────────────────────── */
+    .ss-br-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .35rem; padding-left: .15rem;
+                      color: var(--ink-2); font-size: .82rem; font-weight: 600; }
+    .ss-br-feedback[hidden] { display: none; }
+    .ss-br-feedback.is-warn { color: var(--warn); }
+    .ss-br-feedback.is-ok::before { content: ""; width: .45rem; height: .45rem; border-radius: 999px; background: var(--success); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ss-pix-check, .ss-paste-card { animation: none; }
+      .ss-pix-check-path { animation: none; stroke-dashoffset: 0; }
+      .ss-pix-qr { transition: none; }
+    }
+}

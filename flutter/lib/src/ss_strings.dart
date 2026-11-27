@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'format.dart' show two;
+import 'v1120/br.dart';
 
 /// Textos que os componentes `Ss*` mostram ou falam (leitor de tela). O
 /// português é o padrão; [en] e [es] vêm prontos.
@@ -4674,6 +4675,27 @@ class SsFormats {
     final v = double.tryParse(t);
     return v == null ? null : (v * 100).round();
   }
+
+  // v1.12.0 "Kit Brasil": os formatadores brasileiros (os mesmos `ss_cpf`, `ss_cnpj`, `ss_cep`, `ss_phone_br`,
+  // `ss_boleto` e `ss_nfe_key` da gem). O formato é o do Brasil em qualquer idioma; parcial quando incompleto.
+
+  /// "60472138553" → "604.721.385-53".
+  String cpf(String? text) => SsBr.formatCpf(text);
+
+  /// "11222333000181" → "11.222.333/0001-81" (o alfanumérico com as letras em maiúscula).
+  String cnpj(String? text) => SsBr.formatCnpj(text);
+
+  /// "01310100" → "01310-100".
+  String cep(String? text) => SsBr.formatCep(text);
+
+  /// "11987654321" → "(11) 98765-4321"; "+5511987654321" → "+55 (11) 98765-4321".
+  String phoneBr(String? text) => SsBr.formatPhone(text);
+
+  /// Linha digitável em blocos (47 ou 48 dígitos; o código de barras de 44 vira a linha).
+  String boleto(String? text) => SsBr.formatBoleto(text);
+
+  /// Chave de acesso da NF-e em 11 blocos de 4.
+  String nfeKey(String? text) => SsBr.formatNfeKey(text);
 
   SsFormats copyWith({
     String? currencySymbol,

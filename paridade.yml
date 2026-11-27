@@ -1,4 +1,4 @@
-# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform): o par web de cada peça do Flutter, e vice-versa.
+# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform; v1.12.0: o Kit Brasil): o par web de cada peça do Flutter, e vice-versa.
 #
 # A regra da suíte é web e app com as mesmas funcionalidades; aqui fica escrito qual peça de um lado
 # responde pela do outro. Dois testes leem este arquivo e falham quando alguém cria peça num lado só:
@@ -319,6 +319,16 @@ pares:
   SsWizard: "Ss::WizardComponent"
   SsWormProgress: "css:.ss-progress"
 
+  # v1.12.0 "Kit Brasil": Pix, boleto, CEP, CPF/CNPJ, NF-e, o QR e o colar inteligente.
+  SsPixCard: "Ss::PixCardComponent"
+  SsPixKeyField: "form:ss_pix_key"
+  SsBoletoField: "form:ss_boleto"
+  SsCepField: "form:ss_cep"
+  SsDocumentField: "form:ss_document"
+  SsNfeCard: "Ss::NfeCardComponent"
+  SsSmartPaste: "Ss::SmartPasteComponent"
+  SsQrImage: "helper:ss_qr_svg"
+
 apis:
   SsHelpMenu: "Ss::HelpMenuComponent"
   SsIcons: "Ss::IconComponent"
@@ -333,6 +343,16 @@ apis:
   showSsToast: ["Ss::ToastComponent", "Ss::ToastStackComponent"]
   showSsUndo: "Ss::ToastComponent"
   SsPlatform: "helper:ss_platform"
+
+  # v1.12.0 "Kit Brasil": as contas puras (ComponentesUi::Br, ::Qr e ::PasteDetector no Ruby; ss_br.js no Stimulus).
+  SsBr: ["helper:ss_cpf", "helper:ss_cnpj", "helper:ss_cep", "helper:ss_phone_br", "helper:ss_boleto", "helper:ss_nfe_key"]
+  SsBoleto: ["helper:ss_boleto", "js:ss-boleto"]
+  SsBoletoMask: "js:ss-boleto"
+  SsNfeKey: ["helper:ss_nfe_key", "Ss::NfeCardComponent"]
+  SsPixCode: "Ss::PixCardComponent"
+  SsQrCode: "helper:ss_qr_svg"
+  SsPasteDetector: ["helper:ss_paste_summary", "js:ss-smart-paste"]
+  SsBrStrings: "helper:ss_t"
 
 so_app:
   SsAmountKeypad: "teclado numérico desenhado na tela; no web o valor é digitado no teclado físico (Ss::MoneyInputComponent)"

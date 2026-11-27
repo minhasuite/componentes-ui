@@ -138,6 +138,53 @@ module ComponentesUi
       ss_radio_buttons(method, collection.map { |o| [o.public_send(text_method), o.public_send(value_method)] }, **opts)
     end
 
+    # ── v1.12.0 "Kit Brasil": os campos brasileiros (pares do SsPixKeyField, SsBoletoField, SsCepField e
+    # SsDocumentField). Cada um é um f.ss_text_field com o controller dele no .ss-field e a linha de retorno embaixo
+    # (.ss-br-feedback, aria-live). A conta é a do ss_br.js (a mesma do ComponentesUi::Br no servidor: valide lá
+    # também). O erro vai pelo setCustomValidity, que o ss-validate do ss_form_with mostra embaixo do campo.
+
+    # Chave Pix: detecta o tipo enquanto digita (CPF, CNPJ, telefone, e-mail, aleatória), mostra o tipo e formata ao
+    # sair. type: prende num tipo (:cpf, :cnpj, :phone, :email, :random). No servidor, a chave para a API sai de
+    # ComponentesUi::Br.pix_key_normalize(valor).
+    def ss_pix_key(method, type: nil, label: nil, **opts)
+      texts = { invalid: ss_t("br.pix_key_invalid"), types: I18n.t("componentes_ui.br.key_types") }
+      ss_br_field(method, "ss-pix-key", { texts: texts.to_json, only: type.to_s },
+                  opts.merge(label: label || ss_t("br.pix_key"), placeholder: opts[:placeholder] || ss_t("br.pix_key_hint"),
+                             autocomplete: "off", autocapitalize: "none", spellcheck: false))
+    end
+
+    # Linha digitável do boleto: máscara (47 bancário, 48 conta de consumo; colar o código de barras de 44 vira a
+    # linha), dígitos verificadores e embaixo o tipo, o valor e o vencimento. Ler o código com a câmera é do app.
+    def ss_boleto(method, label: nil, **opts)
+      texts = { invalid: ss_t("br.boleto_invalid"), incomplete: ss_t("br.boleto_incomplete"), bank: ss_t("br.boleto_bank"),
+                collection: ss_t("br.boleto_collection"), due: ss_t("br.boleto_due"), overdue: ss_t("br.boleto_overdue"),
+                no_due: ss_t("br.boleto_no_due"), no_amount: ss_t("br.boleto_no_amount"), currency: @template.ss_currency }
+      ss_br_field(method, "ss-boleto", { texts: texts.to_json },
+                  opts.merge(label: label || ss_t("br.boleto"), placeholder: opts[:placeholder] || ss_t("br.boleto_hint"),
+                             inputmode: "numeric", autocomplete: "off", maxlength: 55, class: ["num", opts[:class]].compact.join(" ")))
+    end
+
+    # CEP com máscara e, com lookup_url: (o endpoint do produto, "/cep/%{cep}" que responde JSON { street:,
+    # district:, city:, state: }), o endereço nos campos ligados: fill: { street: "cliente_logradouro", district:,
+    # city:, state: } (ids dos inputs). O pacote não chama serviço externo.
+    def ss_cep(method, lookup_url: nil, fill: {}, label: nil, **opts)
+      texts = { looking: ss_t("br.cep_looking"), not_found: ss_t("br.cep_not_found"), invalid: ss_t("br.cep_invalid"),
+                error: ss_t("br.cep_error") }
+      ss_br_field(method, "ss-cep", { texts: texts.to_json, url: lookup_url.to_s, fill: fill.to_h.to_json },
+                  opts.merge(label: label || ss_t("br.cep"), mask: :cep))
+    end
+
+    # CPF ou CNPJ (o mask: :document, com o CNPJ alfanumérico): detecta o tipo, confere os dígitos e, com lookup_url:
+    # ("/cnpj/%{cnpj}" que responde JSON { name: "Razão social" }, 404 = não achou), mostra a razão social embaixo.
+    # kind: :cpf ou :cnpj aceita um só.
+    def ss_document(method, kind: :any, lookup_url: nil, label: nil, **opts)
+      texts = { cpf: ss_t("br.cpf_invalid"), cnpj: ss_t("br.cnpj_invalid"), looking: ss_t("br.document_looking"),
+                not_found: ss_t("br.document_not_found") }
+      default_label = { "cpf" => "CPF", "cnpj" => "CNPJ" }.fetch(kind.to_s, ss_t("br.document"))
+      ss_br_field(method, "ss-document", { texts: texts.to_json, kind: kind.to_s, url: lookup_url.to_s },
+                  opts.merge(label: label || default_label, mask: :document, autocapitalize: "characters"))
+    end
+
     # Botão de enviar; o texto padrão é "Salvar" (componentes_ui.form.submit).
     # variant: :primary (padrão), :outline, :ghost ou :danger (v0.13); small: true = .ss-btn-sm.
     # Máscaras do f.ss_text_field(mask:) → tamanho já formatado (v0.20).
@@ -163,6 +210,16 @@ module ComponentesUi
 
     private
 
+    def ss_br_field(method, controller, values, opts)
+      key = controller.tr("-", "_")
+      data = { controller: }
+      values.each { |k, v| data[:"#{key}_#{k}_value"] = v }
+      opts[:data] = (opts[:data] || {}).merge(:"#{key}_target" => "input",
+                                              action: [opts.dig(:data, :action), "input->#{controller}#check", "blur->#{controller}#leave"].compact.join(" "))
+      after = @template.tag.small("", class: "ss-br-feedback", hidden: true, "aria-live": "polite", data: { :"#{key}_target" => "out" })
+      ss_field(method, opts.merge(ss_wrapper_data: data, ss_after: after)) { |io| text_field(method, io) }
+    end
+
     def ss_chip_icon(icon)
       return nil if icon.blank?
       return icon if icon.respond_to?(:html_safe?) && icon.html_safe?
@@ -180,6 +237,8 @@ module ComponentesUi
       counter = opts.delete(:counter)
       hide_label = opts.delete(:hide_label)
       mask = opts.delete(:mask)
+      wrapper_data = opts.delete(:ss_wrapper_data) # v1.12.0: o controller do campo do Kit Brasil no .ss-field
+      after = opts.delete(:ss_after)               # v1.12.0: a linha de retorno embaixo do campo
       ss_no_wrap do
         errs = ss_errors(method)
         io = opts.merge(ss_aria(method, errs, help))
@@ -209,12 +268,12 @@ module ComponentesUi
         end
         lbl = @template.tag.label(for: io[:id] || field_id(method), class: ("ss-sr" if hide_label)) { @template.safe_join([label || ss_human(method), ss_req(method)]) }
         count = (@template.tag.small("0/#{counter}", class: "ss-counter num", data: { ss_counter_target: "output" }, "aria-live": "polite") if counter)
-        ss_wrap(method, errs, help, [lbl, input, count].compact, counter:, wrapper_class:)
+        ss_wrap(method, errs, help, [lbl, input, after, count].compact, counter:, wrapper_class:, data: wrapper_data)
       end
     end
 
-    def ss_wrap(method, errs, help, parts, counter: nil, wrapper_class: nil)
-      data = counter ? { controller: "ss-counter" } : {}
+    def ss_wrap(method, errs, help, parts, counter: nil, wrapper_class: nil, data: nil)
+      data = (data || {}).merge(counter ? { controller: [data&.dig(:controller), "ss-counter"].compact.join(" ") } : {})
       @template.tag.div(class: ["ss-field", ("is-invalid" if errs.any?), wrapper_class], data:) do
         @template.safe_join([*parts, ss_help(method, help), ss_error(method, errs)].compact)
       end

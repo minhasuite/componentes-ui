@@ -25,7 +25,7 @@ class Categoria {
 }
 
 /// A onda cujas peças entram em "Novidades".
-const versaoNovidades = '1.11';
+const versaoNovidades = '1.12';
 
 const novidades = Categoria('novidades', 'Novidades (v$versaoNovidades)', 'sparkles', 'O que chegou nesta versão.');
 const fundacao = Categoria(
@@ -172,6 +172,7 @@ final _porSlug = <String, Categoria>{
     'ss-radio-group', 'ss-repeater', 'ss-editable-value', 'ss-wizard', 'ss-otp', 'ss-tag-input',
     'ss-step-heading', 'ss-terms-notice', 'ss-v102-params',
     'ss-switch-ios', // v1.11
+    'ss-pix-key-field', 'ss-boleto-field', 'ss-cep-field', 'ss-document-field', // v1.12
   ])
     s: formularios,
   // Listas e tabelas
@@ -242,6 +243,7 @@ final _porSlug = <String, Categoria>{
     'ss-amount', 'ss-offer-card', 'ss-deal-badge', 'ss-ticket-card', 'ss-wallet-card', 'ss-qr-card', //
     'ss-recurring-card', 'ss-pop-out-card', 'ss-level-card', 'ss-price-board', 'ss-privacy', 'ss-plan',
     'ss-split-slider', 'ss-product-card', // v1.10
+    'ss-pix-card', 'ss-nfe-card', 'ss-smart-paste', 'ss-qr-image', // v1.12
   ])
     s: comercio,
   // Mídia e captura

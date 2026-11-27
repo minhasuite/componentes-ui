@@ -8,7 +8,7 @@
 # Grupo fora de GRUPOS faz o test/vitrine_test.rb falhar (nenhuma página fica fora do menu).
 class VitrineController < ApplicationController
   # A onda cujas páginas entram em "Novidades".
-  NOVIDADES = "1.11".freeze
+  NOVIDADES = "1.12".freeze
 
   # nome, ícone (ss_icon) e para que serve; na ordem do menu.
   CATEGORIAS = [
@@ -34,6 +34,20 @@ class VitrineController < ApplicationController
   GRUPOS = ["Início", *CATEGORIAS.map { _1[:nome] }].freeze
 
   helper_method :paginas, :pagina_atual, :menu, :contagem
+
+  # v1.12.0: o endereço e a razão social de exemplo do Kit Brasil (dados fictícios; no produto, o endpoint dele).
+  DEMO_CEP = { "01310100" => { street: "Avenida Paulista", district: "Bela Vista", city: "São Paulo", state: "SP" } }.freeze
+  DEMO_CNPJ = { "11222333000181" => "Loja Exemplo Comércio Ltda", "12ABC34501DE35" => "Exemplo Alfanumérico S.A." }.freeze
+
+  def cep
+    a = DEMO_CEP[params[:cep].to_s.gsub(/\D/, "")]
+    a ? render(json: a) : head(:not_found)
+  end
+
+  def cnpj
+    n = DEMO_CNPJ[params[:cnpj].to_s.upcase.gsub(/[^0-9A-Z]/, "")]
+    n ? render(json: { name: n }) : head(:not_found)
+  end
 
   def show
     @pagina = params[:pagina].to_s
