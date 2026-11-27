@@ -14,6 +14,7 @@ module Ss
   #
   # v0.10.1:
   # - subtitle: segunda linha do item (além do hint:, que fica à direita); entra na busca.
+  #   v1.14.1: e no nome lido (aria-label "rótulo, subtítulo, dica"), como o SsCommand(subtitle:).
   # - fill: sugestão que preenche a busca em vez de navegar: fill: "texto" põe esse texto
   #   no campo (fill: true põe o label) e filtra de novo (o src: busca de novo também).
   # - src: o HTML do servidor pode vir em grupos: <div class="ss-command-group"><p
@@ -57,8 +58,11 @@ module Ss
       it = it.to_h.transform_keys(&:to_sym)
       fill = fill_text(it)
       keywords = [it[:keywords], it[:subtitle]].compact.join(" ").presence
+      # v1.14.1 (par do SsCommand(subtitle:)): com subtítulo, o leitor diz "Luz do teto, Quarto" (sem o aria-label, as
+      # duas linhas sairiam coladas, "Luz do tetoQuarto").
+      aria = ([it[:label], it[:subtitle], it[:hint]].map { |v| v.to_s.strip }.reject(&:empty?).join(", ") if it[:subtitle].present?)
       { href: (fill ? nil : it[:url] || it[:href]), class: ["ss-command-item", ("is-fill" if fill)].compact.join(" "), id: "#{id}-o#{gi}-#{ii}",
-        role: "option", tabindex: "-1", data: { ss_command_target: "item", text: it[:label], keywords:, ss_command_fill: fill }.compact }
+        role: "option", tabindex: "-1", "aria-label": aria, data: { ss_command_target: "item", text: it[:label], keywords:, ss_command_fill: fill }.compact }
     end
 
     # Texto que a sugestão põe na busca (nil = item que navega).

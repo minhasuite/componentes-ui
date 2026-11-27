@@ -10,6 +10,8 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'src/ss_odometer.dart' show SsOdometer;
+
 export 'src/v100/fonts.dart' show ssPreloadFonts;
 // v1.9: a auditoria de acessibilidade para os testes de tela dos apps.
 export 'src/v19/paridade_web/a11y_audit.dart';
@@ -33,6 +35,30 @@ extension SsFinders on CommonFinders {
         return w is RawTooltip && bate(w.semanticsTooltip);
       },
       description: 'tooltip "$message"',
+      skipOffstage: skipOffstage,
+    );
+  }
+
+  /// v1.14.1: acha um valor na tela com ou sem o odômetro da v1.14.0 (o `SsKpiCard`, o `SsStatCard`, o
+  /// `SsAmount(animate: true)` e o `SsPeriodCompare` desenham cada dígito numa coluna, e o `find.text` deixa de
+  /// achar). Casa o [SsOdometer] com esse texto e qualquer `Text`/`Text.rich` com o mesmo texto, então o teste
+  /// não muda se o app passar a usar `animate: false`.
+  ///
+  /// ```dart
+  /// expect(find.ssValue('R\$ 4.870,00'), findsOneWidget);
+  /// ```
+  Finder ssValue(Pattern value, {bool skipOffstage = true}) {
+    bool bate(String? t) => t != null && (value is RegExp ? value.hasMatch(t) : t == value);
+    return byWidgetPredicate(
+      (w) {
+        if (w is SsOdometer) return bate(w.text);
+        if (w is Text) {
+          // O Text dentro do odômetro é um dígito só: não conta (quem conta é o SsOdometer).
+          return bate(w.data ?? w.textSpan?.toPlainText());
+        }
+        return false;
+      },
+      description: 'valor "$value"',
       skipOffstage: skipOffstage,
     );
   }

@@ -291,9 +291,15 @@ class SsTextField extends StatefulWidget {
     this.enableSuggestions = true,
     this.hideLabel = false,
     this.mask,
+    this.textAlign = TextAlign.start,
   });
 
   final String? label;
+
+  /// v1.14.1: alinhamento do texto digitado. [TextAlign.end] nos campos de
+  /// número (quantidade, preço, %), como a coluna da tabela; a dica segue.
+  /// Par do `f.ss_text_field(align: :end)`.
+  final TextAlign textAlign;
 
   /// v0.20: o [label] não aparece em cima, só para o leitor de tela (campo de
   /// busca numa barra, célula de tabela editável). Par do `f.ss_*(hide_label: true)`.
@@ -442,6 +448,7 @@ class _SsTextFieldState extends State<SsTextField> with SingleTickerProviderStat
       autofocus: widget.autofocus,
       readOnly: widget.readOnly,
       onTap: widget.onTap,
+      textAlign: widget.textAlign,
       style: widget.style ?? TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w600),
       errorBuilder: (_, msg) => _ErrorLine(msg),
       decoration: InputDecoration(
@@ -557,7 +564,12 @@ class SsMoneyField extends StatefulWidget {
     this.textInputAction,
     this.onSubmitted,
     this.onVoice,
+    this.textAlign = TextAlign.end,
   });
+
+  /// v1.14.1: o valor fica à direita por padrão (como o `.ss-money` do web e a
+  /// coluna de dinheiro); [TextAlign.start] volta ao de antes.
+  final TextAlign textAlign;
 
   final String? label;
 
@@ -846,6 +858,7 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
               onSubmitted: widget.onSubmitted,
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷−() ]'))],
               style: estilo,
+              textAlign: widget.textAlign,
               helperText: mostra ? '= ${f.money(conta)}' : null,
               suffix: widget.keypad || !widget.calculator
                   ? _mic(c)
@@ -884,6 +897,7 @@ class _SsMoneyFieldState extends State<SsMoneyField> {
         onSubmitted: widget.onSubmitted,
         inputFormatters: [_CentavosFormatter(f, signed: widget.signed)],
         style: estilo,
+        textAlign: widget.textAlign,
         suffix: _mic(c),
         validator: _validador(s, f),
         onChanged: (t) => widget.onChanged?.call(_comSinal(t, f)),

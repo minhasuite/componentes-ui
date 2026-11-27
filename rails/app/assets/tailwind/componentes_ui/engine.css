@@ -98,6 +98,8 @@
 /* v1.14.0 "interface e animação": gráfico que se arrasta, período × anterior, linha que se expande, seleção em massa,
    folha com alturas, abas de baixo, fundo de manchas, check que se desenha, cartão que inclina e esqueleto real. */
 @import "./v1140_web.css";
+/* v1.14.1: campo de número alinhado à direita (f.ss_text_field(align: :end)). */
+@import "./v1141_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

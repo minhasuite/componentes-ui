@@ -23,6 +23,8 @@ module ComponentesUi
   #   SsTextField(hideLabel:)); mask: :document (CPF/CNPJ), :phone ou :cep no f.ss_text_field/ss_telephone_field
   #   (Stimulus ss-mask; par do SsMask); f.ss_radio_buttons(checked:) marca a opção sem model (par do
   #   SsRadioGroup(value:)); o id: passado ao f.ss_check_box vale no for= do rótulo.
+  # - v1.14.1: align: :end (ou :center) em todo f.ss_* de texto alinha o que se digita (número à direita, como a
+  #   coluna da tabela); par do SsTextField(textAlign: TextAlign.end). Põe .ss-input-end/.ss-input-center no input.
   class FormBuilder < ActionView::Helpers::FormBuilder
     TEXT_KINDS = %i[text_field email_field number_field password_field telephone_field url_field search_field date_field
                     datetime_local_field time_field month_field text_area file_field color_field].freeze
@@ -239,10 +241,12 @@ module ComponentesUi
       mask = opts.delete(:mask)
       wrapper_data = opts.delete(:ss_wrapper_data) # v1.12.0: o controller do campo do Kit Brasil no .ss-field
       after = opts.delete(:ss_after)               # v1.12.0: a linha de retorno embaixo do campo
+      align = opts.delete(:align)&.to_sym          # v1.14.1: :start (padrão), :end ou :center
+      raise ArgumentError, "align: #{align} (use :start, :end ou :center)" unless [nil, :start, :end, :center].include?(align)
       ss_no_wrap do
         errs = ss_errors(method)
         io = opts.merge(ss_aria(method, errs, help))
-        io[:class] = ["ss-input", io[:class]].compact.join(" ")
+        io[:class] = ["ss-input", ("ss-input-#{align}" if %i[end center].include?(align)), io[:class]].compact.join(" ")
         io[:required] = true if !io.key?(:required) && ss_required?(method)
         if mask
           kind = mask.to_s

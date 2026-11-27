@@ -12,11 +12,18 @@ import 'ss_strings.dart';
 /// Um comando da [showSsCommandPalette]: o que aparece ([icon], [label]),
 /// palavras extras que também acham ([keywords]), o grupo do cabeçalho e o
 /// que fazer ([onRun], chamado depois que a paleta fecha).
+///
+/// v1.14.1: [subtitle] é a segunda linha, menor e apagada (o cômodo de um
+/// aparelho, a loja de um cliente); entra na busca e no leitor de tela.
+/// Par do `subtitle:` do item do `Ss::CommandPaletteComponent`.
 class SsCommand {
-  const SsCommand(this.icon, this.label, {this.keywords = const [], this.group, required this.onRun});
+  const SsCommand(this.icon, this.label, {this.keywords = const [], this.group, this.subtitle, required this.onRun});
 
   final IconData icon;
   final String label;
+
+  /// v1.14.1: a segunda linha ("Sala", "Loja Centro · 3 pedidos").
+  final String? subtitle;
   final List<String> keywords;
   final String? group;
   final VoidCallback onRun;
@@ -184,14 +191,14 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
 
   List<String> get _termos => _fold(_ctrl.text).split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
 
-  /// Quem casa no rótulo vem antes de quem só casa nas palavras-chave.
+  /// Quem casa no rótulo vem antes de quem só casa nas palavras-chave (e, v1.14.1, no subtítulo).
   List<SsCommand> _resultados() {
     final termos = _termos;
     if (termos.isEmpty) return widget.recent.isNotEmpty ? widget.recent : widget.commands;
     final noRotulo = <SsCommand>[], soChave = <SsCommand>[];
     for (final c in widget.commands) {
       final rotulo = _fold(c.label);
-      final tudo = '$rotulo ${_fold(c.keywords.join(' '))}';
+      final tudo = '$rotulo ${_fold(c.subtitle ?? '')} ${_fold(c.keywords.join(' '))}';
       if (!termos.every(tudo.contains)) continue;
       (termos.every(rotulo.contains) ? noRotulo : soChave).add(c);
     }
@@ -309,8 +316,17 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final base = TextStyle(color: c.ink, fontSize: d.font(AppType.body), fontWeight: FontWeight.w500);
+    final sub = cmd.subtitle?.trim() ?? '';
+    final rotulo = Text.rich(
+      TextSpan(children: _destaque(cmd.label, base)),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+    // v1.14.1: o leitor lê as duas linhas juntas ("Luz do teto, Sala").
     return Semantics(
       button: true,
+      label: sub.isEmpty ? null : '${cmd.label}, $sub',
+      excludeSemantics: sub.isNotEmpty,
       child: Material(
         color: primeiro ? c.accentSoft : Colors.transparent,
         borderRadius: BorderRadius.circular(d.radiusField),
@@ -335,11 +351,30 @@ class _SsCommandPaletteState extends State<SsCommandPalette> {
                 ),
                 SizedBox(width: d.gap),
                 Expanded(
-                  child: Text.rich(
-                    TextSpan(children: _destaque(cmd.label, base)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: sub.isEmpty
+                      ? rotulo
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            rotulo,
+                            const SizedBox(height: 1),
+                            Text.rich(
+                              TextSpan(
+                                children: _destaque(
+                                  sub,
+                                  TextStyle(
+                                    color: c.muted,
+                                    fontSize: d.font(AppType.meta),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                 ),
                 if (primeiro) Icon(Icons.keyboard_return_rounded, size: 16, color: c.accentText),
               ],

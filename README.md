@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.0
+      ref: v1.14.1
 ```
 
 ```dart
@@ -653,6 +653,46 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.1: subtítulo no comando, número à direita no campo e a saída dos testes da v1.14.0
+
+Correção pequena, nos dois lados. Nada quebra na API; muda um padrão: o `SsMoneyField` passa a alinhar o valor à
+direita, como o `.ss-money` do web já fazia (`textAlign: TextAlign.start` volta ao de antes).
+
+| Flutter | Rails | O que faz |
+|---|---|---|
+| `SsCommand(icon, label, subtitle: 'Sala')` (na `showSsCommandPalette`/`SsCommandPalette` e na busca do `SsSideMenu(search: SsSideMenuSearch(…))`) | `Ss::CommandPaletteComponent(groups: [{ items: [{ label:, subtitle:, hint:, url: }] }])` (já existia desde a v0.10.1; agora com `aria-label`) | a 2ª linha do item, menor e apagada (o cômodo de um aparelho, a loja de um cliente); entra na busca ("quarto" acha os do quarto, com o trecho destacado também nela) e no que o leitor de tela diz: "Luz do teto, Quarto" (no web, "rótulo, subtítulo, dica"; sem o `aria-label` as duas linhas saíam coladas) |
+| `SsTextField(textAlign: TextAlign.end)`; `SsMoneyField(textAlign:)` (padrão `TextAlign.end`) | `f.ss_text_field :qtd, align: :end` (e `:center`; vale em todo `f.ss_*` de texto: põe `.ss-input-end`/`.ss-input-center` no input, `v1141_web.css`); o `Ss::MoneyInputComponent` já vem à direita | número, quantidade, preço e % à direita dentro do campo, como na coluna da tabela (regra da `ui-design`) |
+| `SsAdaptiveScaffold(tabTransition:)` (repassa ao `SsNavScaffold`; `null` é o corte seco) | — | a troca de aba da casca adaptável também se desliga (antes só o `SsNavScaffold` aceitava) |
+| `find.ssValue('R$ 4.870,00')` (em `package:componentes_ui/testing.dart`) | — | acha o valor com ou sem odômetro (o `SsOdometer` com esse texto ou um `Text` igual) |
+
+**Ao subir nos produtos: os testes que a v1.14.0 pode ter quebrado.**
+
+- *KPI e cartão de número (app).* O `SsKpiCard`, o `SsStatCard`, o `SsPeriodCompare` e o `SsAmount(animate: true)`
+  desenham cada dígito numa coluna, então `find.text('R$ 4.870,00')` deixa de achar. Escolha uma saída:
+  ```dart
+  import 'package:componentes_ui/testing.dart';
+  expect(find.ssValue(r'R$ 4.870,00'), findsOneWidget);            // 1) não depende do odômetro
+  final h = tester.ensureSemantics();                               // 2) pelo leitor de tela
+  expect(find.bySemanticsLabel(RegExp(r'R\$ 4\.870,00')), findsWidgets); // RegExp: o card lê "Receita, R$ 4.870,00"
+  h.dispose();
+  const SsKpiCard(label: 'Receita', value: r'R$ 4.870,00', animate: false); // 3) no app ou só no teste: o texto de antes
+  ```
+  `find.bySemanticsLabel('R$ 4.870,00')` com texto exato não acha (o nome do card junta rótulo, valor e legenda).
+  Reduzir movimento (`disableAnimations`) tira a rolagem, mas os dígitos continuam em colunas: não serve de saída.
+- *KPI (web).* O `KpiCardComponent` vira o `Ss::OdometerComponent`: o texto do card fica com os rolos ("0123456789…").
+  Procure `assert_selector "[data-ss-odometer-text-value='R$ 4.870,00']"` ou `assert_selector ".ss-kpi-card-value
+  .ss-sr", text: "R$ 4.870,00"`, ou passe `animate: false`.
+- *Troca de aba (app).* Teste que toca a aba e procura a tela nova com um `pump()` só vê a tela a meio caminho
+  (opacidade < 1, mas ela já está na árvore). Use `pumpAndSettle()`, ou desligue: `SsNavScaffold(tabTransition: null)`
+  ou `SsAdaptiveScaffold(tabTransition: null)`.
+- *Outros padrões da v1.14.0 que têm chave:* o arrastar dos gráficos (`scrub: false` em `SsLineChart`,
+  `SsAreaChart`, `SsBarChart`, `SsTimeChart`) e o ícone animado da barra (`SsNavItem(animatedIcon: false)`).
+
+Catálogo: o estado "subtitulo" do `showSsCommandPalette` e "numero-direita" do `SsTextField`
+(`flutter/test/catalogo_extras.dart`, `catalogo_onda2.dart`); o web não muda à vista (o subtítulo já estava no
+catálogo). `paridade.yml`: sem par novo. Testes: `flutter/test/v1141_test.dart` e
+`rails/sample/test/components/v1_14_1_web_test.rb`.
 
 ## v1.14.0: interface e animação (gráfico que se arrasta, período × anterior, linha que se expande, folha com 3 alturas, fundo de manchas, check que se desenha, cartão que inclina e a troca de aba)
 
@@ -2662,6 +2702,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.1` (27/11/2026): seção "v1.14.1". `SsCommand(subtitle:)` (paleta e busca do `SsSideMenu`) ↔ `aria-label` no item com `subtitle:` do `Ss::CommandPaletteComponent`, `SsTextField(textAlign:)`/`SsMoneyField(textAlign:)` ↔ `f.ss_*(align: :end)`, `SsAdaptiveScaffold(tabTransition:)` e `find.ssValue` no `testing.dart`. Muda o padrão do `SsMoneyField` (valor à direita).
 - `v1.14.0` (27/11/2026): seção "v1.14.0" (interface e animação). Scrub nos gráficos (`SsScrubDetector` ↔ `ss-scrub`), `SsPeriodCompare` ↔ `Ss::PeriodCompareComponent`, `SsExpandableRow` ↔ `Ss::ExpandableRowComponent`, `Ss::SelectionBarComponent` + `ss-selection`, `showSsSheet(detents:)` ↔ `DrawerComponent(detents:)`, ícone animado na barra, `SsMeshBackground` ↔ `Ss::MeshBackgroundComponent`, odômetro padrão no KPI, `collapseTint`/`collapse_tint`, `SsSuccessCheck` ↔ `Ss::SuccessCheckComponent` (+ `SsSounds`/`ss:sound`), `SsTiltCard` ↔ `Ss::TiltCardComponent`, `SsSharedAxisTransition`/`SsTabHero` ↔ View Transitions + `ss_tab_hero`, `SsSkeleton.of` ↔ `ss_skeleton_for`. Nada quebra na API; muda o padrão do KPI (odômetro) e da troca de aba do `SsNavScaffold`.
 - `v1.13.0` (27/11/2026): seção "v1.13.0" (confiança na IA e suíte).
 - `v1.12.0` (27/11/2026): seção "v1.12.0" (Kit Brasil). `SsPixCard` ↔ `Ss::PixCardComponent`, `SsNfeCard` ↔ `Ss::NfeCardComponent`, `SsSmartPaste` ↔ `Ss::SmartPasteComponent` (detector igual em Dart, Ruby e JS), `SsPixKeyField`/`SsBoletoField`/`SsCepField`/`SsDocumentField` ↔ `f.ss_pix_key`/`ss_boleto`/`ss_cep`/`ss_document`, QR puro (`SsQrCode`/`SsQrImage` ↔ `ComponentesUi::Qr`/`ss_qr_svg`), `SsBr` ↔ `ComponentesUi::Br` e os formatadores `SsFormats.cpf/cnpj/cep/phoneBr/boleto/nfeKey` ↔ `ss_*`. Nenhuma dependência nova. Nada quebra na API.

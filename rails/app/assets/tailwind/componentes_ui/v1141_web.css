@@ -1,0 +1,7 @@
+/* v1.14.1: o alinhamento do que se digita no campo (par do SsTextField(textAlign:)). f.ss_*(align: :end) põe
+   .ss-input-end: número, quantidade e preço à direita, como a coluna da tabela; a dica (placeholder) segue.
+   O Ss::MoneyInputComponent já vem à direita (.ss-money). */
+@layer components {
+  .ss-input.ss-input-end { text-align: end; }
+  .ss-input.ss-input-center { text-align: center; }
+}

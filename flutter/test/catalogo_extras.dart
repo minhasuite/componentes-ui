@@ -131,6 +131,21 @@ Widget _paleta(String q) => Padding(
   ),
 );
 
+// v1.14.1: os aparelhos da casa com o cômodo na 2ª linha (SsCommand(subtitle:)).
+final _aparelhos = [
+  SsCommand(Icons.lightbulb_outline_rounded, 'Luz do teto', subtitle: 'Sala', group: 'Aparelhos', onRun: _nada),
+  SsCommand(Icons.lightbulb_outline_rounded, 'Luz do teto', subtitle: 'Quarto', group: 'Aparelhos', onRun: _nada),
+  SsCommand(Icons.ac_unit_rounded, 'Ar-condicionado', subtitle: 'Quarto', group: 'Aparelhos', onRun: _nada),
+];
+
+Widget _paletaAparelhos(String q) => Padding(
+  padding: const EdgeInsets.all(12),
+  child: Align(
+    alignment: Alignment.topCenter,
+    child: SsCommandPalette(commands: _aparelhos, initialQuery: q, onSelected: (_) {}),
+  ),
+);
+
 Widget _linhaCliente(BuildContext context, String nome, String sub, String valor) => Container(
   decoration: BoxDecoration(color: SsColors.of(context).surface, borderRadius: BorderRadius.circular(AppRadius.card)),
   child: SsListItem(leading: SsAvatar(nome), title: nome, subtitle: sub, value: valor),
@@ -426,11 +441,18 @@ final catalogoExtras = <Componente>[
       'Vários termos: todos precisam casar. Quem casa no rótulo vem antes de quem só casa nas palavras-chave.',
       'Agrupa por grupo, destaca em negrito o trecho que casou e marca o 1º resultado (é o que o Enter executa).',
       'Toque ou Enter executa e fecha. Sem busca, mostra os recentes (ou tudo, se não houver).',
+      'v1.14.1: subtitle: é a 2ª linha (o cômodo do aparelho); entra na busca ("quarto" acha os do quarto) e o leitor lê "Luz do teto, Quarto".',
     ],
     estados: [
       Estado('recentes', 'sem busca: recentes', (_) => _paleta(''), tamanho: const Size(360, 300)),
       Estado('buscando', 'buscando "relat"', (_) => _paleta('relat'), tamanho: const Size(360, 340)),
       Estado('vazio', 'nada encontrado', (_) => _paleta('xyz'), tamanho: const Size(360, 200)),
+      Estado(
+        'subtitulo',
+        'v1.14.1: com o cômodo na 2ª linha, buscando "quarto"',
+        (_) => _paletaAparelhos('quarto'),
+        tamanho: const Size(360, 260),
+      ),
     ],
   ),
   Componente(

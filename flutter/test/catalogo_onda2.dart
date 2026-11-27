@@ -93,12 +93,27 @@ final catalogoOnda2 = <Componente>[
       'É um TextFormField: funciona dentro de Form.',
       'suffixText põe a unidade ("kg") depois do valor; maxLength limita sem contador; textCapitalization para nome e título.',
       'autocorrect e enableSuggestions (padrão true) desligam a correção e as sugestões do teclado.',
+      'v1.14.1: textAlign: TextAlign.end alinha número à direita (quantidade, preço, %).',
     ],
     estados: [
       Estado(
         'unidade',
         'com unidade no fim',
         (_) => _pad(const SsTextField(label: 'Peso', initialValue: '82,5', suffixText: 'kg')),
+        tamanho: _campo,
+      ),
+      Estado(
+        'numero-direita',
+        'v1.14.1: número à direita (textAlign: TextAlign.end)',
+        (_) => _pad(
+          const SsTextField(
+            label: 'Quantidade',
+            initialValue: '12',
+            suffixText: 'un',
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.end,
+          ),
+        ),
         tamanho: _campo,
       ),
       Estado(
@@ -154,6 +169,7 @@ final catalogoOnda2 = <Componente>[
       'Digita só números: 0,00 → 0,05 → 0,50 → 5,00.',
       'Devolve os centavos (int) a cada mudança.',
       'Com keypad, o toque abre o teclado de valor próprio no lugar do teclado do sistema.',
+      'v1.14.1: o valor fica à direita (textAlign: TextAlign.end, o padrão), como o .ss-money do web.',
     ],
     estados: [
       Estado(

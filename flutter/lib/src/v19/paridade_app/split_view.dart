@@ -10,6 +10,7 @@ import '../../motion.dart';
 import '../../ss_nav_bar.dart';
 import '../../ss_strings.dart';
 import '../../v09/a_nav.dart' show SsSideRail;
+import '../../v1140/shared_axis.dart' show SsSharedAxis;
 import '../../v27/side_menu.dart' show SsNavScaffold, SsSideMenu;
 
 /// Largura a partir da qual a tela é "larga" (o `expanded` do Material).
@@ -190,7 +191,12 @@ class SsAdaptiveScaffold extends StatelessWidget {
     this.railFooter,
     this.breakpoint = ssWideBreakpoint,
     this.backToFirstTab = true,
+    this.tabTransition = SsSharedAxis.fadeThrough,
   });
+
+  /// v1.14.1: a troca de aba no celular, repassada ao [SsNavScaffold] (`null` volta ao corte seco, como
+  /// `SsNavScaffold(tabTransition: null)`). No trilho a troca continua seca.
+  final SsSharedAxis? tabTransition;
 
   final List<SsNavItem> items;
   final int currentIndex;
@@ -217,6 +223,7 @@ class SsAdaptiveScaffold extends StatelessWidget {
         sideMenu: sideMenu,
         backToFirstTab: backToFirstTab,
         floatingActionButton: floatingActionButton,
+        tabTransition: tabTransition,
       );
     }
     final primeira = !backToFirstTab || currentIndex == 0;
