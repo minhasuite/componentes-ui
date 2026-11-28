@@ -80,7 +80,7 @@ export 'src/v13/paineis.dart';
 export 'src/v13/textos.dart';
 export 'src/v14/pecas.dart';
 export 'src/v15/amount.dart';
-export 'src/v15/bar_chart.dart' hide ssBarRange;
+export 'src/v15/bar_chart.dart' hide ssBarRange, ssBarExtremes;
 export 'src/v15/chat_action.dart';
 export 'src/v15/icons.dart';
 export 'src/v15/privacy.dart';
@@ -170,3 +170,5 @@ export 'src/v1140/shared_axis.dart';
 export 'src/v1140/strings.dart';
 export 'src/v1140/success_check.dart';
 export 'src/v1140/tilt_card.dart';
+// v1.14.7: a escala redonda dos gráficos e o vazio com tudo zero.
+export 'src/v1147/chart_scale.dart';

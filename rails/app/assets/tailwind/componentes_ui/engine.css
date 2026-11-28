@@ -102,6 +102,8 @@
 @import "./v1141_web.css";
 /* v1.14.2: as abas da central de notificações (Caixa de entrada | Arquivadas). */
 @import "./v1142_web.css";
+/* v1.14.7: o vazio com tudo zero nas barras do card na cor da marca. */
+@import "./v1147_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

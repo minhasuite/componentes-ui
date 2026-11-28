@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { scrubTick } from "componentes_ui/controllers/ss_scrub_controller"
 import { inView } from "componentes_ui/controllers/ss_in_view_controller"
-import { formatter, langOf, ticks, niceRange, valueAt, renderAxis, placeSegments, escapeHtml } from "componentes_ui/controllers/ss_time_axis"
+import { formatter, langOf, ticks, niceRange, stepDecimals, valueAt, renderAxis, placeSegments, escapeHtml } from "componentes_ui/controllers/ss_time_axis"
 
 // Gráfico de séries no tempo (Ss::TimeSeriesChartComponent). Desenha o SVG no tamanho
 // real (redesenha ao mudar de tamanho), com números e datas pelo Intl no idioma da página.
@@ -94,7 +94,7 @@ export default class extends Controller {
       this.el("line", { x1: gx, x2: gx, y1: 0, y2: this.h, class: "is-v" }, grid)
     })
     const a0 = this.axs[0]
-    if (a0) for (let v = a0.lo; v <= a0.hi + a0.step / 2; v += a0.step) this.el("line", { x1: 0, x2: this.w, y1: this.y(a0, v), y2: this.y(a0, v) }, grid)
+    if (a0) for (let k = 0, v = a0.lo; v <= a0.hi + a0.step / 2; k++, v = a0.lo + a0.step * k) this.el("line", { x1: 0, x2: this.w, y1: this.y(a0, v), y2: this.y(a0, v) }, grid)
 
     const lines = this.el("g", { class: "ss-tc-lines" }, svg)
     const fim = Math.min(this.w, this.x(Date.now()))
@@ -145,8 +145,9 @@ export default class extends Controller {
     // Rótulos do eixo Y por cima: o 1º à esquerda, o 2º à direita.
     const labels = this.el("g", { class: "ss-tc-ylabels" }, svg)
     this.axs.forEach((ax, n) => {
-      const dec = ax.step < 1 ? (ax.step < 0.1 ? 2 : 1) : 0
-      for (let v = ax.lo; v <= ax.hi + ax.step / 2; v += ax.step) {
+      const dec = stepDecimals(ax.step)
+      for (let k = 0; ax.lo + ax.step * k <= ax.hi + ax.step / 2; k++) {
+        const v = Number((ax.lo + ax.step * k).toPrecision(12))
         const yy = this.y(ax, v)
         if (yy < TOP - 1 || yy > this.h - BOTTOM + 1) continue
         const t = this.el("text", { x: n ? this.w - 5 : 5, y: Math.max(11, yy - 4), "text-anchor": n ? "end" : "start" }, labels)

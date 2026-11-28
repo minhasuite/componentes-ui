@@ -13,6 +13,7 @@ import '../motion_view.dart';
 import '../ss_line_chart.dart' show SsSeries, SsChartEmpty;
 import '../v19/transicoes/chart_transition.dart';
 import '../v27/chart_markers.dart';
+import '../v1147/chart_scale.dart';
 import '../ss_strings.dart';
 
 /// Barras por rótulo (mês, cartão): uma barra por série lado a lado, ou
@@ -39,6 +40,10 @@ import '../ss_strings.dart';
 /// de exceção, rota); `SsSeries(colors:)` dá cor por valor (a categoria
 /// "Outros" apagada); [markers] desenha marcas verticais (deploy, incidente,
 /// nota; não valem no deitado); [empty] mostra o texto quando não há valor.
+///
+/// v1.14.7: tudo zero (7 dias sem uso) também é vazio: mostra o [SsChartEmpty] com [empty] (sem ele,
+/// [SsStrings.chartEmpty]); [treatZeroAsEmpty] falso desenha as barras no chão. A escala é sempre redonda
+/// ([SsChartScale]: 1, 2, 2,5, 5 × 10ⁿ) e as guias nunca repetem o texto do [format] ("1 min, 1 min").
 class SsBarChart extends StatefulWidget {
   const SsBarChart({
     super.key,
@@ -58,7 +63,11 @@ class SsBarChart extends StatefulWidget {
     this.max,
     this.scrub = true,
     this.onScrub,
+    this.treatZeroAsEmpty = true,
   });
+
+  /// v1.14.7: tudo zero (ou nulo) conta como vazio; falso desenha as barras no chão.
+  final bool treatZeroAsEmpty;
 
   /// v1.14.0 (par do `scrub:` do web): arrastar o dedo ou passar o mouse destaca a barra e abre o balão; cada
   /// barra nova vibra ([SsHaptics.selection]). Falso: o gráfico fica parado.
@@ -120,6 +129,30 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
   int projectionFrom = 0,
   double? max,
 }) {
+  var (lo, hi) = ssBarExtremes(
+    series,
+    n,
+    line: line,
+    stacked: stacked,
+    projection: projection,
+    projectionFrom: projectionFrom,
+  );
+  if (hi == 0 && lo == 0) hi = 1;
+  final pad = (hi - lo) * .08;
+  final topo = max != null ? math.max(max, hi) : (hi > 0 ? hi + pad : 0.0);
+  return (lo < 0 ? lo - pad : 0, topo);
+}
+
+/// v1.14.7: o menor e o maior valor desenhado (empilhado: as somas), sem folga; a escala sai do [SsChartScale].
+@visibleForTesting
+(double, double) ssBarExtremes(
+  List<SsSeries> series,
+  int n, {
+  SsSeries? line,
+  bool stacked = false,
+  SsSeries? projection,
+  int projectionFrom = 0,
+}) {
   var lo = 0.0, hi = 0.0;
   for (var i = 0; i < n; i++) {
     if (stacked) {
@@ -145,10 +178,7 @@ double _v(List<double> vs, int i) => i < vs.length ? vs[i] : 0;
       lo = math.min(lo, projection.values[i]);
     }
   }
-  if (hi == 0 && lo == 0) hi = 1;
-  final pad = (hi - lo) * .08;
-  final topo = max != null ? math.max(max, hi) : (hi > 0 ? hi + pad : 0.0);
-  return (lo < 0 ? lo - pad : 0, topo);
+  return (lo, hi);
 }
 
 class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateMixin, SsChartTransition<SsBarChart> {
@@ -161,6 +191,15 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
 
   int get _n => widget.labels.length;
   String _fmt(double v) => widget.format?.call(v) ?? qty(v, _formats);
+
+  /// v1.14.7: nenhum valor diferente de zero (barras, linha e projeção).
+  bool get _tudoZero =>
+      widget.series.every((x) => SsChartScale.allZero(x.values.take(_n))) &&
+      SsChartScale.allZero(widget.line?.values ?? const []) &&
+      SsChartScale.allZero([
+        for (var i = widget.projectionFrom; i < (widget.projection?.values.length ?? 0); i++)
+          widget.projection!.values[i],
+      ]);
 
   /// Índice com ponto da projeção.
   bool _temProj(int i) {
@@ -192,6 +231,9 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
     final cores = [for (var i = 0; i < widget.series.length; i++) widget.series[i].color ?? paleta[i % paleta.length]];
     final vazio = _n == 0 || widget.series.every((x) => x.values.isEmpty);
     if (vazio && widget.empty != null) return SsChartEmpty(widget.empty!, height: widget.height);
+    if (!vazio && widget.treatZeroAsEmpty && _tudoZero) {
+      return SsChartEmpty(widget.empty ?? s.chartEmpty, height: widget.horizontal ? 30.0 * _n : widget.height);
+    }
     if (widget.horizontal) return _deitado(context, cores);
     final marcas = ssResolveMarkers(widget.markers, widget.labels);
     final topo = ssMarkerRows(marcas) * ssMarkerLine;
@@ -203,15 +245,16 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
         i < mostra.length ? SsSeries(mostra[i], colors: widget.series[i].colors) : widget.series[i],
     ];
     final linha = widget.line == null ? null : SsSeries(mostra.last, color: widget.line!.color);
-    final (lo, hi) = ssBarRange(
+    final (min, max) = ssBarExtremes(
       barras,
       _n,
       line: linha,
       stacked: widget.stacked,
       projection: widget.projection,
       projectionFrom: widget.projectionFrom,
-      max: widget.max,
     );
+    final escala = SsChartScale.of(min, max, top: widget.max, format: _fmt);
+    final (lo, hi) = (escala.lo, escala.hi);
     final nome = widget.series.map((x) => x.name).whereType<String>().join(', ');
     final resumo = [
       for (var i = 0; i < _n; i++)
@@ -256,6 +299,7 @@ class _SsBarChartState extends State<SsBarChart> with SingleTickerProviderStateM
                         labels: widget.labels,
                         lo: lo,
                         hi: hi,
+                        guides: escala.guides,
                         stacked: widget.stacked,
                         t: t,
                         sel: sel,
@@ -573,6 +617,7 @@ class _BarPainter extends CustomPainter {
     required this.labels,
     required this.lo,
     required this.hi,
+    this.guides = const [],
     required this.stacked,
     required this.t,
     required this.sel,
@@ -596,6 +641,9 @@ class _BarPainter extends CustomPainter {
   final int n;
   final List<String> labels;
   final double lo, hi;
+
+  /// v1.14.7: as guias com valor (as marcas redondas do [SsChartScale], sem o zero).
+  final List<double> guides;
   final bool stacked;
   final double t;
   final int? sel, active;
@@ -637,8 +685,8 @@ class _BarPainter extends CustomPainter {
     final fina = Paint()
       ..color = guide
       ..strokeWidth = 1;
-    // Guias: topo, base e o meio, menos as que caem em cima da linha do zero.
-    final marcas = {hi, (hi + lo) / 2, lo}..removeWhere((v) => (v / (hi - lo)).abs() < .12);
+    // Guias: as marcas redondas da escala (v1.14.7), sem o zero (que tem a linha dele).
+    final marcas = guides;
     for (final v in marcas) {
       canvas.drawLine(Offset(0, y(v)), Offset(size.width, y(v)), fina);
     }

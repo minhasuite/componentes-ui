@@ -14,6 +14,7 @@ import '../ss_stat.dart';
 import '../ss_strings.dart';
 import '../v12/cards.dart';
 import '../v16/chart_legend.dart';
+import '../v1147/chart_scale.dart';
 import 'strings.dart';
 
 /// Este período × o anterior: o total deste período (o número rola ao trocar, [SsOdometer]), a diferença em
@@ -45,6 +46,8 @@ class SsPeriodCompare extends StatefulWidget {
     this.onScrub,
     this.height = 160,
     this.card = true,
+    this.empty,
+    this.treatZeroAsEmpty = true,
   }) : assert(periods.length == 0 || periods.length >= 2);
 
   /// Um por ponto ("01/11"); o anterior usa o mesmo eixo (dia 1 com dia 1).
@@ -76,6 +79,12 @@ class SsPeriodCompare extends StatefulWidget {
 
   /// Dentro de um [SsCard] (padrão); falso para pôr no card do app.
   final bool card;
+
+  /// v1.14.7: texto do vazio no lugar do gráfico (padrão [SsStrings.chartEmpty]) quando os dois períodos são zero.
+  final String? empty;
+
+  /// v1.14.7: tudo zero nos dois períodos conta como vazio (sem a legenda); falso desenha as linhas no chão.
+  final bool treatZeroAsEmpty;
 
   /// A diferença em porcentagem de [previous] para [current] (nula sem base).
   static double? change(double current, double previous) =>
@@ -113,6 +122,8 @@ class _SsPeriodCompareState extends State<SsPeriodCompare> {
         : (pct.abs() < .05
               ? SsDelta.neutral(pctTexto)
               : SsDelta(pctTexto, up: pct > 0, good: (pct > 0) == widget.higherIsBetter));
+    final vazio =
+        widget.treatZeroAsEmpty && SsChartScale.allZero(widget.current) && SsChartScale.allZero(widget.previous);
     final resumo = SsInterfaceStrings.fill(t.periodSummary, {'current': fmt(agora), 'previous': fmt(antes)});
 
     final corpo = Column(
@@ -181,6 +192,8 @@ class _SsPeriodCompareState extends State<SsPeriodCompare> {
           labels: widget.labels,
           height: widget.height,
           format: fmt,
+          empty: widget.empty,
+          treatZeroAsEmpty: widget.treatZeroAsEmpty,
           series: [
             SsSeries(widget.current, name: nomeAgora, color: c.accent),
             // A linha fantasma: o anterior, tracejado e apagado, por baixo da leitura.
@@ -191,13 +204,15 @@ class _SsPeriodCompareState extends State<SsPeriodCompare> {
             widget.onScrub?.call(i);
           },
         ),
-        const SizedBox(height: 8),
-        SsChartLegend(
-          items: [
-            SsLegendItem(nomeAgora, c.accent, line: true),
-            SsLegendItem(nomeAntes, c.muted, line: true, dashed: true),
-          ],
-        ),
+        if (!vazio) ...[
+          const SizedBox(height: 8),
+          SsChartLegend(
+            items: [
+              SsLegendItem(nomeAgora, c.accent, line: true),
+              SsLegendItem(nomeAntes, c.muted, line: true, dashed: true),
+            ],
+          ),
+        ],
       ],
     );
     if (!widget.card) return corpo;

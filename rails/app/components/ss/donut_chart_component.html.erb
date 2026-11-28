@@ -1,3 +1,9 @@
+<% if zero? %>
+<%= tag.figure(**root_attrs(class: classes("ss-donut", "is-empty"))) do %>
+  <figcaption class="ss-sr"><%= title %></figcaption>
+  <p class="ss-chart-empty"><%= empty_text %></p>
+<% end %>
+<% else %>
 <%= tag.figure(**root_attrs(class: classes("ss-donut"), data: { controller: "ss-donut" })) do %>
   <div class="ss-donut-chart">
     <svg viewBox="0 0 <%= SIZE %> <%= SIZE %>" role="img" aria-labelledby="<%= "d#{object_id}" %>">
@@ -18,4 +24,5 @@
                   data-action="ss-donut#toggle mouseenter->ss-donut#peek mouseleave->ss-donut#unpeek focus->ss-donut#peek blur->ss-donut#unpeek"><%= s[:label] %> <b class="num"><%= pct_text(s[:pct]) %></b></button></li>
     <% end %>
   </ul>
+<% end %>
 <% end %>

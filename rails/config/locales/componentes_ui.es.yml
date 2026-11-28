@@ -118,6 +118,7 @@ es:
         title: "Subir archivo"
         text: "PDF, XML o imagen"
     chart:
+      empty: Sin datos en este período
       marker:
         deploy: despliegue
         incident: incidente

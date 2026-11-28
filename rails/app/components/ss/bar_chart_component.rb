@@ -50,6 +50,10 @@ module Ss
   # mesma escala: comparar a altura de duas barras de gráficos diferentes só é honesto com o mesmo topo.
   # Um valor acima do max alarga a escala (nunca vaza do desenho). Par do SsBarChart(max:).
   #   render Ss::BarChartComponent.new(title: "EAccessViolation", labels: dias, series: [...], max: maior_de_todos)
+  #
+  # v1.14.7: tudo zero (ou nil) também é vazio: o .ss-chart-empty com empty: (sem ele, "Sem dados no período");
+  # treat_zero_as_empty: false desenha as barras no chão. A escala em pé é sempre redonda (ComponentesUi::ChartScale:
+  # 1, 2, 2,5, 5 × 10ⁿ) e as guias nunca repetem o texto do format: ("1 min, 1 min"): o passo cresce.
   class BarChartComponent < BaseComponent
     include ChartMarkers
 
@@ -64,8 +68,9 @@ module Ss
 
     def initialize(labels:, series:, title:, line: nil, stacked: false, format: nil, height: 240, active: nil,
                    show_title: false, legend: true, width: W, label_every: nil, projection: nil, projection_from: nil,
-                   horizontal: false, empty: nil, markers: [], max: nil, scrub: false, **rest)
+                   horizontal: false, empty: nil, markers: [], max: nil, scrub: false, treat_zero_as_empty: true, **rest)
       super(**rest)
+      @treat_zero_as_empty = treat_zero_as_empty
       @title = title # v1.14.0: o título (figcaption, a tabela do leitor de tela e o rótulo do scrub) saía vazio.
       @max = max&.to_f
       @scrub = scrub
@@ -95,11 +100,20 @@ module Ss
       @h += marker_pad.round if markers?
     end
 
-    def render? = data? || @empty.present?
+    def render? = data? || zero? || @empty.present?
 
-    # Há o que desenhar: rótulo e ao menos um valor.
-    def data? = labels.any? && series.any? { |s| s[:values].any? { !_1.nil? } }
-    def empty_text = @empty
+    # Há rótulo e ao menos um valor.
+    def values? = labels.any? && series.any? { |s| s[:values].any? { !_1.nil? } }
+
+    # v1.14.7: só zeros (barras, linha e projeção) com treat_zero_as_empty: o vazio.
+    def zero?
+      @treat_zero_as_empty && values? &&
+        [*series, line, projection].compact.all? { |s| ComponentesUi::ChartScale.all_zero?(s[:values]) }
+    end
+
+    # Há o que desenhar.
+    def data? = values? && !zero?
+    def empty_text = @empty || (zero? ? ss_t("chart.empty", default: "Sem dados no período") : nil)
     def horizontal? = @horizontal
 
     # Topo da área de desenho (as marcas empurram para baixo).
@@ -130,8 +144,19 @@ module Ss
     end
 
     # Extremos com o zero sempre dentro (empilhado: soma dos positivos e dos negativos).
+    # v1.14.7: em pé, a faixa é a da escala redonda (scale); deitado, os extremos com folga, como antes.
     def range
-      @range ||= begin
+      @range ||= if horizontal?
+                   padded_range
+                 else
+                   [scale.lo, scale.hi]
+                 end
+    end
+
+    def scale = @scale ||= ComponentesUi::ChartScale.of(*extremes, top: @max, format: ->(v) { fmt(v) })
+
+    def extremes
+      @extremes ||= begin
         vals = [0.0]
         labels.each_index do |i|
           col = series.map { _1[:values][i] }.compact
@@ -143,14 +168,18 @@ module Ss
           vals << line[:values][i] if line && line[:values][i]
           vals << projection[:values][i] if projection && projection[:values][i]
         end
-        lo, hi = vals.minmax
-        hi = 1.0 if lo.zero? && hi.zero?
-        pad = (hi - lo) * 0.08
-        # v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala). Valor acima do max
-        # alarga a escala em vez de vazar do desenho.
-        top = @max ? [@max, hi].max : (hi.positive? ? hi + pad : 0.0)
-        [lo.negative? ? lo - pad : 0.0, top]
+        vals.minmax
       end
+    end
+
+    def padded_range
+      lo, hi = extremes
+      hi = 1.0 if lo.zero? && hi.zero?
+      pad = (hi - lo) * 0.08
+      # v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala). Valor acima do max
+      # alarga a escala em vez de vazar do desenho.
+      top = @max ? [@max, hi].max : (hi.positive? ? hi + pad : 0.0)
+      [lo.negative? ? lo - pad : 0.0, top]
     end
 
     def y(v)
@@ -251,11 +280,9 @@ module Ss
       end
     end
 
-    # Topo, base e o meio (menos o que cai em cima da linha do zero) + a linha do zero.
+    # As marcas redondas da escala (v1.14.7; o zero sem rótulo) + a linha do zero.
     def guides
-      lo, hi = range
-      marks = [hi, (hi + lo) / 2, lo].uniq.reject { |v| (v / (hi - lo)).abs < 0.12 }
-      (marks.map { |v| [y(v), nice(v), false] } << [zero_y, 0, true]).uniq { _1[0] }
+      (scale.guides.map { |v| [y(v), v, false] } << [zero_y, 0, true]).uniq { _1[0] }
     end
 
     def line_points = points_of(line)

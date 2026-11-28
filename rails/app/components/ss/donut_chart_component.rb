@@ -5,6 +5,9 @@ module Ss
   #
   #   render Ss::DonutChartComponent.new(title: "Para onde foi", center: "R$ 980,00", center_label: "novembro",
   #     slices: [{ label: "Saques", value: 420, text: "R$ 420,00" }, …], exploded: true)
+  #
+  # v1.14.7: fatias todas zero são o vazio (o .ss-chart-empty com empty:, ou "Sem dados no período");
+  # treat_zero_as_empty: false deixa o anel vazio, como antes.
   class DonutChartComponent < BaseComponent
     SIZE = 220
     INNER = 58.0
@@ -12,8 +15,12 @@ module Ss
 
     attr_reader :title, :center, :center_label
 
-    def initialize(slices:, title:, center: nil, center_label: nil, exploded: false, **opts)
+    def initialize(slices:, title:, center: nil, center_label: nil, exploded: false, empty: nil, treat_zero_as_empty: true,
+                   **opts)
       super(**opts)
+      @any = slices.any?
+      @empty = empty
+      @treat_zero_as_empty = treat_zero_as_empty
       @slices = slices.reject { _1[:value].to_f <= 0 }
       @title = title
       @center = center
@@ -22,6 +29,10 @@ module Ss
     end
 
     def total = @slices.sum { _1[:value].to_f }
+
+    # v1.14.7: havia fatias, mas nenhuma com valor.
+    def zero? = @treat_zero_as_empty && @any && @slices.empty?
+    def empty_text = @empty || ss_t("chart.empty", default: "Sem dados no período")
 
     # Fatias com início e tamanho em % (somam 100), cor, raio e espessura.
     def segments

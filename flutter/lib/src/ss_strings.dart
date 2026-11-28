@@ -293,6 +293,7 @@ class SsStrings {
     required this.stateBandsEmpty,
     required this.noReadings,
     required this.chartNoReadings,
+    this.chartEmpty = 'Sem dados no período',
     required this.showAll,
     required this.chartLoading,
     required this.chartMin,
@@ -987,6 +988,9 @@ class SsStrings {
   final String stateBandsEmpty;
   final String noReadings;
   final String chartNoReadings;
+
+  /// v1.14.7: o vazio dos gráficos com tudo zero (SsBarChart, SsLineChart e as irmãs) quando o app não passa `empty:`.
+  final String chartEmpty;
   final String showAll;
   final String chartLoading;
   final String chartMin;
@@ -1655,6 +1659,7 @@ class SsStrings {
     stateBandsEmpty: 'Nenhuma mudança neste período',
     noReadings: 'sem leituras',
     chartNoReadings: 'Sem leituras neste período',
+    chartEmpty: 'Sem dados no período',
     showAll: 'Ver tudo',
     chartLoading: 'Carregando gráfico',
     chartMin: 'mínimo',
@@ -2194,6 +2199,7 @@ class SsStrings {
     stateBandsEmpty: 'No changes in this period',
     noReadings: 'no readings',
     chartNoReadings: 'No readings in this period',
+    chartEmpty: 'No data in this period',
     showAll: 'Show all',
     chartLoading: 'Loading chart',
     chartMin: 'minimum',
@@ -2733,6 +2739,7 @@ class SsStrings {
     stateBandsEmpty: 'Sin cambios en este período',
     noReadings: 'sin lecturas',
     chartNoReadings: 'Sin lecturas en este período',
+    chartEmpty: 'Sin datos en este período',
     showAll: 'Ver todo',
     chartLoading: 'Cargando gráfico',
     chartMin: 'mínimo',
@@ -3259,6 +3266,7 @@ class SsStrings {
     'stateBandsEmpty': stateBandsEmpty,
     'noReadings': noReadings,
     'chartNoReadings': chartNoReadings,
+    'chartEmpty': chartEmpty,
     'showAll': showAll,
     'chartLoading': chartLoading,
     'chartMin': chartMin,
@@ -3820,6 +3828,7 @@ class SsStrings {
     String? stateBandsEmpty,
     String? noReadings,
     String? chartNoReadings,
+    String? chartEmpty,
     String? showAll,
     String? chartLoading,
     String? chartMin,
@@ -4313,6 +4322,7 @@ class SsStrings {
     stateBandsEmpty: stateBandsEmpty ?? this.stateBandsEmpty,
     noReadings: noReadings ?? this.noReadings,
     chartNoReadings: chartNoReadings ?? this.chartNoReadings,
+    chartEmpty: chartEmpty ?? this.chartEmpty,
     showAll: showAll ?? this.showAll,
     chartLoading: chartLoading ?? this.chartLoading,
     chartMin: chartMin ?? this.chartMin,

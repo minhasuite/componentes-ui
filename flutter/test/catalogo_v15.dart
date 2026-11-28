@@ -72,6 +72,7 @@ final catalogoV15 = <Componente>[
       'As barras crescem da linha do zero com a mola quando entram na tela.',
       'Cores: a da série ou a paleta da suíte começando pela marca; legenda com mais de uma série.',
       'projection: (v0.20) segunda linha tracejada a partir de projectionFrom (ex. saldo projetado até o fim do mês), com ponto só no fim; entra na legenda (traço tracejado), no balão e no resumo do leitor de tela.',
+      'Tudo zero (v1.14.7) é vazio: o SsChartEmpty com empty: (ou "Sem dados no período"); treatZeroAsEmpty: false desenha as barras no chão. Escala redonda (SsChartScale), sem rótulo repetido nas guias.',
     ],
     estados: [
       Estado(
@@ -144,6 +145,22 @@ final catalogoV15 = <Componente>[
         ),
         tamanho: const Size(390, 300),
         aguarde: 900,
+      ),
+      Estado(
+        'sem-dados-zero',
+        'sem dados (tudo zero: 7 dias sem uso)',
+        (_) => _pad(
+          const SsCard(
+            child: SsBarChart(
+              labels: ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'],
+              series: [
+                SsSeries([0, 0, 0, 0, 0, 0, 0], name: 'Uso'),
+              ],
+              empty: 'Sem uso nesta semana',
+            ),
+          ),
+        ),
+        tamanho: const Size(390, 260),
       ),
     ],
   ),

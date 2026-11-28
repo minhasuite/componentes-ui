@@ -148,13 +148,35 @@ export function ticks(from, to, maxTicks, f) {
 }
 
 // Escala Y "redonda" (1, 2, 2,5, 5 × 10ⁿ) cobrindo lo..hi.
+// v1.14.7: a mesma conta do ComponentesUi::ChartScale / SsChartScale (zero: false): passo redondo, no máximo
+// `count` faixas (valores iguais ou minúsculos também), sem o ruído do ponto flutuante.
+const clean = (v) => (v === 0 || !Number.isFinite(v) ? (v === 0 ? 0 : v) : Number(v.toPrecision(12)))
+function niceStep(raw) {
+  if (!Number.isFinite(raw) || raw <= 0) return 1
+  const mag = 10 ** Math.floor(Math.log10(raw))
+  for (const m of [1, 2, 2.5, 5, 10]) { const s = clean(m * mag); if (s >= raw * (1 - 1e-9)) return s }
+  return clean(10 * mag)
+}
+
 export function niceRange(lo, hi, count = 4) {
+  if (lo > hi) [lo, hi] = [hi, lo]
   if (lo === hi) { const d = lo === 0 ? 1 : Math.abs(lo) * 0.1; lo -= d; hi += d }
-  const cru = (hi - lo) / Math.max(1, count)
-  const mag = 10 ** Math.floor(Math.log10(cru))
-  const n = cru / mag
-  const step = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * mag
-  return { lo: Math.floor(lo / step) * step, hi: Math.ceil(hi / step) * step, step }
+  const n = Math.max(1, count)
+  let step = niceStep((hi - lo) / n), a = 0, b = 1
+  for (let k = 0; k < 40; k++) {
+    a = clean(Math.floor(lo / step + 1e-9) * step)
+    b = clean(Math.ceil(hi / step - 1e-9) * step)
+    if (Math.max(1, Math.round((b - a) / step)) <= n) break
+    step = niceStep(step * (1 + 1e-6))
+  }
+  return { lo: a, hi: b === a ? a + step : b, step }
+}
+
+// v1.14.7: casas para escrever as guias de um passo sem repetir (2,5 → 1; 0,25 → 2; 0,001 → 3; 50 → 0).
+export function stepDecimals(step) {
+  if (!Number.isFinite(step) || step <= 0) return 0
+  for (let d = 0; d < 12; d++) { const m = step * 10 ** d; if (Math.abs(m - Math.round(m)) < 1e-6 * Math.max(1, Math.abs(m))) return d }
+  return 12
 }
 
 // Valor de uma série (pts = [[ms, v, min?, max?], …]) no instante t: degrau = última

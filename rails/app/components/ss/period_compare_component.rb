@@ -12,11 +12,14 @@ module Ss
   # total:/previous_total: (padrão: a soma de cada série); format: lambda do valor (padrão ss_money com money:,
   # senão ss_number). current_label:/previous_label: os nomes na legenda e no balão. frame: envolve tudo num
   # <turbo-frame> com esse id e os links do período miram nele. delta: troca o texto da diferença ("+12%").
+  # v1.14.7: os dois períodos só com zero mostram o vazio no lugar do gráfico (empty:, ou "Sem dados no período");
+  # treat_zero_as_empty: false desenha as linhas no chão.
   class PeriodCompareComponent < BaseComponent
     def initialize(title:, labels:, current:, previous:, total: nil, previous_total: nil, money: false, format: nil,
                    higher_is_better: true, periods: [], frame: nil, current_label: nil, previous_label: nil, delta: nil,
-                   height: 200, width: 560, **rest)
+                   height: 200, width: 560, empty: nil, treat_zero_as_empty: true, **rest)
       super(**rest)
+      @empty, @treat_zero_as_empty = empty, treat_zero_as_empty
       @title, @labels, @current, @previous = title, labels, current.map { _1&.to_f }, previous.map { _1&.to_f }
       @total = (total || @current.compact.sum).to_f
       @previous_total = (previous_total || @previous.compact.sum).to_f
@@ -97,7 +100,8 @@ module Ss
 
     def chart
       render(Ss::LineChartComponent.new(title: @title, labels: @labels, scrub: true, height: @height, width: @width,
-                                        format: ->(v) { fmt(v) }, css: "ss-period-chart",
+                                        format: ->(v) { fmt(v) }, css: "ss-period-chart", empty: @empty,
+                                        treat_zero_as_empty: @treat_zero_as_empty,
                                         series: [{ name: current_label, values: @current, tone: :accent },
                                                  { name: previous_label, values: @previous, tone: :muted, dashed: true }]))
     end

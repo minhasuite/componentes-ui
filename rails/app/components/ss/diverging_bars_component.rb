@@ -9,11 +9,15 @@ module Ss
   #     { label: "Tomate", value: -0.6 }])
   #
   # format: ->(v) { … } troca o texto do valor (padrão: sinal, 1 casa e unit:).
+  # v1.14.7: tudo zero (nada variou) é o vazio (o .ss-chart-empty com empty:, ou "Sem dados no período");
+  # treat_zero_as_empty: false lista os itens com as barras no eixo.
   class DivergingBarsComponent < BaseComponent
     include InView
 
-    def initialize(items:, format: nil, unit: nil, up_is_good: false, label: nil, **rest)
+    def initialize(items:, format: nil, unit: nil, up_is_good: false, label: nil, empty: nil, treat_zero_as_empty: true, **rest)
       super(**rest)
+      @empty = empty
+      @treat_zero_as_empty = treat_zero_as_empty
       @items = Array(items).map { |i| i.to_h.transform_keys(&:to_sym) }
       @format, @unit, @up_is_good, @label = format, unit, up_is_good, label
     end
@@ -27,7 +31,11 @@ module Ss
       [s, @unit].compact.join(" ")
     end
 
+    def zero? = @treat_zero_as_empty && ComponentesUi::ChartScale.all_zero?(@items.map { _1[:value] })
+
     def call
+      return tag.p(@empty || ss_t("chart.empty", default: "Sem dados no período"), **root_attrs(class: classes("ss-chart-empty"))) if zero?
+
       top = [@items.map { _1[:value].to_f.abs }.max, 1e-9].max
       tag.ul(**root_attrs(class: classes("ss-diverging"), "aria-label": @label, data: in_view_data)) do
         safe_join(@items.each_with_index.map do |it, i|

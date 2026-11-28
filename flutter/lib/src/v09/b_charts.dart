@@ -11,6 +11,8 @@ import '../motion_view.dart';
 import '../ss_strings.dart';
 import '../v1140/scrub.dart';
 import '../v19/transicoes/chart_transition.dart';
+import '../ss_line_chart.dart' show SsChartEmpty;
+import '../v1147/chart_scale.dart';
 
 /// Curva suave por Catmull-Rom em cúbicas (a mesma do SsLineChart).
 Path _curva(List<Offset> pts) {
@@ -53,7 +55,15 @@ class SsAreaChart extends StatefulWidget {
     this.label,
     this.scrub = true,
     this.onScrub,
+    this.empty,
+    this.treatZeroAsEmpty = true,
   }) : assert(values.length == labels.length);
+
+  /// v1.14.7: texto do vazio (padrão [SsStrings.chartEmpty]) quando todos os valores são zero.
+  final String? empty;
+
+  /// v1.14.7: tudo zero conta como vazio; falso desenha a área no chão.
+  final bool treatZeroAsEmpty;
 
   /// v1.14.0: arrastar o dedo (ou passar o mouse) troca o ponto ativo.
   final bool scrub;
@@ -135,6 +145,9 @@ class _SsAreaChartState extends State<SsAreaChart> with SingleTickerProviderStat
     final n = widget.values.length;
     final temSel = n > 0 && _sel >= 0;
     final s = SsStrings.of(context);
+    if (n > 0 && widget.treatZeroAsEmpty && SsChartScale.allZero(widget.values)) {
+      return SsChartEmpty(widget.empty ?? s.chartEmpty, height: widget.height);
+    }
     return Semantics(
       label: widget.label == null ? s.areaChart : s.chartOfLabel(widget.label!),
       value: temSel ? '${widget.labels[_sel]}: ${_fmt(widget.values[_sel])}' : s.noData,
@@ -354,7 +367,15 @@ class SsExplodedDonut extends StatefulWidget {
     this.totalLabel,
     this.size = 200,
     this.legend = true,
+    this.empty,
+    this.treatZeroAsEmpty = true,
   });
+
+  /// v1.14.7: texto do vazio (padrão [SsStrings.chartEmpty]) quando as fatias somam zero.
+  final String? empty;
+
+  /// v1.14.7: fatias todas zero contam como vazio; falso deixa o anel vazio, como antes.
+  final bool treatZeroAsEmpty;
 
   final List<SsDonutSlice> slices;
   final int? selected;
@@ -421,6 +442,9 @@ class _SsExplodedDonutState extends State<SsExplodedDonut>
     final dur = reduceMotion(context) ? Duration.zero : SsMotion.base;
     final str = SsStrings.of(context);
     final totalLabel = widget.totalLabel ?? str.total;
+    if (widget.slices.isNotEmpty && widget.treatZeroAsEmpty && total <= 0) {
+      return SsChartEmpty(widget.empty ?? str.chartEmpty, height: widget.size);
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -738,7 +762,15 @@ class SsFloatingBars extends StatefulWidget {
     this.title,
     this.value,
     this.height = 260,
+    this.empty,
+    this.treatZeroAsEmpty = true,
   }) : assert(values.length == labels.length);
+
+  /// v1.14.7: texto no lugar das barras (padrão [SsStrings.chartEmpty]) quando todos os valores são zero.
+  final String? empty;
+
+  /// v1.14.7: tudo zero conta como vazio; falso desenha as barras no mínimo.
+  final bool treatZeroAsEmpty;
 
   final List<double> values;
   final List<String> labels;
@@ -813,93 +845,108 @@ class _SsFloatingBarsState extends State<SsFloatingBars> {
               ],
             ),
           const SizedBox(height: 10),
-          Expanded(
-            // Cada barra sobe com mola, 40 ms depois da anterior, quando entra na tela.
-            child: SsInView(
-              duration: Duration(milliseconds: 520 + 40 * (widget.values.length - 1)),
-              curve: Curves.linear,
-              builder: (context, anim, _) => Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (var i = 0; i < widget.values.length; i++)
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        selected: i == _sel,
-                        label: '${widget.labels[i]}: ${_fmt(widget.values[i])}',
-                        excludeSemantics: true,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            if (i == _sel) return;
-                            SsHaptics.tick();
-                            setState(() => _sel = i);
-                            widget.onSelect?.call(i);
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              // Etiqueta do detalhe: pode passar da largura da coluna.
-                              SizedBox(
-                                height: 22,
-                                child: OverflowBox(
-                                  maxWidth: 200,
-                                  child: AnimatedOpacity(
-                                    opacity: i == _sel ? 1 : 0,
-                                    duration: SsMotion.fast,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          if (widget.values.isNotEmpty && widget.treatZeroAsEmpty && SsChartScale.allZero(widget.values))
+            Expanded(
+              child: Center(
+                child: Text(
+                  widget.empty ?? SsStrings.of(context).chartEmpty,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.onDark.withValues(alpha: .85), fontSize: AppType.meta),
+                ),
+              ),
+            )
+          else
+            Expanded(
+              // Cada barra sobe com mola, 40 ms depois da anterior, quando entra na tela.
+              child: SsInView(
+                duration: Duration(milliseconds: 520 + 40 * (widget.values.length - 1)),
+                curve: Curves.linear,
+                builder: (context, anim, _) => Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (var i = 0; i < widget.values.length; i++)
+                      Expanded(
+                        child: Semantics(
+                          button: true,
+                          selected: i == _sel,
+                          label: '${widget.labels[i]}: ${_fmt(widget.values[i])}',
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (i == _sel) return;
+                              SsHaptics.tick();
+                              setState(() => _sel = i);
+                              widget.onSelect?.call(i);
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // Etiqueta do detalhe: pode passar da largura da coluna.
+                                SizedBox(
+                                  height: 22,
+                                  child: OverflowBox(
+                                    maxWidth: 200,
+                                    child: AnimatedOpacity(
+                                      opacity: i == _sel ? 1 : 0,
+                                      duration: SsMotion.fast,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.onDark,
+                                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                                        ),
+                                        child: Text(
+                                          _fmt(widget.values[i]),
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          overflow: TextOverflow.visible,
+                                          textScaler: TextScaler.noScaling,
+                                          style: AppTheme.number(
+                                            context,
+                                            size: AppType.micro,
+                                            color: AppColors.inkLight,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Flexible(
+                                  child: FractionallySizedBox(
+                                    heightFactor: hi == 0
+                                        ? .05
+                                        : math.max(.05, widget.values[i] / hi * _sobe(anim.value, i).clamp(0.0, 1.05)),
+                                    child: AnimatedContainer(
+                                      duration: SsMotion.fast,
+                                      width: 22,
                                       decoration: BoxDecoration(
-                                        color: AppColors.onDark,
+                                        color: i == _sel ? AppColors.onDark : AppColors.onDark.withValues(alpha: .26),
                                         borderRadius: BorderRadius.circular(AppRadius.pill),
                                       ),
-                                      child: Text(
-                                        _fmt(widget.values[i]),
-                                        maxLines: 1,
-                                        softWrap: false,
-                                        overflow: TextOverflow.visible,
-                                        textScaler: TextScaler.noScaling,
-                                        style: AppTheme.number(context, size: AppType.micro, color: AppColors.inkLight),
-                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Flexible(
-                                child: FractionallySizedBox(
-                                  heightFactor: hi == 0
-                                      ? .05
-                                      : math.max(.05, widget.values[i] / hi * _sobe(anim.value, i).clamp(0.0, 1.05)),
-                                  child: AnimatedContainer(
-                                    duration: SsMotion.fast,
-                                    width: 22,
-                                    decoration: BoxDecoration(
-                                      color: i == _sel ? AppColors.onDark : AppColors.onDark.withValues(alpha: .26),
-                                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                                    ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  widget.labels[i],
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    color: AppColors.onDark.withValues(alpha: i == _sel ? 1 : .8),
+                                    fontSize: AppType.label,
+                                    fontWeight: i == _sel ? FontWeight.w800 : FontWeight.w600,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                widget.labels[i],
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: AppColors.onDark.withValues(alpha: i == _sel ? 1 : .8),
-                                  fontSize: AppType.label,
-                                  fontWeight: i == _sel ? FontWeight.w800 : FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

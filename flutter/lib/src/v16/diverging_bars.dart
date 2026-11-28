@@ -6,7 +6,9 @@ import 'package:material_ui/material_ui.dart';
 import '../app_theme.dart';
 import '../density.dart';
 import '../motion_view.dart';
+import '../ss_line_chart.dart' show SsChartEmpty;
 import '../ss_strings.dart';
+import '../v1147/chart_scale.dart';
 
 /// Uma linha do [SsDivergingBars]: nome, valor (com sinal) e detalhe opcional.
 @immutable
@@ -30,9 +32,23 @@ class SsDivergingBar {
 ///
 /// `SsDivergingBars(items: [SsDivergingBar('Café', 1.8, detail: '+32%'), SsDivergingBar('Tomate', -0.6)], unit: 'p.p.')`
 class SsDivergingBars extends StatelessWidget {
-  const SsDivergingBars({super.key, required this.items, this.format, this.unit, this.upIsGood = false});
+  const SsDivergingBars({
+    super.key,
+    required this.items,
+    this.format,
+    this.unit,
+    this.upIsGood = false,
+    this.empty,
+    this.treatZeroAsEmpty = true,
+  });
 
   final List<SsDivergingBar> items;
+
+  /// v1.14.7: texto do vazio (padrão [SsStrings.chartEmpty]) quando nada variou (todos os valores zero).
+  final String? empty;
+
+  /// v1.14.7: tudo zero conta como vazio; falso lista os itens com as barras no eixo.
+  final bool treatZeroAsEmpty;
 
   /// Texto do valor. Padrão: sinal (+/−) e 1 casa no separador do idioma.
   final String Function(double value)? format;
@@ -51,6 +67,9 @@ class SsDivergingBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
+    if (treatZeroAsEmpty && SsChartScale.allZero(items.map((e) => e.value))) {
+      return SsChartEmpty(empty ?? SsStrings.of(context).chartEmpty, height: 96);
+    }
     final c = SsColors.of(context);
     final d = SsDensity.of(context);
     final f = SsFormats.of(context);

@@ -6,6 +6,9 @@ import 'app_theme.dart';
 import 'motion.dart';
 import 'motion_view.dart';
 import 'ss_aurora.dart';
+import 'ss_line_chart.dart' show SsChartEmpty;
+import 'ss_strings.dart';
+import 'v1147/chart_scale.dart';
 
 /// Linha sem eixo com preenchimento que some para baixo e um ponto no último
 /// valor. Desenha-se da esquerda para a direita quando entra na tela (700 ms).
@@ -242,7 +245,15 @@ class SsPillBars extends StatefulWidget {
     this.highlight,
     this.format,
     this.height = 132,
+    this.empty,
+    this.treatZeroAsEmpty = true,
   }) : assert(values.length == labels.length);
+
+  /// v1.14.7: texto do vazio (padrão [SsStrings.chartEmpty]) quando todos os valores são zero.
+  final String? empty;
+
+  /// v1.14.7: tudo zero conta como vazio; falso desenha as pílulas no mínimo.
+  final bool treatZeroAsEmpty;
 
   final List<double> values;
   final List<String> labels;
@@ -266,6 +277,9 @@ class _SsPillBarsState extends State<SsPillBars> {
   @override
   Widget build(BuildContext context) {
     final c = SsColors.of(context);
+    if (widget.values.isNotEmpty && widget.treatZeroAsEmpty && SsChartScale.allZero(widget.values)) {
+      return SsChartEmpty(widget.empty ?? SsStrings.of(context).chartEmpty, height: widget.height);
+    }
     final hi = widget.values.fold<double>(0, math.max);
     final destaque = widget.highlight ?? widget.values.length - 1;
     final mostrar = _sel ?? (widget.format != null ? destaque : null);

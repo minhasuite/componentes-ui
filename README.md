@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.6
+      ref: v1.14.7
 ```
 
 ```dart
@@ -653,6 +653,43 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.7: gráficos com tudo zero
+
+Visto no `SsBarChart` do meu-tempo-app: com 7 dias sem uso (a lista cheia de zeros) o texto de vazio não aparecia (só
+com a lista vazia), as guias iam para o topo (máximo + 8%) e para a metade, e o eixo dizia "1 min" duas vezes.
+
+**Tudo zero (ou tudo nulo) é vazio.** O gráfico mostra o `SsChartEmpty` / `.ss-chart-empty` com o `empty:` de sempre;
+sem ele, o texto novo "Sem dados no período" (`SsStrings.chartEmpty`, `componentes_ui.chart.empty`, em pt, en e es).
+`treatZeroAsEmpty: false` / `treat_zero_as_empty: false` desliga e desenha no chão, como antes.
+
+| Flutter | Web | Com tudo zero |
+|---|---|---|
+| `SsBarChart` | `Ss::BarChartComponent` | vazio (a linha ou a projeção com valor desenham normal) |
+| `SsLineChart` | `Ss::LineChartComponent` | vazio |
+| `SsAreaChart(empty:)` | `Ss::AreaChartComponent(empty:)` | vazio |
+| `SsTimeChart` | `Ss::TimeSeriesChartComponent` | o vazio dele ("Sem leituras neste período") |
+| `SsPeriodCompare(empty:)` | `Ss::PeriodCompareComponent(empty:)` | vazio no lugar do gráfico (sem a legenda no app) |
+| `SsExplodedDonut(empty:)` | `Ss::DonutChartComponent(empty:)` | vazio no lugar do anel |
+| `SsDivergingBars(empty:)` | `Ss::DivergingBarsComponent(empty:)` | vazio no lugar da lista |
+| `SsFloatingBars(empty:)` | `Ss::FloatingBarsComponent(empty:)` | o texto dentro do card, no lugar das barras (`.ss-fbars-empty`) |
+| `SsPillBars(empty:)` | — | vazio |
+
+**Escala redonda, uma conta só.** `SsChartScale` ↔ `ComponentesUi::ChartScale` (mesmos casos de teste nos dois
+lados): passo de 1, 2, 2,5 ou 5 × 10ⁿ, até 3 faixas, com o zero dentro nas barras e o `max:` como topo mínimo. Valores
+iguais (todos 3: 0, 1, 2, 3) e minúsculos (0,001) também saem redondos. Com o `format:` do app, o passo cresce até
+nenhuma guia repetir o texto (com minutos inteiros e máximo 1: só "1 min", não "1 min, 1 min"). Usam a escala
+`SsBarChart`/`BarChartComponent` (em pé), `SsLineChart`/`LineChartComponent`, `AreaChartComponent` e o eixo Y do
+`SsTimeChart`/`TimeSeriesChartComponent` (que escreve as casas do passo: 2,5 com uma casa, 0,001 com três;
+`SsChartScale.decimals`, `stepDecimals` no JS). O `SsAreaChart` do app não tem guias; as barras proporcionais
+(divergentes, pílulas, do card) seguem proporcionais ao maior valor.
+
+**Muda o desenho:** o topo das barras e das linhas passa a ser uma marca redonda (5,4 → 6; com `max: 40` e um valor
+50, 60). O `SsLineChart` sem `max:` continua sem o zero obrigatório, agora com as guias redondas em vez de mínimo,
+meio e máximo. Nada muda na API; os parâmetros novos têm padrão.
+
+Catálogo: estado `sem-dados-zero` no `ss-bar-chart` (Flutter) e no `ss-barc` (web). Testes:
+`flutter/test/v1147_test.dart` e `rails/sample/test/components/v1_14_7_web_test.rb`.
 
 ## v1.14.6: `SsOtpField` sem o traço do tema
 
@@ -2861,6 +2898,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.7` (28/11/2026): seção "v1.14.7". Tudo zero é vazio nos gráficos (`treatZeroAsEmpty`/`treat_zero_as_empty`, `SsStrings.chartEmpty`) e a escala redonda `SsChartScale` ↔ `ComponentesUi::ChartScale`, sem rótulo repetido nas guias. Muda o topo da escala (redondo); API igual.
 - `v1.14.5` (28/11/2026): seção "v1.14.5". Só Flutter: `SsGauge`, `SsBigRing` e `SsThermostat` sem estourar com o texto em 1,6x num cartão estreito; as outras peças de medida e cartões de dado conferidos no `ssA11yAudit`. Desenho igual no tamanho normal, catálogo sem mudança.
 - `v1.14.4` (28/11/2026): seção "v1.14.4". Só Flutter: `SsPressable(excludeFromSemantics:)` e o `SsDeviceTile` limpo no `ssA11yAudit` (sem tocável sem rótulo por fora; o nó de detalhes cobre o cartão). Desenho igual, catálogo sem mudança.
 - `v1.14.3` (28/11/2026): seção "v1.14.3". Só Flutter: `showSsSheet`/`showSsFilterSheet`/`showSsPopover(useRootNavigator: true)` (e as folhas que passam por eles, como o `showSsExplain`) abrem pelo `Navigator` raiz, por cima da barra de abas do `SsNavScaffold`; a chave do `SsDeviceTile` com nó de 48 (`SsTapTarget(semantics: true)`). Desenho igual, catálogo sem mudança.

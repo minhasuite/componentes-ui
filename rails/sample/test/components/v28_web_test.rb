@@ -25,9 +25,10 @@ class V28WebTest < ComponentTest
     bar = Ss::BarChartComponent.new(title: "t", labels: %w[a b], series: [{ name: "x", values: [3, 5] }], max: 40)
     assert_equal [0.0, 40.0], bar.range
     acima = Ss::BarChartComponent.new(title: "t", labels: %w[a b], series: [{ name: "x", values: [3, 50] }], max: 40)
-    assert_equal 50.0, acima.range.last
+    # v1.14.7: a escala é redonda (ComponentesUi::ChartScale): o 50 alarga até 60 e o 5 vai a 6 (era 5,4).
+    assert_equal 60.0, acima.range.last
     sem = Ss::BarChartComponent.new(title: "t", labels: %w[a b], series: [{ name: "x", values: [3, 5] }])
-    assert_in_delta 5.4, sem.range.last, 0.001
+    assert_equal 6.0, sem.range.last
     linha = Ss::LineChartComponent.new(title: "t", labels: %w[a b], series: [{ name: "x", values: [3, 5] }], max: 40)
     assert_equal [0.0, 40.0], linha.range
     render_inline(bar)

@@ -90,9 +90,9 @@ final Map<String, Widget Function(double largura)> _pecas = {
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  test('versão 1.14.6', () {
-    expect(ssComponentesUiVersion, '1.14.6');
-    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 1.14.6'));
+  test('versão 1.14.7', () {
+    expect(ssComponentesUiVersion, '1.14.7');
+    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 1.14.7'));
   });
 
   for (final largura in [150.0, 328.0]) {

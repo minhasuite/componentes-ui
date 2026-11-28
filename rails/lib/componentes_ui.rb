@@ -14,6 +14,8 @@ require "componentes_ui/paste_detector"
 require "base64"
 require "json"
 require "componentes_ui/speech"
+# v1.14.7: a escala redonda dos gráficos (par do SsChartScale).
+require "componentes_ui/chart_scale"
 
 module ComponentesUi
   # Configuração da gem (v0.10). No app, num initializer:

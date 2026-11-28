@@ -9,11 +9,16 @@ module Ss
   # selected: índice (padrão: o último). format: :qty (padrão), :money, :integer, um lambda ou um Kernel.format.
   # height: px do card (260). Cada barra é um <button aria-pressed> "Out: R$ 520,00"; com href: (um "…%{index}"),
   # vira link. Evento ss-floating-bars:change { index }. Reduzir movimento: as barras já aparecem.
+  # v1.14.7: tudo zero mostra o texto do vazio no lugar das barras (empty:, ou "Sem dados no período");
+  # treat_zero_as_empty: false desenha as barras no mínimo.
   class FloatingBarsComponent < BaseComponent
     include InView
 
-    def initialize(values:, labels:, selected: nil, format: :qty, title: nil, value: nil, height: 260, href: nil, **rest)
+    def initialize(values:, labels:, selected: nil, format: :qty, title: nil, value: nil, height: 260, href: nil, empty: nil,
+                   treat_zero_as_empty: true, **rest)
       super(**rest)
+      @empty = empty
+      @treat_zero_as_empty = treat_zero_as_empty
       @values = Array(values).map(&:to_f)
       @labels = Array(labels).map(&:to_s)
       raise ArgumentError, "Ss::FloatingBarsComponent: values: e labels: com o mesmo tamanho" unless @values.size == @labels.size
@@ -39,12 +44,18 @@ module Ss
                            data: in_view_data(controller: "ss-in-view ss-floating-bars"))) do
         safe_join([
           ((@title || @value) ? tag.div(class: "ss-fbars-head") { safe_join([(tag.span(@title, class: "ss-fbars-title") if @title), (tag.span(@value, class: "ss-fbars-total num") if @value)].compact) } : nil),
-          tag.div(class: "ss-fbars-row", role: "group", "aria-label": @title) do
-            safe_join(@values.each_with_index.map { |v, i| bar(v, i, hi) })
+          if zero?
+            tag.p(@empty || ss_t("chart.empty", default: "Sem dados no período"), class: "ss-fbars-empty")
+          else
+            tag.div(class: "ss-fbars-row", role: "group", "aria-label": @title) do
+              safe_join(@values.each_with_index.map { |v, i| bar(v, i, hi) })
+            end
           end
         ].compact)
       end
     end
+
+    def zero? = @treat_zero_as_empty && @values.any? && ComponentesUi::ChartScale.all_zero?(@values)
 
     private
 

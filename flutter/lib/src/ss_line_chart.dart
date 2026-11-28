@@ -10,6 +10,7 @@ import 'ss_strings.dart';
 import 'v1140/scrub.dart';
 import 'v19/transicoes/chart_transition.dart';
 import 'v27/chart_markers.dart';
+import 'v1147/chart_scale.dart';
 
 /// Uma série do [SsLineChart]: os valores (um por rótulo), o nome que vai no
 /// balão e a cor (sem cor: a paleta da suíte, começando na marca).
@@ -44,6 +45,9 @@ class SsSeries {
 /// v1.14.0 (par do `scrub:` do web): o marcador segue o dedo e também o mouse ([SsScrubDetector]), vibra a cada
 /// ponto ([SsHaptics.selection]) e [onScrub] avisa o índice (nulo quando some), para a tela inteira acompanhar.
 /// [scrub] falso deixa o gráfico parado.
+///
+/// v1.14.7: tudo zero também é vazio ([SsChartEmpty] com [empty], ou [SsStrings.chartEmpty]); [treatZeroAsEmpty]
+/// falso desenha a linha no chão. As guias são as marcas redondas do [SsChartScale], sem texto repetido.
 class SsLineChart extends StatefulWidget {
   const SsLineChart({
     super.key,
@@ -59,7 +63,11 @@ class SsLineChart extends StatefulWidget {
     this.max,
     this.scrub = true,
     this.onScrub,
+    this.treatZeroAsEmpty = true,
   });
+
+  /// v1.14.7: tudo zero (ou nulo) conta como vazio; falso desenha a linha no chão.
+  final bool treatZeroAsEmpty;
 
   /// v1.14.0: arrastar o dedo (ou passar o mouse) mostra o marcador e o balão.
   final bool scrub;
@@ -135,6 +143,9 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
     final c = SsColors.of(context);
     final vazio = widget.labels.isEmpty || widget.series.every((x) => x.values.isEmpty);
     if (vazio && widget.empty != null) return SsChartEmpty(widget.empty!, height: widget.height);
+    if (!vazio && widget.treatZeroAsEmpty && widget.series.every((x) => SsChartScale.allZero(x.values))) {
+      return SsChartEmpty(widget.empty ?? SsStrings.of(context).chartEmpty, height: widget.height);
+    }
     final marcas = ssResolveMarkers(widget.markers, widget.labels);
     final topo = ssMarkerRows(marcas) * ssMarkerLine;
     final paleta = c.series;
@@ -148,16 +159,16 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
         ),
     ];
     final todos = [for (final (v, _, _) in series) ...v, ?widget.target];
-    var lo = todos.isEmpty ? 0.0 : todos.reduce(math.min);
-    var hi = todos.isEmpty ? 1.0 : todos.reduce(math.max);
-    if (widget.max != null) {
-      lo = math.min(lo, 0);
-      hi = math.max(widget.max!, hi);
-    }
-    if (hi == lo) {
-      hi += 1;
-      lo -= 1;
-    }
+    _formats = SsFormats.of(context);
+    // v1.14.7: escala redonda (com max:, de 0 até pelo menos o max), sem rótulo repetido.
+    final escala = SsChartScale.of(
+      todos.isEmpty ? 0.0 : todos.reduce(math.min),
+      todos.isEmpty ? 1.0 : todos.reduce(math.max),
+      zero: widget.max != null,
+      top: widget.max,
+      format: _fmt,
+    );
+    final (lo, hi) = (escala.lo, escala.hi);
     final primeira = widget.series.isEmpty ? const <double>[] : widget.series.first.values;
     final s = SsStrings.of(context);
     _formats = SsFormats.of(context);
@@ -195,6 +206,7 @@ class _SsLineChartState extends State<SsLineChart> with SingleTickerProviderStat
                           labels: widget.labels,
                           lo: lo,
                           hi: hi,
+                          ticks: escala.ticks,
                           target: widget.target,
                           targetLabel: widget.targetLabel ?? s.target,
                           t: t,
@@ -382,6 +394,7 @@ class _LinePainter extends CustomPainter {
     required this.labels,
     required this.lo,
     required this.hi,
+    this.ticks = const [],
     required this.target,
     required this.targetLabel,
     required this.t,
@@ -404,6 +417,9 @@ class _LinePainter extends CustomPainter {
   final Map<SsChartMarkerKind, Color> markerColors;
   final List<String> labels;
   final double lo, hi;
+
+  /// v1.14.7: as guias (as marcas redondas do [SsChartScale]).
+  final List<double> ticks;
   final double? target;
   final String targetLabel;
   final double t;
@@ -437,11 +453,11 @@ class _LinePainter extends CustomPainter {
     double y(double v) => top + h * (1 - (v - lo) / (hi - lo));
     double x(int i) => _side + w * i / math.max(n - 1, 1);
 
-    // Eixo Y discreto: 3 linhas guia finas, valor em cima de cada uma.
+    // Eixo Y discreto: as guias redondas (v1.14.7), valor em cima de cada uma.
     final fina = Paint()
       ..color = guide
       ..strokeWidth = 1;
-    for (final v in [lo, (lo + hi) / 2, hi]) {
+    for (final v in ticks) {
       canvas.drawLine(Offset(0, y(v)), Offset(size.width, y(v)), fina);
     }
     // Eixo X: até 4 rótulos espaçados (primeiro e último sempre).
@@ -505,7 +521,7 @@ class _LinePainter extends CustomPainter {
       ssPaintMarkers(canvas, size, markers, x, markerColors, top: top - 6, bottom: top + h, style: axis);
     }
     // Rótulos por cima das linhas (valor de cada guia e o alvo).
-    for (final v in [lo, (lo + hi) / 2, hi]) {
+    for (final v in ticks) {
       _text(canvas, format(v), Offset(_side, y(v) - 13), chip: true);
     }
     if (target != null) {

@@ -120,6 +120,7 @@ pt-BR:
         title: "Enviar arquivo"
         text: "PDF, XML ou imagem"
     chart:
+      empty: Sem dados no período
       marker:
         deploy: implantação
         incident: incidente

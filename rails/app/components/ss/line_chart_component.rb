@@ -20,6 +20,8 @@ module Ss
   # - markers: marcas verticais (deploy, incidente, nota); ver Ss::ChartMarkers.
   # - empty: texto quando não há rótulo nem valor (sem empty:, não desenha nada).
   # - v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala), como no BarChartComponent.
+  # - v1.14.7: tudo zero (ou nil) também é vazio (empty:, ou "Sem dados no período"); treat_zero_as_empty: false
+  #   desenha a linha no chão. A escala é a redonda do ComponentesUi::ChartScale, sem rótulo repetido.
   # - v1.14.0: scrub: true (par do SsLineChart(scrub:)): o marcador segue o dedo ou o mouse, o balão mostra o
   #   rótulo e o valor de cada série, vibra a cada ponto e avisa a tela com `ss-scrub:change` { index }.
   class LineChartComponent < BaseComponent
@@ -34,8 +36,10 @@ module Ss
     attr_reader :title, :labels, :series
 
     def initialize(labels:, series:, title:, stacked: false, format: nil, height: 240, active: nil, show_title: false,
-                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, max: nil, scrub: false, **rest)
+                   legend: true, width: W, label_every: nil, markers: [], empty: nil, dots: nil, max: nil, scrub: false,
+                   treat_zero_as_empty: true, **rest)
       super(**rest)
+      @treat_zero_as_empty = treat_zero_as_empty
       @title = title # v1.14.0: o título (figcaption, a tabela do leitor de tela e o rótulo do scrub) saía vazio.
       @max = max&.to_f
       @scrub = scrub
@@ -55,9 +59,12 @@ module Ss
       @h += marker_pad.round if markers?
     end
 
-    def render? = data? || @empty.present?
-    def data? = labels.any? && series.any? { |s| s[:values].any? { !_1.nil? } }
-    def empty_text = @empty
+    def render? = data? || zero? || @empty.present?
+    def values? = labels.any? && series.any? { |s| s[:values].any? { !_1.nil? } }
+    # v1.14.7: só zeros com treat_zero_as_empty: o vazio.
+    def zero? = @treat_zero_as_empty && values? && series.all? { |s| ComponentesUi::ChartScale.all_zero?(s[:values]) }
+    def data? = values? && !zero?
+    def empty_text = @empty || (zero? ? ss_t("chart.empty", default: "Sem dados no período") : nil)
 
     def h = @h
     def w = @w
@@ -96,20 +103,17 @@ module Ss
     def slot = labels.size == 1 ? (w - 2 * PX) : (w - 2 * PX) / (labels.size - 1).to_f
     def cx(i) = x(i)
 
-    def range
-      @range ||= begin
+    # v1.14.7: a escala redonda (ComponentesUi::ChartScale) com o zero dentro; max: (v0.28) é o topo mínimo.
+    def range = @range ||= [scale.lo, scale.hi]
+
+    def scale
+      @scale ||= begin
         vals = [0.0]
         labels.each_index do |i|
           col = series.map { _1[:values][i] }.compact
           stacked? ? (vals << col.select(&:positive?).sum << col.select(&:negative?).sum) : vals.concat(col)
         end
-        lo, hi = vals.minmax
-        hi = 1.0 if lo.zero? && hi.zero?
-        pad = (hi - lo) * 0.08
-        # v0.28: max: fixa o topo da escala (pequenos múltiplos na mesma escala). Valor acima do max
-        # alarga a escala em vez de vazar do desenho.
-        top = @max ? [@max, hi].max : (hi.positive? ? hi + pad : 0.0)
-        [lo.negative? ? lo - pad : 0.0, top]
+        ComponentesUi::ChartScale.of(*vals.minmax, top: @max, format: ->(v) { fmt(v) })
       end
     end
 
@@ -119,9 +123,7 @@ module Ss
     end
 
     def guides
-      lo, hi = range
-      marks = [hi, (hi + lo) / 2, lo].uniq.reject { |v| (v / (hi - lo)).abs < 0.12 }
-      (marks.map { |v| [y(v), nice(v), false] } << [y(0), 0, true]).uniq { _1[0] }
+      (scale.guides.map { |v| [y(v), v, false] } << [y(0), 0, true]).uniq { _1[0] }
     end
 
     def nice(v)

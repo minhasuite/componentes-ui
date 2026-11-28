@@ -1,0 +1,7 @@
+/* v1.14.7: tudo zero nas barras do card na cor da marca (Ss::FloatingBarsComponent, par do SsFloatingBars(empty:)):
+   o texto do vazio no lugar das barras, na cor de cima da marca. Os outros gráficos usam o .ss-chart-empty de sempre. */
+@layer components {
+  .ss-fbars-empty { flex: 1; display: grid; place-items: center; margin: 0; text-align: center;
+                    color: color-mix(in srgb, var(--on-accent, #fff) 85%, transparent);
+                    font-size: calc(.8125rem * var(--ss-font-scale, 1)); }
+}

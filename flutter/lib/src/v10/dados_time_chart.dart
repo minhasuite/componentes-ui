@@ -15,6 +15,7 @@ import '../ss_badge.dart';
 import '../ss_strings.dart';
 import '../v1140/scrub.dart';
 import '../v19/transicoes/chart_transition.dart';
+import '../v1147/chart_scale.dart';
 import 'dados_formato.dart';
 import 'dados_state_bands.dart';
 
@@ -123,7 +124,11 @@ class SsTimeChart extends StatefulWidget {
     this.showValues = false,
     this.legendAlways = false,
     this.scrub = true,
+    this.treatZeroAsEmpty = true,
   });
+
+  /// v1.14.7: só leituras zero (ou nulas) contam como vazio ([emptyText]); falso desenha a linha no chão.
+  final bool treatZeroAsEmpty;
 
   /// v1.14.0 (par do `scrub:` do web): o cursor segue o dedo e o mouse ([SsScrubDetector]) e vibra a cada
   /// leitura nova sob ele ([SsHaptics.selection]); o instante sai no [onScrub]. Falso: sem cursor nem balão.
@@ -380,7 +385,8 @@ class _SsTimeChartState extends State<SsTimeChart> with SingleTickerProviderStat
       lo = 0;
       hi = 1;
     }
-    final n = ssNiceRange(lo, hi, count: 3);
+    // v1.14.7: a escala de todas as peças (até 3 faixas; valores iguais ou minúsculos também redondos).
+    final n = SsChartScale.of(lo, hi, zero: false);
     return _Eixo(unit, n.lo, n.hi, n.step);
   }
 
@@ -426,7 +432,10 @@ class _SsTimeChartState extends State<SsTimeChart> with SingleTickerProviderStat
       );
     }
     final cheio = _cheio;
-    final semDados = cheio == null || widget.series.every((s) => s.points.every((p) => p.v == null));
+    // v1.14.7: tudo zero também é vazio (treatZeroAsEmpty: false desenha a linha no chão).
+    final semDados =
+        cheio == null ||
+        widget.series.every((s) => s.points.every((p) => p.v == null || (widget.treatZeroAsEmpty && p.v == 0)));
     if (cheio == null || (semDados && widget.bands.isEmpty)) {
       return Semantics(
         label: '${widget.title == null ? '' : '${widget.title}: '}${widget.emptyText ?? _s.chartNoReadings}',
@@ -868,7 +877,8 @@ class _TimePainter extends CustomPainter {
     if (eixos.isEmpty) return;
     final e0 = eixos.first.$1;
     double yDe(_Eixo e, double v) => _top + h * (1 - (v - e.lo) / (e.hi - e.lo));
-    for (var v = e0.lo; v <= e0.hi + e0.step / 2; v += e0.step) {
+    for (var k = 0; e0.lo + e0.step * k <= e0.hi + e0.step / 2; k++) {
+      final v = e0.lo + e0.step * k;
       canvas.drawLine(Offset(0, yDe(e0, v)), Offset(size.width, yDe(e0, v)), fina);
     }
 
@@ -958,10 +968,12 @@ class _TimePainter extends CustomPainter {
     for (var a = 0; a < eixos.length; a++) {
       final e = eixos[a].$1;
       final direita = a == 1;
-      for (var v = e.lo; v <= e.hi + e.step / 2; v += e.step) {
+      for (var k = 0; e.lo + e.step * k <= e.hi + e.step / 2; k++) {
+        final v = SsChartScale.clean(e.lo + e.step * k);
         final y = yDe(e, v);
         if (y < _top - 1 || y > _top + h + 1) continue;
-        final txt = fmt.value(v, unit: e.unit, decimals: e.step < 1 ? (e.step < .1 ? 2 : 1) : 0);
+        // v1.14.7: as casas do passo (2,5 → 1; 0,001 → 3): guia nenhuma repete o texto.
+        final txt = fmt.value(v, unit: e.unit, decimals: SsChartScale.decimals(e.step));
         _texto(canvas, txt, Offset(direita ? size.width - 5 : 5, math.max(2, y - 13)), direita: direita);
       }
     }

@@ -118,6 +118,7 @@ en:
         title: "Upload a file"
         text: "PDF, XML or image"
     chart:
+      empty: No data in this period
       marker:
         deploy: deploy
         incident: incident

@@ -127,7 +127,7 @@ class V15WebTest < ComponentTest
     assert_selector "rect.ss-barc-bar[style*='var(--series-1)']"
     assert_no_selector ".ss-barc-legend"
     c = Ss::BarChartComponent.new(title: "t", labels: %w[a], stacked: true, series: [{ name: "x", values: [2] }, { name: "y", values: [3] }])
-    assert_equal [0.0, 5.4], c.range.map { _1.round(2) }
+    assert_equal [0.0, 6.0], c.range.map { _1.round(2) } # v1.14.7: o topo redondo da ComponentesUi::ChartScale (era 5,4)
   end
 
   test "linha de progresso: tons de limite e meta" do

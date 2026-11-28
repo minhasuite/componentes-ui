@@ -7,6 +7,9 @@ module Ss
   #   render Ss::AreaChartComponent.new(title: "Gastos por mês",
   #     points: [["jan", 1200.0], ["fev", 980.5], …], active: 4,
   #     format: ->(v) { number_to_currency(v) })
+  #
+  # v1.14.7: tudo zero é vazio (o .ss-chart-empty com empty:, ou "Sem dados no período"); treat_zero_as_empty: false
+  # desenha a área no chão. As guias são as marcas redondas do ComponentesUi::ChartScale, sem rótulo repetido.
   class AreaChartComponent < BaseComponent
     W = 560
     H = 230
@@ -16,8 +19,11 @@ module Ss
 
     attr_reader :title, :points
 
-    def initialize(points:, title:, active: nil, format: nil, show_title: false, scrub: false, **opts)
+    def initialize(points:, title:, active: nil, format: nil, show_title: false, scrub: false, empty: nil,
+                   treat_zero_as_empty: true, **opts)
       super(**opts)
+      @empty = empty
+      @treat_zero_as_empty = treat_zero_as_empty
       @scrub = scrub
       @points = points.map { |(l, v)| [l.to_s, v.to_f] }
       @title = title
@@ -27,6 +33,10 @@ module Ss
     end
 
     def render? = @points.size >= 2
+
+    # v1.14.7: só zeros (com treat_zero_as_empty:): o vazio no lugar do desenho.
+    def zero? = @treat_zero_as_empty && ComponentesUi::ChartScale.all_zero?(@points.map(&:last))
+    def empty_text = @empty || ss_t("chart.empty", default: "Sem dados no período")
 
     def uid = @uid ||= "ss-area-#{object_id}"
     def active = @active
@@ -40,13 +50,15 @@ module Ss
       ss_number(v, precision: v % 1 == 0 ? 0 : 2)
     end
 
-    def range
-      @range ||= begin
+    # v1.14.7: a escala redonda; com valores positivos ela não desce do zero.
+    def scale
+      @scale ||= begin
         lo, hi = @points.map(&:last).minmax
-        pad = (hi - lo).zero? ? [hi.abs, 1].max * 0.5 : (hi - lo)
-        [[lo - pad * 0.35, lo.negative? ? lo - pad * 0.35 : 0].max, hi + pad * 0.12]
+        ComponentesUi::ChartScale.of(lo, hi, zero: false, format: ->(v) { fmt(v) })
       end
     end
+
+    def range = [scale.lo, scale.hi]
 
     # [x, y] em coordenadas do viewBox.
     def coords
@@ -76,10 +88,10 @@ module Ss
 
     def area_d = "#{line_d} L#{coords[-1][0]},#{H - PB} L#{coords[0][0]},#{H - PB} Z"
 
-    # 3 guias horizontais com o valor.
+    # As guias horizontais com o valor (as marcas da escala).
     def guides
       lo, hi = range
-      [0.0, 0.5, 1.0].map { |f| [(PT + (H - PT - PB) * (1 - f)).round(2), nice(lo + (hi - lo) * f)] }
+      scale.ticks.map { |v| [(PT + (H - PT - PB) * (1 - (v - lo) / (hi - lo))).round(2), v] }
     end
 
     # Valor da guia arredondado a 2 algarismos (6.704,64 → 6.700).
