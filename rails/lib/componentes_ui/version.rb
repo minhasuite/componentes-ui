@@ -1,3 +1,3 @@
 module ComponentesUi
-  VERSION = "1.14.5"
+  VERSION = "1.14.6"
 end

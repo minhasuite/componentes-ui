@@ -6,9 +6,9 @@ require "test_helper"
 class V1143WebTest < ComponentTest
   REPO = Pathname(ComponentesUi::Engine.root).join("..")
 
-  test "versão 1.14.5" do
-    assert_equal "1.14.5", ComponentesUi::VERSION
-    assert_includes REPO.join("flutter/pubspec.yaml").read, "version: 1.14.5"
-    assert_includes REPO.join("README.md").read, "ref: v1.14.5"
+  test "versão 1.14.6" do
+    assert_equal "1.14.6", ComponentesUi::VERSION
+    assert_includes REPO.join("flutter/pubspec.yaml").read, "version: 1.14.6"
+    assert_includes REPO.join("README.md").read, "ref: v1.14.6"
   end
 end

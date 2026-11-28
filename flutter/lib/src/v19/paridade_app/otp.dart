@@ -140,7 +140,20 @@ class _SsOtpFieldState extends State<SsOtpField> {
       enableSuggestions: false,
       autocorrect: false,
       style: const TextStyle(color: AppColors.transparent, fontSize: 1),
-      decoration: const InputDecoration.collapsed(hintText: null),
+      // v1.14.6: o campo é invisível; sem isso ele herdava do inputDecorationTheme a borda de foco
+      // (o .collapsed só zera `border`) e desenhava um traço colorido sob o rótulo.
+      decoration: const InputDecoration(
+        isCollapsed: true,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
+        filled: false,
+        contentPadding: EdgeInsets.zero,
+        counterText: '',
+      ),
     );
 
     return Column(

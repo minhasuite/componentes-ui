@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.5
+      ref: v1.14.6
 ```
 
 ```dart
@@ -653,6 +653,12 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.6: `SsOtpField` sem o traço do tema
+
+O campo invisível por baixo dos dígitos herdava do `inputDecorationTheme` do app a borda de foco e o fundo
+(o `InputDecoration.collapsed` só zera `border`), e desenhava um traço colorido sob o rótulo (visto no
+meu-tempo-app). Agora todas as bordas são `none`, sem preenchimento. Quem contornou no app pode tirar.
 
 ## v1.14.5: medidores e cartões de dado sem estourar com o texto grande
 
