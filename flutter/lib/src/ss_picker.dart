@@ -89,6 +89,8 @@ Future<T?> showSsPicker<T>(
       )
     : showModalBottomSheet<T>(
         context: context,
+        // v1.14.3: por cima da barra de abas (ver [showSsSheet]).
+        useRootNavigator: true,
         isScrollControlled: true,
         useSafeArea: true,
         showDragHandle: false,

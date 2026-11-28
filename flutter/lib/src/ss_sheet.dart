@@ -19,6 +19,10 @@ import 'v19/transicoes/predictive_back.dart';
 /// v1.14.0: [detents] (`[.33, .5, 1]`, frações da tela) dá à folha alturas fixas, começando em
 /// `detents[initialDetent]`: arrastar a alça leva entre elas e, ao soltar, ela assenta com mola
 /// ([SsDetentSheet]). Par do `Ss::DrawerComponent(detents:)` do web no celular.
+///
+/// v1.14.3: abre pelo `Navigator` raiz ([useRootNavigator], padrão `true`), por cima da barra de abas do
+/// `SsNavScaffold`. Antes, chamada de uma tela de aba (o `Navigator` do `StatefulShellRoute`), a folha
+/// ficava dentro do corpo e a `SsNavBar` passava na frente dela. `false` volta ao `Navigator` mais próximo.
 Future<T?> showSsSheet<T>(
   BuildContext context, {
   required Widget child,
@@ -29,6 +33,7 @@ Future<T?> showSsSheet<T>(
   EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(20, 0, 20, 16),
   List<double>? detents,
   int initialDetent = 0,
+  bool useRootNavigator = true,
 }) => detents != null
     ? showSsDetentSheet<T>(
         context,
@@ -39,10 +44,12 @@ Future<T?> showSsSheet<T>(
         icon: icon,
         dismissible: dismissible,
         padding: padding,
+        useRootNavigator: useRootNavigator,
         child: child,
       )
     : showModalBottomSheet<T>(
         context: context,
+        useRootNavigator: useRootNavigator,
         isScrollControlled: true,
         useSafeArea: true,
         isDismissible: dismissible,

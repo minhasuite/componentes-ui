@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.2
+      ref: v1.14.3
 ```
 
 ```dart
@@ -653,6 +653,38 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.3: o explicar (e as outras folhas) acima da barra de abas e a chave do SsDeviceTile com 48
+
+Só Flutter; o Rails é igual à v1.14.2. Nada muda no desenho, então o catálogo fica como está.
+
+**Folhas e balões pelo `Navigator` raiz.** Numa tela de aba com `Navigator` próprio (o `StatefulShellRoute` do
+go_router, dentro do `SsNavScaffold`), o `showModalBottomSheet` abria no `Navigator` da aba: a folha ficava no corpo
+e a `SsNavBar` passava na frente dela. Visto no `SsExplain` (toque longo no número) em Relatórios do
+minhas-vendas-app. Agora abrem pelo `Navigator` raiz, por cima da barra:
+
+| Onde | O que mudou |
+|---|---|
+| `showSsSheet(useRootNavigator: true)` e `showSsSheet(detents:)` (`showSsDetentSheet`) | parâmetro novo, padrão `true`; `false` volta ao `Navigator` mais próximo |
+| `showSsFilterSheet(useRootNavigator: true)` (e o `SsFilterBar`) | idem |
+| `showSsPopover(useRootNavigator: true)` (e o `SsPopover`) | idem; continua ancorado no botão |
+| `showSsExplain`/`SsExplain`, `showSsCaptureHub`, `showSsAiActionPreview`, `showSsSinceLastVisit` | passam pelo `showSsSheet`, então herdam |
+| `showSsPicker` (folha com busca), `showSsPlanCompare`, a roda de data/hora do iOS (`ssWheelSheet`) | `useRootNavigator: true` fixo |
+
+Diálogos (`showSsConfirm`, `showSsPrompt`), a paleta de comandos, a folha de ações do iOS, o speed dial, o visor de
+imagem e o tour já abriam na raiz. Quem fecha a folha com o próprio contexto dela (`Navigator.pop(context)` no
+`builder`, `SsSheet`, `SsPopover.close`) não muda; quem fechava com o contexto da **tela** (`Navigator.of(telaCtx).pop()`)
+passa a fechar a tela da aba: use o contexto de dentro da folha. O `context.pop()` do go_router fecha a folha (ele
+não passa de rota sem página que está por cima do shell).
+
+**`SsDeviceTile`: a chave com 48 no toque e no leitor de tela.** O quadrado do ícone (a chave, com `onToggle:`)
+desenha `iconTile + 2` (44 no padrão, 40 no compacto) e já tinha o toque de 48 pelo `SsTapTarget`, mas o nó do leitor
+de tela era o do desenho, e o `ssA11yAudit` reprovava. Agora é `SsTapTarget(semantics: true)` por fora do `Semantics`
+da chave: o nó tem 48 × 48, o desenho não muda. Nos apps, tire o "sem `ssA11yAudit`" dos testes de tela com tiles.
+O `DeviceTileComponent` do web fica como está (o alvo de 44 px do web, v0.24).
+
+Testes: `flutter/test/v1143_test.dart` (as folhas e o balão abertos de uma tela de aba com `Navigator` próprio no
+`SsNavScaffold`, o toque no meio da barra caindo na folha, e o `ssA11yAudit` do tile no padrão e no compacto).
 
 ## v1.14.2: desfazer do arquivar e as arquivadas na central, iOS na CI e a origem do logo da Apple
 
@@ -2785,6 +2817,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.3` (28/11/2026): seção "v1.14.3". Só Flutter: `showSsSheet`/`showSsFilterSheet`/`showSsPopover(useRootNavigator: true)` (e as folhas que passam por eles, como o `showSsExplain`) abrem pelo `Navigator` raiz, por cima da barra de abas do `SsNavScaffold`; a chave do `SsDeviceTile` com nó de 48 (`SsTapTarget(semantics: true)`). Desenho igual, catálogo sem mudança.
 - `v1.14.2` (27/11/2026): seção "v1.14.2". `SsNotificationCenter(unarchive:, loadArchived:, initialView:)` ↔ `Ss::NotificationCenterComponent(archive_undo:, archived_url:, inbox_url:, archived:)` e `unarchive_href:` por aviso (desfazer do arquivar e a aba Arquivadas), o job do iOS na CI (`ios.yml`) e a origem do logo da Apple escrita (o oficial não entra por licença). Migração: tirar o `showSsUndo` dos apps.
 - `v1.14.1` (27/11/2026): seção "v1.14.1". `SsCommand(subtitle:)` (paleta e busca do `SsSideMenu`) ↔ `aria-label` no item com `subtitle:` do `Ss::CommandPaletteComponent`, `SsTextField(textAlign:)`/`SsMoneyField(textAlign:)` ↔ `f.ss_*(align: :end)`, `SsAdaptiveScaffold(tabTransition:)` e `find.ssValue` no `testing.dart`. Muda o padrão do `SsMoneyField` (valor à direita).
 - `v1.14.0` (27/11/2026): seção "v1.14.0" (interface e animação). Scrub nos gráficos (`SsScrubDetector` ↔ `ss-scrub`), `SsPeriodCompare` ↔ `Ss::PeriodCompareComponent`, `SsExpandableRow` ↔ `Ss::ExpandableRowComponent`, `Ss::SelectionBarComponent` + `ss-selection`, `showSsSheet(detents:)` ↔ `DrawerComponent(detents:)`, ícone animado na barra, `SsMeshBackground` ↔ `Ss::MeshBackgroundComponent`, odômetro padrão no KPI, `collapseTint`/`collapse_tint`, `SsSuccessCheck` ↔ `Ss::SuccessCheckComponent` (+ `SsSounds`/`ss:sound`), `SsTiltCard` ↔ `Ss::TiltCardComponent`, `SsSharedAxisTransition`/`SsTabHero` ↔ View Transitions + `ss_tab_hero`, `SsSkeleton.of` ↔ `ss_skeleton_for`. Nada quebra na API; muda o padrão do KPI (odômetro) e da troca de aba do `SsNavScaffold`.

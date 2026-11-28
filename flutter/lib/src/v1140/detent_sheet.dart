@@ -259,8 +259,11 @@ Future<T?> showSsDetentSheet<T>(
   IconData? icon,
   bool dismissible = true,
   EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(20, 0, 20, 16),
+  bool useRootNavigator = true,
 }) => showModalBottomSheet<T>(
   context: context,
+  // v1.14.3: por cima da barra de abas (ver [showSsSheet]).
+  useRootNavigator: useRootNavigator,
   isScrollControlled: true,
   useSafeArea: true,
   isDismissible: dismissible,

@@ -13,12 +13,6 @@ class V1142WebTest < ComponentTest
      { id: 2, title: "Resumo do dia", at: Time.utc(2026, 11, 23, 19), unread: false, archive_href: "/avisos/2/arquivar", **extra }]
   end
 
-  test "versão 1.14.2" do
-    assert_equal "1.14.2", ComponentesUi::VERSION
-    assert_includes REPO.join("flutter/pubspec.yaml").read, "version: 1.14.2"
-    assert_includes REPO.join("README.md").read, "ref: v1.14.2"
-  end
-
   # ── abas ─────────────────────────────────────────────────────────────
   test "sem archived_url não há abas (como antes)" do
     render_inline(Ss::NotificationCenterComponent.new(items: avisos, now: NOW))

@@ -57,12 +57,6 @@ class _Fonte {
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  test('versão 1.14.2', () {
-    expect(ssComponentesUiVersion, '1.14.2');
-    final pub = File('pubspec.yaml').readAsStringSync();
-    expect(pub, contains('version: 1.14.2'));
-  });
-
   group('desfazer do arquivar (unarchive:)', () {
     testWidgets('o aviso ganha "Desfazer": desfaz, chama o unarchive e o item volta ao lugar', (t) async {
       final f = _Fonte([_n('1'), _n('2'), _n('3')]);

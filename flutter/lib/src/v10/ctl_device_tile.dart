@@ -254,15 +254,17 @@ class SsDeviceTile extends StatelessWidget {
       bolha = Tooltip(
         message: '$acao $name',
         excludeFromSemantics: true,
-        child: Semantics(
-          container: true,
-          toggled: _lit,
-          enabled: pode,
-          label: name,
-          hint: acao,
-          onTap: pode ? () => _toggle() : null,
-          excludeSemantics: true,
-          child: SsTapTarget(
+        // v1.14.3: o nó do leitor de tela (e o ssA11yAudit) tem os 48 do toque, não os 44 do desenho.
+        child: SsTapTarget(
+          semantics: true,
+          child: Semantics(
+            container: true,
+            toggled: _lit,
+            enabled: pode,
+            label: name,
+            hint: acao,
+            onTap: pode ? () => _toggle() : null,
+            excludeSemantics: true,
             child: Material(
               type: MaterialType.transparency,
               child: InkWell(

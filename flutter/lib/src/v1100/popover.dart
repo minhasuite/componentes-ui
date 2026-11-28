@@ -15,6 +15,9 @@ enum SsPopoverPlacement { bottomStart, bottomEnd, topStart }
 
 /// Abre o balão ancorado no widget de [anchor] (o contexto do botão). Fecha ao tocar fora, no voltar do
 /// Android e no Esc; devolve o que o conteúdo passar ao [Navigator.pop] (ou [SsPopover.close]).
+///
+/// v1.14.3: abre pelo `Navigator` raiz ([useRootNavigator], padrão `true`), por cima da barra de abas do
+/// `SsNavScaffold` (ver `showSsSheet`).
 Future<T?> showSsPopover<T>(
   BuildContext anchor, {
   required Widget child,
@@ -22,9 +25,10 @@ Future<T?> showSsPopover<T>(
   String? label,
   SsPopoverPlacement placement = SsPopoverPlacement.bottomStart,
   double maxWidth = 352,
+  bool useRootNavigator = true,
 }) {
   final box = anchor.findRenderObject()! as RenderBox;
-  final nav = Navigator.of(anchor);
+  final nav = Navigator.of(anchor, rootNavigator: useRootNavigator);
   final overlay = nav.overlay!.context.findRenderObject()! as RenderBox;
   final alvo = MatrixUtils.transformRect(box.getTransformTo(overlay), Offset.zero & box.size);
   final reduz = reduceMotion(anchor);

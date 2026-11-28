@@ -380,6 +380,8 @@ Future<void> showSsPlanCompare(
   List<String>? names,
 }) => showModalBottomSheet<void>(
   context: context,
+  // v1.14.3: por cima da barra de abas (ver [showSsSheet]).
+  useRootNavigator: true,
   isScrollControlled: true,
   showDragHandle: true,
   builder: (ctx) => SafeArea(

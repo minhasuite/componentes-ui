@@ -74,6 +74,8 @@ Future<DateTime?> ssWheelSheet(
   final s = SsStrings.of(context);
   return showModalBottomSheet<DateTime>(
     context: context,
+    // v1.14.3: por cima da barra de abas (ver [showSsSheet]).
+    useRootNavigator: true,
     useSafeArea: true,
     showDragHandle: false,
     sheetAnimationStyle: SsOverlayMotion.sheet(context),

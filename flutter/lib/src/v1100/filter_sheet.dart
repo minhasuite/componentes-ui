@@ -116,8 +116,11 @@ Future<SsFilterValues?> showSsFilterSheet(
   SsFilterValues values = const {},
   SsFilterCounter? count,
   String? title,
+  bool useRootNavigator = true,
 }) => showModalBottomSheet<SsFilterValues>(
   context: context,
+  // v1.14.3: por cima da barra de abas (ver [showSsSheet]).
+  useRootNavigator: useRootNavigator,
   isScrollControlled: true,
   useSafeArea: true,
   showDragHandle: false,
