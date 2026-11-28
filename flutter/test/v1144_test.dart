@@ -1,7 +1,5 @@
 // v1.14.4: o SsDeviceTile limpo no ssA11yAudit (o nó de detalhes com pelo menos 48 e sem tocável sem rótulo por
 // fora) e o SsPressable(excludeFromSemantics:).
-import 'dart:io';
-
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:componentes_ui/testing.dart';
 import 'package:flutter/semantics.dart';
@@ -59,11 +57,6 @@ Widget _painel() => Column(
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
-
-  test('versão 1.14.4', () {
-    expect(ssComponentesUiVersion, '1.14.4');
-    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 1.14.4'));
-  });
 
   group('SsDeviceTile limpo no ssA11yAudit', () {
     for (final d in [SsDensity.compact, SsDensity.standard, SsDensity.comfortable]) {

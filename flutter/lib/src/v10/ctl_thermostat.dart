@@ -320,49 +320,61 @@ class _SsThermostatState extends State<SsThermostat> {
             off: off && !widget.adjustWhenOff,
             stroke: _dim * .065,
           ),
+          // v1.14.5: o miolo fica dentro do anel (70% da largura, os textos quebram linha) e encolhe inteiro
+          // se não couber (texto grande); no tamanho normal não muda.
           child: Center(
             child: ExcludeSemantics(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: _dim * .7,
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (widget.pending) ...[
-                        SizedBox.square(
-                          dimension: 12,
-                          child: CircularProgressIndicator(strokeWidth: 2, value: reduce ? .3 : null, color: tone),
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                      Text(
-                        legenda.toUpperCase(),
-                        style: TextStyle(
-                          color: widget.pending ? c.muted : corLegenda,
-                          fontSize: dn.font(AppType.label),
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.1,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.pending) ...[
+                            SizedBox.square(
+                              dimension: 12,
+                              child: CircularProgressIndicator(strokeWidth: 2, value: reduce ? .3 : null, color: tone),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Flexible(
+                            child: Text(
+                              legenda.toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: widget.pending ? c.muted : corLegenda,
+                                fontSize: dn.font(AppType.label),
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedOpacity(
+                        opacity: off && !widget.adjustWhenOff ? .45 : 1,
+                        duration: reduce ? Duration.zero : SsMotion.fast,
+                        child: Text(
+                          _fmt(_v),
+                          style: AppTheme.number(context, size: _dim * .2, color: c.ink),
                         ),
                       ),
+                      if (linhaAtual != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          linhaAtual,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: c.ink2, fontSize: dn.font(AppType.sub), fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  AnimatedOpacity(
-                    opacity: off && !widget.adjustWhenOff ? .45 : 1,
-                    duration: reduce ? Duration.zero : SsMotion.fast,
-                    child: Text(
-                      _fmt(_v),
-                      style: AppTheme.number(context, size: _dim * .2, color: c.ink),
-                    ),
-                  ),
-                  if (linhaAtual != null) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      linhaAtual,
-                      style: TextStyle(color: c.ink2, fontSize: dn.font(AppType.sub), fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
@@ -423,7 +435,8 @@ class _SsThermostatState extends State<SsThermostat> {
                   label: widget.lessLabel ?? _s.decrease,
                   onTap: podeMenos ? () => _set(_v - widget.step) : null,
                 ),
-                SizedBox(width: _dim * .28),
+                // v1.14.5: num cartão mais estreito que o anel, o vão encolhe e os botões ficam inteiros.
+                Flexible(child: SizedBox(width: _dim * .28)),
                 _Passo(
                   icon: Icons.add_rounded,
                   label: widget.moreLabel ?? _s.increase,
@@ -553,9 +566,12 @@ class _ModeChip extends StatelessWidget {
             Icon(mode.icon, size: d.iconSize - 2, color: selected ? fg : c.muted),
             SizedBox(width: d.space(6)),
           ],
-          Text(
-            mode.labelIn(SsStrings.of(context)),
-            style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
+          // v1.14.5: o nome do modo quebra linha num cartão estreito com texto grande.
+          Flexible(
+            child: Text(
+              mode.labelIn(SsStrings.of(context)),
+              style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: d.font(AppType.sub)),
+            ),
           ),
         ],
       ),

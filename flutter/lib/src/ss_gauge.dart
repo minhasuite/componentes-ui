@@ -72,15 +72,20 @@ class SsGauge extends StatelessWidget {
                 decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
               ),
               const SizedBox(width: 6),
-              Text(
-                rotulo,
-                style: TextStyle(fontSize: AppType.sub, fontWeight: FontWeight.w800, color: c.ink),
+              // v1.14.5: a faixa quebra linha (texto grande, cartão estreito) em vez de estourar.
+              Flexible(
+                child: Text(
+                  rotulo,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: AppType.sub, fontWeight: FontWeight.w800, color: c.ink),
+                ),
               ),
             ],
           ),
           if (label != null)
             Text(
               label!,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: AppType.meta, color: c.muted),
             ),
         ],

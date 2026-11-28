@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.4
+      ref: v1.14.5
 ```
 
 ```dart
@@ -653,6 +653,24 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.5: medidores e cartões de dado sem estourar com o texto grande
+
+Só Flutter; o Rails é igual à v1.14.2. No tamanho normal o desenho não muda, então o catálogo fica como está.
+
+Com o texto em 1,6x (o que o `ssA11yAudit` confere), num cartão estreito de duas colunas no celular, três peças
+estouravam (visto no medidor do painel da minha-automacao-app):
+
+| Peça | O que mudou |
+|---|---|
+| `SsGauge` | a faixa embaixo da meia-lua (o ponto e o rótulo) quebra linha em vez de estourar para a direita; faixa e `label:` centralizadas |
+| `SsBigRing` | o miolo (número e `caption:`) fica dentro do anel, em 70% da largura, com a legenda quebrando linha, e encolhe inteiro (`FittedBox`) se ainda não couber |
+| `SsThermostat` | o miolo do anel (estado, alvo e temperatura atual) igual ao do `SsBigRing`; o vão entre − e + encolhe num cartão mais estreito que o anel; o nome do modo nos chips quebra linha |
+
+Conferidos sem mudança, no cartão de 150 e de 328 com o `ssA11yAudit` completo: `SsRings`, `SsKpiCard`,
+`SsStatCard`, `SsDuoStat`, `SsValueTile` e `SsProgressRow`.
+
+Testes: `flutter/test/v1145_test.dart` (as nove peças nos dois cartões, com o `ssA11yAudit` completo).
 
 ## v1.14.4: o SsDeviceTile limpo no ssA11yAudit e o SsPressable fora da árvore de acessibilidade
 
@@ -2837,6 +2855,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.5` (28/11/2026): seção "v1.14.5". Só Flutter: `SsGauge`, `SsBigRing` e `SsThermostat` sem estourar com o texto em 1,6x num cartão estreito; as outras peças de medida e cartões de dado conferidos no `ssA11yAudit`. Desenho igual no tamanho normal, catálogo sem mudança.
 - `v1.14.4` (28/11/2026): seção "v1.14.4". Só Flutter: `SsPressable(excludeFromSemantics:)` e o `SsDeviceTile` limpo no `ssA11yAudit` (sem tocável sem rótulo por fora; o nó de detalhes cobre o cartão). Desenho igual, catálogo sem mudança.
 - `v1.14.3` (28/11/2026): seção "v1.14.3". Só Flutter: `showSsSheet`/`showSsFilterSheet`/`showSsPopover(useRootNavigator: true)` (e as folhas que passam por eles, como o `showSsExplain`) abrem pelo `Navigator` raiz, por cima da barra de abas do `SsNavScaffold`; a chave do `SsDeviceTile` com nó de 48 (`SsTapTarget(semantics: true)`). Desenho igual, catálogo sem mudança.
 - `v1.14.2` (27/11/2026): seção "v1.14.2". `SsNotificationCenter(unarchive:, loadArchived:, initialView:)` ↔ `Ss::NotificationCenterComponent(archive_undo:, archived_url:, inbox_url:, archived:)` e `unarchive_href:` por aviso (desfazer do arquivar e a aba Arquivadas), o job do iOS na CI (`ios.yml`) e a origem do logo da Apple escrita (o oficial não entra por licença). Migração: tirar o `showSsUndo` dos apps.

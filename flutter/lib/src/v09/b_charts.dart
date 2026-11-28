@@ -636,30 +636,40 @@ class SsBigRing extends StatelessWidget {
           duration: const Duration(milliseconds: 900),
           builder: (context, t, _) => CustomPaint(
             painter: _BigRingPainter(t: t, color: cor, track: c.field, tick: c.muted2, ticks: ticks),
+            // v1.14.5: o miolo fica dentro do anel (70% da largura, a legenda quebra linha) e encolhe
+            // inteiro se não couber (texto grande); no tamanho normal não muda.
             child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      text: '${(t * 100).round()}',
-                      children: [
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: size * .7,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text.rich(
+                        textAlign: TextAlign.center,
                         TextSpan(
-                          text: '%',
-                          style: AppTheme.number(context, size: size * .11, color: c.muted),
+                          text: '${(t * 100).round()}',
+                          children: [
+                            TextSpan(
+                              text: '%',
+                              style: AppTheme.number(context, size: size * .11, color: c.muted),
+                            ),
+                          ],
+                        ),
+                        style: AppTheme.number(context, size: size * .24, weight: FontWeight.w400, color: c.ink),
+                      ),
+                      if (caption != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          caption!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
                         ),
                       ],
-                    ),
-                    style: AppTheme.number(context, size: size * .24, weight: FontWeight.w400, color: c.ink),
+                    ],
                   ),
-                  if (caption != null) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      caption!,
-                      style: TextStyle(color: c.muted, fontSize: AppType.sub, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
