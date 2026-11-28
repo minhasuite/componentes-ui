@@ -25,10 +25,16 @@ class SsPressable extends StatefulWidget {
     this.onDoubleTap,
     this.enabled = true,
     this.scale = .97,
+    this.excludeFromSemantics = false,
   });
 
   final Widget child;
   final VoidCallback? onTap;
+
+  /// v1.14.4: o toque fica fora da árvore de acessibilidade (o `GestureDetector` não cria ações no nó de
+  /// cima). Ligue quando o filho já tem o próprio `Semantics` com rótulo e as mesmas ações, como o
+  /// `SsDeviceTile`: sem isso, o leitor de tela (e o `ssA11yAudit`) acha um tocável sem rótulo por fora.
+  final bool excludeFromSemantics;
 
   /// Toque longo (v0.10.3), com vibração média. Dê também um caminho visível
   /// ou de leitor de tela para a mesma ação.
@@ -98,6 +104,7 @@ class _SsPressableState extends State<SsPressable> with SingleTickerProviderStat
     if (widget.onTap != null || widget.onLongPress != null || widget.onDoubleTap != null) {
       child = GestureDetector(
         behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: widget.excludeFromSemantics,
         onTap: widget.onTap == null
             ? null
             : () {

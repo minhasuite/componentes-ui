@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.3
+      ref: v1.14.4
 ```
 
 ```dart
@@ -653,6 +653,26 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.4: o SsDeviceTile limpo no ssA11yAudit e o SsPressable fora da árvore de acessibilidade
+
+Só Flutter; o Rails é igual à v1.14.2. O desenho não muda, então o catálogo fica como está.
+
+Na v1.14.3 a chave do `SsDeviceTile` passou a 48, mas a tela com tiles ainda reprovava no `ssA11yAudit` (visto no
+Início da minha-automacao-app) por duas outras razões, agora resolvidas:
+
+| Onde | O que mudou |
+|---|---|
+| `SsPressable(excludeFromSemantics: false)` | parâmetro novo: `true` tira o toque do `GestureDetector` da árvore de acessibilidade. Use quando o filho já tem o próprio `Semantics` com rótulo e as mesmas ações |
+| `SsDeviceTile`: o toque do cartão | usa `SsPressable(excludeFromSemantics: true)`. Antes o cartão inteiro era um nó tocável **sem rótulo** por fora do nó "Luz: Ligado" |
+| `SsDeviceTile`: o nó de detalhes ("Luz: Ligado", "Abrir detalhes") | o respiro do cartão (`cardPad - 4`) passou para dentro do nó, que agora cobre o cartão (fora o rodapé e a borda). Antes ele tinha a altura da linha (44 no padrão, 40 no compacto). A conta de empilhar (`SsDeviceTile.stackBelow`) desconta o respiro, então a troca entre linha e pilha cai na mesma largura |
+
+Tocar, tocar e segurar, a chave e o rodapé funcionam como antes; o leitor de tela ouve o mesmo rótulo e a mesma
+dica. Nos apps, tire o "sem `ssA11yAudit`" dos testes de tela com tiles de aparelho.
+
+Testes: `flutter/test/v1144_test.dart` (o `ssA11yAudit` completo num painel com todos os modos do tile nas três
+densidades, o nó de detalhes com o tamanho do cartão, o desenho igual, toque e toque longo, e o
+`SsPressable(excludeFromSemantics:)`).
 
 ## v1.14.3: o explicar (e as outras folhas) acima da barra de abas e a chave do SsDeviceTile com 48
 
@@ -2817,6 +2837,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.4` (28/11/2026): seção "v1.14.4". Só Flutter: `SsPressable(excludeFromSemantics:)` e o `SsDeviceTile` limpo no `ssA11yAudit` (sem tocável sem rótulo por fora; o nó de detalhes cobre o cartão). Desenho igual, catálogo sem mudança.
 - `v1.14.3` (28/11/2026): seção "v1.14.3". Só Flutter: `showSsSheet`/`showSsFilterSheet`/`showSsPopover(useRootNavigator: true)` (e as folhas que passam por eles, como o `showSsExplain`) abrem pelo `Navigator` raiz, por cima da barra de abas do `SsNavScaffold`; a chave do `SsDeviceTile` com nó de 48 (`SsTapTarget(semantics: true)`). Desenho igual, catálogo sem mudança.
 - `v1.14.2` (27/11/2026): seção "v1.14.2". `SsNotificationCenter(unarchive:, loadArchived:, initialView:)` ↔ `Ss::NotificationCenterComponent(archive_undo:, archived_url:, inbox_url:, archived:)` e `unarchive_href:` por aviso (desfazer do arquivar e a aba Arquivadas), o job do iOS na CI (`ios.yml`) e a origem do logo da Apple escrita (o oficial não entra por licença). Migração: tirar o `showSsUndo` dos apps.
 - `v1.14.1` (27/11/2026): seção "v1.14.1". `SsCommand(subtitle:)` (paleta e busca do `SsSideMenu`) ↔ `aria-label` no item com `subtitle:` do `Ss::CommandPaletteComponent`, `SsTextField(textAlign:)`/`SsMoneyField(textAlign:)` ↔ `f.ss_*(align: :end)`, `SsAdaptiveScaffold(tabTransition:)` e `find.ssValue` no `testing.dart`. Muda o padrão do `SsMoneyField` (valor à direita).

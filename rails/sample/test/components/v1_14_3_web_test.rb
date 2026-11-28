@@ -1,12 +1,13 @@
 require "test_helper"
 
 # v1.14.3: só Flutter (folhas pelo Navigator raiz e a chave do SsDeviceTile com 48); o web é igual à v1.14.2.
+# v1.14.4: idem (o nó do SsDeviceTile e o SsPressable fora da árvore de acessibilidade); o web é igual.
 class V1143WebTest < ComponentTest
   REPO = Pathname(ComponentesUi::Engine.root).join("..")
 
-  test "versão 1.14.3" do
-    assert_equal "1.14.3", ComponentesUi::VERSION
-    assert_includes REPO.join("flutter/pubspec.yaml").read, "version: 1.14.3"
-    assert_includes REPO.join("README.md").read, "ref: v1.14.3"
+  test "versão 1.14.4" do
+    assert_equal "1.14.4", ComponentesUi::VERSION
+    assert_includes REPO.join("flutter/pubspec.yaml").read, "version: 1.14.4"
+    assert_includes REPO.join("README.md").read, "ref: v1.14.4"
   end
 end

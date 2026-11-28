@@ -1,7 +1,5 @@
 // v1.14.3: folhas e balões pelo Navigator raiz (por cima da barra de abas do SsNavScaffold, quando a tela de aba
 // tem Navigator próprio, como no StatefulShellRoute) e a chave do SsDeviceTile com nó de 48 no leitor de tela.
-import 'dart:io';
-
 import 'package:componentes_ui/componentes_ui.dart';
 import 'package:componentes_ui/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,12 +73,6 @@ Future<void> _porCimaDaBarra(WidgetTester t, Finder alvo, {bool cobreBarra = tru
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
-
-  test('versão 1.14.3', () {
-    expect(ssComponentesUiVersion, '1.14.3');
-    final pub = File('pubspec.yaml').readAsStringSync();
-    expect(pub, contains('version: 1.14.3'));
-  });
 
   group('por cima da barra de abas (useRootNavigator)', () {
     testWidgets('SsExplain no toque longo, numa tela de aba', (t) async {

@@ -306,10 +306,12 @@ class SsDeviceTile extends StatelessWidget {
     // Modo ação: o toque executa; senão, abre os detalhes.
     final VoidCallback? toque = onPress != null ? (_pressable ? () => _press(context) : null) : onTap;
     final dica = onPress != null ? pressLabel ?? s.deviceRun : detailsLabel ?? s.openDetails;
+    // v1.14.4: o respiro do cartão vai para dentro do nó do leitor de tela (que passa a cobrir o cartão,
+    // fora o rodapé, com pelo menos 48 de altura); o desenho é o mesmo.
+    final pad = d.cardPad - 4;
     Widget tile = AnimatedContainer(
       duration: dur,
       curve: Curves.easeOut,
-      padding: EdgeInsets.all(d.cardPad - 4),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius),
@@ -328,6 +330,7 @@ class SsDeviceTile extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, cons) {
           final limitado = cons.hasBoundedHeight;
+          final pilhaOuLinha = cons.maxWidth - 2 * pad < SsDeviceTile.stackBelow ? pilha : linha;
           final rotulado = Semantics(
             button: toque != null,
             enabled: onPress != null ? _pressable : null,
@@ -337,14 +340,17 @@ class SsDeviceTile extends StatelessWidget {
             onLongPress: onLongPress,
             onLongPressHint: onLongPress == null ? null : longPressLabel ?? s.moreOptions,
             container: true,
-            child: cons.maxWidth < SsDeviceTile.stackBelow ? pilha : linha,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(pad, pad, pad, footer != null ? d.gap : pad),
+              child: pilhaOuLinha,
+            ),
           );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
               if (limitado) Flexible(child: Center(child: rotulado)) else rotulado,
-              if (footer != null) ...[SizedBox(height: d.gap), footer!],
+              if (footer != null) Padding(padding: EdgeInsets.fromLTRB(pad, 0, pad, pad), child: footer!),
             ],
           );
         },
@@ -360,6 +366,8 @@ class SsDeviceTile extends StatelessWidget {
         ? tile
         : SsPressable(
             scale: onPress != null ? .95 : .98,
+            // v1.14.4: as ações já estão no nó com rótulo (o Semantics acima); por fora seria um tocável sem nome.
+            excludeFromSemantics: true,
             onTap: toque,
             onLongPress: onLongPress,
             onDoubleTap: onDoubleTap,
