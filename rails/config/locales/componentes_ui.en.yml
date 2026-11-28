@@ -451,6 +451,13 @@ en:
       level_warning: "Warning"
       level_critical: "Critical"
       mute: "Mute"
+      inbox: "Inbox"
+      archived_tab: "Archived"
+      tabs: "Folder"
+      unarchive: "Unarchive"
+      archived: "Notification archived"
+      archived_empty: "No archived notifications"
+      archived_empty_text: "What you archive stays here, out of the inbox."
     number:
       delimiter: ","
       separator: "."

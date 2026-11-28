@@ -451,6 +451,13 @@ es:
       level_warning: "Aviso"
       level_critical: "Crítico"
       mute: "Silenciar"
+      inbox: "Bandeja de entrada"
+      archived_tab: "Archivadas"
+      tabs: "Bandeja"
+      unarchive: "Desarchivar"
+      archived: "Notificación archivada"
+      archived_empty: "Ninguna notificación archivada"
+      archived_empty_text: "Lo que archives queda aquí, fuera de la bandeja de entrada."
     number:
       delimiter: "."
       separator: ","

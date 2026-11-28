@@ -2,6 +2,7 @@
 // minhas-vendas-app, meu-cultivo-app e meu-personal-app montaram à mão: lista paginada por dia, lida/não lida,
 // tocar marca lida e abre, "marcar todas", deslizar para ler/arquivar, puxar para atualizar, vazio e erro.
 import 'dart:async';
+import 'dart:ui' show lerpDouble;
 
 import 'package:material_ui/material_ui.dart';
 
@@ -13,6 +14,7 @@ import '../../safe_list_padding.dart';
 import '../../ss_async.dart';
 import '../../ss_badge.dart';
 import '../../ss_button.dart';
+import '../../ss_controls.dart' show SsSegmented;
 import '../../ss_empty_state.dart';
 import '../../ss_list.dart';
 import '../../ss_strings.dart';
@@ -157,12 +159,22 @@ class SsNotificationCenterController extends ChangeNotifier {
   Future<void> refresh() async => _state?._reload();
   Future<void> markAllRead() async => _state?._markAll();
 
+  /// v1.14.2: a aba à vista (com [SsNotificationCenter.loadArchived]).
+  SsNotificationView get view => _state?._view ?? SsNotificationView.inbox;
+
+  /// v1.14.2: troca para a caixa de entrada ou para as arquivadas (sem [SsNotificationCenter.loadArchived],
+  /// não faz nada).
+  Future<void> show(SsNotificationView view) async => _state?._setView(view);
+
   void _setUnread(int n) {
     if (n == _unread) return;
     _unread = n;
     notifyListeners();
   }
 }
+
+/// v1.14.2: as abas da central com [SsNotificationCenter.loadArchived].
+enum SsNotificationView { inbox, archived }
 
 /// Central de notificações: lista paginada agrupada por dia ("Hoje", "Ontem", "segunda, 5 de outubro"),
 /// com o aviso não lido em negrito e com o ponto, e a faixa de cima com "3 não lidas · Marcar todas como
@@ -182,6 +194,16 @@ class SsNotificationCenterController extends ChangeNotifier {
 ///   [SsNotificationItem.image], [SsNotificationItem.actions] (botões de resposta) e
 ///   [SsNotificationItem.onMute] ("Silenciar"). Responder marca como lido.
 ///
+/// - v1.14.2, desfazer do arquivar: com [unarchive], o aviso "Notificação arquivada" ganha "Desfazer" (o
+///   [showSsUndo]); desfazer chama o [unarchive] e o item volta crescendo ao mesmo lugar (a animação do
+///   [SsUndoableRemoval]). Sem [unarchive], o aviso fica sem botão, como antes. O app não precisa mais do
+///   `showSsUndo` por cima do aviso do pacote.
+/// - v1.14.2, arquivadas: com [loadArchived], o topo ganha "Caixa de entrada | Arquivadas" ([SsSegmented]).
+///   As arquivadas vêm do [loadArchived] (página `n`, relida a cada vez que a aba abre), sem a faixa de não
+///   lidas e sem contar no sino; deslizar para a esquerda (ou a ação do leitor de tela) é "Desarquivar"
+///   ([unarchive]): o item sai, a caixa de entrada é relida e, se falhar, ele volta e avisa.
+///   [initialView] abre direto numa aba; o [SsNotificationCenterController.show] troca de fora.
+///
 /// O sino da barra de cima é o [SsNotificationBell] (ou o [SsBellDot]) com o
 /// [SsNotificationCenterController.unreadCount]; [onUnreadChanged] avisa a cada mudança.
 ///
@@ -193,6 +215,11 @@ class SsNotificationCenter extends StatefulWidget {
     this.markRead,
     this.markAllRead,
     this.archive,
+    this.unarchive,
+    this.loadArchived,
+    this.initialView = SsNotificationView.inbox,
+    this.archivedEmptyTitle,
+    this.archivedEmptyText,
     this.onOpen,
     this.onUnreadChanged,
     this.controller,
@@ -210,6 +237,20 @@ class SsNotificationCenter extends StatefulWidget {
   final Future<void> Function(String id)? markRead;
   final Future<void> Function()? markAllRead;
   final Future<void> Function(String id)? archive;
+
+  /// v1.14.2: devolve o aviso à caixa de entrada. Liga o "Desfazer" do aviso de arquivar e, nas arquivadas,
+  /// o "Desarquivar".
+  final Future<void> Function(String id)? unarchive;
+
+  /// v1.14.2: a página `n` (começa em 1) das arquivadas. Com ele, a aba "Arquivadas" aparece.
+  final Future<SsNotificationPage> Function(int page)? loadArchived;
+
+  /// v1.14.2: a aba que abre (só vale com [loadArchived]).
+  final SsNotificationView initialView;
+
+  /// v1.14.2: o vazio das arquivadas (padrão [SsStrings.notifArchivedEmptyTitle]/[SsStrings.notifArchivedEmptyText]).
+  final String? archivedEmptyTitle;
+  final String? archivedEmptyText;
   final FutureOr<void> Function(SsNotificationItem item)? onOpen;
   final ValueChanged<int>? onUnreadChanged;
   final SsNotificationCenterController? controller;
@@ -255,11 +296,102 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
   // Marcações feitas aqui desde a última página com contagem do servidor.
   var _readHere = 0;
 
+  // v1.14.2: a aba e a lista das arquivadas (não contam no sino).
+  late var _view = widget.loadArchived == null ? SsNotificationView.inbox : widget.initialView;
+  final _arq = <SsNotificationItem>[];
+  var _arqPage = 0;
+  var _arqHasMore = false;
+  var _arqLoading = false;
+  var _arqLoaded = false;
+  var _arqLoadingMore = false;
+  var _arqMoreFailed = false;
+  Object? _arqError;
+  // Itens que voltaram (desfazer do arquivar, ou de volta das arquivadas): entram crescendo.
+  final _voltando = <String>{};
+
   @override
   void initState() {
     super.initState();
     widget.controller?._state = this;
     _reload();
+    if (_view == SsNotificationView.archived) _reloadArchived();
+  }
+
+  Future<void> _setView(SsNotificationView v) async {
+    if (widget.loadArchived == null || v == _view) return;
+    setState(() => _view = v);
+    if (v == SsNotificationView.archived) await _reloadArchived();
+  }
+
+  Future<void> _reloadArchived() async {
+    final load = widget.loadArchived;
+    if (load == null) return;
+    setState(() {
+      _arqLoading = !_arqLoaded || _arq.isEmpty;
+      _arqError = null;
+    });
+    try {
+      final p = await load(1);
+      if (!mounted) return;
+      setState(() {
+        _arq
+          ..clear()
+          ..addAll(_dedupe(p.items, const {}));
+        _arqPage = 1;
+        _arqHasMore = p.hasMore;
+        _arqMoreFailed = false;
+        _arqLoaded = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _arqError = e);
+      if (_arq.isNotEmpty) showSsToast(context, _errorText(e), icon: Icons.cloud_off_outlined);
+    } finally {
+      if (mounted) setState(() => _arqLoading = false);
+    }
+  }
+
+  Future<void> _moreArchived() async {
+    final load = widget.loadArchived;
+    if (load == null || _arqLoadingMore || !_arqHasMore) return;
+    setState(() {
+      _arqLoadingMore = true;
+      _arqMoreFailed = false;
+    });
+    try {
+      final p = await load(_arqPage + 1);
+      if (!mounted) return;
+      setState(() {
+        _arq.addAll(_dedupe(p.items, _arq.map((n) => n.id).toSet()));
+        _arqPage++;
+        _arqHasMore = p.hasMore;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _arqMoreFailed = true);
+    } finally {
+      if (mounted) setState(() => _arqLoadingMore = false);
+    }
+  }
+
+  // Nas arquivadas: devolve à caixa de entrada (otimista; falhou, volta e avisa).
+  Future<void> _unarchiveFromArchived(SsNotificationItem n) async {
+    final i = _arq.indexWhere((x) => x.id == n.id);
+    if (i < 0 || widget.unarchive == null) return;
+    setState(() => _arq.removeAt(i));
+    try {
+      await widget.unarchive!(n.id);
+      if (!mounted) return;
+      showSsToast(context, _s.notifUnarchived, icon: Icons.unarchive_outlined);
+      _voltando.add(n.id);
+      unawaited(_reload());
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _arq.insert(i.clamp(0, _arq.length), n);
+        _voltando.add(n.id);
+      });
+      showSsToast(context, _errorText(e), icon: Icons.error_outline_rounded, tone: AppColors.danger);
+    }
   }
 
   @override
@@ -421,20 +553,128 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
     _syncUnread();
     try {
       await widget.archive!(n.id);
-      if (mounted) showSsToast(context, _s.notifArchived, icon: Icons.archive_outlined);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _items.insert(i.clamp(0, _items.length), n);
-        if (n.unread) _readHere--;
-      });
-      _syncUnread();
+      _devolve(n, i);
+      showSsToast(context, _errorText(e), icon: Icons.error_outline_rounded, tone: AppColors.danger);
+      return;
+    }
+    if (!mounted) return;
+    _arqLoaded = false; // a aba das arquivadas relê ao abrir
+    if (widget.unarchive == null) {
+      showSsToast(context, _s.notifArchived, icon: Icons.archive_outlined);
+      return;
+    }
+    // v1.14.2: "Desfazer" no próprio aviso; desfez, o item volta crescendo e o servidor desarquiva.
+    final desfez = await showSsUndo(context, _s.notifArchived, icon: Icons.archive_outlined);
+    if (!desfez || !mounted) return;
+    SsHaptics.selection();
+    _devolve(n, i);
+    try {
+      await widget.unarchive!(n.id);
+    } catch (e) {
+      if (!mounted) return;
+      final j = _items.indexWhere((x) => x.id == n.id);
+      if (j >= 0) {
+        setState(() {
+          _items.removeAt(j);
+          if (n.unread) _readHere++;
+        });
+        _syncUnread();
+      }
       showSsToast(context, _errorText(e), icon: Icons.error_outline_rounded, tone: AppColors.danger);
     }
   }
 
+  // Põe o item de volta na posição [i] da caixa de entrada, entrando crescendo.
+  void _devolve(SsNotificationItem n, int i) {
+    if (_items.any((x) => x.id == n.id)) return;
+    setState(() {
+      _items.insert(i.clamp(0, _items.length), n);
+      if (n.unread) _readHere--;
+      _voltando.add(n.id);
+    });
+    _syncUnread();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.loadArchived == null) return _inbox(context);
+    final s = _s;
+    final d = SsDensity.of(context);
+    final arquivadas = _view == SsNotificationView.archived;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(d.space(16), d.space(8), d.space(16), d.space(4)),
+          child: SsSegmented<SsNotificationView>(
+            segments: [(SsNotificationView.inbox, s.notifInbox), (SsNotificationView.archived, s.notifArchivedTab)],
+            icons: const [Icons.inbox_outlined, Icons.archive_outlined],
+            value: _view,
+            onChanged: _setView,
+          ),
+        ),
+        Expanded(child: arquivadas ? _archived(context) : _inbox(context)),
+      ],
+    );
+  }
+
+  Widget _archived(BuildContext context) {
+    final s = _s;
+    if (_arqLoading && _arq.isEmpty) return const Center(child: SsSpinner());
+    if (_arqError != null && _arq.isEmpty) {
+      return SsPullToRefresh(
+        onRefresh: _reloadArchived,
+        child: SsEmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: s.loadFailed,
+          subtitle: _errorText(_arqError!),
+          actionLabel: s.retry,
+          onAction: _reloadArchived,
+        ),
+      );
+    }
+    if (_arq.isEmpty) {
+      return SsPullToRefresh(
+        onRefresh: _reloadArchived,
+        child: SsEmptyState(
+          icon: Icons.archive_outlined,
+          title: widget.archivedEmptyTitle ?? s.notifArchivedEmptyTitle,
+          subtitle: widget.archivedEmptyText ?? s.notifArchivedEmptyText,
+        ),
+      );
+    }
+    final c = SsColors.of(context);
+    return _lista(
+      context,
+      // Arquivada não conta: sem o ponto e sem o negrito de não lida.
+      itens: [for (final n in _arq) n.copyWith(read: true)],
+      header: null,
+      hasMore: _arqHasMore,
+      loadingMore: _arqLoadingMore,
+      moreFailed: _arqMoreFailed,
+      onMore: _moreArchived,
+      onRefresh: _reloadArchived,
+      tile: (n) {
+        final tile = SsNotificationTile(item: n, onTap: widget.onOpen == null ? null : () => widget.onOpen!(n));
+        if (widget.unarchive == null) return tile;
+        return SsSwipeAction(
+          key: ValueKey('ss-notif-arq-${n.id}'),
+          end: SsSwipeSide(
+            icon: Icons.unarchive_outlined,
+            label: s.notifUnarchive,
+            color: c.accent,
+            destructive: true,
+            onTrigger: () => _unarchiveFromArchived(_arq.firstWhere((x) => x.id == n.id, orElse: () => n)),
+          ),
+          child: tile,
+        );
+      },
+    );
+  }
+
+  Widget _inbox(BuildContext context) {
     final s = _s;
     if (_loading) return const Center(child: SsSpinner());
     if (_error != null && _items.isEmpty) {
@@ -460,10 +700,40 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
       );
     }
 
+    final unread = _unread;
+    final header = widget.showHeader && unread > 0
+        ? _Faixa(unread: unread, onMarkAll: widget.markAllRead == null ? null : _markAll)
+        : null;
+    return _lista(
+      context,
+      itens: _items,
+      header: header,
+      hasMore: _hasMore,
+      loadingMore: _loadingMore,
+      moreFailed: _moreFailed,
+      onMore: _more,
+      onRefresh: _reload,
+      tile: (n) => _comDeslize(n, SsNotificationTile(item: n, onTap: () => _open(n), onAction: (a) => _act(n, a))),
+    );
+  }
+
+  // A lista agrupada por dia, com a faixa de cima ([header]), o "carregar mais" e o puxar para atualizar.
+  Widget _lista(
+    BuildContext context, {
+    required List<SsNotificationItem> itens,
+    required Widget? header,
+    required bool hasMore,
+    required bool loadingMore,
+    required bool moreFailed,
+    required Future<void> Function() onMore,
+    required Future<void> Function() onRefresh,
+    required Widget Function(SsNotificationItem n) tile,
+  }) {
+    final s = _s;
     final now = widget.now?.call() ?? DateTime.now();
     final linhas = <Object>[]; // String (cabeçalho do dia) ou SsNotificationItem
     String? diaAtual;
-    for (final n in _items) {
+    for (final n in itens) {
       if (widget.groupByDay && n.createdAt != null) {
         final rotulo = SsNotificationCenter.dayLabel(n.createdAt!.toLocal(), now, s);
         if (rotulo != diaAtual) {
@@ -473,37 +743,35 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
       }
       linhas.add(n);
     }
-    final unread = _unread;
-    final header = widget.showHeader && unread > 0;
-    final total = linhas.length + (header ? 1 : 0) + 1;
+    final comFaixa = header != null;
+    final total = linhas.length + (comFaixa ? 1 : 0) + 1;
 
     // scrollable: o NotificationListener esconde o ListView do SsPullToRefresh (o contorno que os apps
     // faziam na v1.3.1); sem ele, a lista ganharia um SingleChildScrollView em volta (altura sem limite).
     return SsPullToRefresh(
-      onRefresh: _reload,
+      onRefresh: onRefresh,
       scrollable: true,
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) {
-          if (n.depth == 0 && n.metrics.extentAfter < 400 && !_moreFailed) _more();
+          if (n.depth == 0 && n.metrics.extentAfter < 400 && !moreFailed) onMore();
           return false;
         },
         child: ListView.builder(
           padding: widget.padding ?? safeListPadding(context),
           itemCount: total,
           itemBuilder: (context, i) {
-            if (header && i == 0) {
-              return _Faixa(unread: unread, onMarkAll: widget.markAllRead == null ? null : _markAll);
-            }
-            final j = i - (header ? 1 : 0);
+            if (comFaixa && i == 0) return header;
+            final j = i - (comFaixa ? 1 : 0);
             if (j == linhas.length) {
-              return SsLoadMore(hasMore: _hasMore, loading: _loadingMore, onLoadMore: _more, endLabel: s.notifEnd);
+              return SsLoadMore(hasMore: hasMore, loading: loadingMore, onLoadMore: onMore, endLabel: s.notifEnd);
             }
             final l = linhas[j];
             if (l is String) return SsGroupHeader(l);
             final n = l as SsNotificationItem;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _comDeslize(n, SsNotificationTile(item: n, onTap: () => _open(n), onAction: (a) => _act(n, a))),
+            return _Volta(
+              key: ValueKey('ss-notif-volta-${n.id}'),
+              animate: _voltando.remove(n.id),
+              child: Padding(padding: const EdgeInsets.only(bottom: 8), child: tile(n)),
             );
           },
         ),
@@ -534,6 +802,53 @@ class _SsNotificationCenterState extends State<SsNotificationCenter> {
       child: tile,
     );
   }
+}
+
+/// v1.14.2: o item que volta (desfazer do arquivar) entra crescendo no lugar, como no [SsUndoableRemoval]:
+/// altura, opacidade e escala ([SsMotion.medium], [SsMotion.enter]); com menos movimento, aparece direto.
+class _Volta extends StatefulWidget {
+  const _Volta({super.key, required this.animate, required this.child});
+  final bool animate;
+  final Widget child;
+
+  @override
+  State<_Volta> createState() => _VoltaState();
+}
+
+class _VoltaState extends State<_Volta> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, value: widget.animate ? 0 : 1, duration: SsMotion.medium);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_c.value == 0 && !_c.isAnimating) {
+      if (reduceMotion(context)) {
+        _c.value = 1;
+      } else {
+        _c.animateTo(1, curve: SsMotion.enter);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SizeTransition(
+    sizeFactor: _c,
+    alignment: AlignmentDirectional.topStart,
+    child: AnimatedBuilder(
+      animation: _c,
+      builder: (_, child) => Opacity(
+        opacity: _c.value.clamp(0.0, 1.0),
+        child: Transform.scale(scale: lerpDouble(.94, 1, _c.value), child: child),
+      ),
+      child: widget.child,
+    ),
+  );
 }
 
 /// "3 não lidas" e o "Marcar todas como lidas" no alto da lista.

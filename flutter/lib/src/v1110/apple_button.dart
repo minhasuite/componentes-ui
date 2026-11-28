@@ -74,6 +74,12 @@ class SsAppleButton extends StatelessWidget {
   static const _white = AppColors.onDark;
 
   /// O caminho do logo da Apple numa caixa de 24 × 24 (o mesmo `<path>` do `Ss::AppleButtonComponent`).
+  ///
+  /// Origem: o ícone "Apple" do Simple Icons (simpleicons.org). v1.14.2: o logo oficial ("Sign in with Apple
+  /// Logo", em developer.apple.com/design/resources) baixa sem login, mas vem sob a Apple Design Resources
+  /// License, que só permite maquete para software que roda só em sistema da Apple e proíbe embutir em
+  /// software e redistribuir. Este pacote é público (Apache 2.0) e roda no Android e no web: o oficial não
+  /// entra. Ver "v1.14.2" no README.
   static Path logoPath() => Path()
     ..moveTo(12.152, 6.896)
     ..cubicTo(11.204, 6.896, 9.737, 5.818, 8.192, 5.856)

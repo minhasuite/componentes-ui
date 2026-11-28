@@ -1,4 +1,4 @@
-# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform; v1.12.0: o Kit Brasil; v1.13.0: confiança na IA e suíte; v1.14.0: interface e animação; v1.14.1: sem par novo, só parâmetros nos pares que já existem): o par web de cada peça do Flutter, e vice-versa.
+# paridade.yml (v1.9; dívida zerada na v1.10.0; v1.11.0: SsAppleButton e SsPlatform; v1.12.0: o Kit Brasil; v1.13.0: confiança na IA e suíte; v1.14.0: interface e animação; v1.14.1: sem par novo, só parâmetros nos pares que já existem; v1.14.2: as arquivadas e o desfazer do arquivar na central): o par web de cada peça do Flutter, e vice-versa.
 #
 # A regra da suíte é web e app com as mesmas funcionalidades; aqui fica escrito qual peça de um lado
 # responde pela do outro. Dois testes leem este arquivo e falham quando alguém cria peça num lado só:
@@ -186,6 +186,11 @@ pares:
   SsNote: "Ss::NoteComponent"
   SsNoticeCard: "Ss::NoticeCardComponent"
   SsNotificationBell: "Ss::NotificationBellComponent"
+  # v1.14.2: SsNotificationCenter(unarchive:) ↔ NotificationCenterComponent(archive_undo: true) (o desfazer do arquivar;
+  # no app desfaz chamando o unarchive, no web o PATCH espera o tempo do desfazer) e SsNotificationCenter(loadArchived:,
+  # initialView:) ↔ NotificationCenterComponent(archived_url:, inbox_url:, archived:) com o "Desarquivar"
+  # (unarchive: ↔ unarchive_href:/unarchive_url:). Estados no catálogo dos dois lados: abas, arquivadas,
+  # arquivadas-vazio e desfazer. O enum SsNotificationView (inbox | archived) ↔ archived: true|false.
   SsNotificationCenter: ["Ss::NotificationListComponent", "Ss::NotificationCenterComponent"]
   SsNotificationTile: "Ss::NotificationCenterComponent"
   SsOdometer: "Ss::OdometerComponent"

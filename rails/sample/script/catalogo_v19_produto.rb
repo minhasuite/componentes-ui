@@ -30,6 +30,23 @@ ricos = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-ricos", now: agora
     image: foto, image_alt: "Câmera da garagem", href: "#", actions: [{ label: "Fechar portão", href: "#" }, { label: "Deixar aberto", href: "#" }],
     mute: { options: [1, 8, 24].map { |h| { label: "Por #{h} h", href: "#" } } } },
   { id: 12, title: "Bateria fraca no sensor da sala", text: "12% de carga.", at: Time.utc(2026, 11, 24, 13), level: :warning, href: "#", mute: { href: "#" } }]))
+# v1.14.2: as abas (Caixa de entrada | Arquivadas), a aba das arquivadas e o desfazer do arquivar.
+abas = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-abas", items: avisos, now: agora, read_all_href: "#",
+                                             archived_url: "#arquivadas", inbox_url: "#", archive_undo: true))
+arquivadas_itens = [
+  { id: 21, title: "Pedido 870 faturado", text: "Nota 4512 emitida para Casa do Pão.", at: Time.utc(2026, 11, 22, 16, 40), unread: true,
+    icon: "receipt-percent", href: "#", unarchive_href: "#" },
+  { id: 22, title: "Meta da semana batida", text: "R$ 48.300,00 vendidos, 104% da meta.", at: Time.utc(2026, 11, 21, 18),
+    icon: "trophy", tone: :success, href: "#", unarchive_href: "#" }
+]
+arquivadas = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-arq", items: arquivadas_itens, now: agora, archived: true,
+                                                   archived_url: "#arquivadas", inbox_url: "#"))
+arquivadas_vazio = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-arq-vazio", items: [], archived: true,
+                                                         archived_url: "#arquivadas", inbox_url: "#"))
+desfazer = r(Ss::NotificationCenterComponent.new(id: "cat-avisos-desfazer", items: [avisos[0], avisos[2]], now: agora, read_all_href: "#",
+                                                 archived_url: "#arquivadas", inbox_url: "#", archive_undo: true)) +
+           %(<div style="display:flex;justify-content:center;margin-top:12px">) +
+           r(Ss::ToastComponent.new(message: "Notificação arquivada", undo_url: "#", sticky: true)) + "</div>"
 print section("ss-notification-center", "Ss::NotificationCenterComponent",
   "Central de notificações (v1.9, par do SsNotificationCenter): por dia, lida/não lida, marcar todas, ler e arquivar por aviso, paginação por turbo-frame lazy e vazio.",
   ["Grupos \"Hoje\", \"Ontem\", \"segunda-feira, 5 de outubro\" (no ano) ou a data; a hora em DM Mono.",
@@ -39,10 +56,17 @@ print section("ss-notification-center", "Ss::NotificationCenterComponent",
    "read_href:/archive_href: viram botões de ícone de 44px; com mouse, aparecem ao passar ou com o foco.",
    "next_href: <turbo-frame id=\"<id>-p2\" loading=lazy> com \"Carregar mais\"; a resposta é o mesmo componente com fragment: true, page: 2 e after: (não repete o dia).",
    "Sem itens: Ss::EmptyStateComponent \"Nenhuma notificação\".",
-   "v1.9.2, aviso rico (opcional): level: :warning/:critical (tom no ícone e no contorno, selo \"Aviso\"/\"Crítico\"), image: (foto 16:9), actions: (botões de resposta, o 1º cheio) e mute: (\"Silenciar\": um botão ou o menu com options:)."],
+   "v1.9.2, aviso rico (opcional): level: :warning/:critical (tom no ícone e no contorno, selo \"Aviso\"/\"Crítico\"), image: (foto 16:9), actions: (botões de resposta, o 1º cheio) e mute: (\"Silenciar\": um botão ou o menu com options:).",
+   "v1.14.2, abas: archived_url:/inbox_url: põem \"Caixa de entrada | Arquivadas\" no topo (Ss::SegmentedComponent com links, a atual com aria-current).",
+   "v1.14.2, archived: true: a página das arquivadas, sem a contagem e sem o ponto (o sino não conta), o vazio próprio e \"Desarquivar\" por aviso (unarchive_href:/unarchive_url:, PATCH).",
+   "v1.14.2, archive_undo: true: \"Arquivar\" vira remoção com desfazer (ss-undoable): o aviso sai encolhendo, entra \"Notificação arquivada · Desfazer\" e o PATCH só vai quando o tempo passa; desfazer devolve o aviso ao lugar."],
   [["lista", "hoje e ontem, com não lidas", box(420, lista)],
    ["vazio", "nenhuma notificação", box(360, vazio)],
-   ["rico", "aviso rico: nível, foto, respostas e silenciar", box(420, ricos)]])
+   ["rico", "aviso rico: nível, foto, respostas e silenciar", box(420, ricos)],
+   ["abas", "v1.14.2: Caixa de entrada | Arquivadas, na caixa de entrada", box(420, abas)],
+   ["arquivadas", "v1.14.2: a aba Arquivadas, com Desarquivar", box(420, arquivadas)],
+   ["arquivadas-vazio", "v1.14.2: nenhuma notificação arquivada", box(420, arquivadas_vazio)],
+   ["desfazer", "v1.14.2: arquivou, com \"Desfazer\"", box(420, desfazer)]])
 
 conversa = r(Ss::AssistantComponent.new(id: "cat-asst", url: "#", current_conversation_id: 1, new_conversation_href: "#",
   conversations: [{ id: 1, title: "Treino de 4 dias", subtitle: "há 2 min", href: "#", delete_href: "#" }, { id: 2, title: "Platô no supino", subtitle: "ontem", href: "#", delete_href: "#" }],

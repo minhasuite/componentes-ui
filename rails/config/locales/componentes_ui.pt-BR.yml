@@ -453,6 +453,13 @@ pt-BR:
       level_warning: "Aviso"
       level_critical: "Crítico"
       mute: "Silenciar"
+      inbox: "Caixa de entrada"
+      archived_tab: "Arquivadas"
+      tabs: "Caixa"
+      unarchive: "Desarquivar"
+      archived: "Notificação arquivada"
+      archived_empty: "Nenhuma notificação arquivada"
+      archived_empty_text: "O que você arquivar fica aqui, fora da caixa de entrada."
     number:
       delimiter: "."
       separator: ","

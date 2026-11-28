@@ -34,6 +34,36 @@ final _avisos = [
   ),
 ];
 
+// v1.14.2: a central com a aba Arquivadas (e o desfazer do arquivar, com unarchive:).
+final _arquivadas = [
+  SsNotificationItem(
+    id: '21',
+    title: 'Pedido 870 faturado',
+    body: 'Nota 4512 emitida para Casa do Pão.',
+    createdAt: DateTime(2026, 11, 22, 16, 40),
+    icon: Icons.receipt_long_outlined,
+  ),
+  SsNotificationItem(
+    id: '22',
+    title: 'Meta da semana batida',
+    body: 'R\$ 48.300,00 vendidos, 104% da meta.',
+    createdAt: DateTime(2026, 11, 21, 18),
+    icon: Icons.emoji_events_outlined,
+    tone: SsTone.success,
+  ),
+];
+
+Widget _comAbas(SsNotificationView view, {List<SsNotificationItem>? arquivadas}) => SsNotificationCenter(
+  load: (_) async => SsNotificationPage(_avisos),
+  loadArchived: (_) async => SsNotificationPage(arquivadas ?? _arquivadas),
+  initialView: view,
+  markRead: (_) async {},
+  markAllRead: () async {},
+  archive: (_) async {},
+  unarchive: (_) async {},
+  now: () => _agora,
+);
+
 Widget _central(List<SsNotificationItem> itens, {bool erro = false}) => SsNotificationCenter(
   load: (_) async {
     if (erro) throw Exception('rede');
@@ -140,6 +170,8 @@ List<Componente> comV19Produto(List<Componente> base) => [
       'Deslizar para a direita marca lida; para a esquerda arquiva (sai encolhendo e volta se falhar). Os dois são ações do leitor de tela.',
       'Pede a próxima página sozinha perto do fim (SsLoadMore, "Sem mais notificações"); aviso repetido entre páginas não duplica.',
       'Puxar para atualizar (SsPullToRefresh) também no vazio e no erro. O sino é o SsNotificationBell com controller.unreadCount.',
+      'v1.14.2, desfazer do arquivar: com unarchive:, o aviso "Notificação arquivada" ganha "Desfazer" (com a contagem); desfazer chama o unarchive e o item volta crescendo ao mesmo lugar (a animação do SsUndoableRemoval). Sem unarchive:, o aviso fica sem botão.',
+      'v1.14.2, Arquivadas: com loadArchived:, o topo ganha "Caixa de entrada | Arquivadas" (SsSegmented). Nas arquivadas, sem a faixa de não lidas e sem o ponto (o sino não conta); deslizar para a esquerda é "Desarquivar" (também ação do leitor de tela), e a caixa de entrada é relida. initialView: e controller.show(view) trocam a aba.',
       'v1.9.2, aviso rico (opcional no SsNotificationItem): level (aviso/crítico: tom no quadradinho e no contorno, ícone e selo "AVISO"/"CRÍTICO", também no leitor de tela), image (16:9 embaixo do texto), actions (botões de resposta, o 1º cheio; responder marca lida) e onMute ("Silenciar"). Com botões, o topo continua o toque de abrir e cada botão é um nó próprio.',
     ],
     estados: [
@@ -156,6 +188,34 @@ List<Componente> comV19Produto(List<Componente> base) => [
         'rico',
         'aviso rico: nível, foto, respostas e silenciar',
         (_) => _central(_ricos),
+        tamanho: _tela,
+        aguarde: 900,
+      ),
+      Estado(
+        'abas',
+        'v1.14.2: Caixa de entrada | Arquivadas, na caixa de entrada',
+        (_) => _comAbas(SsNotificationView.inbox),
+        tamanho: _tela,
+        aguarde: 900,
+      ),
+      Estado(
+        'arquivadas',
+        'v1.14.2: a aba Arquivadas (sem contar no sino; deslizar desarquiva)',
+        (_) => _comAbas(SsNotificationView.archived),
+        tamanho: _tela,
+        aguarde: 900,
+      ),
+      Estado(
+        'arquivadas-vazio',
+        'v1.14.2: nenhuma notificação arquivada',
+        (_) => _comAbas(SsNotificationView.archived, arquivadas: const []),
+        tamanho: const Size(360, 520),
+        aguarde: 900,
+      ),
+      Estado(
+        'desfazer',
+        'v1.14.2: o aviso de arquivar com "Desfazer"',
+        (_) => const _DesfazerArquivar(),
         tamanho: _tela,
         aguarde: 900,
       ),
@@ -273,3 +333,28 @@ List<Componente> comV19Produto(List<Componente> base) => [
     ],
   ),
 ];
+
+// v1.14.2: o estado "desfazer": a lista sem o aviso arquivado e o aviso com "Desfazer" embaixo (o SsToast
+// fixo; na central de verdade é o showSsUndo).
+class _DesfazerArquivar extends StatelessWidget {
+  const _DesfazerArquivar();
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      Positioned.fill(child: _central([_avisos[0], _avisos[2]])),
+      Positioned(
+        left: 16,
+        right: 16,
+        bottom: 24,
+        child: SsToast(
+          SsStrings.of(context).notifArchived,
+          icon: Icons.archive_outlined,
+          actionLabel: SsStrings.of(context).undo,
+          onAction: _nada,
+          countdown: const Duration(seconds: 5),
+        ),
+      ),
+    ],
+  );
+}

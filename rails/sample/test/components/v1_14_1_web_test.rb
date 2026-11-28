@@ -19,10 +19,6 @@ class V1141WebTest < ComponentTest
     Capybara.string(view.ss_form_with(model: Item.new(qtd: 12, nome: "Café"), url: "/itens", &block))
   end
 
-  test "versão 1.14.1" do
-    assert_equal "1.14.1", ComponentesUi::VERSION
-  end
-
   # ── 1. subtítulo do comando ─────────────────────────────────────────
   test "CommandPalette: o subtítulo é a 2ª linha, entra na busca e no nome lido do item" do
     render_inline(Ss::CommandPaletteComponent.new(id: "casa", groups: [

@@ -1,0 +1,7 @@
+/* v1.14.2: as abas "Caixa de entrada | Arquivadas" da central (Ss::NotificationCenterComponent(archived_url:)),
+   par do SsNotificationCenter(loadArchived:). O .ss-seg é o de sempre; aqui a largura, o respiro e o ícone ao lado
+   do nome, como no SsSegmented do app (o .ss-seg > * empilha ícone e texto por padrão). */
+@layer components {
+  .ss-ncenter-tabs { margin-bottom: .5rem; max-width: 28rem; }
+  .ss-ncenter-tabs .ss-seg > * { display: flex; align-items: center; justify-content: center; gap: .375rem; }
+}

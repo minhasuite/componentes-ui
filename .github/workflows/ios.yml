@@ -1,0 +1,32 @@
+name: iOS
+
+# v1.14.2: prova que o pacote compila no iOS. Compila a vitrine (flutter/example) para iOS em release, sem
+# assinatura, num runner macOS do GitHub (gratuito porque o repo é público). Não publica nada e não usa
+# segredo: o build fica no runner e some com ele.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  vitrine-ios:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, flutter-version: 3.50.0, cache: true }
+      - name: Vitrine Flutter (iOS, sem assinatura)
+        working-directory: flutter/example
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign
+          du -sh build/ios/iphoneos/Runner.app

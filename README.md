@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/minhasuite/componentes-ui.git
       path: flutter
-      ref: v1.14.1
+      ref: v1.14.2
 ```
 
 ```dart
@@ -653,6 +653,89 @@ Catálogo também: estado `sem-cartoes` no `ss-data-table` (Flutter) e as seçõ
   60 lugares, que deixam de ganhar o card); ninguém usava o card fora da vitrine/catálogo da gem (que ganharam `.is-card`).
 - Sem `header:`/`columns:`/`hide_labels:` o repetidor é o da v0.20.0; sem `stack: false` a tabela vira cartão no celular
   como antes (as regras do celular passaram a `.ss-dt:where(:not(.is-scroll))`, sem mudar a especificidade).
+
+## v1.14.2: desfazer do arquivar e as arquivadas na central, iOS na CI e a origem do logo da Apple
+
+Nada quebra: tudo o que entra é opcional. Sem os parâmetros novos, a central fica como na v1.14.1.
+
+| Flutter | Rails | O que faz |
+|---|---|---|
+| `SsNotificationCenter(archive:, unarchive:)` | `Ss::NotificationCenterComponent(archive_undo: true)` | o aviso "Notificação arquivada" ganha "Desfazer" com a contagem. No app, arquivar vai ao servidor na hora e desfazer chama o `unarchive`; o item volta crescendo ao mesmo lugar (a animação do `SsUndoableRemoval`) e, se o `unarchive` falhar, sai de novo com o aviso de erro. No web, o aviso vira `ss-undoable`: sai encolhendo, e o PATCH do `archive_href:` só vai quando o tempo passa sem desfazer (desfazer não vai ao servidor). Sem `unarchive:`/`archive_undo:`, o aviso fica sem botão, como antes |
+| `SsNotificationCenter(loadArchived: (page) → SsNotificationPage, initialView: SsNotificationView.inbox\|archived)`, `SsNotificationCenterController.show(view)`/`.view` | `Ss::NotificationCenterComponent(archived_url:, inbox_url:, archived: true)` | "Caixa de entrada \| Arquivadas" no topo (`SsSegmented` ↔ `Ss::SegmentedComponent` com links). Nas arquivadas não aparece a faixa de não lidas nem o ponto, e o sino não as conta. O vazio é próprio ("Nenhuma notificação arquivada"). No app a aba relê ao abrir |
+| `SsNotificationCenter(unarchive:)` nas arquivadas | item `unarchive_href:` (ou `unarchive_url:`; `unarchive_method:`, padrão PATCH) com `archived: true` | "Desarquivar": no app, deslizar para a esquerda (também ação do leitor de tela); o item sai, a caixa de entrada é relida e, se falhar, ele volta com o aviso. No web, um botão de ícone (`inbox`) no lugar de ler e arquivar |
+
+Textos novos em pt, en e es: `SsStrings.notifInbox`, `notifArchivedTab`, `notifUnarchive`, `notifUnarchived`,
+`notifArchivedEmptyTitle`, `notifArchivedEmptyText` ↔ `componentes_ui.notification_center.inbox`, `archived_tab`,
+`tabs`, `unarchive`, `archived`, `archived_empty`, `archived_empty_text`. CSS: `v1142_web.css` (`.ss-ncenter-tabs`).
+
+```dart
+SsNotificationCenter(
+  load: repo.pagina,                          // a caixa de entrada
+  loadArchived: (p) => repo.pagina(p, arquivadas: true),
+  markRead: repo.marcarLida,
+  archive: repo.arquivar,
+  unarchive: repo.desarquivar,                // liga o "Desfazer" e o "Desarquivar"
+  onOpen: (n) => context.push(rota(n)),
+)
+```
+
+```erb
+<%= render Ss::NotificationCenterComponent.new(archived: params[:arquivadas].present?, archive_undo: true,
+      archived_url: notificacoes_path(arquivadas: 1), inbox_url: notificacoes_path, items: @avisos.map { |a|
+        { id: a.id, title: a.title, at: a.created_at, unread: a.read_at.nil?, href: abrir_path(a), method: :patch,
+          archive_href: arquivar_path(a), unarchive_href: desarquivar_path(a) } }) %>
+```
+
+**Ao subir nos produtos: tirar o `showSsUndo` por cima do aviso do pacote.** Os apps abrem um `showSsUndo` próprio
+no quadro seguinte ao `archive:`, porque o pacote só mostrava "Notificação arquivada". O do meu-financeiro-app, por
+exemplo, faz assim. Com a v1.14.2 o desfazer passa a ser da central, e o contorno deixa dois avisos de desfazer:
+
+```dart
+// Antes (contorno; o do meu-financeiro-app, notifications_screen.dart):
+Future<void> _archive(String id) async {
+  await api.postData<dynamic>('/notifications/$id/archive');
+  WidgetsBinding.instance.addPostFrameCallback((_) => _offerUndo(id));
+}
+Future<void> _offerUndo(String id) async {
+  if (!await showSsUndo(context, 'Notificação arquivada', icon: Icons.archive_outlined) || !mounted) return;
+  await api.postData<dynamic>('/notifications/$id/unarchive');
+  await _center.refresh();                    // o item voltava pela releitura, sem animação
+}
+
+// Depois: só as duas chamadas. A central mostra o desfazer e devolve o item ao lugar.
+SsNotificationCenter(
+  archive: (id) => api.postData<dynamic>('/notifications/$id/archive'),
+  unarchive: (id) => api.postData<dynamic>('/notifications/$id/unarchive'),
+  // …
+)
+```
+
+O que sai: o `_offerUndo` (o `showSsUndo` no `addPostFrameCallback`) e o `refresh()` depois de desarquivar. O
+endpoint de desarquivar é o que o contorno já chamava. Se algum produto não tiver, deixe `unarchive:` de fora até
+criar, e o aviso fica como na v1.14.1. Para a aba, o produto precisa listar as arquivadas (por exemplo
+`GET /api/v1/notifications?archived=1`) e passar `loadArchived:`. No web, `archive_undo: true` basta, porque o
+arquivar só vai ao servidor depois do tempo. Quem já mostra `Ss::ToastComponent(undo_url:)` no redirect do arquivar
+pode tirar esse aviso e ligar o `archive_undo:`, ou manter o aviso e deixar o `archive_undo:` desligado.
+
+**iOS na CI.** `.github/workflows/ios.yml` compila a vitrine para iOS em release e sem assinatura
+(`flutter build ios --release --no-codesign` em `flutter/example`) num `macos-latest` do GitHub, gratuito porque o
+repo é público, em push na `main`, em tag `v*` e à mão. Não publica nada e não usa segredo: serve para provar que o
+pacote compila no iOS. O `flutter/example/ios` foi criado com `flutter create --platforms=ios .` (bundle
+`com.minhasuite.componentes`, o mesmo id do Android). Até o primeiro push na `main` o job não tinha rodado nenhuma
+vez.
+
+**Logo da Apple: continua o do Simple Icons.** O logo oficial ("Sign in with Apple Logo", PNG/PDF/SVG em
+developer.apple.com/design/resources, num `.dmg`) baixa sem login, mas vem sob a *Apple Design Resources License*.
+Ela só permite os recursos "para maquetes de interface de software que roda só em macOS, iOS, watchOS ou tvOS",
+proíbe usá-los para outro sistema, embuti-los em software, redistribuí-los e modificá-los. Este pacote é público
+(Apache 2.0) e desenha o botão no Android e no web, então o oficial não entra. O `SsAppleButton` e o
+`Ss::AppleButtonComponent` ficam com o glifo do Simple Icons, agora com a origem num comentário. No iOS, quem
+quiser o botão oficial usa o `SignInWithAppleButton` do plugin `sign_in_with_apple` (desenhado pelo sistema); no
+web, o botão do Sign in with Apple JS.
+
+Catálogo: estados `abas`, `arquivadas`, `arquivadas-vazio` e `desfazer` do `ss-notification-center` nos dois
+lados (`flutter/test/catalogo_v19_produto.dart`, `rails/catalogo/index.html` gerado por
+`rails/sample/script/catalogo_v19_produto.rb`). `paridade.yml`: sem par novo (a nota fica no par do `SsNotificationCenter`). Testes: `flutter/test/v1142_test.dart` e `rails/sample/test/components/v1_14_2_web_test.rb`.
 
 ## v1.14.1: subtítulo no comando, número à direita no campo e a saída dos testes da v1.14.0
 
@@ -2702,6 +2785,7 @@ componente (estados e comportamentos). A skill `componentes` exporta tudo em SVG
 Tag `vX.Y.Z` a cada mudança, e os produtos apontam para a tag. Mudança que
 quebra (renomear componente, tirar token) sobe o X, e o produto atualiza quando quiser.
 
+- `v1.14.2` (27/11/2026): seção "v1.14.2". `SsNotificationCenter(unarchive:, loadArchived:, initialView:)` ↔ `Ss::NotificationCenterComponent(archive_undo:, archived_url:, inbox_url:, archived:)` e `unarchive_href:` por aviso (desfazer do arquivar e a aba Arquivadas), o job do iOS na CI (`ios.yml`) e a origem do logo da Apple escrita (o oficial não entra por licença). Migração: tirar o `showSsUndo` dos apps.
 - `v1.14.1` (27/11/2026): seção "v1.14.1". `SsCommand(subtitle:)` (paleta e busca do `SsSideMenu`) ↔ `aria-label` no item com `subtitle:` do `Ss::CommandPaletteComponent`, `SsTextField(textAlign:)`/`SsMoneyField(textAlign:)` ↔ `f.ss_*(align: :end)`, `SsAdaptiveScaffold(tabTransition:)` e `find.ssValue` no `testing.dart`. Muda o padrão do `SsMoneyField` (valor à direita).
 - `v1.14.0` (27/11/2026): seção "v1.14.0" (interface e animação). Scrub nos gráficos (`SsScrubDetector` ↔ `ss-scrub`), `SsPeriodCompare` ↔ `Ss::PeriodCompareComponent`, `SsExpandableRow` ↔ `Ss::ExpandableRowComponent`, `Ss::SelectionBarComponent` + `ss-selection`, `showSsSheet(detents:)` ↔ `DrawerComponent(detents:)`, ícone animado na barra, `SsMeshBackground` ↔ `Ss::MeshBackgroundComponent`, odômetro padrão no KPI, `collapseTint`/`collapse_tint`, `SsSuccessCheck` ↔ `Ss::SuccessCheckComponent` (+ `SsSounds`/`ss:sound`), `SsTiltCard` ↔ `Ss::TiltCardComponent`, `SsSharedAxisTransition`/`SsTabHero` ↔ View Transitions + `ss_tab_hero`, `SsSkeleton.of` ↔ `ss_skeleton_for`. Nada quebra na API; muda o padrão do KPI (odômetro) e da troca de aba do `SsNavScaffold`.
 - `v1.13.0` (27/11/2026): seção "v1.13.0" (confiança na IA e suíte).

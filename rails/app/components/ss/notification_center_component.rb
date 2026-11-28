@@ -34,17 +34,37 @@ module Ss
   #   { id: n.id, title: n.title, text: n.body, at: n.created_at, unread: n.read_at.nil?, level: :critical,
   #     image: n.image_url, actions: n.actions.map { |a| { label: a["title"], href: responder_path(n), params: { action_id: a["id"] } } },
   #     mute: { options: [1, 8, 24].map { |h| { label: "Por #{h} h", href: silenciar_path(n, hours: h) } } } }
+  #
+  # v1.14.2, arquivadas e desfazer (par do SsNotificationCenter(loadArchived:, unarchive:)):
+  #   archived_url: "/avisos?arquivadas=1", inbox_url: "/avisos"  o topo ganha "Caixa de entrada | Arquivadas"
+  #                                    (Ss::SegmentedComponent com links; a aba atual leva aria-current).
+  #   archived: true                   a página é a das arquivadas: sem a contagem de não lidas e sem o ponto (o sino
+  #                                    não conta), o vazio próprio e, por aviso, o "Desarquivar" (unarchive_href: ou
+  #                                    unarchive_url:, PATCH; unarchive_method: troca) no lugar de ler/arquivar.
+  #   archive_undo: true               na caixa de entrada, o "Arquivar" vira remoção com desfazer (o ss-undoable do
+  #                                    Ss::UndoableRemovalComponent): o aviso sai encolhendo, entra "Notificação
+  #                                    arquivada · Desfazer" e o PATCH só vai quando o tempo passa sem desfazer.
+  #                                    Desfazer devolve o aviso ao lugar sem ir ao servidor.
+  #
+  #   render Ss::NotificationCenterComponent.new(archived: params[:arquivadas].present?, archive_undo: true,
+  #     archived_url: avisos_path(arquivadas: 1), inbox_url: avisos_path, items: @avisos.map { |a|
+  #       { id: a.id, title: a.title, at: a.created_at, unread: a.read_at.nil?, archive_href: arquivar_aviso_path(a),
+  #         unarchive_href: desarquivar_aviso_path(a) } })
   class NotificationCenterComponent < BaseComponent
     TONES = %i[accent success warn danger muted].freeze
     LEVELS = { warning: ["warn", "exclamation-triangle", "ss-badge-warning"], critical: ["danger", "exclamation-circle", "ss-badge-danger"] }.freeze
 
     def initialize(items: [], id: "ss-ncenter", unread_count: nil, read_all_href: nil, read_all_method: :patch, next_href: nil,
-                   fragment: false, page: 1, after: nil, now: nil, empty: nil, empty_text: nil, label: nil, **rest)
+                   fragment: false, page: 1, after: nil, now: nil, empty: nil, empty_text: nil, label: nil,
+                   archived: false, archived_url: nil, inbox_url: nil, archive_undo: false, **rest)
       super(**rest)
+      @archived, @archived_url, @inbox_url, @archive_undo = archived, archived_url, inbox_url, archive_undo
       @items = Array(items).map { |i| i.to_h.transform_keys(&:to_sym) }
       @id, @read_all_href, @read_all_method, @next_href, @fragment = id.to_s, read_all_href, read_all_method, next_href, fragment
       @page, @after = [page.to_i, 1].max, after
-      @unread = unread_count.nil? ? @items.count { _1[:unread] } : unread_count.to_i
+      # Arquivada não conta (nem no sino, nem na faixa).
+      @items = @items.map { _1.merge(unread: false) } if @archived
+      @unread = unread_count.nil? || @archived ? @items.count { _1[:unread] } : unread_count.to_i
       @now = now || (Time.respond_to?(:current) ? Time.current : Time.now)
       @empty, @empty_text, @label = empty, empty_text, label
     end
@@ -56,10 +76,9 @@ module Ss
 
       tag.section(**root_attrs(id: @id, class: classes("ss-ncenter"), "aria-label": label)) do
         if @items.empty?
-          render(EmptyStateComponent.new(title: @empty || ss_t("notification_center.empty", default: "Nenhuma notificação"),
-                                         text: @empty_text || ss_t("notification_center.empty_text", default: "Os avisos do app aparecem aqui.")))
+          safe_join([tabs, render(EmptyStateComponent.new(title: @empty || empty_title, text: @empty_text || empty_text))].compact)
         else
-          safe_join([head, groups, next_frame].compact)
+          safe_join([tabs, (head unless @archived), groups, next_frame].compact)
         end
       end
     end
@@ -77,6 +96,33 @@ module Ss
     end
 
     private
+
+    def empty_title
+      return ss_t("notification_center.archived_empty", default: "Nenhuma notificação arquivada") if @archived
+
+      ss_t("notification_center.empty", default: "Nenhuma notificação")
+    end
+
+    def empty_text
+      return ss_t("notification_center.archived_empty_text", default: "O que você arquivar fica aqui, fora da caixa de entrada.") if @archived
+
+      ss_t("notification_center.empty_text", default: "Os avisos do app aparecem aqui.")
+    end
+
+    # v1.14.2: "Caixa de entrada | Arquivadas".
+    def tabs
+      return unless @archived_url
+
+      inbox = @inbox_url || (helpers.request.path if helpers.respond_to?(:request) && helpers.request) || "?"
+      tag.div(class: "ss-ncenter-tabs") do
+        render(SegmentedComponent.new(label: ss_t("notification_center.tabs", default: "Caixa"), items: [
+          { label: ss_t("notification_center.inbox", default: "Caixa de entrada"), icon: "inbox", href: inbox, current: !@archived,
+            data: { turbo_frame: "_top" } },
+          { label: ss_t("notification_center.archived_tab", default: "Arquivadas"), icon: "archive", href: @archived_url, current: @archived,
+            data: { turbo_frame: "_top" } }
+        ]))
+      end
+    end
 
     def label = @label || ss_t("notification_center.title", default: "Notificações")
 
@@ -138,7 +184,10 @@ module Ss
              else
                tag.div(body, class: "ss-ncenter-main")
              end
-      tag.li(safe_join([main, actions(it), extra].compact), class: css, id: (it[:id] && "#{@id}-item-#{it[:id]}"))
+      undo = undo?(it)
+      css = [css, ("ss-undoable" if undo)].compact.join(" ")
+      tag.li(safe_join([main, actions(it), extra].compact), class: css, id: (it[:id] && "#{@id}-item-#{it[:id]}"),
+                                                           data: (undo_data if undo))
     end
 
     def level_label(level) = ss_t("notification_center.level_#{level}", default: { warning: "Aviso", critical: "Crítico" }.fetch(level.to_sym, level.to_s))
@@ -184,16 +233,38 @@ module Ss
       end
     end
 
+    # v1.14.2: arquivar com desfazer (o ss-undoable) só na caixa de entrada.
+    def undo?(it) = @archive_undo && !@archived && it[:archive_href].present?
+
+    def undo_data
+      { controller: "ss-undoable",
+        ss_undoable_message_value: ss_t("notification_center.archived", default: "Notificação arquivada"),
+        ss_undoable_label_value: ss_t("undoable_removal.undo", default: "Desfazer"),
+        ss_undoable_close_value: ss_t("undoable_removal.close", default: "Fechar aviso"),
+        ss_undoable_error_value: ss_t("undoable_removal.error", default: "Não deu para concluir. Tente de novo."),
+        ss_undoable_duration_value: 5 }
+    end
+
     def actions(it)
+      if @archived
+        href = it[:unarchive_href] || it[:unarchive_url]
+        return unless href
+
+        btn = action(href, it[:unarchive_method] || :patch, "inbox", ss_t("notification_center.unarchive", default: "Desarquivar"))
+        return tag.div(btn, class: "ss-ncenter-actions")
+      end
       btns = [
         (action(it[:read_href], it[:read_method] || :patch, "check", ss_t("notification_center.mark_read", default: "Marcar como lida")) if it[:unread] && it[:read_href]),
-        (action(it[:archive_href], it[:archive_method] || :patch, "archive", ss_t("notification_center.archive", default: "Arquivar")) if it[:archive_href])
+        (action(it[:archive_href], it[:archive_method] || :patch, "archive", ss_t("notification_center.archive", default: "Arquivar"),
+                undo: undo?(it)) if it[:archive_href])
       ].compact
       tag.div(safe_join(btns), class: "ss-ncenter-actions") if btns.any?
     end
 
-    def action(href, method, icon, text)
-      button_to(href, method: method, class: "ss-icon-btn is-sm", title: text, "aria-label": text, form: { class: "contents", data: { turbo_frame: "_top" } }) do
+    def action(href, method, icon, text, undo: false)
+      data = { turbo_frame: "_top" }
+      data = data.merge(UndoableRemovalComponent::FORM_DATA) if undo
+      button_to(href, method: method, class: "ss-icon-btn is-sm", title: text, "aria-label": text, form: { class: "contents", data: }) do
         ss_icon(icon, size: nil)
       end
     end

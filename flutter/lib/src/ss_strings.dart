@@ -476,6 +476,12 @@ class SsStrings {
     this.notifMarkRead = 'Marcar como lida',
     this.notifArchive = 'Arquivar',
     this.notifArchived = 'Notificação arquivada',
+    this.notifInbox = 'Caixa de entrada',
+    this.notifArchivedTab = 'Arquivadas',
+    this.notifUnarchive = 'Desarquivar',
+    this.notifUnarchived = 'Notificação de volta à caixa de entrada',
+    this.notifArchivedEmptyTitle = 'Nenhuma notificação arquivada',
+    this.notifArchivedEmptyText = 'O que você arquivar fica aqui, fora da caixa de entrada.',
     this.notifEmptyTitle = 'Nenhuma notificação',
     this.notifEmptyText = 'Os avisos do app aparecem aqui.',
     this.notifUnread = 'não lida',
@@ -1268,6 +1274,13 @@ class SsStrings {
   final String notifMarkRead;
   final String notifArchive;
   final String notifArchived;
+  // v1.14.2: a aba Arquivadas e o desarquivar da central.
+  final String notifInbox;
+  final String notifArchivedTab;
+  final String notifUnarchive;
+  final String notifUnarchived;
+  final String notifArchivedEmptyTitle;
+  final String notifArchivedEmptyText;
   final String notifEmptyTitle;
   final String notifEmptyText;
   final String notifUnread;
@@ -1825,6 +1838,12 @@ class SsStrings {
     notifMarkRead: 'Marcar como lida',
     notifArchive: 'Arquivar',
     notifArchived: 'Notificação arquivada',
+    notifInbox: 'Caixa de entrada',
+    notifArchivedTab: 'Arquivadas',
+    notifUnarchive: 'Desarquivar',
+    notifUnarchived: 'Notificação de volta à caixa de entrada',
+    notifArchivedEmptyTitle: 'Nenhuma notificação arquivada',
+    notifArchivedEmptyText: 'O que você arquivar fica aqui, fora da caixa de entrada.',
     notifEmptyTitle: 'Nenhuma notificação',
     notifEmptyText: 'Os avisos do app aparecem aqui.',
     notifUnread: 'não lida',
@@ -2358,6 +2377,12 @@ class SsStrings {
     notifMarkRead: 'Mark as read',
     notifArchive: 'Archive',
     notifArchived: 'Notification archived',
+    notifInbox: 'Inbox',
+    notifArchivedTab: 'Archived',
+    notifUnarchive: 'Unarchive',
+    notifUnarchived: 'Notification moved back to the inbox',
+    notifArchivedEmptyTitle: 'No archived notifications',
+    notifArchivedEmptyText: 'What you archive stays here, out of the inbox.',
     notifEmptyTitle: 'No notifications',
     notifEmptyText: 'App alerts show up here.',
     notifUnread: 'unread',
@@ -2891,6 +2916,12 @@ class SsStrings {
     notifMarkRead: 'Marcar como leída',
     notifArchive: 'Archivar',
     notifArchived: 'Notificación archivada',
+    notifInbox: 'Bandeja de entrada',
+    notifArchivedTab: 'Archivadas',
+    notifUnarchive: 'Desarchivar',
+    notifUnarchived: 'Notificación de vuelta a la bandeja de entrada',
+    notifArchivedEmptyTitle: 'Ninguna notificación archivada',
+    notifArchivedEmptyText: 'Lo que archives queda aquí, fuera de la bandeja de entrada.',
     notifEmptyTitle: 'Sin notificaciones',
     notifEmptyText: 'Los avisos de la app aparecen aquí.',
     notifUnread: 'no leída',
@@ -3411,6 +3442,12 @@ class SsStrings {
     'notifMarkRead': notifMarkRead,
     'notifArchive': notifArchive,
     'notifArchived': notifArchived,
+    'notifInbox': notifInbox,
+    'notifArchivedTab': notifArchivedTab,
+    'notifUnarchive': notifUnarchive,
+    'notifUnarchived': notifUnarchived,
+    'notifArchivedEmptyTitle': notifArchivedEmptyTitle,
+    'notifArchivedEmptyText': notifArchivedEmptyText,
     'notifEmptyTitle': notifEmptyTitle,
     'notifEmptyText': notifEmptyText,
     'notifUnread': notifUnread,
@@ -3966,6 +4003,12 @@ class SsStrings {
     String? notifMarkRead,
     String? notifArchive,
     String? notifArchived,
+    String? notifInbox,
+    String? notifArchivedTab,
+    String? notifUnarchive,
+    String? notifUnarchived,
+    String? notifArchivedEmptyTitle,
+    String? notifArchivedEmptyText,
     String? notifEmptyTitle,
     String? notifEmptyText,
     String? notifUnread,
@@ -4453,6 +4496,12 @@ class SsStrings {
     notifMarkRead: notifMarkRead ?? this.notifMarkRead,
     notifArchive: notifArchive ?? this.notifArchive,
     notifArchived: notifArchived ?? this.notifArchived,
+    notifInbox: notifInbox ?? this.notifInbox,
+    notifArchivedTab: notifArchivedTab ?? this.notifArchivedTab,
+    notifUnarchive: notifUnarchive ?? this.notifUnarchive,
+    notifUnarchived: notifUnarchived ?? this.notifUnarchived,
+    notifArchivedEmptyTitle: notifArchivedEmptyTitle ?? this.notifArchivedEmptyTitle,
+    notifArchivedEmptyText: notifArchivedEmptyText ?? this.notifArchivedEmptyText,
     notifEmptyTitle: notifEmptyTitle ?? this.notifEmptyTitle,
     notifEmptyText: notifEmptyText ?? this.notifEmptyText,
     notifUnread: notifUnread ?? this.notifUnread,

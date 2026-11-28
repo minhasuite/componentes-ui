@@ -160,8 +160,4 @@ void main() {
       expect(find.byType(SsSharedAxisTransition), findsNothing);
     });
   });
-
-  test('versão 1.14.1', () {
-    expect(ssComponentesUiVersion, '1.14.1');
-  });
 }

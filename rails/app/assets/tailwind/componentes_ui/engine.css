@@ -100,6 +100,8 @@
 @import "./v1140_web.css";
 /* v1.14.1: campo de número alinhado à direita (f.ss_text_field(align: :end)). */
 @import "./v1141_web.css";
+/* v1.14.2: as abas da central de notificações (Caixa de entrada | Arquivadas). */
+@import "./v1142_web.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
